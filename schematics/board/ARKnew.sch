@@ -63,6 +63,9 @@
 <layer number="53" name="tGND_GNDA" color="7" fill="9" visible="no" active="no"/>
 <layer number="54" name="bGND_GNDA" color="1" fill="9" visible="no" active="no"/>
 <layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
+<layer number="57" name="tCAD" color="7" fill="1" visible="no" active="no"/>
+<layer number="59" name="tCarbon" color="7" fill="1" visible="no" active="no"/>
+<layer number="60" name="bCarbon" color="7" fill="1" visible="no" active="no"/>
 <layer number="88" name="SimResults" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="89" name="SimProbes" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
@@ -89,6 +92,8 @@
 <layer number="111" name="111" color="7" fill="1" visible="no" active="no"/>
 <layer number="112" name="tSilk" color="7" fill="1" visible="no" active="no"/>
 <layer number="113" name="IDFDebug" color="7" fill="1" visible="no" active="yes"/>
+<layer number="114" name="Badge_Outline" color="7" fill="1" visible="no" active="no"/>
+<layer number="115" name="ReferenceISLANDS" color="7" fill="1" visible="no" active="no"/>
 <layer number="116" name="Patch_BOT" color="9" fill="4" visible="no" active="no"/>
 <layer number="118" name="Rect_Pads" color="7" fill="1" visible="no" active="no"/>
 <layer number="121" name="_tsilk" color="7" fill="1" visible="no" active="no"/>
@@ -99,11 +104,16 @@
 <layer number="126" name="_bNames" color="7" fill="1" visible="no" active="no"/>
 <layer number="127" name="_tValues" color="7" fill="1" visible="no" active="no"/>
 <layer number="128" name="_bValues" color="7" fill="1" visible="no" active="no"/>
+<layer number="129" name="Mask" color="7" fill="1" visible="no" active="no"/>
 <layer number="131" name="tAdjust" color="7" fill="1" visible="no" active="no"/>
 <layer number="132" name="bAdjust" color="7" fill="1" visible="no" active="no"/>
 <layer number="144" name="DrillLegend" color="7" fill="1" visible="no" active="no"/>
+<layer number="150" name="Notes" color="7" fill="1" visible="no" active="no"/>
 <layer number="151" name="HeatSink" color="14" fill="1" visible="no" active="no"/>
 <layer number="152" name="_bDocu" color="7" fill="1" visible="no" active="no"/>
+<layer number="153" name="FabDoc1" color="7" fill="1" visible="no" active="no"/>
+<layer number="154" name="FabDoc2" color="7" fill="1" visible="no" active="no"/>
+<layer number="155" name="FabDoc3" color="7" fill="1" visible="no" active="no"/>
 <layer number="199" name="Contour" color="7" fill="1" visible="no" active="no"/>
 <layer number="200" name="200bmp" color="1" fill="10" visible="no" active="no"/>
 <layer number="201" name="201bmp" color="2" fill="1" visible="no" active="no"/>
@@ -134,12 +144,17 @@
 <layer number="226" name="226bmp" color="7" fill="1" visible="no" active="yes"/>
 <layer number="227" name="227bmp" color="7" fill="1" visible="no" active="yes"/>
 <layer number="228" name="228bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="229" name="229bmp" color="7" fill="1" visible="no" active="no"/>
 <layer number="230" name="230bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="231" name="231bmp" color="7" fill="1" visible="no" active="no"/>
+<layer number="232" name="Eagle3D_PG2" color="7" fill="1" visible="no" active="no"/>
+<layer number="233" name="Eagle3D_PG3" color="7" fill="1" visible="no" active="no"/>
 <layer number="248" name="Housing" color="7" fill="1" visible="no" active="no"/>
 <layer number="249" name="Edge" color="7" fill="1" visible="no" active="no"/>
 <layer number="250" name="Descript" color="7" fill="1" visible="no" active="yes"/>
 <layer number="251" name="SMDround" color="7" fill="1" visible="no" active="yes"/>
 <layer number="254" name="OrgLBR" color="13" fill="1" visible="no" active="no"/>
+<layer number="255" name="routoute" color="7" fill="1" visible="no" active="no"/>
 </layers>
 <schematic xreflabel="%F%N/%S.%C%R" xrefpart="/%S.%C%R">
 <libraries>
@@ -297,16 +312,16 @@
 <wire x1="-5.9" y1="2.75" x2="-5.3" y2="2.75" width="0.01" layer="20" curve="-180"/>
 <wire x1="-5.3" y1="1.65" x2="-5.9" y2="1.65" width="0.01" layer="20" curve="-180"/>
 <smd name="RX0" x="-1.75" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="3V3/BUS0" x="-1.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="NRST/EN" x="-1.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
 <smd name="NC/3V3" x="-0.75" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
 <smd name="SWD/RXD" x="-0.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
 <smd name="SWC/TXD" x="0.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
 <smd name="NC/M1" x="0.75" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="3V3/BUS1" x="1.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="NC/GPIO" x="1.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
 <smd name="TX0" x="1.75" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
 <smd name="GND0" x="-3.2" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
-<smd name="NRST/EN" x="-2.4" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
-<smd name="NC/GPIO" x="2.4" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
+<smd name="3V3/BUS0" x="-2.4" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
+<smd name="3V3/BUS1" x="2.4" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
 <smd name="GND1" x="3.2" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
 <wire x1="4.5" y1="0" x2="4.5" y2="6.6" width="0.127" layer="20"/>
 <wire x1="4.5" y1="6.6" x2="4.4" y2="6.7" width="0.127" layer="20" curve="90"/>

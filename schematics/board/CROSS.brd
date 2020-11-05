@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.5" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.1" altunitdist="mm" altunit="mm"/>
+<grid distance="1" unitdist="mm" unit="mm" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="mm" altunit="mm"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="16" fill="1" visible="yes" active="yes"/>
@@ -52,7 +52,7 @@
 <layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="yes"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
-<layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
@@ -122,10 +122,10 @@
 <wire x1="53.138" y1="23.205" x2="47.73251875" y2="24.306490625" width="0.1" layer="20" curve="66.964373"/>
 <wire x1="34.26748125" y1="24.306490625" x2="28.8618" y2="23.204940625" width="0.1" layer="20" curve="66.964296"/>
 <wire x1="23.205" y1="28.862" x2="24.306490625" y2="34.26748125" width="0.1" layer="20" curve="66.964381"/>
-<hole x="4" y="4" drill="6"/>
-<hole x="78" y="78" drill="6"/>
-<hole x="4" y="78" drill="6"/>
-<hole x="78" y="4" drill="6"/>
+<hole x="4" y="4" drill="3.5"/>
+<hole x="78" y="78" drill="3.5"/>
+<hole x="4" y="78" drill="3.5"/>
+<hole x="78" y="4" drill="3.5"/>
 </plain>
 <libraries>
 <library name="CanCubeSat">
