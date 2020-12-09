@@ -3,7 +3,7 @@
 <eagle version="9.4.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -12703,8 +12703,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="U$2" library="CanCubeSat" deviceset="MOCD217M" device="" package3d_urn="urn:adsk.eagle:package:8087957/1"/>
 <part name="R9" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R10" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
-<part name="R11" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
-<part name="R12" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
+<part name="R11" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100k"/>
+<part name="R12" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100k"/>
 <part name="U$10" library="CanCubeSat" deviceset="MOCD217M" device="" package3d_urn="urn:adsk.eagle:package:8087957/1"/>
 <part name="R15" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R16" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
@@ -13990,7 +13990,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <junction x="127" y="121.92"/>
 <wire x1="116.84" y1="137.16" x2="101.6" y2="137.16" width="0.1524" layer="91"/>
 <wire x1="101.6" y1="137.16" x2="101.6" y2="121.92" width="0.1524" layer="91"/>
-<label x="81.28" y="121.92" size="1.778" layer="95"/>
+<label x="68.58" y="121.92" size="1.778" layer="95"/>
 <pinref part="DS18B20" gate="G$1" pin="2"/>
 <pinref part="DS18B20C" gate="G$1" pin="2"/>
 <pinref part="DS18B20A" gate="G$1" pin="2"/>
@@ -14020,7 +14020,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="DS18B20C" gate="G$1" pin="3"/>
 <pinref part="DS18B20A" gate="G$1" pin="3"/>
 <pinref part="DS18B20B" gate="G$1" pin="3"/>
-<label x="81.28" y="127" size="1.778" layer="95"/>
+<label x="68.58" y="127" size="1.778" layer="95"/>
 <wire x1="66.04" y1="127" x2="104.14" y2="127" width="0.1524" layer="91"/>
 </segment>
 <segment>
@@ -14368,7 +14368,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <wire x1="116.84" y1="139.7" x2="99.06" y2="139.7" width="0.1524" layer="91"/>
 <wire x1="99.06" y1="139.7" x2="99.06" y2="124.46" width="0.1524" layer="91"/>
 <wire x1="66.04" y1="124.46" x2="99.06" y2="124.46" width="0.1524" layer="91"/>
-<label x="88.9" y="124.46" size="1.778" layer="95"/>
+<label x="68.58" y="124.46" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="AB1" gate="A" pin="7"/>
