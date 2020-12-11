@@ -1,0 +1,17 @@
+"Qty";"Value";"Device";"Package";"Parts";"Description";"POPULARITY";"SPICEPREFIX";
+"1";"";"PINHD-2X4";"2X04";"AB1";"PIN HEADER";"";"";
+"8";"0,1µ";"C-USC0603";"C0603";"C1, C2, C3, C4, C25, C26, C27, C28";"CAPACITOR, American symbol";"37";"C";
+"12";"100R";"R-US_R0603";"R0603";"R4, R5, R6, R7, R9, R10, R15, R16, R52, R53, R54, R55";"RESISTOR, American symbol";"";"";
+"4";"100k";"R-US_R0603";"R0603";"R11, R12, R17, R18";"RESISTOR, American symbol";"";"";
+"4";"200k";"R-US_R0603";"R0603";"R94, R95, R98, R99";"RESISTOR, American symbol";"";"";
+"2";"2k";"R-US_R0603";"R0603";"R1, R49";"RESISTOR, American symbol";"";"";
+"4";"2k26";"R-US_R0603";"R0603";"R13, R14, R19, R20";"RESISTOR, American symbol";"";"";
+"4";"330R";"R-US_R0603";"R0603";"R2, R3, R50, R51";"RESISTOR, American symbol";"";"";
+"6";"BATTERY";"BATTERY";"BATTERY";"B+1, B+2, B-1, B-2, BC1, BC2";"";"";"";
+"4";"CONNECT1X3";"CONNECT1X3";"CONNECT1X3";"DS18B20, DS18B20A, DS18B20B, DS18B20C";"";"";"";
+"2";"FS8205A-";"FS8205A-";"FS8205A-";"U$1, U$26";"";"";"";
+"2";"HY2120";"HY2120";"HY2120";"U$3, U$45";"";"";"";
+"4";"HY2213";"HY2213";"HY2213";"U$4, U$5, U$46, U$47";"";"";"";
+"2";"MOCD217M";"MOCD217M";"SOIC8";"U$2, U$10";"";"";"";
+"2";"R05";"R-US_R2512";"R2512";"R8, R56";"RESISTOR, American symbol";"0";"R";
+"4";"SI2302CDS";"SI2302CDS";"SI2302CDS";"U$6, U$7, U$48, U$49";"";"";"";
