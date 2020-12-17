@@ -169,16 +169,16 @@
 </package>
 <package name="CONNECT1X3">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 2MM"</description>
-<pad name="1" x="-1.5" y="0" drill="0.8" diameter="1.2" shape="square"/>
+<pad name="1" x="-1.6" y="0" drill="0.8" diameter="1.2" shape="square"/>
 <pad name="2" x="0" y="0" drill="0.8" diameter="1.2"/>
-<pad name="3" x="1.5" y="0" drill="0.8" diameter="1.2"/>
+<pad name="3" x="1.6" y="0" drill="0.8" diameter="1.2"/>
 <text x="-4" y="-1" size="1.016" layer="25" ratio="14" rot="R90">&gt;NAME</text>
 <text x="5" y="-1" size="0.8128" layer="27" ratio="10" rot="R90">&gt;VALUE</text>
 <rectangle x1="-0.25" y1="-0.25" x2="0.25" y2="0.25" layer="51"/>
-<rectangle x1="-1.76" y1="-0.25" x2="-1.26" y2="0.25" layer="51"/>
-<rectangle x1="1.26" y1="-0.25" x2="1.76" y2="0.25" layer="51" rot="R270"/>
+<rectangle x1="-1.86" y1="-0.25" x2="-1.36" y2="0.25" layer="51"/>
+<rectangle x1="1.36" y1="-0.25" x2="1.86" y2="0.25" layer="51" rot="R270"/>
 </package>
-<package name="HY2120">
+<package name="SOT23-6">
 <wire x1="-1.45" y1="0.8" x2="-1.45" y2="-0.8" width="0.127" layer="21"/>
 <wire x1="-1.45" y1="-0.8" x2="1.45" y2="-0.8" width="0.127" layer="21"/>
 <wire x1="1.45" y1="-0.8" x2="1.45" y2="0.8" width="0.127" layer="21"/>
@@ -191,20 +191,7 @@
 <smd name="6" x="-0.95" y="1.3" dx="0.6" dy="0.6" layer="1" rot="R90"/>
 <text x="-1.8288" y="-2.6162" size="1.27" layer="25" ratio="10" rot="R90">&gt;NAME</text>
 </package>
-<package name="HY2213">
-<wire x1="-1.45" y1="0.8" x2="-1.45" y2="-0.8" width="0.127" layer="21"/>
-<wire x1="-1.45" y1="-0.8" x2="1.45" y2="-0.8" width="0.127" layer="21"/>
-<wire x1="1.45" y1="-0.8" x2="1.45" y2="0.8" width="0.127" layer="21"/>
-<wire x1="1.45" y1="0.8" x2="-1.45" y2="0.8" width="0.127" layer="21"/>
-<smd name="1" x="-0.95" y="-1.3" dx="0.6" dy="0.6" layer="1" rot="R90"/>
-<smd name="2" x="0" y="-1.3" dx="0.6" dy="0.6" layer="1" rot="R90"/>
-<smd name="3" x="0.95" y="-1.3" dx="0.6" dy="0.6" layer="1" rot="R90"/>
-<smd name="4" x="0.95" y="1.3" dx="0.6" dy="0.6" layer="1" rot="R90"/>
-<smd name="5" x="0" y="1.3" dx="0.6" dy="0.6" layer="1" rot="R90"/>
-<smd name="6" x="-0.95" y="1.3" dx="0.6" dy="0.6" layer="1" rot="R90"/>
-<text x="-1.8288" y="-2.6162" size="1.27" layer="25" ratio="10" rot="R90">&gt;NAME</text>
-</package>
-<package name="SI2302CDS">
+<package name="SOT23-3">
 <smd name="3" x="0" y="1" dx="0.56" dy="0.73" layer="1"/>
 <smd name="2" x="0.95" y="-1" dx="0.56" dy="0.73" layer="1"/>
 <smd name="1" x="-0.95" y="-1" dx="0.56" dy="0.73" layer="1"/>
@@ -382,7 +369,7 @@
 <gate name="G$1" symbol="HY2120" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="HY2120">
+<device name="" package="SOT23-6">
 <connects>
 <connect gate="G$1" pin="CS" pad="3"/>
 <connect gate="G$1" pin="OC" pad="2"/>
@@ -402,7 +389,7 @@
 <gate name="G$1" symbol="HY2213" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="HY2213">
+<device name="&quot;" package="SOT23-6">
 <connects>
 <connect gate="G$1" pin="OUT" pad="6"/>
 <connect gate="G$1" pin="VDD" pad="2"/>
@@ -419,7 +406,7 @@
 <gate name="G$1" symbol="SI2302CDS" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="SI2302CDS">
+<device name="" package="SOT23-3">
 <connects>
 <connect gate="G$1" pin="D" pad="3"/>
 <connect gate="G$1" pin="G" pad="1"/>
@@ -12660,8 +12647,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="BC2" library="CanCubeSat" deviceset="BATTERY" device=""/>
 <part name="B-2" library="CanCubeSat" deviceset="BATTERY" device=""/>
 <part name="U$3" library="CanCubeSat" deviceset="HY2120" device=""/>
-<part name="U$4" library="CanCubeSat" deviceset="HY2213" device=""/>
-<part name="U$5" library="CanCubeSat" deviceset="HY2213" device=""/>
+<part name="U$4" library="CanCubeSat" deviceset="HY2213" device="&quot;"/>
+<part name="U$5" library="CanCubeSat" deviceset="HY2213" device="&quot;"/>
 <part name="R1" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="R2" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="330R"/>
 <part name="R3" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="330R"/>
@@ -12677,8 +12664,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="C4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="R8" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R2512" package3d_urn="urn:adsk.eagle:package:23545/2" value="R05"/>
 <part name="U$45" library="CanCubeSat" deviceset="HY2120" device=""/>
-<part name="U$46" library="CanCubeSat" deviceset="HY2213" device=""/>
-<part name="U$47" library="CanCubeSat" deviceset="HY2213" device=""/>
+<part name="U$46" library="CanCubeSat" deviceset="HY2213" device="&quot;"/>
+<part name="U$47" library="CanCubeSat" deviceset="HY2213" device="&quot;"/>
 <part name="R49" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="R50" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="330R"/>
 <part name="R51" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="330R"/>
@@ -14152,6 +14139,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <wire x1="40.64" y1="431.8" x2="40.64" y2="426.72" width="0.1524" layer="91"/>
 <label x="22.86" y="436.88" size="1.778" layer="95" rot="R90"/>
 <wire x1="22.86" y1="426.72" x2="22.86" y2="441.96" width="0.1524" layer="91"/>
+<junction x="22.86" y="426.72"/>
 </segment>
 </net>
 <net name="N$4" class="0">
@@ -14734,9 +14722,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </nets>
 </sheet>
 </sheets>
-<errors>
-<approved hash="113,1,65.8029,172.494,ARK,,,,,"/>
-</errors>
 </schematic>
 </drawing>
 <compatibility>

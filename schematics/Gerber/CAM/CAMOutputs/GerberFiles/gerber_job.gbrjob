@@ -1,7 +1,7 @@
 {
     "Header": {
         "Comment": "All values are metric (mm)",
-        "CreationDate": "2020-12-11T16:52:04Z",
+        "CreationDate": "2020-12-12T18:02:56Z",
         "GenerationSoftware": {
             "Application": "EAGLE",
             "Vendor": "Autodesk",
@@ -13,12 +13,8 @@
         "BoardThickness": 1.57,
         "LayerNumber": 2,
         "Name": {
-            "ProjectId": "AB"
+            "ProjectId": "AB+DC-DC"
         },
-        "Owner": "  <>",
-        "Size": {
-            "X": 78,
-            "Y": 21
-        }
+        "Owner": "  <>"
     }
 }
