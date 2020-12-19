@@ -46,6 +46,22 @@ void sx126x_plt_dtor(sx126x_plt_t * plt)
 }
 
 
+uint32_t sx126x_plt_get_time(sx126x_plt_t * plt)
+{
+	return HAL_GetTick();
+}
+
+
+uint32_t sx126x_plt_time_diff(sx126x_plt_t * plt, uint32_t start, uint32_t stop)
+{
+	// Если случился переворот через 0
+	if (stop < start)
+		return (UINT32_MAX - start) + stop;
+	else
+		return stop - start;
+}
+
+
 int sx126x_plt_get_chip_type(sx126x_plt_t * plt, sx126x_chip_type_t * pa_type)
 {
 	*pa_type = SX126X_CHIPTYPE_SX1268;

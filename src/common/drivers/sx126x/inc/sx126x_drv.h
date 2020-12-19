@@ -122,13 +122,20 @@ typedef struct sx126x_dev_t
 	sx126x_drv_state_t state;
 	sx126x_plt_t plt;
 
-	uint8_t payload_buffer[0xFF];
 	uint8_t payload_size;
 	sx126x_packet_type_t packet_type;
 	bool explicit_lora_header;
 
-	uint32_t rx_timeout_ms;
-	uint32_t tx_timeout_ms;
+	uint8_t rx_buffer[0xFF];
+	uint8_t tx_buffer[0xFF];
+	uint8_t tx_buffer_size;
+	int tx_buffer_flags;
+
+	uint32_t rx_timeout_hard;
+	uint32_t rx_timeout_soft;
+	uint32_t tx_timeout_hard;
+	uint32_t tx_timeout_soft;
+	uint32_t soft_timeout_start;
 
 	void * cb_user_arg;
 	sx126x_drv_ontx_callback_t ontx_callback;
