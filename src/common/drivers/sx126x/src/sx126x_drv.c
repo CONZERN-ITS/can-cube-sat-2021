@@ -119,7 +119,7 @@ static int _configure_pa(sx126x_dev_t * dev, int8_t pa_power, const sx126x_pa_ra
 	int rc;
 	sx126x_chip_type_t pa_type;
 
-	rc = sx126x_plt_get_pa_type(&dev->plt, &pa_type);
+	rc = sx126x_plt_get_chip_type(&dev->plt, &pa_type);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Теперь ищем ближайшую к определенной мощности

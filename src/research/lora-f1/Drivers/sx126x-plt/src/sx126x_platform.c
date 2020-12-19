@@ -1,8 +1,8 @@
 #include <string.h>
 
 #include <stm32f1xx_hal.h>
-#include <sx126x_platform.h>
 
+#include "sx126x_platform.h"
 #include "sx126x_defs.h"
 
 #include "main.h"
@@ -45,7 +45,7 @@ void sx126x_plt_dtor(sx126x_plt_t * plt)
 }
 
 
-int sx126x_plt_get_pa_type(sx126x_plt_t * plt, sx126x_chip_type_t * pa_type)
+int sx126x_plt_get_chip_type(sx126x_plt_t * plt, sx126x_chip_type_t * pa_type)
 {
 	*pa_type = SX126X_CHIPTYPE_SX1268;
 	return 0;
