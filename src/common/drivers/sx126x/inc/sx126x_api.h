@@ -57,7 +57,7 @@ int sx126x_api_set_lora_packet_params(sx126x_plt_t * plt, const sx126x_lora_pack
 
 int sx126x_api_set_cad_params(sx126x_plt_t * plt,
 		sx126x_cad_length_t cad_len, uint8_t cad_peak, uint8_t cad_min,
-		sx126x_cad_exit_mode_t exit_mode, uint32_t cad_timeout
+		sx126x_cad_exit_mode_t exit_mode, uint32_t cad_timeout_ms
 );
 
 int sx126x_api_buffer_base_address(sx126x_plt_t * plt, uint8_t tx_base_addr, uint8_t rx_base_addr);

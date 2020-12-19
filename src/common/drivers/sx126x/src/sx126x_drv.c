@@ -349,13 +349,6 @@ int sx126x_drv_configure_chip(sx126x_dev_t * dev, const sx126x_drv_chip_cfg_t * 
 	sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	// Теперь включаем IRQ
-	uint16_t irq_mask = SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT | SX126X_IRQ_CRC_ERROR;
-	rc = sx126x_api_set_dio_irq_params(&dev->plt, irq_mask, irq_mask, 0x00, 0x00);
-	SX126X_RETURN_IF_NONZERO(rc);
-	sx126x_plt_wait_on_busy(&dev->plt);
-	SX126X_RETURN_IF_NONZERO(rc);
-
 	// На этом готово
 	return 0;
 }
@@ -384,6 +377,14 @@ int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * 
 {
 	// TODO: Проверка на то, что такие команды мы можем здесь выдавать
 	int rc;
+
+	// Считаем параметры пакета в радио
+	// TODO: Сделать расчет из параметров лоры
+	uint32_t rx_timeout_hard = 3000;
+	uint32_t rx_timeout_soft = 3500;
+
+	uint32_t tx_timeout_hard = 0;
+	uint32_t tx_timeout_soft = 3500;
 
 	// Перво-наперво, как велит даташит - делаем set_packet_type
 	rc = sx126x_api_set_packet_type(&dev->plt, SX126X_PACKET_TYPE_LORA);
@@ -424,10 +425,12 @@ int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * 
 	sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	// Если у нас пакет с неявным заголовком, то rx таймер будет останавливать сразу
-	// по получению одной лишь преамбулы без заголовков
-	//rc = sx126x_api_stop_rx_timer_on_preamble(&dev->plt, !config->explicit_header);
-	//rc = sx126x_api_stop_rx_timer_on_preamble(&dev->plt, true);
+	// Настраиваем CAD
+	// В качестве таймаута будем использовать жесткий rx таймаут
+	rc =sx126x_api_set_cad_params(&dev->plt,
+			config->cad_len, config->cad_peak, config->cad_min,
+			SX126X_LORA_CAD_RX, rx_timeout_hard
+	);
 	SX126X_RETURN_IF_NONZERO(rc);
 	sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -447,17 +450,17 @@ int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * 
 	rc = sx126x_plt_reg_write(&dev->plt, SX126X_REGADDR_LR_SYNCWORD, syncword_bytes, sizeof(syncword_bytes));
 
 	// Устанавливаем таймауты на приём/передачу пакета
-	// TODO: Сделать расчет из параметров лоры
-	dev->rx_timeout_hard = 100;
-	dev->tx_timeout_hard = 0;
+	dev->rx_timeout_hard = rx_timeout_hard;
+	dev->tx_timeout_hard = tx_timeout_hard;
 
-	dev->rx_timeout_soft = 2600;
-	dev->tx_timeout_soft = 2600;
+	dev->rx_timeout_soft = rx_timeout_soft;
+	dev->tx_timeout_soft = tx_timeout_soft;
 
 	// Так же запоминаем всякие параметры пакета - они нам приодиться потом
 	dev->payload_size = config->payload_length;
 	dev->packet_type = SX126X_PACKET_TYPE_LORA;
 	dev->explicit_lora_header = config->explicit_header;
+
 	return 0;
 }
 
@@ -486,13 +489,25 @@ int sx126x_drv_start(sx126x_dev_t * dev)
 	rc = sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
 
+	// Теперь включаем IRQ
+	uint16_t irq_mask = SX126X_IRQ_TX_DONE | SX126X_IRQ_RX_DONE | SX126X_IRQ_TIMEOUT | SX126X_IRQ_CRC_ERROR
+			| SX126X_IRQ_CAD_DETECTED | SX126X_IRQ_CAD_DONE
+	;
+	rc = sx126x_api_set_dio_irq_params(&dev->plt, irq_mask, irq_mask, 0x00, 0x00);
+	SX126X_RETURN_IF_NONZERO(rc);
+	sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	// Выставляем соответствующий статус
 	dev->state = SX126X_DRVSTATE_LBT_IDLE;
 	dev->tx_packet_size = 0;
+	dev->rx_packet_size = 0;
+	dev->tx_cplt_pending = false;
 	return 0;
 }
 
 
+//! Расчет времени, которое прошло с тех пор как был установлен software таймаут
 static uint32_t _sw_timeout_time_spent(sx126x_dev_t * dev)
 {
 	uint32_t time_spent = sx126x_plt_time_diff(
@@ -500,28 +515,6 @@ static uint32_t _sw_timeout_time_spent(sx126x_dev_t * dev)
 	);
 
 	return time_spent;
-}
-
-
-static int _preload_tx(sx126x_dev_t * dev)
-{
-	// Возможно у нас уже есть пакет на очереди. ожидающий отправки?
-	if (dev->tx_packet_size)
-		return 0; // Тогда ничего делать не нужноs
-
-	// Идем к пользователю и спрашиваем не желает ли он отправить пакет-с
-	if (dev->ontx_callback)
-		dev->tx_packet_size = dev->ontx_callback(
-			dev->cb_user_arg, dev->tx_buffer, dev->payload_size, &dev->tx_buffer_flags, &dev->tx_packet_cookie
-		);
-	else
-		dev->tx_packet_size = 0;
-
-	// затрем нулями то, что пользователь решил не отправлять
-	if (dev->tx_packet_size)
-		memset(dev->rx_buffer + dev->tx_packet_size, 0, dev->payload_size - dev->tx_packet_size);
-
-	return 0;
 }
 
 
@@ -573,8 +566,9 @@ static int _start_rx(sx126x_dev_t * dev)
 	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_ANTENNA_RX);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	// Запускаем rx операцию
-	rc = sx126x_api_set_rx(&dev->plt, dev->rx_timeout_hard);
+	// Запускаем rx операцию через CAD операцию
+	//rc = sx126x_api_set_rx(&dev->plt, dev->rx_timeout_hard);
+	rc = sx126x_api_set_cad(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -616,6 +610,41 @@ static int _fetch_rx(sx126x_dev_t * dev, int rx_packet_flags)
 }
 
 
+static int _dispatch_callbacks(sx126x_dev_t * dev)
+{
+	// Возможно у нас уже есть пакет на очереди. ожидающий отправки?
+	if (dev->tx_packet_size)
+		return 0; // Тогда ничего делать не нужно
+
+	// Отправляем уведомление об отправленном tx пакете
+	if (dev->ontxcplt_callback && dev->tx_cplt_pending)
+	{
+		dev->ontxcplt_callback(dev->cb_user_arg, dev->tx_cplt_cookie, dev->tx_cplt_flags);
+		dev->tx_cplt_pending = false;
+	}
+
+	// Отправляем полученный пакет пользователю
+	if (dev->onrx_callback && dev->rx_packet_size)
+	{
+		dev->onrx_callback(dev->cb_user_arg, dev->rx_buffer, dev->rx_packet_size, dev->rx_packet_flags);
+		dev->rx_packet_size = 0;
+	}
+
+	// Идем к пользователю и спрашиваем не желает ли он отправить пакет-с
+	if (dev->ontx_callback)
+		dev->tx_packet_size = dev->ontx_callback(
+			dev->cb_user_arg, dev->tx_buffer, dev->payload_size, &dev->tx_buffer_flags, &dev->tx_packet_cookie
+		);
+	else
+		dev->tx_packet_size = 0;
+
+	// затрем нулями то, что пользователь решил не отправлять
+	if (dev->tx_packet_size)
+		memset(dev->rx_buffer + dev->tx_packet_size, 0, dev->payload_size - dev->tx_packet_size);
+
+	return 0;
+}
+
 static int _consider_next_state(sx126x_dev_t * dev, int state_switch_flags)
 {
 	int rc;
@@ -638,7 +667,7 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 
 	// Подгрузим TX пакет ожидающий отправки, если еще нет
 	// Возможно нам нужно будет его отправлять вот прямо сейчас
-	rc = _preload_tx(dev);
+	rc = _dispatch_callbacks(dev);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Получим irq флаги
@@ -660,7 +689,7 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		SX126X_BREAK_IF_NONZERO(rc);
 		break;
 
-	case SX126X_DRVSTATE_LBT_TX: // Мы отправяем пакет
+	case SX126X_DRVSTATE_LBT_TX: // Мы отправляем пакет
 		// Закончили отправку?
 		if (irq_status & SX126X_IRQ_TX_DONE)
 		{
@@ -699,6 +728,20 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 
 	case SX126X_DRVSTATE_LBT_RX:
 		// Мы сейчас заняты приёмом. Он закончился?
+		if (irq_status & SX126X_IRQ_CAD_DONE)
+		{
+			// LBT этап закончился
+			if (0 == (irq_status & SX126X_IRQ_CAD_DETECTED))
+			{
+				// Канал свободен, можно кричать!
+				rc = _consider_next_state(dev, SX126X_SSF_RX | SX126X_SSF_HW_TIMEOUT);
+				SX126X_BREAK_IF_NONZERO(rc);
+			}
+			else
+			{
+				// Значит сейчас идет приём пакета. Подождем
+			}
+		}
 		if (irq_status & (SX126X_IRQ_RX_DONE | SX126X_IRQ_CRC_ERROR))
 		{
 			// Ухты, мы получили пакет!
@@ -724,11 +767,10 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		{
 			int8_t rssi;
 			rc = sx126x_api_get_rssi_inst(&dev->plt, &rssi);
-			printf("rssi = %d\n", (int)rssi);
+			//printf("rssi = %d\n", (int)rssi);
 		}
 		break;
 	}; // switch
-
 
 	if (0 != rc)
 	{
@@ -736,6 +778,10 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		dev->state = SX126X_DRVSTATE_ERROR;
 		return rc;
 	}
+
+	// Работаем с колбеками
+	rc = _dispatch_callbacks(dev);
+	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;
 }

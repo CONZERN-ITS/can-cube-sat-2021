@@ -91,6 +91,14 @@ typedef struct sx126x_drv_lora_cfg_t
 
 	// Всякие прочие параметры
 	bool boost_rx_lna;		//!< Использовать усиление встроенного LNA на приёме
+
+	// Carrier detect параметры
+	//! Минимальное время в течение которого модуль будет пытаться получить пакет
+	//! Перед тем как канал будет считаться свободным
+	uint32_t rx_min_time;
+	sx126x_cad_length_t cad_len;
+	uint8_t cad_peak;
+	uint8_t cad_min;
 } sx126x_drv_lora_cfg_t;
 
 
@@ -149,18 +157,25 @@ typedef struct sx126x_dev_t
 	sx126x_packet_type_t packet_type;
 	bool explicit_lora_header;
 
+	uint32_t rx_timeout_hard;
+	uint32_t rx_timeout_soft;
+	uint32_t tx_timeout_hard;
+	uint32_t tx_timeout_soft;
+	uint32_t soft_timeout_start;
+
 	uint8_t rx_buffer[0xFF];
+	uint8_t rx_packet_size;
+	int rx_packet_flags;
+
 	uint8_t tx_buffer[0xFF];
 	uint8_t tx_packet_size;
 	int tx_buffer_flags;
 	int tx_packet_cookie;
 	int tx_packet_pending_cookie;
 
-	uint32_t rx_timeout_hard;
-	uint32_t rx_timeout_soft;
-	uint32_t tx_timeout_hard;
-	uint32_t tx_timeout_soft;
-	uint32_t soft_timeout_start;
+	int tx_cplt_flags;
+	int tx_cplt_cookie;
+	bool tx_cplt_pending;
 
 	void * cb_user_arg;
 	sx126x_drv_ontx_callback_t ontx_callback;

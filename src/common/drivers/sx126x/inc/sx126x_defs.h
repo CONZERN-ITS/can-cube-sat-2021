@@ -208,9 +208,9 @@ typedef enum sx126x_cad_length_t
 
 typedef enum sx126x_cad_exit_mode_t
 {
-	LORA_CAD_ONLY	= 0x00,
-	LORA_CAD_RX		= 0x01,
-	LORA_CAD_LBT	= 0x10,
+	SX126X_LORA_CAD_ONLY	= 0x00,
+	SX126X_LORA_CAD_RX		= 0x01,
+	SX126X_LORA_CAD_LBT		= 0x10,
 } sx126x_cad_exit_mode_t;
 
 

@@ -18,6 +18,9 @@ static uint8_t packet_provider(void * arg, uint8_t * dest, uint8_t dest_size, in
 	if (0 == _buffer_size)
 		return 0;
 
+	if (_buffer[0] % 2)
+		return 0;
+
 	size_t retval = _buffer_size;
 	memcpy(dest, _buffer, _buffer_size);
 	_buffer_size = 0;
@@ -68,7 +71,7 @@ int app_main(void)
 			.ldr_optimizations = false,
 
 			// Параметры пакетизации
-			.preamble_length = 12,
+			.preamble_length = 24,
 			.explicit_header = true,
 			.payload_length = 200,
 			.use_crc = true,
@@ -76,7 +79,12 @@ int app_main(void)
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
 
 			// Всякие прочие параметры
-			.boost_rx_lna = true
+			.boost_rx_lna = true,
+
+			// CAD параметры
+			.cad_len = SX126X_LORA_CAD_16_SYMBOLS,
+			.cad_min = 10,
+			.cad_peak = 28
 	};
 
 	sx126x_drv_callback_cfg_t callback_cfg = {
@@ -110,7 +118,7 @@ int app_main(void)
 		if (rc)
 			printf("poll error: %d\n", rc);
 
-		HAL_Delay(50);
+		//HAL_Delay(5);
 	}
 
 
