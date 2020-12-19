@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "sx126x_api.h"
 #include "sx126x_drv.h"
@@ -426,7 +427,7 @@ int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * 
 	// Если у нас пакет с неявным заголовком, то rx таймер будет останавливать сразу
 	// по получению одной лишь преамбулы без заголовков
 	//rc = sx126x_api_stop_rx_timer_on_preamble(&dev->plt, !config->explicit_header);
-	rc = sx126x_api_stop_rx_timer_on_preamble(&dev->plt, true);
+	//rc = sx126x_api_stop_rx_timer_on_preamble(&dev->plt, true);
 	SX126X_RETURN_IF_NONZERO(rc);
 	sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -450,8 +451,8 @@ int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * 
 	dev->rx_timeout_hard = 100;
 	dev->tx_timeout_hard = 0;
 
-	dev->rx_timeout_soft = 5000;
-	dev->tx_timeout_soft = 5000;
+	dev->rx_timeout_soft = 2600;
+	dev->tx_timeout_soft = 2600;
 
 	// Так же запоминаем всякие параметры пакета - они нам приодиться потом
 	dev->payload_size = config->payload_length;
@@ -464,8 +465,9 @@ int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * 
 int sx126x_drv_configure_callbacks(sx126x_dev_t * dev, const sx126x_drv_callback_cfg_t * config)
 {
 	dev->cb_user_arg = config->cb_user_arg;
-	dev->onrx_callback = config->onrx_callback;
 	dev->ontx_callback = config->ontx_callback;
+	dev->ontxcplt_callback = config->ontxcplt_callback;
+	dev->onrx_callback = config->onrx_callback;
 	return 0;
 }
 
@@ -486,7 +488,7 @@ int sx126x_drv_start(sx126x_dev_t * dev)
 
 	// Выставляем соответствующий статус
 	dev->state = SX126X_DRVSTATE_LBT_IDLE;
-	dev->tx_buffer_size = 0;
+	dev->tx_packet_size = 0;
 	return 0;
 }
 
@@ -504,17 +506,20 @@ static uint32_t _sw_timeout_time_spent(sx126x_dev_t * dev)
 static int _preload_tx(sx126x_dev_t * dev)
 {
 	// Возможно у нас уже есть пакет на очереди. ожидающий отправки?
-	if (dev->tx_buffer_size)
+	if (dev->tx_packet_size)
 		return 0; // Тогда ничего делать не нужноs
 
 	// Идем к пользователю и спрашиваем не желает ли он отправить пакет-с
-	dev->tx_buffer_size = dev->ontx_callback(
-			dev->cb_user_arg, dev->tx_buffer, dev->payload_size, &dev->tx_buffer_flags
-	);
+	if (dev->ontx_callback)
+		dev->tx_packet_size = dev->ontx_callback(
+			dev->cb_user_arg, dev->tx_buffer, dev->payload_size, &dev->tx_buffer_flags, &dev->tx_packet_cookie
+		);
+	else
+		dev->tx_packet_size = 0;
 
 	// затрем нулями то, что пользователь решил не отправлять
-	if (dev->tx_buffer_size)
-		memset(dev->rx_buffer + dev->tx_buffer_size, 0, dev->payload_size - dev->tx_buffer_size);
+	if (dev->tx_packet_size)
+		memset(dev->rx_buffer + dev->tx_packet_size, 0, dev->payload_size - dev->tx_packet_size);
 
 	return 0;
 }
@@ -546,7 +551,8 @@ static int _start_tx(sx126x_dev_t * dev)
 	rc = sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	dev->tx_buffer_size = 0;
+	dev->tx_packet_pending_cookie = dev->tx_packet_cookie;
+	dev->tx_packet_size = 0;
 	dev->soft_timeout_start = sx126x_plt_get_time(&dev->plt);
 	dev->state = SX126X_DRVSTATE_LBT_TX;
 
@@ -579,25 +585,33 @@ static int _start_rx(sx126x_dev_t * dev)
 }
 
 
-static int _get_rx_packet_size(sx126x_dev_t * dev, uint8_t * packet_size)
+static int _fetch_rx(sx126x_dev_t * dev, int rx_packet_flags)
 {
 	int rc;
 	uint8_t payload_size;
 	uint8_t payload_offset;
 
-	// Если используется лора с неявным заголовком, то размер пакета мы и так знаем
 	if (SX126X_PACKET_TYPE_LORA  == dev->packet_type && !dev->explicit_lora_header)
 	{
-		*packet_size = dev->payload_size;
-		return 0;
+		// Если используется лора с неявным заголовком, то размер пакета мы и так знаем
+		payload_size = dev->payload_size;
+	}
+	else
+	{
+		// Если нет - придется лезть в чип и спрашивать
+		rc = sx126x_api_get_rx_buffer_status(&dev->plt, &payload_size, &payload_offset);
+		SX126X_RETURN_IF_NONZERO(rc);
+		// Не ждем busy
 	}
 
-	// Если нет - придется лезть в чип и спрашивать
-	rc = sx126x_api_get_rx_buffer_status(&dev->plt, &payload_size, &payload_offset);
+	// Выгребаем
+	rc = sx126x_plt_buf_read(&dev->plt, payload_offset, dev->rx_buffer, payload_size);
 	SX126X_RETURN_IF_NONZERO(rc);
-	// Не ждем busy
 
-	*packet_size = payload_size;
+	// Передаем полученный пакет пользователю
+	if (dev->onrx_callback)
+		dev->onrx_callback(dev->cb_user_arg, dev->rx_buffer, payload_size, rx_packet_flags);
+
 	return 0;
 }
 
@@ -606,21 +620,10 @@ static int _consider_next_state(sx126x_dev_t * dev, int state_switch_flags)
 {
 	int rc;
 
-	if (state_switch_flags & SX126X_SSF_TX )
-	{
-		// Если мы занимались отправкой
-		// включаем приёмник и баста на этом
-		// и если нам есть что отправить - отправляем
-		rc = _start_rx(dev);
-	}
+	if ((state_switch_flags & SX126X_SSF_TX) == 0 && dev->tx_packet_size)
+		rc = _start_tx(dev);
 	else
-	{
-		// Если нет - смотрим если нам чего отправить
-		if (dev->tx_buffer_size)
-			rc = _start_tx(dev);
-		else
-			rc = _start_rx(dev);
-	}
+		rc = _start_rx(dev);
 
 	return rc;
 }
@@ -662,18 +665,33 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		if (irq_status & SX126X_IRQ_TX_DONE)
 		{
 			// Да, все ок
+			if (dev->ontxcplt_callback)
+				dev->ontxcplt_callback(
+						dev->cb_user_arg, 0, dev->tx_packet_pending_cookie
+				);
+
 			rc = _consider_next_state(dev, SX126X_SSF_TX);
 			SX126X_BREAK_IF_NONZERO(rc);
 		}
 		else if (irq_status & SX126X_IRQ_TIMEOUT)
 		{
 			// Нет, случился аппаратный таймаут
+			if (dev->ontxcplt_callback)
+				dev->ontxcplt_callback(
+						dev->cb_user_arg, SX126X_DRV_TXCPLT_FLAGS_FAILED, dev->tx_packet_pending_cookie
+				);
+
 			rc = _consider_next_state(dev, SX126X_SSF_TX | SX126X_SSF_HW_TIMEOUT);
 			SX126X_BREAK_IF_NONZERO(rc);
 		}
 		else if (_sw_timeout_time_spent(dev) > dev->tx_timeout_soft)
 		{
 			// Нет, случился программный таймаут
+			if (dev->ontxcplt_callback)
+				dev->ontxcplt_callback(
+						dev->cb_user_arg, SX126X_DRV_TXCPLT_FLAGS_FAILED, dev->tx_packet_pending_cookie
+				);
+
 			rc = _consider_next_state(dev, SX126X_SSF_TX | SX126X_SSF_SW_TIMEOUT);
 			SX126X_BREAK_IF_NONZERO(rc);
 		}
@@ -683,18 +701,9 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		// Мы сейчас заняты приёмом. Он закончился?
 		if (irq_status & (SX126X_IRQ_RX_DONE | SX126X_IRQ_CRC_ERROR))
 		{
-			// Ухты, мы получили пакет! Смотрим какого он размера
-			uint8_t rx_packet_size;
-			rc = _get_rx_packet_size(dev, &rx_packet_size);
+			// Ухты, мы получили пакет!
+			rc = _fetch_rx(dev, irq_status & SX126X_IRQ_CRC_ERROR ? SX126X_DRV_RXCB_FLAGS_BAD_CRC : 0);
 			SX126X_BREAK_IF_NONZERO(rc);
-
-			// Выгребаем
-			rc = sx126x_plt_buf_read(&dev->plt, 0, dev->rx_buffer, rx_packet_size);
-			SX126X_BREAK_IF_NONZERO(rc);
-
-			// Передаем пакет пользователю
-			// TODO: Флаг о плохой контрольной сумме
-			dev->onrx_callback(dev->cb_user_arg, dev->rx_buffer, rx_packet_size, 0);
 
 			rc = _consider_next_state(dev, SX126X_SSF_RX);
 			SX126X_BREAK_IF_NONZERO(rc);
@@ -711,6 +720,12 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 			rc = _consider_next_state(dev, SX126X_SSF_RX | SX126X_SSF_SW_TIMEOUT);
 			SX126X_BREAK_IF_NONZERO(rc);
 		}
+		else
+		{
+			int8_t rssi;
+			rc = sx126x_api_get_rssi_inst(&dev->plt, &rssi);
+			printf("rssi = %d\n", (int)rssi);
+		}
 		break;
 	}; // switch
 
@@ -721,7 +736,6 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		dev->state = SX126X_DRVSTATE_ERROR;
 		return rc;
 	}
-
 
 	return 0;
 }

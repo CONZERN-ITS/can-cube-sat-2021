@@ -15,7 +15,7 @@ static uint32_t last_tick = 0;
 bool _waiting_reply = false;
 
 
-static size_t packet_provider(void * arg, uint8_t * dest, size_t dest_size, int * flags)
+static uint8_t packet_provider(void * arg, uint8_t * dest, uint8_t dest_size, int * flags, int * cookie)
 {
 	if (HAL_GetTick() - last_tick < 6000)
 		return 0;
@@ -25,15 +25,22 @@ static size_t packet_provider(void * arg, uint8_t * dest, size_t dest_size, int 
 	_waiting_reply = true;
 	last_tick = HAL_GetTick();
 
-	printf("sending ping %d\n", (int)dest[0]);
+	*flags = 0;
+	*cookie = dest[0];
+
 	return dest_size;
 }
 
 
-static size_t packet_consumer(void * arg, const uint8_t * src, size_t packet_size, int flags)
+static void packet_acker(void * arg, int flags, int cookie)
+{
+	printf("sent ping %d\n", cookie);
+}
+
+
+static void packet_consumer(void * arg, const uint8_t * src, uint8_t packet_size, int flags)
 {
 	printf("got pong %d\n", (int)src[0]);
-	return 0;
 }
 
 
@@ -76,6 +83,7 @@ int app_main(void)
 			.cb_user_arg = NULL,
 			.onrx_callback = packet_consumer,
 			.ontx_callback = packet_provider,
+			.ontxcplt_callback = packet_acker,
 	};
 
 	rc = sx126x_drv_ctor(&_radio, NULL);

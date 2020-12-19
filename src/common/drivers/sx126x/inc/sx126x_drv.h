@@ -20,6 +20,18 @@ typedef enum sx126x_drv_state_t
 } sx126x_drv_state_t;
 
 
+typedef enum sx126x_drv_txcplt_flags_t
+{
+	SX126X_DRV_TXCPLT_FLAGS_FAILED
+} sx126x_drv_txcplt_flags_t;
+
+
+typedef enum sx126x_drv_rx_callback_flags_t
+{
+	SX126X_DRV_RXCB_FLAGS_BAD_CRC
+} sx126x_drv_rx_callback_flags_t;
+
+
 typedef struct sx126x_drv_chip_cfg_t
 {
 	// Настройки IO и питания
@@ -88,19 +100,26 @@ typedef struct sx126x_drv_lora_cfg_t
 	Поскольку радиомодуль умеет отправлять пакеты только фиксированной длины -
 	будет отправлен весь буфер как он есть, даже если пользователь записал только лишь его часть
 	Если сейчас нет пригодного для передачи пакета - функция должна вернуть значение  0. */
-typedef size_t (*sx126x_drv_ontx_callback_t)(
+typedef uint8_t (*sx126x_drv_ontx_callback_t)(
 		void * /*user_arg*/,
 		uint8_t * /*dest_buffer*/,
-		size_t /*dest_buffer_size*/,
-		int * /*flags*/
+		uint8_t /*dest_buffer_size*/,
+		int * /*flags*/,
+		int * /*cookie*/
 );
 
+//! Колбек, который вызывается драйвером, когда пакет был отправлен (или нет)
+typedef void (*sx126x_drv_txcplt_callback_t)(
+		void * /* user_arg */,
+		int /* cookie */,
+		int /* flags */
+);
 
 //! Колбек, который вызывается драйвером, когда он готов передать пакет приложению
-typedef size_t (*sx126x_drv_onrx_callback_t)(
+typedef void (*sx126x_drv_onrx_callback_t)(
 		void * /*user_arg*/,
 		const uint8_t * /*packet_data*/,
-		size_t /*packet_data_size*/,
+		uint8_t /*packet_data_size*/,
 		int /*flags*/
 );
 
@@ -111,6 +130,10 @@ typedef struct sx126x_drv_callback_cfg_t
 	void * cb_user_arg;
 	//! Колбек, который вызывается драйвером, когда он готов принять пакет на отправку
 	sx126x_drv_ontx_callback_t ontx_callback;
+
+	//! Колбек, который вызывается драйвером после того пакет был отправлен
+	sx126x_drv_txcplt_callback_t ontxcplt_callback;
+
 	//! колбек, который вызывается драйвером, когда он готов передать пакет приложению
 	sx126x_drv_onrx_callback_t onrx_callback;
 } sx126x_drv_callback_cfg_t;
@@ -128,8 +151,10 @@ typedef struct sx126x_dev_t
 
 	uint8_t rx_buffer[0xFF];
 	uint8_t tx_buffer[0xFF];
-	uint8_t tx_buffer_size;
+	uint8_t tx_packet_size;
 	int tx_buffer_flags;
+	int tx_packet_cookie;
+	int tx_packet_pending_cookie;
 
 	uint32_t rx_timeout_hard;
 	uint32_t rx_timeout_soft;
@@ -139,6 +164,7 @@ typedef struct sx126x_dev_t
 
 	void * cb_user_arg;
 	sx126x_drv_ontx_callback_t ontx_callback;
+	sx126x_drv_txcplt_callback_t ontxcplt_callback;
 	sx126x_drv_onrx_callback_t onrx_callback;
 } sx126x_dev_t;
 
