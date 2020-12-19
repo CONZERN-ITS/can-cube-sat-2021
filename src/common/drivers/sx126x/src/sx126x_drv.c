@@ -261,7 +261,7 @@ int sx126x_drv_reset(sx126x_dev_t * dev)
 {
 	int rc;
 
-	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_PLT_ANTENNA_OFF);
+	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_ANTENNA_OFF);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	sx126x_plt_disable_irq(&dev->plt);
@@ -284,7 +284,7 @@ int sx126x_drv_mode_standby_rc(sx126x_dev_t * dev)
 	int rc;
 	// TODO: Проверка на то, что мы сейчас можем давать такие команды
 
-	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_PLT_ANTENNA_OFF);
+	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_ANTENNA_OFF);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	rc = sx126x_api_set_standby(&dev->plt, SX126X_STANDBY_RC);
@@ -346,7 +346,7 @@ int sx126x_mode_standby_xosc(sx126x_dev_t * dev)
 	int rc;
 	// TODO: Проверка на то, что мы сейчас можем давать такие команды
 
-	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_PLT_ANTENNA_OFF);
+	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_ANTENNA_OFF);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	rc = sx126x_api_set_standby(&dev->plt, SX126X_STANDBY_XOSC);
@@ -504,7 +504,7 @@ static int _try_start_tx(sx126x_dev_t * dev, bool * tx_started)
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Включаем антенну
-	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_PLT_ANTENNA_TX);
+	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_ANTENNA_TX);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Запускаем передачу пакета
@@ -527,7 +527,7 @@ static int _start_rx(sx126x_dev_t * dev)
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Включаем антенну
-	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_PLT_ANTENNA_RX);
+	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_ANTENNA_RX);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Запускаем rx операцию
