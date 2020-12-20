@@ -14,22 +14,29 @@ typedef enum sx126x_drv_state_t
 	SX126X_DRVSTATE_ERROR,
 	SX126X_DRVSTATE_STANDBY_RC,
 	SX126X_DRVSTATE_STANDBY_XOSC,
+	SX126X_DRVSTATE_STANDBY_FS,
 	SX126X_DRVSTATE_LBT_IDLE,
 	SX126X_DRVSTATE_LBT_RX,
 	SX126X_DRVSTATE_LBT_TX,
 } sx126x_drv_state_t;
 
 
-typedef enum sx126x_drv_txcplt_flags_t
+typedef enum sx126x_drv_txcb_flags_t
+{
+	SX126X_DRV_TXCB_FLAGS_SEND_AS_PONG,
+} sx126x_drv_txcb_flags_t;
+
+
+typedef enum sx126x_drv_txcpltcb_flags_t
 {
 	SX126X_DRV_TXCPLT_FLAGS_FAILED
-} sx126x_drv_txcplt_flags_t;
+} sx126x_drv_txcpltcb_flags_t;
 
 
-typedef enum sx126x_drv_rx_callback_flags_t
+typedef enum sx126x_drv_rxcb_flags_t
 {
 	SX126X_DRV_RXCB_FLAGS_BAD_CRC
-} sx126x_drv_rx_callback_flags_t;
+} sx126x_drv_rxcb_flags_t;
 
 
 typedef struct sx126x_drv_chip_cfg_t
@@ -156,6 +163,7 @@ typedef struct sx126x_dev_t
 	uint8_t payload_size;
 	sx126x_packet_type_t packet_type;
 	bool explicit_lora_header;
+	sx126x_lora_bw_t lora_bw;
 
 	uint32_t rx_timeout_hard;
 	uint32_t rx_timeout_soft;
@@ -208,6 +216,8 @@ int sx126x_drv_configure_chip(sx126x_dev_t * dev, const sx126x_drv_chip_cfg_t * 
 //! Перевод чипа в standby_xosc.
 /*! В этом режиме запущены дополнительные осциялторы. Из этого режима можно быстро прыгнуть в RX или TX режимы */
 int sx126x_drv_mode_standby_xosc(sx126x_dev_t * dev);
+
+int sx126x_drv_mode_standby_fs(sx126x_dev_t * dev);
 
 //! Конфигурация лора модема
 int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * config);

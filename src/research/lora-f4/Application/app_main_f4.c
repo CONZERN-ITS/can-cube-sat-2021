@@ -25,14 +25,14 @@ static uint8_t packet_provider(void * arg, uint8_t * dest, uint8_t dest_size, in
 	memcpy(dest, _buffer, _buffer_size);
 	_buffer_size = 0;
 
-	*flags = 0;
+	*flags = SX126X_DRV_TXCB_FLAGS_SEND_AS_PONG;
 	*cookie = _buffer[0];
 
 	return retval;
 }
 
 
-static void packet_acker(void * arg, int flags, int cookie)
+static void packet_acker(void * arg, int cookie, int flags)
 {
 	printf("sent pong %d\n", cookie);
 }
@@ -66,9 +66,9 @@ int app_main(void)
 
 			// Параметры модуляции
 			.spreading_factor = SX126X_LORA_SF_12,
-			.bandwidth = SX126X_LORA_BW_500,
+			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_5,
-			.ldr_optimizations = false,
+			.ldr_optimizations = true,
 
 			// Параметры пакетизации
 			.preamble_length = 24,

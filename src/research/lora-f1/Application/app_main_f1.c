@@ -17,10 +17,8 @@ bool _waiting_reply = false;
 
 static uint8_t packet_provider(void * arg, uint8_t * dest, uint8_t dest_size, int * flags, int * cookie)
 {
-	/*
-	if (HAL_GetTick() - last_tick < 6000)
+	if (HAL_GetTick() - last_tick < 4000)
 		return 0;
-	*/
 
 	memset(dest, _packet_no, dest_size);
 	_packet_no++;
@@ -34,7 +32,7 @@ static uint8_t packet_provider(void * arg, uint8_t * dest, uint8_t dest_size, in
 }
 
 
-static void packet_acker(void * arg, int flags, int cookie)
+static void packet_acker(void * arg, int cookie, int flags)
 {
 	printf("sent ping %d\n", cookie);
 }
@@ -65,9 +63,9 @@ int app_main(void)
 
 			// Параметры модуляции
 			.spreading_factor = SX126X_LORA_SF_12,
-			.bandwidth = SX126X_LORA_BW_500,
+			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_5,
-			.ldr_optimizations = false,
+			.ldr_optimizations = true,
 
 			// Параметры пакетизации
 			.preamble_length = 24,
@@ -81,7 +79,7 @@ int app_main(void)
 			.boost_rx_lna = true,
 
 			// CAD параметры
-			.cad_len = SX126X_LORA_CAD_16_SYMBOLS,
+			.cad_len = SX126X_LORA_CAD_04_SYMBOL,
 			.cad_min = 10,
 			.cad_peak = 28
 	};

@@ -62,9 +62,9 @@ uint32_t sx126x_plt_time_diff(sx126x_plt_t * plt, uint32_t start, uint32_t stop)
 }
 
 
-int sx126x_plt_get_chip_type(sx126x_plt_t * plt, sx126x_chip_type_t * pa_type)
+int sx126x_plt_get_chip_type(sx126x_plt_t * plt, sx126x_chip_type_t * chip_type)
 {
-	*pa_type = SX126X_CHIPTYPE_SX1268;
+	*chip_type = SX126X_CHIPTYPE_SX1268;
 	return 0;
 }
 

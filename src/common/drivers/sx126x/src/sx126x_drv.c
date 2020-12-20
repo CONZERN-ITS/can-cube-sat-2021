@@ -226,6 +226,7 @@ static int _set_rf_frequency(sx126x_dev_t * dev, uint32_t frequency)
 }
 
 
+//! Получение и очиства IRQ флагов с устройства
 static int _fetch_clear_irq(sx126x_dev_t * dev, uint16_t * irq_status)
 {
 	int rc;
@@ -247,6 +248,116 @@ static int _fetch_clear_irq(sx126x_dev_t * dev, uint16_t * irq_status)
 		sx126x_plt_wait_on_busy(&dev->plt);
 		SX126X_RETURN_IF_NONZERO(rc);
 	}
+
+	return 0;
+}
+
+
+//! Костыль для правки бага с качеством модуляции на 500кгц лоры
+static int _workaround_1_lora_bw500(sx126x_dev_t * dev)
+{
+	int rc;
+
+	// Этот хак должен работать только для лоры на 500кГц
+	if (dev->packet_type != SX126X_PACKET_TYPE_LORA || dev->lora_bw != SX126X_LORA_BW_500)
+		return 0;
+
+	// Делаем какую-то магию, которую велено делать в даташите перед каждой TX операцией
+	uint8_t value;
+	rc = sx126x_plt_reg_read(&dev->plt, SX126X_REGADDR_LR_BW500_WORKAROUND, &value, sizeof(value));
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	value &= 0xFB;
+
+	rc = sx126x_plt_reg_write(&dev->plt, SX126X_REGADDR_LR_BW500_WORKAROUND, &value, sizeof(value));
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+//! Костыль для правки бага с ограничением TX мощности
+static int _workaround_2_tx_power(sx126x_dev_t * dev)
+{
+	int rc;
+
+	// Должен работать только для sx1262/sx1268
+	sx126x_chip_type_t chip_type;
+	rc = sx126x_plt_get_chip_type(&dev->plt, &chip_type);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	switch (chip_type)
+	{
+	case SX126X_CHIPTYPE_SX1262:
+	case SX126X_CHIPTYPE_SX1268:
+		break;
+
+	default:
+		return 0;
+	}
+
+	uint8_t reg_value;
+	rc = sx126x_plt_reg_read(&dev->plt, SX126X_REGADDR_TX_CLAMP_CONFIG, &reg_value, sizeof(reg_value));
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	reg_value |= 0x1E;
+
+	rc = sx126x_plt_reg_write(&dev->plt, SX126X_REGADDR_TX_CLAMP_CONFIG, &reg_value, sizeof(reg_value));
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+//! Костыль 3 для парирования залипания RX тайматов
+static int _workaround_3_rx_timeout(sx126x_dev_t * dev)
+{
+	int rc;
+	// работает всегда...
+	uint8_t reg_value = 0x00;
+
+	rc = sx126x_plt_reg_write(&dev->plt, SX126X_REGADDR_RTC_CONTROL1, &reg_value, sizeof(reg_value));
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	rc = sx126x_plt_reg_read(&dev->plt, SX126X_REGADDR_RTC_CONTROL2, &reg_value, sizeof(reg_value));
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	reg_value |= 0x02;
+
+	rc = sx126x_plt_reg_write(&dev->plt, SX126X_REGADDR_RTC_CONTROL2, &reg_value, sizeof(reg_value));
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+//! Костыль для лечения багов возникающих при инверсии IQ
+static int _workaround_4_iq_polarity(sx126x_dev_t * dev, bool iq_inversion_used)
+{
+	int rc;
+	// работает всегда, когда вызывают (только при настройке лоры)
+
+	uint8_t reg_value = 0x00;
+
+	rc = sx126x_plt_reg_read(&dev->plt, SX126X_REGADDR_LR_INVIQ_WORKAROUND, &reg_value, sizeof(reg_value));
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	if (iq_inversion_used)
+		reg_value |= 0x04;
+	else
+		reg_value &= 0xF7;
+
+	rc = sx126x_plt_reg_write(&dev->plt, SX126X_REGADDR_LR_INVIQ_WORKAROUND, &reg_value, sizeof(reg_value));
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;
 }
@@ -344,9 +455,14 @@ int sx126x_drv_configure_chip(sx126x_dev_t * dev, const sx126x_drv_chip_cfg_t * 
 		SX126X_RETURN_IF_NONZERO(rc);
 	}
 
+	// Ставим режим фолбека rx/tx
 	rc = sx126x_api_set_rxtx_fallback_mode(&dev->plt, config->rxtx_fallback_mode);
 	SX126X_RETURN_IF_NONZERO(rc);
 	sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Делаем хак2
+	rc = _workaround_2_tx_power(dev);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// На этом готово
@@ -354,7 +470,7 @@ int sx126x_drv_configure_chip(sx126x_dev_t * dev, const sx126x_drv_chip_cfg_t * 
 }
 
 
-int sx126x_mode_standby_xosc(sx126x_dev_t * dev)
+int sx126x_drv_mode_standby_xosc(sx126x_dev_t * dev)
 {
 	int rc;
 	// TODO: Проверка на то, что мы сейчас можем давать такие команды
@@ -372,6 +488,23 @@ int sx126x_mode_standby_xosc(sx126x_dev_t * dev)
 }
 
 
+int sx126x_drv_mode_standby_fs(sx126x_dev_t * dev)
+{
+	int rc;
+
+	rc = sx126x_api_set_fs(&dev->plt);
+	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_ANTENNA_OFF);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	rc = sx126x_api_set_standby(&dev->plt, SX126X_STANDBY_XOSC);
+	SX126X_RETURN_IF_NONZERO(rc);
+	sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	dev->state = SX126X_DRVSTATE_STANDBY_FS;
+	return 0;
+}
+
 
 int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * config)
 {
@@ -380,11 +513,12 @@ int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * 
 
 	// Считаем параметры пакета в радио
 	// TODO: Сделать расчет из параметров лоры
-	uint32_t rx_timeout_hard = 3000;
-	uint32_t rx_timeout_soft = 3500;
+	uint8_t rx_min_lora_symb_num = 70;
+	uint32_t rx_timeout_hard = 0;
+	uint32_t rx_timeout_soft = 6000;
 
 	uint32_t tx_timeout_hard = 0;
-	uint32_t tx_timeout_soft = 3500;
+	uint32_t tx_timeout_soft = 6000;
 
 	// Перво-наперво, как велит даташит - делаем set_packet_type
 	rc = sx126x_api_set_packet_type(&dev->plt, SX126X_PACKET_TYPE_LORA);
@@ -425,12 +559,27 @@ int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * 
 	sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
 
+	rc = _workaround_4_iq_polarity(dev, config->invert_iq);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	// Настраиваем CAD
 	// В качестве таймаута будем использовать жесткий rx таймаут
-	rc =sx126x_api_set_cad_params(&dev->plt,
+	rc = sx126x_api_set_cad_params(&dev->plt,
 			config->cad_len, config->cad_peak, config->cad_min,
 			SX126X_LORA_CAD_RX, rx_timeout_hard
 	);
+	SX126X_RETURN_IF_NONZERO(rc);
+	sx126x_plt_wait_on_busy(&dev->plt);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Разрешаем остановку RX таймера по преамбуле
+//	rc = sx126x_api_stop_rx_timer_on_preamble(&dev->plt, true);
+//	SX126X_RETURN_IF_NONZERO(rc);
+//	sx126x_plt_wait_on_busy(&dev->plt);
+//	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Настроим количество символов для RX таймаута
+	rc = sx126x_api_set_lora_symb_num_timeout(&dev->plt, rx_min_lora_symb_num);
 	SX126X_RETURN_IF_NONZERO(rc);
 	sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -479,8 +628,8 @@ int sx126x_drv_start(sx126x_dev_t * dev)
 {
 	int rc;
 
-	// Прыгаем в standby_osc, если мы вдруг еще не в нем
-	rc = sx126x_mode_standby_xosc(dev);
+	// Прыгаем в standby_fs, если мы вдруг еще не в нем
+	rc = sx126x_drv_mode_standby_xosc(dev);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Чистим все флаги прерывания чипа
@@ -538,6 +687,10 @@ static int _start_tx(sx126x_dev_t * dev)
 	rc = sx126x_plt_antenna_mode(&dev->plt, SX126X_ANTENNA_TX);
 	SX126X_RETURN_IF_NONZERO(rc);
 
+	// делаем workaround1 из даташита
+	_workaround_1_lora_bw500(dev);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	// Запускаем передачу пакета
 	rc = sx126x_api_set_tx(&dev->plt, dev->tx_timeout_hard);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -567,14 +720,24 @@ static int _start_rx(sx126x_dev_t * dev)
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Запускаем rx операцию через CAD операцию
-	//rc = sx126x_api_set_rx(&dev->plt, dev->rx_timeout_hard);
-	rc = sx126x_api_set_cad(&dev->plt);
+	rc = sx126x_api_set_rx(&dev->plt, dev->rx_timeout_hard);
+	//rc = sx126x_api_set_cad(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = sx126x_plt_wait_on_busy(&dev->plt);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	dev->soft_timeout_start = sx126x_plt_get_time(&dev->plt);
 	dev->state = SX126X_DRVSTATE_LBT_RX;
+	return 0;
+}
+
+
+static int _ack_tx(sx126x_dev_t * dev, int tx_cplt_flags)
+{
+	dev->tx_cplt_flags = tx_cplt_flags;
+	dev->tx_cplt_cookie = dev->tx_packet_pending_cookie;
+	dev->tx_cplt_pending = true;
+
 	return 0;
 }
 
@@ -602,20 +765,14 @@ static int _fetch_rx(sx126x_dev_t * dev, int rx_packet_flags)
 	rc = sx126x_plt_buf_read(&dev->plt, payload_offset, dev->rx_buffer, payload_size);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	// Передаем полученный пакет пользователю
-	if (dev->onrx_callback)
-		dev->onrx_callback(dev->cb_user_arg, dev->rx_buffer, payload_size, rx_packet_flags);
-
+	dev->rx_packet_size = payload_size;
+	dev->rx_packet_flags = rx_packet_flags;
 	return 0;
 }
 
 
 static int _dispatch_callbacks(sx126x_dev_t * dev)
 {
-	// Возможно у нас уже есть пакет на очереди. ожидающий отправки?
-	if (dev->tx_packet_size)
-		return 0; // Тогда ничего делать не нужно
-
 	// Отправляем уведомление об отправленном tx пакете
 	if (dev->ontxcplt_callback && dev->tx_cplt_pending)
 	{
@@ -630,29 +787,48 @@ static int _dispatch_callbacks(sx126x_dev_t * dev)
 		dev->rx_packet_size = 0;
 	}
 
-	// Идем к пользователю и спрашиваем не желает ли он отправить пакет-с
-	if (dev->ontx_callback)
-		dev->tx_packet_size = dev->ontx_callback(
-			dev->cb_user_arg, dev->tx_buffer, dev->payload_size, &dev->tx_buffer_flags, &dev->tx_packet_cookie
-		);
-	else
-		dev->tx_packet_size = 0;
+	// Возможно у нас уже есть пакет на очереди. ожидающий отправки?
+	if (!dev->tx_packet_size)
+	{
+		// Идем к пользователю и спрашиваем не желает ли он отправить пакет-с
+		if (dev->ontx_callback)
+			dev->tx_packet_size = dev->ontx_callback(
+				dev->cb_user_arg, dev->tx_buffer, dev->payload_size, &dev->tx_buffer_flags, &dev->tx_packet_cookie
+			);
+		else
+			dev->tx_packet_size = 0;
 
-	// затрем нулями то, что пользователь решил не отправлять
-	if (dev->tx_packet_size)
-		memset(dev->rx_buffer + dev->tx_packet_size, 0, dev->payload_size - dev->tx_packet_size);
+		// затрем нулями то, что пользователь решил не отправлять
+		if (dev->tx_packet_size)
+			memset(dev->rx_buffer + dev->tx_packet_size, 0, dev->payload_size - dev->tx_packet_size);
+	}
 
 	return 0;
 }
 
+
 static int _consider_next_state(sx126x_dev_t * dev, int state_switch_flags)
 {
 	int rc;
-
 	if ((state_switch_flags & SX126X_SSF_TX) == 0 && dev->tx_packet_size)
-		rc = _start_tx(dev);
+	{
+		// Если пакет ожидающий отправки должен быть отправлен только в ответ на полученный
+		if (dev->tx_buffer_flags & SX126X_DRV_TXCB_FLAGS_SEND_AS_PONG)
+		{
+			// Проверяем, что у нас не было таймаутов и только тогда отправляем
+			if (0 == (state_switch_flags & (SX126X_SSF_HW_TIMEOUT | SX126X_SSF_SW_TIMEOUT)))
+				rc = _start_tx(dev);
+		}
+		else
+		{
+			// В противном случае просто отправляем
+			rc = _start_tx(dev);
+		}
+	}
 	else
+	{
 		rc = _start_rx(dev);
+	}
 
 	return rc;
 }
@@ -693,11 +869,8 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		// Закончили отправку?
 		if (irq_status & SX126X_IRQ_TX_DONE)
 		{
-			// Да, все ок
-			if (dev->ontxcplt_callback)
-				dev->ontxcplt_callback(
-						dev->cb_user_arg, 0, dev->tx_packet_pending_cookie
-				);
+			_ack_tx(dev, 0);
+			SX126X_BREAK_IF_NONZERO(rc);
 
 			rc = _consider_next_state(dev, SX126X_SSF_TX);
 			SX126X_BREAK_IF_NONZERO(rc);
@@ -705,10 +878,8 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		else if (irq_status & SX126X_IRQ_TIMEOUT)
 		{
 			// Нет, случился аппаратный таймаут
-			if (dev->ontxcplt_callback)
-				dev->ontxcplt_callback(
-						dev->cb_user_arg, SX126X_DRV_TXCPLT_FLAGS_FAILED, dev->tx_packet_pending_cookie
-				);
+			_ack_tx(dev, SX126X_DRV_TXCPLT_FLAGS_FAILED);
+			SX126X_BREAK_IF_NONZERO(rc);
 
 			rc = _consider_next_state(dev, SX126X_SSF_TX | SX126X_SSF_HW_TIMEOUT);
 			SX126X_BREAK_IF_NONZERO(rc);
@@ -716,10 +887,8 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		else if (_sw_timeout_time_spent(dev) > dev->tx_timeout_soft)
 		{
 			// Нет, случился программный таймаут
-			if (dev->ontxcplt_callback)
-				dev->ontxcplt_callback(
-						dev->cb_user_arg, SX126X_DRV_TXCPLT_FLAGS_FAILED, dev->tx_packet_pending_cookie
-				);
+			_ack_tx(dev, SX126X_DRV_TXCPLT_FLAGS_FAILED);
+			SX126X_BREAK_IF_NONZERO(rc);
 
 			rc = _consider_next_state(dev, SX126X_SSF_TX | SX126X_SSF_SW_TIMEOUT);
 			SX126X_BREAK_IF_NONZERO(rc);
@@ -745,6 +914,9 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		if (irq_status & (SX126X_IRQ_RX_DONE | SX126X_IRQ_CRC_ERROR))
 		{
 			// Ухты, мы получили пакет!
+			rc = _workaround_3_rx_timeout(dev);
+			SX126X_BREAK_IF_NONZERO(rc);
+
 			rc = _fetch_rx(dev, irq_status & SX126X_IRQ_CRC_ERROR ? SX126X_DRV_RXCB_FLAGS_BAD_CRC : 0);
 			SX126X_BREAK_IF_NONZERO(rc);
 
@@ -754,12 +926,18 @@ int sx126x_drv_poll(sx126x_dev_t * dev)
 		else if (irq_status & SX126X_IRQ_TIMEOUT)
 		{
 			// Нет, случился аппаратный таймаут
+			rc = _workaround_3_rx_timeout(dev);
+			SX126X_BREAK_IF_NONZERO(rc);
+
 			rc = _consider_next_state(dev, SX126X_SSF_RX | SX126X_SSF_HW_TIMEOUT);
 			SX126X_BREAK_IF_NONZERO(rc);
 		}
 		else if (_sw_timeout_time_spent(dev) > dev->rx_timeout_soft)
 		{
 			// Нет, случился программный таймаут
+			rc = _workaround_3_rx_timeout(dev);
+			SX126X_BREAK_IF_NONZERO(rc);
+
 			rc = _consider_next_state(dev, SX126X_SSF_RX | SX126X_SSF_SW_TIMEOUT);
 			SX126X_BREAK_IF_NONZERO(rc);
 		}
