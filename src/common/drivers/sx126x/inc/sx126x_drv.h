@@ -5,73 +5,59 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "sx126x_platform.h"
 #include "sx126x_defs.h"
+#include "sx126x_api.h"
+#include "sx126x_events.h"
 
 
 typedef enum sx126x_drv_state_t
 {
 	SX126X_DRVSTATE_ERROR,
 	SX126X_DRVSTATE_STANDBY_RC,
-	SX126X_DRVSTATE_STANDBY_XOSC,
-	SX126X_DRVSTATE_STANDBY_FS,
-	SX126X_DRVSTATE_LBT_IDLE,
-	SX126X_DRVSTATE_LBT_RX,
-	SX126X_DRVSTATE_LBT_TX,
+	SX126X_DRVSTATE_STANDBY_DEFAULT,
+	SX126X_DRVSTATE_TX,
+	SX126X_DRVSTATE_RX,
 } sx126x_drv_state_t;
 
 
-typedef enum sx126x_drv_txcb_flags_t
+//! Тип standby состояния драйвера
+typedef enum sx126x_drv_standby_t
 {
-	SX126X_DRV_TXCB_FLAGS_SEND_AS_PONG,
-} sx126x_drv_txcb_flags_t;
+	//! standby состояние на медленном RC генераторе
+	SX126X_DRVSTANDBY_RC,
+	//! standby состояние на быстром внешнем генераторе
+	SX126X_DRVSTANDBY_XOSC,
+} sx126x_drv_standby_t;
 
 
-typedef enum sx126x_drv_txcpltcb_flags_t
+//! Базовая конфигурация чипа и драйвера
+typedef struct sx126x_drv_basic_cfg_t
 {
-	SX126X_DRV_TXCPLT_FLAGS_FAILED
-} sx126x_drv_txcpltcb_flags_t;
-
-
-typedef enum sx126x_drv_rxcb_flags_t
-{
-	SX126X_DRV_RXCB_FLAGS_BAD_CRC
-} sx126x_drv_rxcb_flags_t;
-
-
-typedef struct sx126x_drv_chip_cfg_t
-{
-	// Настройки IO и питания
-	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	//! Разрешает использование пина DIO3 для управления TCXO
-	/*! Эта опция поддерживает только включение. Отключение только через полный резет чипа */
 	bool use_dio3_for_tcxo;
 	//! Напряжение питания TCXO
 	sx126x_tcxo_v_t tcxo_v;
 	//! Разрешает использование пина DIO2 для включения PA антенны
 	bool use_dio2_for_rf_switch;
-	//! Разрешить использование DCDC (должен быть разведен на модуле)
+	//! Разрешить использование DCDC
 	bool allow_dcdc;
-
-	// Настройки клоков
-	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	//! Управляет отключением осциляторов при выходе из TX/RX режима
-	sx126x_fallback_mode_t rxtx_fallback_mode;
-
-} sx126x_drv_chip_cfg_t;
+	//! режим standby состояния драйвера
+	sx126x_drv_standby_t standby_mode;
+} sx126x_drv_basic_cfg_t;
 
 
-//! Набор параметров лора модема
-typedef struct sx126x_drv_lora_cfg_t
+//! Настройки LoRa модема
+typedef struct sx126x_drv_lora_modem_cfg_t
 {
-	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	// =-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	//! Частота, на которой будет работать трансивер
 	uint32_t frequency;
 
-	// Настройки PA усилителя
+	// Настройки усилителей усилителя
 	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	//! "Скорость разгона" PA усилителя?
 	sx126x_pa_ramp_time_t pa_ramp_time;
+
 	//! Мощность PA усилителя
 	/*! Фактическая мощность подбирается из предопределенных в даташите значений
 		для разных чипов. Указанное здесь значение приводится к ближайшему определенному.
@@ -80,153 +66,170 @@ typedef struct sx126x_drv_lora_cfg_t
 		для sx1268 определены значения 10, 14, 17, 20, 22 dBm */
 	int8_t pa_power;
 
+	//! Использовать ли буст LNA усилителя
+	bool lna_boost;
+
 	// Параметры модуляции
 	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	//! LoRa spreading factor
 	sx126x_lora_sf_t spreading_factor;
+	//! Полоса вещания
 	sx126x_lora_bw_t bandwidth;
+	//! Избыточность помехозащищенного кодирования
 	sx126x_lora_cr_t coding_rate;
+	//! использовать ли low data rate оптимизации
 	bool ldr_optimizations;
+} sx126x_drv_lora_modem_cfg_t;
 
-	// Параметры пакетизации
-	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	uint16_t preamble_length;
-	bool explicit_header;
-	uint8_t payload_length;
-	bool use_crc;
+
+//! Параметры модема, используемые в LoRa TX режиме
+typedef struct sx126x_drv_lora_tx_cfg_t
+{
+	//! Использовать инверсию IQ
 	bool invert_iq;
+	//! Использовать синхрослово для публичной LoRa сети или для приватной
 	sx126x_lora_syncword_t syncword;
+	//! Длина отправляемой преамбулы
+	uint16_t preamble_length;
+	//! Использовать явный LoRa заголовок
+	bool explicit_header;
+	//! Длина передаваемого пакета
+	uint8_t payload_length;
+	//! Использовать ли CRC в теле пакета
+	bool use_crc;
 
-	// Всякие прочие параметры
-	bool boost_rx_lna;		//!< Использовать усиление встроенного LNA на приёме
+	//! Таймаут на передачу пакета
+	/*! Если указан 0 - таймаут отключен */
+	uint32_t tx_timeout_ms;
 
-	// Carrier detect параметры
-	//! Минимальное время в течение которого модуль будет пытаться получить пакет
-	//! Перед тем как канал будет считаться свободным
-	uint32_t rx_min_time;
+} sx126x_drv_lora_tx_cfg_t;
+
+
+//! Параметры модема, используемые в LoRa RX режиме
+typedef struct sx126x_drv_lora_rx_cfg_t
+{
+	//! Ожидать инверсию IQ
+	bool invert_iq;
+	//! Ожидать синхрослово для публичной LoRa сети или для приватной
+	sx126x_lora_syncword_t syncword;
+	//! Длина ожидаемой преамбулы
+	/*! (Если длина ожидаемой преамбулы неизвестна - следует установить значение 0xFFFF) */
+	uint16_t preamble_length;
+	//! Длина ожидаемого пакета
+	/*! Если установить это поле в 0, то будет включен режим явного заголовка */
+	bool payload_length;
+	//! Добавлять ли к пакету контрольную сумму
+	/*! Если payload_length == 0, поле не имеет значения */
+	bool use_crc;
+
+	//! Количество миллисекунд таймаута для rx операции
+	uint32_t rx_timeout_ms;
+	//! Альтернативный режим таймаута в количествах символов лоры
+	uint8_t rx_timeout_symbs;
+	//! Разрешить остановку RX таймера по преамбуле
+	bool rx_timeout_stop_on_preamble;
+
+} sx126x_drv_lora_rx_cfg_t;
+
+
+//! Параметры модема, используемые в LoRa CAD режиме
+typedef struct sx126x_drv_cad_cfg_t
+{
 	sx126x_cad_length_t cad_len;
 	uint8_t cad_peak;
 	uint8_t cad_min;
-} sx126x_drv_lora_cfg_t;
-
-
-//! Колбек, который вызывается драйвером, когда он готов принять пакет на отправку
-/*! Функция должна записать пакет в буфер по адресу dest_buffer, не превышая размера dest_buffer_size
-	Функция должна вернуть количество записанных в буфер байт.
-	Поскольку радиомодуль умеет отправлять пакеты только фиксированной длины -
-	будет отправлен весь буфер как он есть, даже если пользователь записал только лишь его часть
-	Если сейчас нет пригодного для передачи пакета - функция должна вернуть значение  0. */
-typedef uint8_t (*sx126x_drv_ontx_callback_t)(
-		void * /*user_arg*/,
-		uint8_t * /*dest_buffer*/,
-		uint8_t /*dest_buffer_size*/,
-		int * /*flags*/,
-		int * /*cookie*/
-);
-
-//! Колбек, который вызывается драйвером, когда пакет был отправлен (или нет)
-typedef void (*sx126x_drv_txcplt_callback_t)(
-		void * /* user_arg */,
-		int /* cookie */,
-		int /* flags */
-);
-
-//! Колбек, который вызывается драйвером, когда он готов передать пакет приложению
-typedef void (*sx126x_drv_onrx_callback_t)(
-		void * /*user_arg*/,
-		const uint8_t * /*packet_data*/,
-		uint8_t /*packet_data_size*/,
-		int /*flags*/
-);
-
-
-typedef struct sx126x_drv_callback_cfg_t
-{
-	//! Пользовательский аргумент для передачи в колбеки по событиям
-	void * cb_user_arg;
-	//! Колбек, который вызывается драйвером, когда он готов принять пакет на отправку
-	sx126x_drv_ontx_callback_t ontx_callback;
-
-	//! Колбек, который вызывается драйвером после того пакет был отправлен
-	sx126x_drv_txcplt_callback_t ontxcplt_callback;
-
-	//! колбек, который вызывается драйвером, когда он готов передать пакет приложению
-	sx126x_drv_onrx_callback_t onrx_callback;
-} sx126x_drv_callback_cfg_t;
+	sx126x_cad_exit_mode_t exit_mode;
+	uint32_t cad_timeout_ms;
+} sx126x_drv_cad_cfg_t;
 
 
 //! Дескриптор устройства
-typedef struct sx126x_dev_t
+typedef struct sx126x_drv_t
 {
+	sx126x_api_t api;
 	sx126x_drv_state_t state;
-	sx126x_plt_t plt;
 
-	uint8_t payload_size;
-	sx126x_packet_type_t packet_type;
-	bool explicit_lora_header;
-	sx126x_lora_bw_t lora_bw;
+	sx126x_standby_mode_t _default_standby;
 
-	uint32_t rx_timeout_hard;
-	uint32_t rx_timeout_soft;
-	uint32_t tx_timeout_hard;
-	uint32_t tx_timeout_soft;
-	uint32_t soft_timeout_start;
+	sx126x_evt_handler_t _evt_handler;
+	void * _evt_handler_user_arg;
 
-	uint8_t rx_buffer[0xFF];
-	uint8_t rx_packet_size;
-	int rx_packet_flags;
+	union
+	{
+		struct
+		{
+			sx126x_drv_lora_tx_cfg_t tx_cfg;
+			sx126x_drv_lora_rx_cfg_t rx_cfg;
+			sx126x_lora_bw_t bw;
+			sx126x_cad_exit_mode_t cad_exit_mode;
+		} lora;
 
-	uint8_t tx_buffer[0xFF];
-	uint8_t tx_packet_size;
-	int tx_buffer_flags;
-	int tx_packet_cookie;
-	int tx_packet_pending_cookie;
+		struct
+		{
+			int not_implemented;
+		} gfsk;
 
-	int tx_cplt_flags;
-	int tx_cplt_cookie;
-	bool tx_cplt_pending;
+	} _modem_state;
+	sx126x_packet_type_t _modem_type;
 
-	void * cb_user_arg;
-	sx126x_drv_ontx_callback_t ontx_callback;
-	sx126x_drv_txcplt_callback_t ontxcplt_callback;
-	sx126x_drv_onrx_callback_t onrx_callback;
-} sx126x_dev_t;
+} sx126x_drv_t;
 
 
 //! Конструктор драйвера
-int sx126x_drv_ctor(sx126x_dev_t * dev, void * plt_init_user_arg);
+int sx126x_drv_ctor(sx126x_drv_t * drv, void * board_ctor_arg);
 
 //! Деструктор драйвера
-void sx126x_drv_dtor(sx126x_dev_t * dev);
+void sx126x_drv_dtor(sx126x_drv_t * drv);
 
-//! Сброс чипа и состояния драйвера через RST пин
-int sx126x_drv_reset(sx126x_dev_t * dev);
+//! Регистрация обработчика событий драйвера
+int sx126x_drv_register_event_handler(sx126x_drv_t * drv, sx126x_evt_handler_t handler, void * cb_user_arg);
 
-//! Перевод чипа в состояние standby_rc
-/*! Это самый базовый standby режим в котором включен самый минимум железа в чипе,
-	который позволяет ему воспринимать команды. В частности чип едет на медленном RC осциляторе.
-	Для работы по радио нужен XOSC осциялятор, который в этом режиме не включен.
-	В этом режиме чип полагается конфигурировать */
-int sx126x_drv_mode_standby_rc(sx126x_dev_t * dev);
+//! Сброс чипа через RST пин и состояния драйвера
+int sx126x_drv_reset(sx126x_drv_t * drv);
 
-//! Базовые настройки чипа безотносительно модемов
-/*! Поскольку базовые настройки влияют на самый базовые блоки чипа - эти настойки необходимо
-	применять тогда, когда чип в standby_rc режиме */
-int sx126x_drv_configure_chip(sx126x_dev_t * dev, const sx126x_drv_chip_cfg_t * config);
+//! Переводит чип в режим standby на RC цепочке
+/*! Это самый базовый режим в котором отключено все что можно.
+	Этот режим следует использовать для проведения базовой конфигурации чипа */
+int sx126x_drv_mode_standby_rc(sx126x_drv_t * drv);
 
-//! Перевод чипа в standby_xosc.
-/*! В этом режиме запущены дополнительные осциялторы. Из этого режима можно быстро прыгнуть в RX или TX режимы */
-int sx126x_drv_mode_standby_xosc(sx126x_dev_t * dev);
+//! Переводит чип в тот вид standby режима, который указан в конфиге драйвера
+int sx126x_drv_mode_standby(sx126x_drv_t * drv);
 
-int sx126x_drv_mode_standby_fs(sx126x_dev_t * dev);
+int sx126x_drv_mode_rx(sx126x_drv_t * drv);
 
-//! Конфигурация лора модема
-int sx126x_drv_configure_lora(sx126x_dev_t * dev, const sx126x_drv_lora_cfg_t * config);
+int sx126x_drv_mode_tx(sx126x_drv_t * drv);
 
-int sx126x_drv_configure_callbacks(sx126x_dev_t * dev, const sx126x_drv_callback_cfg_t * config);
+int sx126x_drv_mode_cad(sx126x_drv_t * drv);
 
-int sx126x_drv_start(sx126x_dev_t * dev);
+int sx126x_drv_payload_write(sx126x_drv_t * drv, const uint8_t * data, uint8_t data_size);
 
-int sx126x_drv_poll(sx126x_dev_t * dev);
+int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size);
+
+int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size);
+
+//! Базовая конфигурация чипа и драйвера
+/*! Большинство опций, которые используются здесь не поддерживают
+	повторной реконфигурации. Поэтому эта функция должна использоваться
+	один раз после резета чипа в режиме standby_rc */
+int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t * config);
+
+//! Активация и конфигурирование LoRa модема
+int sx126x_drv_configure_lora_modem(sx126x_drv_t * drv, const sx126x_drv_lora_modem_cfg_t * config);
+
+//! Настройка CAD параметров LoRa модема
+/*! В отличии от RX/TX конфигурации - эта конфигурация загружается в модуль прямо в этом вызове */
+int sx126x_drv_configure_lora_cad(sx126x_drv_t * drv, const sx126x_drv_cad_cfg_t * config);
+
+//! Конфигурация лоры, используемая при отправке пакетов
+/*! Конфигурация не применяется прямо сейчас. Она будет загружена в модем перед перходом в TX */
+int sx126x_drv_set_lora_tx_config(sx126x_drv_t * drv, const sx126x_drv_lora_tx_cfg_t * config);
+
+//! Конфигурация лоры, используемая при приёме пакетов
+/*! Конфигурация не применяется прямо сейчас. Она будет загружена в модем перед перходом в RX */
+int sx126x_drv_set_lora_rx_config(sx126x_drv_t * drv, const sx126x_drv_lora_rx_cfg_t * config);
+
+//! Обработка событий драйвера
+int sx126x_drv_poll(sx126x_drv_t * drv);
 
 
 #endif /* RADIO_SX126X_DRV_H_ */

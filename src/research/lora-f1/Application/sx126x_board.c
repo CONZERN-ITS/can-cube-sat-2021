@@ -1,12 +1,9 @@
-#include "radio/sx126x_platform.h"
-
 #include <string.h>
 
-#include <stm32f4xx_hal.h>
-
-#include "radio/sx126x_defs.h"
+#include <stm32f1xx_hal.h>
 
 #include "main.h"
+#include "sx126x_board.h"
 
 
 extern SPI_HandleTypeDef hspi1;
@@ -25,9 +22,10 @@ static void _cs_up(void)
 }
 
 
-int sx126x_plt_ctor(sx126x_plt_t * plt, void * user_arg)
+int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg)
 {
 	(void)user_arg;
+	*brd = NULL;
 
 	HAL_GPIO_WritePin(SX126X_NRST_GPIO_Port, SX126X_NRST_Pin, GPIO_PIN_SET);
 
@@ -39,21 +37,26 @@ int sx126x_plt_ctor(sx126x_plt_t * plt, void * user_arg)
 	return 0;
 }
 
-
-void sx126x_plt_dtor(sx126x_plt_t * plt)
+void sx126x_brd_dtor(sx126x_board_t * brd)
 {
-
+	(void)brd;
 }
 
 
-int sx126x_plt_get_pa_type(sx126x_plt_t * plt, sx126x_chip_type_t * pa_type)
+uint32_t sx126x_brd_get_time(sx126x_board_t * brd)
 {
-	*pa_type = SX126X_CHIPTYPE_SX1268;
+	return HAL_GetTick();
+}
+
+
+int sx126x_brd_get_chip_type(sx126x_board_t * brd, sx126x_chip_type_t * chip_type)
+{
+	*chip_type = SX126X_CHIPTYPE_SX1268;
 	return 0;
 }
 
 
-int sx126x_plt_reset(sx126x_plt_t * plt)
+int sx126x_brd_reset(void * brd)
 {
 	HAL_GPIO_WritePin(SX126X_NRST_GPIO_Port, SX126X_NRST_Pin, GPIO_PIN_RESET);
 	HAL_Delay(10);
@@ -62,7 +65,7 @@ int sx126x_plt_reset(sx126x_plt_t * plt)
 }
 
 
-int sx126x_plt_wait_on_busy(sx126x_plt_t * plt)
+int sx126x_brd_wait_on_busy(sx126x_board_t * brd)
 {
 	while(1)
 	{
@@ -77,19 +80,19 @@ int sx126x_plt_wait_on_busy(sx126x_plt_t * plt)
 }
 
 
-void sx126x_plt_enable_irq(sx126x_plt_t * plt)
+void sx126x_brd_enable_irq(sx126x_board_t * brd)
 {
 	return;
 }
 
 
-void sx126x_plt_disable_irq(sx126x_plt_t * plt)
+void sx126x_brd_disable_irq(sx126x_board_t * brd)
 {
 	return;
 }
 
 
-int sx126x_plt_antenna_mode(sx126x_plt_t * plt, sx126x_antenna_mode_t mode)
+int sx126x_brd_antenna_mode(sx126x_board_t * brd, sx126x_antenna_mode_t mode)
 {
 	int rc = 0;
 
@@ -117,7 +120,7 @@ int sx126x_plt_antenna_mode(sx126x_plt_t * plt, sx126x_antenna_mode_t mode)
 }
 
 
-int sx126x_plt_cmd_write(sx126x_plt_t * plt, uint8_t cmd_code, const uint8_t * args, uint16_t args_size)
+int sx126x_brd_cmd_write(sx126x_board_t * brd, uint8_t cmd_code, const uint8_t * args, uint16_t args_size)
 {
 	_cs_down();
 
@@ -129,7 +132,7 @@ int sx126x_plt_cmd_write(sx126x_plt_t * plt, uint8_t cmd_code, const uint8_t * a
 }
 
 
-int sx126x_plt_cmd_read(sx126x_plt_t * plt, uint8_t cmd_code, uint8_t * status, uint8_t * data, uint16_t data_size)
+int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status, uint8_t * data, uint16_t data_size)
 {
 	uint8_t _status = 0xFF;
 	memset(data, 0xFF, data_size);
@@ -147,7 +150,7 @@ int sx126x_plt_cmd_read(sx126x_plt_t * plt, uint8_t cmd_code, uint8_t * status, 
 }
 
 
-int sx126x_plt_reg_write(sx126x_plt_t * plt, uint16_t addr, const uint8_t * data, uint16_t data_size)
+int sx126x_brd_reg_write(sx126x_board_t * brd, uint16_t addr, const uint8_t * data, uint16_t data_size)
 {
 	const uint8_t cmd_code = SX126X_CMD_WRITE_REGISTER;
 
@@ -168,7 +171,7 @@ int sx126x_plt_reg_write(sx126x_plt_t * plt, uint16_t addr, const uint8_t * data
 }
 
 
-int sx126x_plt_reg_read(sx126x_plt_t * plt, uint16_t addr, uint8_t * data, uint16_t data_size)
+int sx126x_brd_reg_read(sx126x_board_t * brd, uint16_t addr, uint8_t * data, uint16_t data_size)
 {
 	const uint8_t cmd_code = SX126X_CMD_READ_REGISTER;
 
@@ -193,7 +196,7 @@ int sx126x_plt_reg_read(sx126x_plt_t * plt, uint16_t addr, uint8_t * data, uint1
 }
 
 
-int sx126x_plt_buf_write(sx126x_plt_t * plt, uint8_t offset, const uint8_t * data, uint8_t data_size)
+int sx126x_brd_buf_write(sx126x_board_t * brd, uint8_t offset, const uint8_t * data, uint8_t data_size)
 {
 	const uint8_t cmd_code = SX126X_CMD_WRITE_BUFFER;
 
@@ -209,7 +212,7 @@ int sx126x_plt_buf_write(sx126x_plt_t * plt, uint8_t offset, const uint8_t * dat
 }
 
 
-int sx126x_plt_buf_read(sx126x_plt_t * plt, uint8_t offset, uint8_t * data, uint8_t data_size)
+int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, uint8_t data_size)
 {
 	const uint8_t cmd_code = SX126X_CMD_READ_BUFFER;
 

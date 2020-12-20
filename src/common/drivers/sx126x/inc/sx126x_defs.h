@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 
 typedef enum sx126x_reg_addr_t
@@ -92,7 +93,6 @@ typedef enum sx126x_packet_type_t
 {
 	SX126X_PACKET_TYPE_GFSK	= 0x00,
 	SX126X_PACKET_TYPE_LORA	= 0x01,
-	SX126X_PACKET_TYPE_NONE	= 0x0F
 } sx126x_packet_type_t;
 
 
@@ -338,6 +338,16 @@ typedef enum sx126x_chip_type_t
 } sx126x_chip_type_t;
 
 
+typedef enum sx126x_error_t
+{
+	SX126X_ERROR_RX_PAYLOAD_TOO_LARGE	= 0x01,
+	SX126X_ERROR_INVALID_FREQUENCY		= 0x02,
+	SX126x_ERROR_UNEXPECTED_VALUE		= 0x03,
+	SX126X_ERROR_BAD_STATE				= 0x04,
+	SX126X_ERROR_TX_TIMEOUT				= 0x05,
+} sx126x_error_t;
+
+
 typedef union sx126x_status_t
 {
 	struct
@@ -417,14 +427,42 @@ typedef struct sx126x_stats_t
 } sx126x_stats_t;
 
 
-typedef enum sx126x_error_t
+//! Структура параметров, при помощи которых задается выходная мощность передатчика
+typedef struct sx126x_pa_coeffs_t
 {
-	SX126X_ERROR_RX_PAYLOAD_TOO_LARGE	= 0x01,
-	SX126X_ERROR_INVALID_FREQUENCY		= 0x02,
-	SX126x_ERROR_UNEXPECTED_VALUE		= 0x03,
-	SX126X_ERROR_BAD_STATE				= 0x04,
-	SX126X_ERROR_TX_TIMEOUT				= 0x05,
-} sx126x_error_t;
+	// Значение мощности, которые получится на выходе
+	int8_t power;
+
+	//! Параметр set_pa_config
+	uint8_t duty_cycle;
+	//! Параметр set_pa_config
+	uint8_t hp_max;
+	//! Параметр set_pa_config
+	uint8_t device_sel;
+	//! Параметр set_pa_config
+	uint8_t pa_lut;
+	//! Параметр для передачи в set_tx_params
+	int8_t tx_params_power;
+	//! Параметр для over current protection регистра
+	uint8_t ocp_value;
+} sx126x_pa_coeffs_t;
+
+
+//! Коэффициенты для установки мощности для sx1261
+/*! For SX1261 at synthesis frequency above 400 MHz, paDutyCycle should not be higher than 0x07.
+	For SX1261 at synthesis frequency below 400 MHz, paDutyCycle should not be higher than 0x04. */
+const sx126x_pa_coeffs_t sx126x_pa_coeffs_1261[3];
+
+//! Коэффициенты для установки мощности для sx1262
+/*! For SX1262, paDutyCycle should not be higher than 0x04. */
+const sx126x_pa_coeffs_t sx126x_pa_coeffs_1262[4];
+
+//! Коэффициенты для установки мощности для sx1268
+/*! paDutyCycle should not be higher than 0x04 */
+const sx126x_pa_coeffs_t sx126x_pa_coeffs_1268[5];
+
+//! Ищет структуру параметров мощности, целевая мощность которой (power) ближе всего к указанному значению
+const sx126x_pa_coeffs_t * sx126x_defs_get_pa_coeffs(int8_t power, sx126x_chip_type_t chip_type);
 
 
 #endif /* RADIO_SX126X_DEFS_H_ */

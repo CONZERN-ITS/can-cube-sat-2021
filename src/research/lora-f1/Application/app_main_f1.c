@@ -8,7 +8,7 @@
 #include "sx126x_drv.h"
 
 
-static sx126x_dev_t _radio;
+static sx126x_drv_t _radio;
 static uint8_t _packet_no = 0;
 static uint32_t last_tick = 0;
 
