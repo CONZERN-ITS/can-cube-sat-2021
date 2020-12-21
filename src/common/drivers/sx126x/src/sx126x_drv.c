@@ -30,6 +30,7 @@ typedef enum sx126x_state_switch_flag_t
 } sx126x_state_switch_flag_t;
 
 
+//! Дефолтный эвент хендлер, чтобы не делать проверок на NULL
 static void _default_evt_handler(
 		sx126x_drv_t * drv, void * user_arg, sx126x_evt_kind_t evt_kind, const sx126x_evt_arg_t * evt_arg
 )
@@ -38,12 +39,14 @@ static void _default_evt_handler(
 }
 
 
+//! Удобный шорткат для ожидания busy состояния чипа
 inline static int _wait_busy(sx126x_drv_t * drv)
 {
 	return sx126x_brd_wait_on_busy(drv->api.board);
 }
 
 
+//! Удобный шорткат для установки состояния антенны
 inline static int _set_antenna(sx126x_drv_t * drv, sx126x_antenna_mode_t mode)
 {
 	return sx126x_brd_antenna_mode(drv->api.board, mode);
@@ -83,10 +86,9 @@ static size_t _best_pa_coeff_idx(int8_t power, const sx126x_pa_coeffs_t * coeffs
 }
 
 
+//! Заполнение структуры коэффициентов настройки PA для указанного типа чипов и мощности
 static int _get_pa_coeffs(sx126x_chip_type_t chip_type, int8_t power, sx126x_pa_coeffs_t * coeffs)
 {
-	int rc;
-
 	switch (chip_type)
 	{
 	case SX126X_CHIPTYPE_SX1261:
@@ -240,17 +242,47 @@ static int _workaround_4_iq_polarity(sx126x_drv_t * drv, bool iq_inversion_used)
 static int _switch_state(sx126x_drv_t * drv, sx126x_drv_state_t new_state)
 {
 	int rc;
+
+	// Если мы выходим из RX - нужно делать воркэраунд на таймер
 	if (drv->state == SX126X_DRVSTATE_RX && new_state != SX126X_DRVSTATE_RX)
 	{
 		rc = _workaround_3_rx_timeout(drv);
 		SX126X_RETURN_IF_NONZERO(rc);
 	}
 
+	// Если мы переходим в дефолтный standby - смотрим какой именно это имеется ввиду
 	if (SX126X_DRVSTATE_STANDBY_DEFAULT == new_state)
+	{
+		switch (drv->_default_standby)
+		{
+		case SX126X_STANDBY_RC:
+			new_state = SX126X_DRVSTATE_STANDBY_RC;
+			break;
+
+		case SX126X_STANDBY_XOSC:
+			new_state = SX126X_DRVSTATE_STANDBY_XOSC;
+			break;
+
+		default:
+			return SX126X_ERROR_INVALID_VALUE;
+		}
 		new_state = drv->_default_standby;
+	}
+
+	// Во всех режимах кроме RX/TX/CAD выключаем антенну
+	switch (new_state)
+	{
+	case SX126X_DRVSTATE_TX:
+	case SX126X_DRVSTATE_RX:
+	case SX126X_DRVSTATE_CAD:
+		break;
+
+	default:
+		rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
+		SX126X_RETURN_IF_NONZERO(rc);
+	}
 
 	drv->state = new_state;
-
 	return 0;
 }
 
@@ -469,9 +501,6 @@ int sx126x_drv_mode_standby_rc(sx126x_drv_t * drv)
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
-	SX126X_RETURN_IF_NONZERO(rc);
-
 	rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_RC);
 	SX126X_RETURN_IF_NONZERO(rc);
 
@@ -486,9 +515,6 @@ int sx126x_drv_mode_standby(sx126x_drv_t * drv)
 	rc = sx126x_api_set_standby(&drv->api, drv->_default_standby);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
@@ -562,6 +588,10 @@ int sx126x_drv_mode_cad(sx126x_drv_t * drv)
 	int rc;
 
 	rc = sx126x_api_set_cad(&drv->api);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Включаем антенну
+	rc = _set_antenna(drv, SX126X_ANTENNA_RX);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	rc = _switch_state(drv, SX126X_DRVSTATE_CAD);
