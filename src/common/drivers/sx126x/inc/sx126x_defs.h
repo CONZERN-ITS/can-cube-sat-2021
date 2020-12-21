@@ -344,7 +344,7 @@ typedef enum sx126x_error_t
 	SX126X_ERROR_INVALID_FREQUENCY		= 0x02,
 	SX126x_ERROR_UNEXPECTED_VALUE		= 0x03,
 	SX126X_ERROR_BAD_STATE				= 0x04,
-	SX126X_ERROR_TX_TIMEOUT				= 0x05,
+	SX126X_ERROR_INVALID_VALUE			= 0x05,
 } sx126x_error_t;
 
 
@@ -447,22 +447,31 @@ typedef struct sx126x_pa_coeffs_t
 	uint8_t ocp_value;
 } sx126x_pa_coeffs_t;
 
-
 //! Коэффициенты для установки мощности для sx1261
 /*! For SX1261 at synthesis frequency above 400 MHz, paDutyCycle should not be higher than 0x07.
 	For SX1261 at synthesis frequency below 400 MHz, paDutyCycle should not be higher than 0x04. */
-const sx126x_pa_coeffs_t sx126x_pa_coeffs_1261[3];
+#define SX126X_PA_COEFFS_1261 \
+		{ 15, 0x06, 0x00, 0x01, 0x01, 14, 0x18 }, \
+		{ 14, 0x04, 0x00, 0x01, 0x01, 14, 0x18 }, \
+		{ 10, 0x01, 0x00, 0x01, 0x01, 13, 0x18 }
 
 //! Коэффициенты для установки мощности для sx1262
 /*! For SX1262, paDutyCycle should not be higher than 0x04. */
-const sx126x_pa_coeffs_t sx126x_pa_coeffs_1262[4];
+#define SX126X_PA_COEFFS_1262 \
+		{ 22, 0x04, 0x07, 0x00, 0x01, 22, 0x38 }, \
+		{ 20, 0x03, 0x05, 0x00, 0x01, 22, 0x38 }, \
+		{ 17, 0x02, 0x03, 0x00, 0x01, 22, 0x38 }, \
+		{ 14, 0x02, 0x02, 0x00, 0x01, 22, 0x38 }
 
 //! Коэффициенты для установки мощности для sx1268
 /*! paDutyCycle should not be higher than 0x04 */
-const sx126x_pa_coeffs_t sx126x_pa_coeffs_1268[5];
-
-//! Ищет структуру параметров мощности, целевая мощность которой (power) ближе всего к указанному значению
-const sx126x_pa_coeffs_t * sx126x_defs_get_pa_coeffs(int8_t power, sx126x_chip_type_t chip_type);
+#define SX126X_PA_COEFFS_1268 \
+		{ 22, 0x04, 0x07, 0x00, 0x01, 22, 0x38 }, \
+		{ 20, 0x03, 0x05, 0x00, 0x01, 22, 0x38 }, \
+		{ 17, 0x02, 0x03, 0x00, 0x01, 22, 0x38 }, \
+		/* Эти два режима оптимальны для питания чипа от DC-DC ? */ \
+		{ 14, 0x04, 0x06, 0x00, 0x01, 15, 0x18 }, \
+		{ 10, 0x00, 0x03, 0x00, 0x01, 15, 0x18 }
 
 
 #endif /* RADIO_SX126X_DEFS_H_ */

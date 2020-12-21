@@ -1,10 +1,9 @@
 #include <stddef.h>
-#include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "sx126x_api.h"
 #include "sx126x_drv.h"
+
 
 #define SX126X_TCXO_STARTUP_TIMEOUT_MS (10)
 
@@ -39,7 +38,6 @@ static void _default_evt_handler(
 }
 
 
-
 inline static int _wait_busy(sx126x_drv_t * drv)
 {
 	return sx126x_brd_wait_on_busy(drv->api.board);
@@ -63,6 +61,70 @@ static uint32_t _time_diff(uint32_t start, uint32_t stop)
 		return stop - start;
 }
 */
+
+
+//! Ищет в списке коэффициентов PA тот набор, который дает мощность не меньше чем указанную
+/*! Коэффициенты должна быть отсортированы по убыванию итоговой мощности */
+static size_t _best_pa_coeff_idx(int8_t power, const sx126x_pa_coeffs_t * coeffs, size_t coeffs_count)
+{
+	size_t best_idx = 0;
+
+	// Ищем ближайшее число к указанному в массиве данные коэффициентов
+	for (size_t i = 1; i < coeffs_count; i++)
+	{
+		if (power >= coeffs[i].power)
+		{
+			best_idx = i;
+			break;
+		}
+	}
+
+	return best_idx;
+}
+
+
+static int _get_pa_coeffs(sx126x_chip_type_t chip_type, int8_t power, sx126x_pa_coeffs_t * coeffs)
+{
+	int rc;
+
+	switch (chip_type)
+	{
+	case SX126X_CHIPTYPE_SX1261:
+		{
+			const sx126x_pa_coeffs_t defs[] = {
+					SX126X_PA_COEFFS_1261
+			};
+			size_t idx = _best_pa_coeff_idx(power, defs, sizeof(defs)/sizeof(defs[0]));
+			*coeffs = defs[idx];
+		}
+		break;
+
+	case SX126X_CHIPTYPE_SX1262:
+		{
+			const sx126x_pa_coeffs_t defs[] = {
+					SX126X_PA_COEFFS_1262
+			};
+			size_t idx = _best_pa_coeff_idx(power, defs, sizeof(defs)/sizeof(defs[0]));
+			*coeffs = defs[idx];
+		}
+		break;
+
+	case SX126X_CHIPTYPE_SX1268:
+		{
+			const sx126x_pa_coeffs_t defs[] = {
+					SX126X_PA_COEFFS_1268
+			};
+			size_t idx = _best_pa_coeff_idx(power, coeffs, sizeof(defs)/sizeof(defs[0]));
+			*coeffs = defs[idx];
+		}
+		break;
+
+	default:
+		return SX126X_ERROR_INVALID_VALUE;
+	};
+
+	return 0;
+}
 
 
 //! Костыль для правки бага с качеством модуляции на 500кгц лоры
@@ -197,31 +259,33 @@ static int _switch_state(sx126x_drv_t * drv, sx126x_drv_state_t new_state)
 static int _configure_pa(sx126x_drv_t * drv, int8_t pa_power, const sx126x_pa_ramp_time_t ramp_time)
 {
 	int rc;
-	sx126x_chip_type_t pa_type;
+	sx126x_chip_type_t chip_type;
 
-	rc = sx126x_brd_get_chip_type(drv->api.board, &pa_type);
+	rc = sx126x_brd_get_chip_type(drv->api.board, &chip_type);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Теперь ищем ближайшую к определенной мощности
-	const sx126x_pa_coeffs_t * coeffs = sx126x_defs_get_pa_coeffs(pa_power, pa_type);
+	sx126x_pa_coeffs_t coeffs;
+	rc = _get_pa_coeffs(chip_type, pa_power, &coeffs);
+	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Теперь, когда все параметры определены - загоняем их как есть
 	// начинаем с set pa config
 	rc = sx126x_api_set_pa_config(
-			&drv->api, coeffs->duty_cycle, coeffs->hp_max, coeffs->device_sel, coeffs->pa_lut
+			&drv->api, coeffs.duty_cycle, coeffs.hp_max, coeffs.device_sel, coeffs.pa_lut
 	);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Теперь делаем set_tx_params
-	rc = sx126x_api_set_tx_params(&drv->api, coeffs->tx_params_power, ramp_time);
+	rc = sx126x_api_set_tx_params(&drv->api, coeffs.tx_params_power, ramp_time);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Теперь проставляем оверкюрент
-	rc = sx126x_brd_reg_write(drv->api.board, SX126X_REGADDR_OCP, &coeffs->ocp_value, sizeof(coeffs->ocp_value));
+	rc = sx126x_brd_reg_write(drv->api.board, SX126X_REGADDR_OCP, &coeffs.ocp_value, sizeof(coeffs.ocp_value));
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);

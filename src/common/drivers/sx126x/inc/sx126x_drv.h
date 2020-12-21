@@ -10,6 +10,7 @@
 #include "sx126x_events.h"
 
 
+//! Состояние драйвера
 typedef enum sx126x_drv_state_t
 {
 	SX126X_DRVSTATE_ERROR,
@@ -19,6 +20,7 @@ typedef enum sx126x_drv_state_t
 	SX126X_DRVSTATE_RX,
 	SX126X_DRVSTATE_CAD,
 } sx126x_drv_state_t;
+
 
 //! Базовая конфигурация чипа и драйвера
 typedef struct sx126x_drv_basic_cfg_t
