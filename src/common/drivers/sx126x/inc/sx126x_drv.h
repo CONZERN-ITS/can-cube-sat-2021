@@ -72,8 +72,8 @@ typedef struct sx126x_drv_lora_modem_cfg_t
 } sx126x_drv_lora_modem_cfg_t;
 
 
-//! Параметры модема, используемые в LoRa TX режиме
-typedef struct sx126x_drv_lora_tx_cfg_t
+//! Параметры пакетизатора LoRa
+typedef struct sx126x_drv_lora_packet_cfg_t
 {
 	//! Использовать инверсию IQ
 	bool invert_iq;
@@ -88,38 +88,17 @@ typedef struct sx126x_drv_lora_tx_cfg_t
 	//! Использовать ли CRC в теле пакета
 	bool use_crc;
 
-	//! Таймаут на передачу пакета
-	/*! Если указан 0 - таймаут отключен */
-	uint32_t tx_timeout_ms;
-
-} sx126x_drv_lora_tx_cfg_t;
+} sx126x_drv_lora_packet_cfg_t;
 
 
-//! Параметры модема, используемые в LoRa RX режиме
-typedef struct sx126x_drv_lora_rx_cfg_t
+//! Настройки RX таймаута лоры
+typedef struct sx126x_drv_lora_rx_timeout_cfg_t
 {
-	//! Ожидать инверсию IQ
-	bool invert_iq;
-	//! Ожидать синхрослово для публичной LoRa сети или для приватной
-	sx126x_lora_syncword_t syncword;
-	//! Длина ожидаемой преамбулы
-	/*! (Если длина ожидаемой преамбулы неизвестна - следует установить значение 0xFFFF) */
-	uint16_t preamble_length;
-	//! Длина ожидаемого пакета
-	/*! Если установить это поле в 0, то будет включен режим явного заголовка */
-	bool payload_length;
-	//! Добавлять ли к пакету контрольную сумму
-	/*! Если payload_length == 0, поле не имеет значения */
-	bool use_crc;
-
-	//! Количество миллисекунд таймаута для rx операции
-	uint32_t rx_timeout_ms;
-	//! Альтернативный режим таймаута в количествах символов лоры
-	uint8_t rx_timeout_symbs;
-	//! Разрешить остановку RX таймера по преамбуле
-	bool rx_timeout_stop_on_preamble;
-
-} sx126x_drv_lora_rx_cfg_t;
+	//! Дополнительный таймаут на количество обнаруженных LoRa символов
+	uint8_t lora_symb_timeout;
+	//! Разрешает остановку rx таймаут таймера по получению символов преамбулы
+	bool stop_timer_on_preable;
+} sx126x_drv_lora_rx_timeout_cfg_t;
 
 
 //! Параметры модема, используемые в LoRa CAD режиме
@@ -140,6 +119,7 @@ typedef struct sx126x_drv_t
 	sx126x_drv_state_t state;
 
 	sx126x_standby_mode_t _default_standby;
+	bool _infinite_rx;
 
 	sx126x_evt_handler_t _evt_handler;
 	void * _evt_handler_user_arg;
@@ -148,8 +128,8 @@ typedef struct sx126x_drv_t
 	{
 		struct
 		{
-			sx126x_drv_lora_tx_cfg_t tx_cfg;
-			sx126x_drv_lora_rx_cfg_t rx_cfg;
+			bool explicit_header;
+			uint8_t payload_length;
 			sx126x_lora_bw_t bw;
 			sx126x_cad_exit_mode_t cad_exit_mode;
 		} lora;
@@ -185,9 +165,9 @@ int sx126x_drv_mode_standby_rc(sx126x_drv_t * drv);
 //! Переводит чип в тот вид standby режима, который указан в конфиге драйвера
 int sx126x_drv_mode_standby(sx126x_drv_t * drv);
 
-int sx126x_drv_mode_rx(sx126x_drv_t * drv);
+int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms);
 
-int sx126x_drv_mode_tx(sx126x_drv_t * drv);
+int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms);
 
 int sx126x_drv_mode_cad(sx126x_drv_t * drv);
 
@@ -206,17 +186,16 @@ int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t 
 //! Активация и конфигурирование LoRa модема
 int sx126x_drv_configure_lora_modem(sx126x_drv_t * drv, const sx126x_drv_lora_modem_cfg_t * config);
 
+//! Конфигурация пакетизатора LoRa
+/*! Должна быть не раньше чем sx126x_drv_configure_lora_modem */
+int sx126x_drv_configure_lora_packet(sx126x_drv_t * drv, const sx126x_drv_lora_packet_cfg_t * config);
+
 //! Настройка CAD параметров LoRa модема
 /*! В отличии от RX/TX конфигурации - эта конфигурация загружается в модуль прямо в этом вызове */
 int sx126x_drv_configure_lora_cad(sx126x_drv_t * drv, const sx126x_drv_cad_cfg_t * config);
 
-//! Конфигурация лоры, используемая при отправке пакетов
-/*! Конфигурация не применяется прямо сейчас. Она будет загружена в модем перед перходом в TX */
-int sx126x_drv_set_lora_tx_config(sx126x_drv_t * drv, const sx126x_drv_lora_tx_cfg_t * config);
-
-//! Конфигурация лоры, используемая при приёме пакетов
-/*! Конфигурация не применяется прямо сейчас. Она будет загружена в модем перед перходом в RX */
-int sx126x_drv_set_lora_rx_config(sx126x_drv_t * drv, const sx126x_drv_lora_rx_cfg_t * config);
+//! Настройки rx таймаут таймера LoRa модема
+int sx126x_drv_configure_lora_rx_timeout(sx126x_drv_t * drv, const sx126x_drv_lora_rx_timeout_cfg_t * config);
 
 //! Обработка событий драйвера
 int sx126x_drv_poll(sx126x_drv_t * drv);

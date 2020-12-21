@@ -52,6 +52,7 @@ inline static int _set_antenna(sx126x_drv_t * drv, sx126x_antenna_mode_t mode)
 }
 
 
+/*
 //! Дельта времени с учетом переворота через 0
 static uint32_t _time_diff(uint32_t start, uint32_t stop)
 {
@@ -61,6 +62,7 @@ static uint32_t _time_diff(uint32_t start, uint32_t stop)
 	else
 		return stop - start;
 }
+*/
 
 
 //! Костыль для правки бага с качеством модуляции на 500кгц лоры
@@ -301,81 +303,6 @@ static int _set_lora_syncword(sx126x_drv_t * drv, sx126x_lora_syncword_t syncwor
 }
 
 
-//! Применение конфига для TX
-static int _apply_lora_tx_cfg(sx126x_drv_t * drv)
-{
-	int rc;
-	const sx126x_drv_lora_tx_cfg_t * const config = &drv->_modem_state.lora.tx_cfg;
-
-	// Ставим параметры пакетизации
-	const sx126x_lora_packet_params_t packet_params = {
-			.preamble_length = config->preamble_length,
-			.explicit_header = config->explicit_header,
-			.payload_length = config->payload_length,
-			.use_crc = config->use_crc,
-			.invert_iq = config->invert_iq
-	};
-	rc = sx126x_api_set_lora_packet_params(&drv->api, &packet_params);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Хак инвертированного IQ
-	rc = _workaround_4_iq_polarity(drv, config->invert_iq);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Настраиваем синхрослово лоры
-	rc = _set_lora_syncword(drv, config->syncword);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	return 0;
-}
-
-
-//! Применение лоровоского конфига для RX
-static int _apply_lora_rx_cfg(sx126x_drv_t * drv)
-{
-	int rc;
-	const sx126x_drv_lora_rx_cfg_t * const config = &drv->_modem_state.lora.rx_cfg;
-	const bool explicit_header = (0 == config->payload_length);
-
-	// Ставим параметры пакетизации
-	const sx126x_lora_packet_params_t packet_params = {
-			.preamble_length = config->preamble_length,
-			.explicit_header = explicit_header,
-			.payload_length = config->payload_length,
-			.use_crc = config->use_crc,
-			.invert_iq = config->invert_iq
-	};
-	rc = sx126x_api_set_lora_packet_params(&drv->api, &packet_params);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Хак инвертированного IQ
-	rc = _workaround_4_iq_polarity(drv, config->invert_iq);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Настраиваем синхрослово лоры
-	rc = _set_lora_syncword(drv, config->syncword);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Активируем symbnum таймаут
-	rc = sx126x_api_set_lora_symb_num_timeout(&drv->api, config->rx_timeout_symbs);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Разрешаем остановку RX таймера по преамбуле
-	rc = sx126x_api_stop_rx_timer_on_preamble(&drv->api, config->rx_timeout_stop_on_preamble);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	return 0;
-}
-
-
 //! Получение и очиства IRQ флагов с устройства
 static int _fetch_clear_irq(sx126x_drv_t * drv, uint16_t * irq_status)
 {
@@ -425,6 +352,10 @@ int sx126x_drv_ctor(sx126x_drv_t * drv, void * board_ctor_arg)
 	drv->_modem_state.lora.bw = SX126X_LORA_BW_007;
 	// Это значение по-умолчанию
 	drv->_modem_state.lora.cad_exit_mode = SX126X_LORA_CAD_ONLY;
+
+	// Это, наверное, тоже значения по-умолчанию?
+	drv->_modem_state.lora.explicit_header = false;
+	drv->_modem_state.lora.payload_length = 0;
 	return 0;
 }
 
@@ -503,7 +434,7 @@ int sx126x_drv_mode_standby(sx126x_drv_t * drv)
 }
 
 
-int sx126x_drv_mode_rx(sx126x_drv_t * drv)
+int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms)
 {
 	int rc;
 	// Выставляем указатели буфера
@@ -512,18 +443,12 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv)
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	// Вкатываем соответствующие настройки
-	rc = _apply_lora_rx_cfg(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
 	// Включаем антенну
 	rc = _set_antenna(drv, SX126X_ANTENNA_RX);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Запускаем rx операцию
-	const uint32_t timeout = drv->_modem_state.lora.rx_cfg.rx_timeout_ms;
-
-	rc = sx126x_api_set_rx(&drv->api, timeout);
+	rc = sx126x_api_set_rx(&drv->api, timeout_ms);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -531,17 +456,16 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv)
 	rc = _switch_state(drv, SX126X_DRVSTATE_RX);
 	SX126X_RETURN_IF_NONZERO(rc);
 
+	if (0xFFFF == timeout_ms)
+		drv->_infinite_rx = true;
+
 	return 0;
 }
 
 
-int sx126x_drv_mode_tx(sx126x_drv_t * drv)
+int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms)
 {
 	int rc;
-	// Вкатываем настройки
-	rc = _apply_lora_tx_cfg(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
 	// Выставляем указатели буфера
 	rc = sx126x_api_buffer_base_address(&drv->api, 0, 0);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -557,8 +481,7 @@ int sx126x_drv_mode_tx(sx126x_drv_t * drv)
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Запускаем передачу пакета
-	const uint32_t timeout = drv->_modem_state.lora.tx_cfg.tx_timeout_ms;
-	rc = sx126x_api_set_tx(&drv->api, timeout);
+	rc = sx126x_api_set_tx(&drv->api, timeout_ms);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -604,10 +527,10 @@ int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size)
 	uint8_t payload_size;
 	uint8_t payload_offset;
 
-	if (SX126X_PACKET_TYPE_LORA  == drv->_modem_type && !drv->_modem_state.lora.rx_cfg.payload_length != 0)
+	if (SX126X_PACKET_TYPE_LORA  == drv->_modem_type && drv->_modem_state.lora.explicit_header)
 	{
 		// Если используется лора с неявным заголовком, то размер пакета мы и так знаем
-		payload_size = drv->_modem_state.lora.rx_cfg.payload_length;
+		payload_size = drv->_modem_state.lora.payload_length;
 	}
 	else
 	{
@@ -722,7 +645,39 @@ int sx126x_drv_configure_lora_modem(sx126x_drv_t * drv, const sx126x_drv_lora_mo
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
+	drv->_modem_type = SX126X_PACKET_TYPE_LORA;
 	drv->_modem_state.lora.bw = config->bandwidth;
+	return 0;
+}
+
+
+int sx126x_drv_configure_lora_packet(sx126x_drv_t * drv, const sx126x_drv_lora_packet_cfg_t * config)
+{
+	int rc;
+
+	// Ставим параметры пакетизации
+	const sx126x_lora_packet_params_t packet_params = {
+			.preamble_length = config->preamble_length,
+			.explicit_header = config->explicit_header,
+			.payload_length = config->payload_length,
+			.use_crc = config->use_crc,
+			.invert_iq = config->invert_iq
+	};
+	rc = sx126x_api_set_lora_packet_params(&drv->api, &packet_params);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Хак инвертированного IQ
+	rc = _workaround_4_iq_polarity(drv, config->invert_iq);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Настраиваем синхрослово лоры
+	rc = _set_lora_syncword(drv, config->syncword);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	drv->_modem_state.lora.explicit_header = config->explicit_header;
+	drv->_modem_state.lora.payload_length = config->payload_length;
 	return 0;
 }
 
@@ -740,22 +695,28 @@ int sx126x_drv_configure_lora_cad(sx126x_drv_t * drv, const sx126x_drv_cad_cfg_t
 			config->cad_timeout_ms
 	);
 	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
 
 	drv->_modem_state.lora.cad_exit_mode = config->exit_mode;
 	return 0;
 }
 
 
-int sx126x_drv_set_lora_tx_config(sx126x_drv_t * drv, const sx126x_drv_lora_tx_cfg_t * config)
+int sx126x_drv_configure_lora_rx_timeout(sx126x_drv_t * drv, const sx126x_drv_lora_rx_timeout_cfg_t * config)
 {
-	drv->_modem_state.lora.tx_cfg = *config;
-	return 0;
-}
+	int rc;
 
+	rc = sx126x_api_stop_rx_timer_on_preamble(&drv->api, config->stop_timer_on_preable);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
 
-int sx126x_drv_set_lora_rx_config(sx126x_drv_t * drv, const sx126x_drv_lora_rx_cfg_t * config)
-{
-	drv->_modem_state.lora.rx_cfg = *config;
+	rc = sx126x_api_set_lora_symb_num_timeout(&drv->api, config->lora_symb_timeout);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	return 0;
 }
 
