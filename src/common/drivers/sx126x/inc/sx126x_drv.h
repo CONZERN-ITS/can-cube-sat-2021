@@ -17,18 +17,8 @@ typedef enum sx126x_drv_state_t
 	SX126X_DRVSTATE_STANDBY_DEFAULT,
 	SX126X_DRVSTATE_TX,
 	SX126X_DRVSTATE_RX,
+	SX126X_DRVSTATE_CAD,
 } sx126x_drv_state_t;
-
-
-//! Тип standby состояния драйвера
-typedef enum sx126x_drv_standby_t
-{
-	//! standby состояние на медленном RC генераторе
-	SX126X_DRVSTANDBY_RC,
-	//! standby состояние на быстром внешнем генераторе
-	SX126X_DRVSTANDBY_XOSC,
-} sx126x_drv_standby_t;
-
 
 //! Базовая конфигурация чипа и драйвера
 typedef struct sx126x_drv_basic_cfg_t
@@ -42,7 +32,7 @@ typedef struct sx126x_drv_basic_cfg_t
 	//! Разрешить использование DCDC
 	bool allow_dcdc;
 	//! режим standby состояния драйвера
-	sx126x_drv_standby_t standby_mode;
+	sx126x_standby_mode_t standby_mode;
 } sx126x_drv_basic_cfg_t;
 
 

@@ -173,6 +173,24 @@ static int _workaround_4_iq_polarity(sx126x_drv_t * drv, bool iq_inversion_used)
 }
 
 
+static int _switch_state(sx126x_drv_t * drv, sx126x_drv_state_t new_state)
+{
+	int rc;
+	if (drv->state == SX126X_DRVSTATE_RX && new_state != SX126X_DRVSTATE_RX)
+	{
+		rc = _workaround_3_rx_timeout(drv);
+		SX126X_RETURN_IF_NONZERO(rc);
+	}
+
+	if (SX126X_DRVSTATE_STANDBY_DEFAULT == new_state)
+		new_state = drv->_default_standby;
+
+	drv->state = new_state;
+
+	return 0;
+}
+
+
 //! Настройка PA усилителя. Довольно громоздкая конструкция, поэтому вынесена отдельно
 static int _configure_pa(sx126x_drv_t * drv, int8_t pa_power, const sx126x_pa_ramp_time_t ramp_time)
 {
@@ -459,7 +477,9 @@ int sx126x_drv_mode_standby_rc(sx126x_drv_t * drv)
 	rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	drv->state = SX126X_DRVSTATE_STANDBY_RC;
+	rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_RC);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	return 0;
 }
 
@@ -476,7 +496,9 @@ int sx126x_drv_mode_standby(sx126x_drv_t * drv)
 	rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	drv->state = SX126X_DRVSTATE_STANDBY_DEFAULT;
+	rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	return 0;
 }
 
@@ -506,7 +528,9 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv)
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	drv->state = SX126X_DRVSTATE_RX;
+	rc = _switch_state(drv, SX126X_DRVSTATE_RX);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	return 0;
 }
 
@@ -539,7 +563,9 @@ int sx126x_drv_mode_tx(sx126x_drv_t * drv)
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	drv->state = SX126X_DRVSTATE_TX;
+	rc = _switch_state(drv, SX126X_DRVSTATE_TX);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	return 0;
 }
 
@@ -549,6 +575,9 @@ int sx126x_drv_mode_cad(sx126x_drv_t * drv)
 	int rc;
 
 	rc = sx126x_api_set_cad(&drv->api);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	rc = _switch_state(drv, SX126X_DRVSTATE_CAD);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;
@@ -731,33 +760,6 @@ int sx126x_drv_set_lora_rx_config(sx126x_drv_t * drv, const sx126x_drv_lora_rx_c
 }
 
 
-static int _consider_next_state(sx126x_drv_t * drv, int state_switch_flags)
-{
-	int rc;
-	if ((state_switch_flags & SX126X_SSF_TX) == 0 && drv->tx_packet_size)
-	{
-		// Если пакет ожидающий отправки должен быть отправлен только в ответ на полученный
-		if (drv->tx_buffer_flags & SX126X_DRV_TXCB_FLAGS_SEND_AS_PONG)
-		{
-			// Проверяем, что у нас не было таймаутов и только тогда отправляем
-			if (0 == (state_switch_flags & (SX126X_SSF_HW_TIMEOUT | SX126X_SSF_SW_TIMEOUT)))
-				rc = _start_tx(drv);
-		}
-		else
-		{
-			// В противном случае просто отправляем
-			rc = _start_tx(drv);
-		}
-	}
-	else
-	{
-		rc = _start_rx(drv);
-	}
-
-	return rc;
-}
-
-
 int sx126x_drv_poll(sx126x_drv_t * drv)
 {
 	int rc;
@@ -768,147 +770,80 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 	rc = _fetch_clear_irq(drv, &irq_status);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	if (irq_status & SX126X_IRQ_CAD_DONE)
-	{
-		evt_arg.cad_done.cad_detected = (irq_status & SX126X_IRQ_CAD_DETECTED) ? true : false;
-		drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_CAD_DONE, &evt_arg);
-
-		if (drv->_modem_state.lora.cad_exit_mode == SX126X_LORA_CAD_RX)
-			drv->state = SX126X_DRVSTATE_RX;
-		else
-			drv->state = SX126X_DRVSTATE_STANDBY_DEFAULT;
-	}
-
-	if (irq_status & SX126X_IRQ_RX_DONE)
-	{
-		evt_arg.rx_done.packet_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
-		// Сбегаем к чипу и достанем статистику пакета
-		if (SX126X_PACKET_TYPE_LORA == drv->_modem_type)
-		{
-			rc = sx126x_api_get_lora_packet_status(&drv->api, &evt_arg.rx_done.packet_status.lora);
-			SX126X_RETURN_IF_NONZERO(rc);
-		}
-		else if (SX126X_PACKET_TYPE_GFSK == drv->_modem_type)
-		{
-			rc = sx126x_api_get_lora_packet_status(&drv->api, &evt_arg.rx_done.packet_status.gfsk);
-			SX126X_RETURN_IF_NONZERO(rc);
-		}
-
-		rc = _workaround_3_rx_timeout(drv);
-		SX126X_RETURN_IF_NONZERO(rc);
-
-		drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVT_KIND_RX_DONE, &evt_arg);
-		drv->state = SX126X_DRVSTATE_STANDBY_DEFAULT;
-	}
-
-	if (irq_status & SX126X_IRQ_TX_DONE)
-	{
-		drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVT_KIND_TX_DONE, &evt_arg);
-		drv->state = SX126X_DRVSTATE_STANDBY_DEFAULT;
-	}
-
-	if (irq_status & SX126X_IRQ_TIMEOUT)
-	{
-		drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_TIMEOUT, &evt_arg);
-		drv->state = SX126X_DRVSTATE_STANDBY_DEFAULT;
-	}
-
 	switch (drv->state)
 	{
-	default: // В таком состоянии мы быть вообще не должны
-		rc = SX126X_ERROR_BAD_STATE;
+	default:
 		break;
 
-	case SX126X_DRVSTATE_ERROR: // Мы в состоянии ошибки..
+	case SX126X_DRVSTATE_RX:
+		if (irq_status & (SX126X_IRQ_RX_DONE))
+		{
+			rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+			SX126X_RETURN_IF_NONZERO(rc);
+
+			evt_arg.rx_done.timed_out = false;
+			evt_arg.rx_done.crv_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
+			// Сбегаем к чипу и достанем статистику пакета
+			if (SX126X_PACKET_TYPE_LORA == drv->_modem_type)
+			{
+				rc = sx126x_api_get_lora_packet_status(&drv->api, &evt_arg.rx_done.packet_status.lora);
+				SX126X_RETURN_IF_NONZERO(rc);
+			}
+			else if (SX126X_PACKET_TYPE_GFSK == drv->_modem_type)
+			{
+				rc = sx126x_api_get_lora_packet_status(&drv->api, &evt_arg.rx_done.packet_status.gfsk);
+				SX126X_RETURN_IF_NONZERO(rc);
+			}
+
+			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_RX_DONE, &evt_arg);
+		}
+		else if (irq_status & SX126X_IRQ_TIMEOUT)
+		{
+			rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+			SX126X_RETURN_IF_NONZERO(rc);
+
+			evt_arg.rx_done.timed_out = true;
+			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_RX_DONE, &evt_arg);
+		}
 		break;
 
-	case SX126X_DRVSTATE_TX: // Мы отправляем пакет
-		// Закончили отправку?
+	case SX126X_DRVSTATE_TX:
 		if (irq_status & SX126X_IRQ_TX_DONE)
 		{
-			_ack_tx(drv, 0);
-			SX126X_BREAK_IF_NONZERO(rc);
+			rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+			SX126X_RETURN_IF_NONZERO(rc);
 
-			rc = _consider_next_state(drv, SX126X_SSF_TX);
-			SX126X_BREAK_IF_NONZERO(rc);
+			evt_arg.tx_done.timed_out = false;
+			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_TX_DONE, &evt_arg);
+
 		}
-		else if (irq_status & SX126X_IRQ_TIMEOUT)
+		else if (irq_status & (SX126X_IRQ_TIMEOUT))
 		{
-			rc = _consider_next_state(drv, SX126X_SSF_TX | SX126X_SSF_HW_TIMEOUT);
-			SX126X_BREAK_IF_NONZERO(rc);
-		}
-		else if (_sw_timeout_time_spent(drv) > drv->tx_timeout_soft)
-		{
-			rc = _consider_next_state(drv, SX126X_SSF_TX | SX126X_SSF_SW_TIMEOUT);
-			SX126X_BREAK_IF_NONZERO(rc);
+			rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+			SX126X_RETURN_IF_NONZERO(rc);
+
+			evt_arg.tx_done.timed_out = true;
+			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_TX_DONE, &evt_arg);
 		}
 		break;
 
-	case SX126X_DRVSTATE_LBT_RX:
-		// Мы сейчас заняты приёмом. Он закончился?
+	case SX126X_DRVSTATE_CAD:
 		if (irq_status & SX126X_IRQ_CAD_DONE)
 		{
-			// LBT этап закончился
-			if (0 == (irq_status & SX126X_IRQ_CAD_DETECTED))
-			{
-				// Канал свободен, можно кричать!
-				rc = _consider_next_state(drv, SX126X_SSF_RX | SX126X_SSF_HW_TIMEOUT);
-				SX126X_BREAK_IF_NONZERO(rc);
-			}
+			sx126x_drv_state_t next_state;
+			if (drv->_modem_state.lora.cad_exit_mode == SX126X_LORA_CAD_RX)
+				next_state = SX126X_DRVSTATE_RX;
 			else
-			{
-				// Значит сейчас идет приём пакета. Подождем
-			}
-		}
-		if (irq_status & (SX126X_IRQ_RX_DONE | SX126X_IRQ_CRC_ERROR))
-		{
-			// Ухты, мы получили пакет!
-			rc = _workaround_3_rx_timeout(drv);
-			SX126X_BREAK_IF_NONZERO(rc);
+				next_state= SX126X_DRVSTATE_STANDBY_DEFAULT;
 
-			rc = _fetch_rx(drv, irq_status & SX126X_IRQ_CRC_ERROR ? SX126X_DRV_RXCB_FLAGS_BAD_CRC : 0);
-			SX126X_BREAK_IF_NONZERO(rc);
+			rc = _switch_state(drv, next_state);
+			SX126X_RETURN_IF_NONZERO(rc);
 
-			rc = _consider_next_state(drv, SX126X_SSF_RX);
-			SX126X_BREAK_IF_NONZERO(rc);
-		}
-		else if (irq_status & SX126X_IRQ_TIMEOUT)
-		{
-			// Нет, случился аппаратный таймаут
-			rc = _workaround_3_rx_timeout(drv);
-			SX126X_BREAK_IF_NONZERO(rc);
-
-			rc = _consider_next_state(drv, SX126X_SSF_RX | SX126X_SSF_HW_TIMEOUT);
-			SX126X_BREAK_IF_NONZERO(rc);
-		}
-		else if (_sw_timeout_time_spent(drv) > drv->rx_timeout_soft)
-		{
-			// Нет, случился программный таймаут
-			rc = _workaround_3_rx_timeout(drv);
-			SX126X_BREAK_IF_NONZERO(rc);
-
-			rc = _consider_next_state(drv, SX126X_SSF_RX | SX126X_SSF_SW_TIMEOUT);
-			SX126X_BREAK_IF_NONZERO(rc);
-		}
-		else
-		{
-			int8_t rssi;
-			rc = sx126x_api_get_rssi_inst(&drv->plt, &rssi);
-			//printf("rssi = %d\n", (int)rssi);
+			evt_arg.cad_done.cad_detected = (irq_status & SX126X_IRQ_CAD_DETECTED) ? true : false;
+			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_CAD_DONE, &evt_arg);
 		}
 		break;
-	}; // switch
-
-	if (0 != rc)
-	{
-		// Проваливаемся в состояние ошибки
-		drv->state = SX126X_DRVSTATE_ERROR;
-		return rc;
 	}
-
-	// Работаем с колбеками
-	rc = _dispatch_callbacks(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;
 }

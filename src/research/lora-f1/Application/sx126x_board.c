@@ -56,7 +56,7 @@ int sx126x_brd_get_chip_type(sx126x_board_t * brd, sx126x_chip_type_t * chip_typ
 }
 
 
-int sx126x_brd_reset(void * brd)
+int sx126x_brd_reset(sx126x_board_t * brd)
 {
 	HAL_GPIO_WritePin(SX126X_NRST_GPIO_Port, SX126X_NRST_Pin, GPIO_PIN_RESET);
 	HAL_Delay(10);
