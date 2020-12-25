@@ -151,11 +151,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.settings = settings_control.init_settings()
 
-        if not settings_control.settings_test(self.settings):
-            settings_control.set_to_default(self.settings)
-            self.settings = settings_control.init_settings()
+        self.settings = settings_control.init_settings()
 
         self.setWindowIcon(QtGui.QIcon(settings_control.APP_ICON_PATH))
 
