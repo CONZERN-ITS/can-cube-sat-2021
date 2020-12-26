@@ -42,19 +42,19 @@ class ModelWidget(OpenGL.GLViewWidget):
 
     def setup_ui_design(self):
         self.settings.beginGroup("CentralWidget/ModelWidget/Grid")
-        if int(self.settings.value("is_on")):
+        if self.settings.value("is_on"):
             self.gird.show()
-            self.gird.scale(*[float(num) for num in self.settings.value("scale")])
-            self.gird.translate(*[float(num) for num in self.settings.value("translate")])
+            self.gird.scale(*self.settings.value("scale"))
+            self.gird.translate(*self.settings.value("translate"))
         else:
             self.gird.hide()
         self.settings.endGroup()
 
         self.settings.beginGroup("CentralWidget/ModelWidget/Axis")
-        if int(self.settings.value("is_on")):
+        if self.settings.value("is_on"):
             self.axis.show()
-            self.axis.scale(*[float(num) for num in self.settings.value("scale")])
-            self.axis.translate(*[float(num) for num in self.settings.value("translate")])
+            self.axis.scale(*self.settings.value("scale"))
+            self.axis.translate(*self.settings.value("translate"))
         else:
             self.axis.hide()
         self.settings.endGroup()
@@ -63,7 +63,7 @@ class ModelWidget(OpenGL.GLViewWidget):
         model_color = None
         try:
             verts = self._get_mesh_points(self.settings.value("path"))
-            if int(self.settings.value("Colors/is_on")):
+            if self.settings.value("Colors/is_on"):
                 model_color = self._get_face_colors(self.settings.value("Colors/path"))                
         except Exception:
             verts = self._get_mesh_points(MESH_PATH)
@@ -75,20 +75,20 @@ class ModelWidget(OpenGL.GLViewWidget):
                               faces=faces, 
                               faceColors=model_color,
                               edgeColor=(0, 0, 0, 1),
-                              drawEdges=int(self.settings.value("draw_edges")), 
-                              drawFaces=int(self.settings.value("draw_faces")),
-                              smooth=int(self.settings.value("smooth")), 
+                              drawEdges=self.settings.value("draw_edges"), 
+                              drawFaces=self.settings.value("draw_faces"),
+                              smooth=self.settings.value("smooth"), 
                               shader=self.settings.value("shader"), 
-                              computeNormals=int(self.settings.value("compute_normals")))
+                              computeNormals=self.settings.value("compute_normals"))
         self.mesh.meshDataChanged()
         self.settings.endGroup()
 
         self.settings.beginGroup("CentralWidget/ModelWidget/Scene")
-        if int(self.settings.value("is_on")):
+        if self.settings.value("is_on"):
             model_color = None
             try:
                 verts = self._get_mesh_points(self.settings.value("path"))
-                if int(self.settings.value("Colors/is_on")):
+                if self.settings.value("Colors/is_on"):
                     model_color = self._get_face_colors(self.settings.value("Colors/path"))                
             except Exception:
                 verts = self._get_mesh_points(SCENE_MESH_PATH)
@@ -100,19 +100,19 @@ class ModelWidget(OpenGL.GLViewWidget):
                                    faces=faces, 
                                    faceColors=model_color,
                                    edgeColor=(0, 0, 0, 1),
-                                   drawEdges=int(self.settings.value("draw_edges")), 
-                                   drawFaces=int(self.settings.value("draw_faces")),
-                                   smooth=int(self.settings.value("smooth")), 
+                                   drawEdges=self.settings.value("draw_edges"), 
+                                   drawFaces=self.settings.value("draw_faces"),
+                                   smooth=self.settings.value("smooth"), 
                                    shader=self.settings.value("shader"), 
-                                   computeNormals=int(self.settings.value("compute_normals")))
+                                   computeNormals=self.settings.value("compute_normals"))
             self.scene.meshDataChanged()
         self.settings.endGroup()
 
         self.settings.beginGroup("CentralWidget/ModelWidget/Camera")
-        self.setCameraPosition(distance=int(self.settings.value("distance")),
-                               elevation=int(self.settings.value("elevation")),
-                               azimuth=int(self.settings.value("azimuth")))
-        self.pan(*[int(pan_item) for pan_item in self.settings.value("pan")])
+        self.setCameraPosition(distance=self.settings.value("distance"),
+                               elevation=self.settings.value("elevation"),
+                               azimuth=self.settings.value("azimuth"))
+        self.pan(*self.settings.value("pan"))
         self.settings.endGroup()
         
         self.packet_name = self.settings.value("CentralWidget/ModelWidget/packet_name")

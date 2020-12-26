@@ -21,11 +21,11 @@ class MapWidget(OpenStreetMap):
     def setup_ui_design(self):
         self.settings.beginGroup("CentralWidget/MapWidget")
         if self.is_load_finished:
-            self.set_center(*[float(num) for num in self.settings.value("center")])
+            self.set_center(*self.settings.value("center"))
             self.set_zoom(self.settings.value("zoom"))
         self.packet_name = self.settings.value("packet_name")
-        self.follow = int(self.settings.value("follow"))
-        self.max_data_length = int(self.settings.value("max_data_length"))
+        self.follow = self.settings.value("follow")
+        self.max_data_length = self.settings.value("max_data_length")
         self.settings.endGroup()
 
     def update_current_values (self):

@@ -140,25 +140,25 @@ class GraphWidget(PyQtGraph.GraphicsLayoutWidget):
         self.settings.beginGroup("Graph")
         for group in self.settings.childGroups():
             self.settings.beginGroup(group)
-            if int(self.settings.value("is_on")):
+            if self.settings.value("is_on"):
                 self.plots.append(GraphWidget.Plot(self.addPlot(*[int(num) for num in self.settings.value("position")])))
                 self.plots[-1].setup_axis('Time ' + units, group + ' ' + self.settings.value("units"))
                 self.plots[-1].set_max_data_len(int(self.settings.value("max_data_length")))
-                if int(self.settings.value("Legend/is_on")):
+                if self.settings.value("Legend/is_on"):
                     self.plots[-1].setup_plot_legend()
-                for i in range(1, len(self.settings.value("packet_name")), 2):
-                    packet_name = self.settings.value("packet_name")
-                    curves_count = int(packet_name[i + 1]) - int(packet_name[i - 1])
-                    colors = self.get_param(int(packet_name[i - 1]), curves_count, self.settings.value("colour")[0:-1])
-                    legend = self.get_param(int(packet_name[i - 1]), curves_count, self.settings.value("Legend/name")[0:-1])
-                    self.plots[-1].add_curve_group(packet_name[i], curves_count, pen_color=colors, curves_names=legend)
+                curves_count = 0
+                for packet in self.settings.value("packet_name"):
+                    colors = self.get_param(curves_count, packet[1], self.settings.value("colour"))
+                    legend = self.get_param(curves_count, packet[1], self.settings.value("Legend/name"))
+                    self.plots[-1].add_curve_group(*packet, pen_color=colors, curves_names=legend)
+                    curves_count += packet[1]
             self.settings.endGroup()
         self.plots = tuple(self.plots)
         self.settings.endGroup()
         self.settings.endGroup()
 
     def update_current_values (self):
-        self.time_shift = float(self.settings.value("CurrentValues/time_shift"))
+        self.time_shift = self.settings.value("CurrentValues/time_shift")
 
     def new_data_reaction(self, data):
         for plot in self.plots:

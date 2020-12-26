@@ -2,7 +2,7 @@ CentralWidget:
   DataWidget:
     Data_table:
       CUBE_1_SINS_ERRORS:
-        is_on: '2'
+        is_on: true
         name:
         - gps_init_error
         - gps_config_error
@@ -20,255 +20,248 @@ CentralWidget:
         - is3mdl_error_counter
         - gps_reconfig_counter
         - reset_counter
-        - ''
         packet_name: 11_0_SINS_ERRORS
         range: nan
-        time_limit: '20'
+        time_limit: 20
       CUBE_1_SINS_Height:
-        is_on: '2'
+        is_on: true
         name:
         - height
-        - ''
         packet_name: 11_0_GPS_ALTITUDE
         range:
-        - '-100'
-        - '36000'
-        time_limit: '2'
+        - - -100
+          - 36000
+        time_limit: 2
       CUBE_1_SINS_Map:
-        is_on: '2'
+        is_on: true
         name:
         - lat
         - lon
-        - ''
         packet_name: 11_0_GPS_LAT_LON
         range:
-        - '-90'
-        - '90'
-        - '0'
-        - '360'
-        time_limit: '2'
+        - - -90
+          - 90
+        - - 0
+          - 360
+        time_limit: 2
       CUBE_1_SINS_OWN_TEMP:
-        is_on: '2'
+        is_on: true
         name:
         - own temperature
         - ''
         packet_name: 11_0_OWN_TEMPERATURE
         range:
-        - '-40'
-        - '70'
-        time_limit: '20'
+        - - -40
+          - 70
+        time_limit: 20
       CUBE_1_SINS_acceleration:
-        is_on: '2'
+        is_on: true
         name:
         - accel x
         - accel y
         - accel z
-        - ''
         packet_name: 11_0_SINS_ACCEL
         range:
-        - '-10'
-        - '10'
-        - '-10'
-        - '10'
-        - '-10'
-        - '10'
-        time_limit: '20'
+        - - -10
+          - 10
+        - - -10
+          - 10
+        - - -10
+          - 10
+        time_limit: 20
       CUBE_1_SINS_compas:
-        is_on: '2'
+        is_on: true
         name:
         - compas x
         - compas y
         - compas z
-        - ''
         packet_name: 11_0_SINS_COMPASS
         range:
-        - '-1000'
-        - '1000'
-        - '-1000'
-        - '1000'
-        - '-1000'
-        - '1000'
-        time_limit: '20'
+        - - -1000
+          - 1000
+        - - -1000
+          - 1000
+        - - -1000
+          - 1000
+        time_limit: 20
       CUBE_1_SINS_ecef:
-        is_on: '2'
+        is_on: true
         name:
         - ecefx
         - ecefy
         - ecefz
         - fix
-        - ''
         packet_name: 11_0_GPS_RAW
         range:
-        - '-7000000'
-        - '7000000'
-        - '-7000000'
-        - '7000000'
-        - '-7000000'
-        - '7000000'
-        - '0'
-        - '10'
-        time_limit: '2'
+        - - -7000000
+          - 7000000
+        - - -7000000
+          - 7000000
+        - - -7000000
+          - 7000000
+        - - 0
+          - 10
+        time_limit: 2
       CUBE_1_SINS_quaternion:
-        is_on: '2'
+        is_on: true
         name:
         - quat w
         - quat a
         - quat b
         - quat c
-        - ''
         packet_name: 11_0_SINS_MODEL
         range:
-        - '-1'
-        - '1'
-        - '-1'
-        - '1'
-        - '-1'
-        - '1'
-        - '-1'
-        - '1'
-        time_limit: '20'
-      is_on: '2'
+        - - -1
+          - 1
+        - - -1
+          - 1
+        - - -1
+          - 1
+        - - -1
+          - 1
+        time_limit: 20
+      is_on: true
     Packet_table:
       CUBE_1_BCU_STATS:
-        is_on: '2'
+        is_on: true
         name: cube 1 BCU BCU_STATS
         packet_name: 10_0_BCU_STATS
       CUBE_1_BCU_TEMP_COMP_0:
-        is_on: '2'
+        is_on: true
         name: cube 1 BCU comp 0 THERMAL_STATE
         packet_name: 10_0_TEMPERATURE
       CUBE_1_BCU_TEMP_COMP_1:
-        is_on: '2'
+        is_on: true
         name: cube 1 BCU comp 1 THERMAL_STATE
         packet_name: 10_1_TEMPERATURE
       CUBE_1_BCU_TEMP_COMP_2:
-        is_on: '2'
+        is_on: true
         name: cube 1 BCU comp 2 THERMAL_STATE
         packet_name: 10_2_TEMPERATURE
       CUBE_1_BCU_TEMP_COMP_3:
-        is_on: '2'
+        is_on: true
         name: cube 1 BCU comp 3 THERMAL_STATE
         packet_name: 10_3_TEMPERATURE
       CUBE_1_BCU_TEMP_COMP_4:
-        is_on: '2'
+        is_on: true
         name: cube 1 BCU comp 4 THERMAL_STATE
         packet_name: 10_4_TEMPERATURE
       CUBE_1_PCU_OWN_TEMP:
-        is_on: '2'
+        is_on: true
         name: cube 1 PCU OWN_TEMP
         packet_name: 12_0_OWN_TEMPERATURE
       CUBE_1_PCU_TEMP_COMP_0:
-        is_on: '2'
+        is_on: true
         name: cube 1 PCU comp 0 THERMAL_STATE
         packet_name: 12_0_TEMPERATURE
       CUBE_1_PCU_TEMP_COMP_1:
-        is_on: '2'
+        is_on: true
         name: cube 1 PCU comp 1 THERMAL_STATE
         packet_name: 12_1_TEMPERATURE
       CUBE_1_PCU_TEMP_COMP_2:
-        is_on: '2'
+        is_on: true
         name: cube 1 PCU comp 2 THERMAL_STATE
         packet_name: 12_2_TEMPERATURE
       CUBE_1_PCU_TEMP_COMP_3:
-        is_on: '2'
+        is_on: true
         name: cube 1 PCU comp 3 THERMAL_STATE
         packet_name: 12_3_TEMPERATURE
       CUBE_1_PCU_VOLT_COMP_0:
-        is_on: '2'
+        is_on: true
         name: cube 1 PCU comp 0 ELECTRICAL_STATE
         packet_name: 12_0_VOLTAGE
       CUBE_1_PL_BME280_TEMP:
-        is_on: '2'
+        is_on: true
         name: cube 1 PL PLD_BME280_DATA
         packet_name: 13_0_BME280_TEMPERATURE
       CUBE_1_PL_I2C_LINK_STATS:
-        is_on: '2'
+        is_on: true
         name: cube 1 PL I2C_LINK_STATS
         packet_name: 13_0_I2C_LINK_STATS
       CUBE_1_PL_ME2O2:
-        is_on: '2'
+        is_on: true
         name: cube 1 PL ME2O2
         packet_name: 13_0_ME2O2
       CUBE_1_PL_MICS_6814_CO:
-        is_on: '2'
+        is_on: true
         name: cube 1 PL PLD_MICS_6814_DATA
         packet_name: 13_0_MICS_6814_CO
       CUBE_1_PL_OWN_TEMP:
-        is_on: '2'
+        is_on: true
         name: cube 1 PL OWN_TEMP
         packet_name: 13_0_OWN_TEMPERATURE
       CUBE_1_PL_STATS:
-        is_on: '2'
+        is_on: true
         name: cube 1 PL PLD_STATS
         packet_name: 13_0_PLD_STATS
       CUBE_1_SINS_ERRORS:
-        is_on: '2'
+        is_on: true
         name: cube 1 SINS SINS_ERRORS
         packet_name: 11_0_SINS_ERRORS
       CUBE_1_SINS_GPS_UBX_NAV_SOL:
-        is_on: '2'
+        is_on: true
         name: cube 1 SINS GPS_UBX_NAV_SOL
         packet_name: 11_0_GPS_LAT_LON
       CUBE_1_SINS_ISC:
-        is_on: '2'
+        is_on: true
         name: cube 1 SINS SINS_ISC
         packet_name: 11_0_SINS_ACCEL
       CUBE_1_SINS_OWN_TEMP:
-        is_on: '2'
+        is_on: true
         name: cube 1 SINS OWN_TEMP
         packet_name: 11_0_OWN_TEMPERATURE
       CUBE_2_PCU_OWN_TEMP:
-        is_on: '2'
+        is_on: true
         name: cube 2 PCU OWN_TEMP
         packet_name: 21_0_OWN_TEMPERATURE
       CUBE_2_PCU_TEMP_COMP_0:
-        is_on: '2'
+        is_on: true
         name: cube 2 PCU comp 0 THERMAL_STATE
         packet_name: 21_0_TEMPERATURE
       CUBE_2_PCU_TEMP_COMP_1:
-        is_on: '2'
+        is_on: true
         name: cube 2 PCU comp 1 THERMAL_STATE
         packet_name: 21_1_TEMPERATURE
       CUBE_2_PCU_TEMP_COMP_2:
-        is_on: '2'
+        is_on: true
         name: cube 2 PCU comp 2 THERMAL_STATE
         packet_name: 21_2_TEMPERATURE
       CUBE_2_PCU_TEMP_COMP_3:
-        is_on: '2'
+        is_on: true
         name: cube 2 PCU comp 3 THERMAL_STATE
         packet_name: 21_3_TEMPERATURE
       CUBE_2_PFU_STATS:
-        is_on: '2'
+        is_on: true
         name: cube 1 BCU BCU_STATS
         packet_name: 20_0_BCU_STATS
       CUBE_2_PFU_TEMP_COMP_0:
-        is_on: '2'
+        is_on: true
         name: cube 2 PFU comp 0 THERMAL_STATE
         packet_name: 20_0_TEMPERATURE
       CUBE_2_PFU_TEMP_COMP_1:
-        is_on: '2'
+        is_on: true
         name: cube 2 PFU comp 1 THERMAL_STATE
         packet_name: 20_1_TEMPERATURE
       CUBE_2_PFU_TEMP_COMP_2:
-        is_on: '2'
+        is_on: true
         name: cube 2 PFU comp 2 THERMAL_STATE
         packet_name: 20_2_TEMPERATURE
       CUBE_2_PFU_TEMP_COMP_3:
-        is_on: '2'
+        is_on: true
         name: cube 2 PFU comp 3 THERMAL_STATE
         packet_name: 20_3_TEMPERATURE
       CUBE_2_PFU_TEMP_COMP_4:
-        is_on: '2'
+        is_on: true
         name: cube 2 PFU comp 4 THERMAL_STATE
         packet_name: 20_4_TEMPERATURE
       GCS_RADIO:
-        is_on: '2'
+        is_on: true
         name: GCS RADIO RSSI
         packet_name: 1_0_RSSI
-      is_on: '2'
+      is_on: true
     Time_table:
       CUBE_1_BCU:
-        is_on: '2'
+        is_on: true
         name: cube 1 BCU time
         packet_name:
         - 10_0_BCU_STATS
@@ -277,10 +270,9 @@ CentralWidget:
         - 10_2_TEMPERATURE
         - 10_3_TEMPERATURE
         - 10_4_TEMPERATURE
-        - ''
-        time_limit: '20'
+        time_limit: 20
       CUBE_1_PCU:
-        is_on: '2'
+        is_on: true
         name: cube 1 PCU time
         packet_name:
         - 12_0_OWN_TEMPERATURE
@@ -290,10 +282,9 @@ CentralWidget:
         - 12_1_TEMPERATURE
         - 12_2_TEMPERATURE
         - 12_3_TEMPERATURE
-        - ''
-        time_limit: '20'
+        time_limit: 20
       CUBE_1_PL:
-        is_on: '2'
+        is_on: true
         name: cube 1 PL time
         packet_name:
         - 13_0_BME280_TEMPERATURE
@@ -302,20 +293,18 @@ CentralWidget:
         - 13_0_ME2O2
         - 13_0_PLD_STATS
         - 13_0_I2C_LINK_STATS
-        - ''
-        time_limit: '20'
+        time_limit: 20
       CUBE_1_SINS:
-        is_on: '2'
+        is_on: true
         name: cube 1 SINS time
         packet_name:
         - 11_0_SINS_ACCEL
         - 11_0_OWN_TEMPERATURE
         - 11_0_GPS_LAT_LON
         - 11_0_SINS_ERRORS
-        - ''
-        time_limit: '20'
+        time_limit: 20
       CUBE_2_PCU:
-        is_on: '2'
+        is_on: true
         name: cube 2 PCU time
         packet_name:
         - 21_0_OWN_TEMPERATURE
@@ -323,10 +312,9 @@ CentralWidget:
         - 21_1_TEMPERATURE
         - 21_2_TEMPERATURE
         - 21_3_TEMPERATURE
-        - ''
-        time_limit: '20'
+        time_limit: 20
       CUBE_2_PFU:
-        is_on: '2'
+        is_on: true
         name: cube 2 PFU time
         packet_name:
         - 20_0_BCU_STATS
@@ -335,194 +323,183 @@ CentralWidget:
         - 20_2_TEMPERATURE
         - 20_3_TEMPERATURE
         - 20_4_TEMPERATURE
-        - ''
-        time_limit: '20'
+        time_limit: 20
       GCS_RADIO:
-        is_on: '2'
+        is_on: true
         name: GCS RADIO time
         packet_name:
         - 1_0_RSSI
-        - ''
-        time_limit: '20'
-      is_on: '2'
+        time_limit: 20
+      is_on: true
     background_color: '#888888'
     colors:
     - '#0000FF'
     - '#FF0000'
     - '#FFFF00'
-    is_on: '2'
+    is_on: true
     position:
-    - '0'
-    - '2'
-    - '2'
-    - '1'
+    - 0
+    - 2
+    - 2
+    - 1
   GraphWidget:
     Graph:
       Accel:
         Legend:
-          is_on: '2'
+          is_on: true
           name:
           - x
           - y
           - z
-          - ''
         colour:
         - r
         - g
         - b
-        - ''
-        is_on: '2'
+        is_on: true
         max_data_length: '100'
         packet_name:
-        - '0'
-        - 11_0_SINS_ACCEL
-        - '3'
+        - - 11_0_SINS_ACCEL
+          - 3
         position:
-        - '0'
-        - '0'
-        - '1'
-        - '1'
+        - 0
+        - 0
+        - 1
+        - 1
         units: g
       Compass:
         Legend:
-          is_on: '2'
+          is_on: true
           name:
           - x
           - y
           - z
-          - ''
         colour:
         - r
         - g
         - b
-        - ''
-        is_on: '2'
-        max_data_length: '100'
+        is_on: true
+        max_data_length: 100
         packet_name:
-        - '0'
-        - 11_0_SINS_COMPASS
-        - '3'
+        - - 11_0_SINS_COMPASS
+          - 3
         position:
-        - '1'
-        - '0'
-        - '1'
-        - '1'
+        - 1
+        - 0
+        - 1
+        - 1
         units: G
       Height:
         Legend:
-          is_on: '0'
+          is_on: false
           name:
-          - ''
           - ''
         colour:
         - r
-        - ''
-        is_on: '2'
-        max_data_length: '100'
+        is_on: true
+        max_data_length: 100
         packet_name:
-        - '0'
-        - 11_0_GPS_ALTITUDE
-        - '1'
+        - - 11_0_GPS_ALTITUDE
+          - 1
         position:
-        - '2'
-        - '0'
-        - '1'
-        - '1'
+        - 2
+        - 0
+        - 1
+        - 1
         units: m
-    is_on: '2'
+    is_on: true
     position:
-    - '0'
-    - '0'
-    - '2'
-    - '1'
+    - 0
+    - 0
+    - 2
+    - 1
     time_units: s
   MapWidget:
     center:
-    - '55.9'
-    - '37.8'
-    follow: '0'
-    is_on: '2'
-    max_data_length: '0'
+    - 55.9
+    - 37.8
+    follow: false
+    is_on: true
+    max_data_length: 0
     packet_name: 11_0_GPS_LAT_LON
     position:
-    - '0'
-    - '1'
-    - '2'
-    - '1'
-    zoom: '11'
+    - 0
+    - 1
+    - 2
+    - 1
+    zoom: 11
   ModelWidget:
     Axis:
-      is_on: '0'
+      is_on: false
       scale:
-      - '6.5'
-      - '6.5'
-      - '7'
+      - 6.5
+      - 6.5
+      - 7
       translate:
-      - '0'
-      - '0'
-      - '-5'
+      - 0
+      - 0
+      - -5
     Camera:
-      azimuth: '0'
-      distance: '470'
-      elevation: '35'
+      azimuth: 0
+      distance: 470
+      elevation: 35
       pan:
-      - '0'
-      - '0'
-      - '30'
+      - 0
+      - 0
+      - 30
     Grid:
-      is_on: '2'
+      is_on: true
       scale:
-      - '3'
-      - '3'
-      - '3'
+      - 3
+      - 3
+      - 3
       translate:
-      - '0'
-      - '0'
-      - '-10'
+      - 0
+      - 0
+      - -10
     Mesh:
       Colors:
-        is_on: '2'
+        is_on: true
         path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS_color.mfcl
-      compute_normals: '2'
-      draw_edges: '0'
-      draw_faces: '2'
+      compute_normals: true
+      draw_edges: false
+      draw_faces: true
       path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS.stl
       shader: edgeHilight
-      smooth: '0'
+      smooth: false
     Scene:
       Colors:
-        is_on: '2'
+        is_on: true
         path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/axis.mfcl
-      compute_normals: '2'
-      draw_edges: '0'
-      draw_faces: '2'
-      is_on: '2'
+      compute_normals: true
+      draw_edges: false
+      draw_faces: true
+      is_on: true
       path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/axis.stl
       shader: balloon
-      smooth: '0'
+      smooth: false
     background_color: '#323232'
-    is_on: '2'
+    is_on: true
     packet_name: 11_0_SINS_MODEL
     position:
-    - '1'
-    - '1'
-    - '1'
-    - '1'
+    - 1
+    - 1
+    - 1
+    - 1
 CurrentValues:
-  time_shift: '1601731871.944'
+  time_shift: 1601731871.944
 DefaultValues:
-  time_shift: '0'
+  time_shift: false
 MainWindow:
   DataSourse:
     Log:
       path: ./log/its_packet_log__20201002T202411.mav
-      real_time: '0'
-      time_delay: '0.05'
+      real_time: false
+      time_delay: 0.05
       type: MAV
     MAVLink:
       connection: udpin:0.0.0.0:14540
     type: Log
   size:
-  - '1000'
-  - '800'
-  update_time: '0.1'
+  - 1000
+  - 800
+  update_time: 0.1

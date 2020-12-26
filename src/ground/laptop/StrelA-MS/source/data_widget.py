@@ -107,30 +107,30 @@ class DataWidget(QtWidgets.QTreeWidget):
         self.time_table = 0
         self.packet_table = 0
 
-        if int(self.settings.value("Time_table/is_on")):
+        if self.settings.value("Time_table/is_on"):
             self.time_table = 1
             self.settings.beginGroup("Time_table")
             top_item = QtWidgets.QTreeWidgetItem()
             top_item.setText(0, 'Systems time')
             for group in self.settings.childGroups():
-                if int(self.settings.value(group + "/is_on")):
+                if self.settings.value(group + "/is_on"):
                     self.settings.beginGroup(group)
                     item = DataWidget.TreeItem(top_item)
                     item.set_background_color(self.background_color)
                     item.setup_fields([], self.settings.value("name"))
-                    item.set_packet_name(self.settings.value("packet_name")[:-1])
-                    item.setup_timeout(self.colors[2], float(self.settings.value("time_limit")))
+                    item.set_packet_name(self.settings.value("packet_name"))
+                    item.setup_timeout(self.colors[2], self.settings.value("time_limit"))
                     self.settings.endGroup()
             self.addTopLevelItem(top_item)
             self.settings.endGroup()
 
-        if int(self.settings.value("Packet_table/is_on")):
+        if self.settings.value("Packet_table/is_on"):
             self.packet_table = 1
             self.settings.beginGroup("Packet_table")
             top_item = QtWidgets.QTreeWidgetItem()
             top_item.setText(0, 'Packets count')
             for group in self.settings.childGroups():
-                if int(self.settings.value(group + "/is_on")):
+                if self.settings.value(group + "/is_on"):
                     self.settings.beginGroup(group)
                     item = DataWidget.TreeItem(top_item)
                     item.set_background_color(self.background_color)
@@ -141,23 +141,20 @@ class DataWidget(QtWidgets.QTreeWidget):
             self.addTopLevelItem(top_item)
             self.settings.endGroup()
 
-        if int(self.settings.value("Data_table/is_on")):
+        if self.settings.value("Data_table/is_on"):
             self.settings.beginGroup("Data_table")
             top_item = QtWidgets.QTreeWidgetItem()
             top_item.setText(0, 'Data')
             for group in self.settings.childGroups():
-                if int(self.settings.value(group + "/is_on")):
+                if self.settings.value(group + "/is_on"):
                     self.settings.beginGroup(group)
                     item = DataWidget.TreeItem(top_item)
                     item.set_background_color(self.background_color)
-                    item.setup_fields(self.settings.value("name")[:-1], group)
+                    item.setup_fields(self.settings.value("name"), group)
                     item.set_packet_name([self.settings.value("packet_name")])
-                    item.setup_timeout(self.colors[2], float(self.settings.value("time_limit")))
-                    data_range = []
+                    item.setup_timeout(self.colors[2], self.settings.value("time_limit"))
                     if self.settings.value("range") != 'nan':
-                        for i in range(0, len(self.settings.value("range")), 2):
-                            data_range.append([float(self.settings.value("range")[i]), float(self.settings.value("range")[i + 1])])
-                    item.set_data_range(data_range)
+                    	item.set_data_range(self.settings.value("range"))
                     item.set_colors(self.colors[:2])
                     self.settings.endGroup()
                 self.addTopLevelItem(top_item)
