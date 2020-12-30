@@ -17074,23 +17074,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="-167.64" y="208.28" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U$22" gate="G$1" pin="CAT1"/>
-<wire x1="-116.84" y1="269.24" x2="-116.84" y2="279.4" width="0.1524" layer="91"/>
-<wire x1="-116.84" y1="279.4" x2="-116.84" y2="302.26" width="0.1524" layer="91"/>
-<wire x1="-116.84" y1="302.26" x2="-132.08" y2="302.26" width="0.1524" layer="91"/>
-<pinref part="U$22" gate="G$1" pin="CAT2"/>
-<wire x1="-127" y1="269.24" x2="-132.08" y2="269.24" width="0.1524" layer="91"/>
-<wire x1="-132.08" y1="269.24" x2="-132.08" y2="279.4" width="0.1524" layer="91"/>
-<pinref part="R2" gate="G$1" pin="1"/>
-<wire x1="-132.08" y1="279.4" x2="-132.08" y2="302.26" width="0.1524" layer="91"/>
-<junction x="-132.08" y="279.4"/>
-<pinref part="R1" gate="G$1" pin="1"/>
-<junction x="-116.84" y="279.4"/>
-<label x="-139.7" y="302.26" size="1.778" layer="95"/>
-<wire x1="-132.08" y1="302.26" x2="-139.7" y2="302.26" width="0.1524" layer="91"/>
-<junction x="-132.08" y="302.26"/>
-</segment>
-<segment>
 <pinref part="U$23" gate="G$1" pin="S"/>
 <wire x1="-180.34" y1="73.66" x2="-185.42" y2="73.66" width="0.1524" layer="91"/>
 <label x="-200.66" y="73.66" size="1.778" layer="95"/>
@@ -17188,6 +17171,23 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <wire x1="118.11" y1="-45.72" x2="118.11" y2="-48.26" width="0.1524" layer="91"/>
 <label x="129.54" y="-45.72" size="1.778" layer="95"/>
 <pinref part="U$57" gate="G$1" pin="A1"/>
+</segment>
+<segment>
+<pinref part="U$22" gate="G$1" pin="CAT1"/>
+<wire x1="-116.84" y1="269.24" x2="-116.84" y2="279.4" width="0.1524" layer="91"/>
+<wire x1="-116.84" y1="279.4" x2="-116.84" y2="302.26" width="0.1524" layer="91"/>
+<wire x1="-116.84" y1="302.26" x2="-132.08" y2="302.26" width="0.1524" layer="91"/>
+<pinref part="U$22" gate="G$1" pin="CAT2"/>
+<wire x1="-127" y1="269.24" x2="-132.08" y2="269.24" width="0.1524" layer="91"/>
+<wire x1="-132.08" y1="269.24" x2="-132.08" y2="279.4" width="0.1524" layer="91"/>
+<pinref part="R2" gate="G$1" pin="1"/>
+<wire x1="-132.08" y1="279.4" x2="-132.08" y2="302.26" width="0.1524" layer="91"/>
+<junction x="-132.08" y="279.4"/>
+<pinref part="R1" gate="G$1" pin="1"/>
+<junction x="-116.84" y="279.4"/>
+<label x="-139.7" y="302.26" size="1.778" layer="95"/>
+<wire x1="-132.08" y1="302.26" x2="-139.7" y2="302.26" width="0.1524" layer="91"/>
+<junction x="-132.08" y="302.26"/>
 </segment>
 </net>
 <net name="5V" class="0">
