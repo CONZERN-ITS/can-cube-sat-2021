@@ -27,6 +27,15 @@ namespace ccsds { namespace uslp {
 		virtual ~einval_exception() = default;
 	};
 
+
+	class invalid_call_order: public exception
+	{
+	public:
+		invalid_call_order() = default;
+		invalid_call_order(const char * what);
+		invalid_call_order(const std::string & what);
+		virtual ~invalid_call_order() = default;
+	};
 }}
 
 

@@ -5,24 +5,30 @@
 
 namespace ccsds { namespace uslp {
 
+
 	class mcid_t
 	{
 	public:
 		mcid_t() = default;
-		mcid_t(uint8_t fvn_, uint16_t sc_id_)
+		mcid_t(uint16_t sc_id_)
 		{
-			frame_version_number(fvn_);
 			sc_id(sc_id_);
 		}
-
-		void frame_version_number(uint8_t value) { _fvn = value; }
-		uint8_t frame_version_number() const { return _fvn; }
 
 		void sc_id(uint16_t value) { _sc_id = value; }
 		uint16_t sc_id() const { return _sc_id; }
 
+		bool operator == (const mcid_t & other) const
+		{
+			return this->_sc_id == other._sc_id;
+		}
+
+		bool operator < (const mcid_t & other) const
+		{
+			return this->_sc_id < other._sc_id;
+		}
+
 	private:
-		uint8_t _fvn = 0;
 		uint16_t _sc_id = 0;
 	};
 
@@ -31,14 +37,27 @@ namespace ccsds { namespace uslp {
 	{
 	public:
 		gvcid_t() = default;
-		gvcid_t(uint8_t fvn_, uint16_t sc_id_, uint8_t vchannel_id_)
-			: mcid_t(fvn_, sc_id_)
+		gvcid_t(uint16_t sc_id_, uint8_t vchannel_id_)
+			: mcid_t(sc_id_)
 		{
 			vchannel_id(vchannel_id_);
 		}
 
 		void vchannel_id(uint8_t value) { _vchannel_id = value; }
 		uint8_t vchannel_id() const { return _vchannel_id; }
+
+		bool operator == (const gvcid_t & other) const
+		{
+			return mcid_t::operator==(other) && this->_vchannel_id == other._vchannel_id;
+		}
+
+		bool operator < (const gvcid_t & other) const
+		{
+			if (mcid_t::operator==(other))
+				return this->_vchannel_id < other._vchannel_id;
+			else
+				return mcid_t::operator<(other);
+		}
 
 	private:
 		uint8_t _vchannel_id = 0;
@@ -49,8 +68,8 @@ namespace ccsds { namespace uslp {
 	{
 	public:
 		gmap_id_t() = default;
-		gmap_id_t(uint8_t fvn_, uint16_t sc_id_, uint8_t vchannel_id_, uint8_t map_id_)
-			: gvcid_t(fvn_, sc_id_, vchannel_id_)
+		gmap_id_t(uint16_t sc_id_, uint8_t vchannel_id_, uint8_t map_id_)
+			: gvcid_t(sc_id_, vchannel_id_)
 		{
 			map_id(map_id_);
 		}
@@ -58,8 +77,20 @@ namespace ccsds { namespace uslp {
 		void map_id(uint8_t value) { _map_id = value; }
 		uint8_t map_id() const { return _map_id; }
 
-	private:
+		bool operator == (const gmap_id_t & other) const
+		{
+			return gvcid_t::operator==(other) && this->_map_id == other._map_id;
+		}
 
+		bool operator < (const gmap_id_t & other) const
+		{
+			if (gvcid_t::operator==(other))
+				return this->_map_id < other._map_id;
+			else
+				return gvcid_t::operator<(other);
+		}
+
+	private:
 		uint8_t _map_id = 0;
 	};
 

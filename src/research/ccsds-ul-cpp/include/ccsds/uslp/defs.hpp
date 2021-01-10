@@ -4,6 +4,14 @@
 
 namespace ccsds { namespace uslp {
 
+	enum class qos_t
+	{
+		SEQUENCE_CONTROLLED,
+		EXPIDITED,
+	};
+
+
+	//! Класс фрейма. Определяется двумя полями в заголовке
 	enum class frame_class_t
 	{
 		//! Фрейм класса AD. Содержит нагрузку и подлежит контролю FARM
@@ -16,6 +24,17 @@ namespace ccsds { namespace uslp {
 		EXPEDITED_COMMAND = 0x03
 	};
 
+
+	//! Тип поля контроля ошибок
+	enum class error_control_len_t
+	{
+		//! Не присутствует
+		ZERO,
+		//! Присутствует и имеет размер в 1 байт
+		ONE_OCTET,
+		//! Присутствует и имеет размер в 2 байта
+		TWO_OCTETS,
+	};
 
 }}
 
