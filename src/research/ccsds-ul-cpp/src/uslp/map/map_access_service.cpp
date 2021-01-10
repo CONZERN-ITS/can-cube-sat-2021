@@ -1,6 +1,8 @@
-#include <ccsds/uslp/map/detail/tfdf_header.hpp>
 #include <ccsds/uslp/map/map_access_service.hpp>
 
+#include <ccsds/uslp/exceptions.hpp>
+
+#include <ccsds/uslp/map/detail/tfdf_header.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -11,6 +13,16 @@ map_access_service::map_access_service(gmap_id_t map_id_)
 {
 	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
 	tfdf_size(detail::tfdf_header::full_size);
+}
+
+
+void map_access_service::tfdf_size(uint16_t value)
+{
+	// Проверка на то, что мы можем столько
+	if (value < detail::tfdf_header::full_size)
+		throw einval_exception("map_access service requires no less than 4 bytes for tfdf zone size");
+
+	this->map_service::tfdf_size(value);
 }
 
 
@@ -34,7 +46,8 @@ bool map_access_service::peek_tfdf(tfdf_params & params)
 	std::tie(elem_begun, readable) = _chunk_reader.peek_chunk();
 	// Если то, что есть в очереди мы не сможем отправить одним фреймом
 	// Придется чуток занять канал
-	params.channel_lock = readable > (tfdf_size() - detail::tfdf_header::full_size);
+	size_t payload_max_size = map_service::tfdf_size() - detail::tfdf_header::full_size;
+	params.channel_lock = (readable > static_cast<size_t>(payload_max_size - detail::tfdf_header::full_size));
 
 	return true;
 }
@@ -47,7 +60,7 @@ void map_access_service::pop_tfdf(uint8_t * tfdf_buffer)
 
 	// Отступаем под заголовок
 	auto * payload_begin = tfdf_buffer + detail::tfdf_header::full_size;
-	auto payload_max_size = tfdf_size() - detail::tfdf_header::full_size;
+	size_t payload_max_size = map_service::tfdf_size() - detail::tfdf_header::full_size;
 
 	// Вываливаем пейлоад
 	size_t chunk_size;
@@ -72,10 +85,8 @@ void map_access_service::pop_tfdf(uint8_t * tfdf_buffer)
 	else
 		header.first_header_offset = 0xFFFF; // Если нет - покажем, что он не кончился в этом фрейме
 
-
 	// Все посчитали - теперь пишем
 	header.write(tfdf_buffer);
-	// На этом все!
 }
 
 }}

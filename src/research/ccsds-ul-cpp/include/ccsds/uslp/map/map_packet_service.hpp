@@ -3,7 +3,7 @@
 
 
 
-#include <queue>
+#include <deque>
 #include <memory>
 
 #include <ccsds/uslp/ids.hpp>
@@ -21,11 +21,8 @@ public:
 	map_packet_service(gmap_id_t map_id_);
 	virtual ~map_packet_service() = default;
 
-	virtual bool peek_tfdf() override;
-	virtual bool peek_tfdf(tfdf_params & params) override;
-	virtual void pop_tfdf(uint8_t * tfdf_buffer) override;
+	virtual void tfdf_size(uint16_t value) override;
 
-protected:
 	virtual bool peek_tfdf() override;
 	virtual bool peek_tfdf(tfdf_params & params) override;
 	virtual void pop_tfdf(uint8_t * tfdf_buffer) override;
@@ -49,8 +46,14 @@ protected:
 		const uint8_t * end() const { return packet.get() + packet_size; }
 	};
 
+	// Размер зоны именно для полезной нагрузки (без заголовка)
+	uint16_t _tfdz_size() const;
+
+	//! Будет ли заблокирован канал после выдачи следующего фрейма
+	bool _will_lock_channel() const;
+
 private:
-	typedef std::queue<data_unit_t> data_queue_t;
+	typedef std::deque<data_unit_t> data_queue_t;
 
 	data_queue_t _data_queue;
 	detail::chunked_queue_adadpter<data_queue_t> _chunk_reader;

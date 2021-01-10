@@ -1,7 +1,7 @@
 #ifndef INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SERVICE_HPP_
 #define INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SERVICE_HPP_
 
-#include <queue>
+#include <deque>
 #include <memory>
 
 #include <ccsds/uslp/ids.hpp>
@@ -19,6 +19,8 @@ public:
 
 	map_access_service(gmap_id_t map_id_);
 	virtual ~map_access_service() = default;
+
+	virtual void tfdf_size(uint16_t value) override;
 
 	virtual bool peek_tfdf() override;
 	virtual bool peek_tfdf(tfdf_params & params) override;
@@ -42,7 +44,7 @@ protected:
 	};
 
 private:
-	typedef std::queue<data_unit_t> data_queue_t;
+	typedef std::deque<data_unit_t> data_queue_t;
 
 	data_queue_t _data_queue;
 	detail::chunked_queue_adadpter<data_queue_t> _chunk_reader;

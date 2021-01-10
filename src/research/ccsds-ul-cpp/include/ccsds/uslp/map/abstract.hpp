@@ -40,7 +40,6 @@ public:
 	virtual bool peek_tfdf() = 0;
 	virtual bool peek_tfdf(tfdf_params & params) = 0;
 	virtual void pop_tfdf(uint8_t * tfdf_buffer) = 0;
-	virtual void pop_tfdf() = 0;
 
 	const gmap_id_t map_id;
 

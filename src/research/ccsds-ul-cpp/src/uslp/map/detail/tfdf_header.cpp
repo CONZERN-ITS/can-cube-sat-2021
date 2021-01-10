@@ -5,7 +5,7 @@
 
 namespace ccsds { namespace uslp { namespace detail {
 
-	void tfdz_header::write(uint8_t * buffer) const
+	void tfdf_header::write(uint8_t * buffer) const
 	{
 		uint8_t byte = 0;
 		byte |= (this->upid & 0x1F) << 0;
@@ -21,7 +21,7 @@ namespace ccsds { namespace uslp { namespace detail {
 	}
 
 
-	void tfdz_header::read(const uint8_t * buffer, bool has_header_offset)
+	void tfdf_header::read(const uint8_t * buffer, bool has_header_offset)
 	{
 		uint8_t byte;
 		byte = buffer[0];
