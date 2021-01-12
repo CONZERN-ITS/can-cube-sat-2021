@@ -7,7 +7,6 @@
 #include <ccsds/uslp/ids.hpp>
 #include <ccsds/uslp/defs.hpp>
 #include <ccsds/uslp/map/abstract.hpp>
-#include <ccsds/uslp/map/detail/chunked_queue_adapter.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -31,23 +30,15 @@ protected:
 	struct data_unit_t
 	{
 		//! Данные, которые нужно передать
-		std::unique_ptr<const uint8_t[]> data;
-		//! Размер этих данных
-		size_t data_size;
+		std::deque<uint8_t> data;
+		//! Исходный размер этих данных (от деки могут быть откусаны куски)
+		size_t data_original_size;
 		//! Каким типом передачи будем гнать этот блок данных
 		qos_t qos;
-
-		//! Начало данных блока (для detail::chunked_queue_adadpter)
-		const uint8_t * begin() const { return data.get(); }
-		//! Конец данных блока (для detail::chunked_queue_adadpter)
-		const uint8_t * end() const { return data.get() + data_size; }
 	};
 
 private:
-	typedef std::deque<data_unit_t> data_queue_t;
-
-	data_queue_t _data_queue;
-	detail::chunked_queue_adadpter<data_queue_t> _chunk_reader;
+	std::deque<data_unit_t> _chunked_deque;
 };
 
 

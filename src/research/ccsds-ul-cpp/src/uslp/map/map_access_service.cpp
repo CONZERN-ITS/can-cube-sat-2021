@@ -9,7 +9,7 @@ namespace ccsds { namespace uslp {
 
 
 map_access_service::map_access_service(gmap_id_t map_id_)
-	: map_service(map_id_), _chunk_reader(_data_queue)
+	: map_service(map_id_), _chunked_deque()
 {
 	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
 	tfdf_size(detail::tfdf_header::full_size);
@@ -28,26 +28,24 @@ void map_access_service::tfdf_size(uint16_t value)
 
 bool map_access_service::peek_tfdf()
 {
-	return !_data_queue.empty();
+	return !_chunked_deque.empty();
 }
 
 
 bool map_access_service::peek_tfdf(tfdf_params & params)
 {
 	// Если в очереди нет ничего готового на отправку - то и забьем
-	if (_data_queue.empty())
+	if (_chunked_deque.empty())
 		return false;
 
-	const auto & front_elem = _data_queue.front();
+	const auto & front_elem = _chunked_deque.front();
 	params.qos = front_elem.qos;
 
-	bool elem_begun;
-	size_t readable;
-	std::tie(elem_begun, readable) = _chunk_reader.peek_chunk();
 	// Если то, что есть в очереди мы не сможем отправить одним фреймом
 	// Придется чуток занять канал
-	size_t payload_max_size = map_service::tfdf_size() - detail::tfdf_header::full_size;
-	params.channel_lock = (readable > static_cast<size_t>(payload_max_size - detail::tfdf_header::full_size));
+	const size_t payload_max_size = map_service::tfdf_size() - detail::tfdf_header::full_size;
+	const size_t available_size = _chunked_deque.front().data.size();
+	params.channel_lock = available_size > payload_max_size;
 
 	return true;
 }
@@ -55,18 +53,43 @@ bool map_access_service::peek_tfdf(tfdf_params & params)
 
 void map_access_service::pop_tfdf(uint8_t * tfdf_buffer)
 {
-	if (!peek_tfdf())
+	if (_chunked_deque.empty())
 		return;
 
+	// О, что-то у нас да есть
+	auto & data_unit = _chunked_deque.front();
+
 	// Отступаем под заголовок
-	auto * payload_begin = tfdf_buffer + detail::tfdf_header::full_size;
-	size_t payload_max_size = map_service::tfdf_size() - detail::tfdf_header::full_size;
+	auto * output_buffer = tfdf_buffer + detail::tfdf_header::full_size;
+	uint16_t output_buffer_size = map_service::tfdf_size() - detail::tfdf_header::full_size;
+	const uint8_t * const tdfz_start = output_buffer;
 
 	// Вываливаем пейлоад
-	size_t chunk_size;
-	bool elem_begun;
-	bool elem_ended;
-	std::tie(elem_begun, chunk_size, elem_ended) = _chunk_reader.pop_chunk(payload_begin, payload_max_size);
+	const bool element_begun = data_unit.data.size() == data_unit.data_original_size;
+
+	uint16_t to_copy_size = static_cast<uint16_t>(
+		std::min(
+			static_cast<size_t>(output_buffer_size),
+			data_unit.data.size()
+		)
+	);
+
+	// Копируем!
+	auto to_copy_begin = std::cbegin(data_unit.data);
+	auto to_copy_end = std::next(to_copy_begin, to_copy_size);
+	std::copy(to_copy_begin, to_copy_end, output_buffer);
+
+	// Откусываем скопированное
+	bool element_ended = false;
+	data_unit.data.erase(to_copy_begin, to_copy_end);
+	if (data_unit.data.empty())
+	{
+		element_ended = true;
+		_chunked_deque.pop_front();
+	}
+
+	output_buffer += to_copy_size;
+	output_buffer_size -= to_copy_size;
 
 	// Пишем заголовок
 	detail::tfdf_header header;
@@ -74,19 +97,21 @@ void map_access_service::pop_tfdf(uint8_t * tfdf_buffer)
 
 	// Если элемент только начался - показываем это специальным флагом
 	header.ctr_rule = static_cast<int>(
-			elem_begun
+			element_begun
 				? detail::tfdz_construction_rule_t::MAP_SDU_START
 				: detail::tfdz_construction_rule_t::MAD_SDU_CONTINUATION
 	);
 
 	// Если элемент закончился в этом фрейме - покажем последний его валидный байт
-	if (elem_ended)
-		header.first_header_offset = chunk_size - 1;
+	if (element_ended)
+		header.first_header_offset = (output_buffer - tdfz_start) - 1;
 	else
 		header.first_header_offset = 0xFFFF; // Если нет - покажем, что он не кончился в этом фрейме
 
 	// Все посчитали - теперь пишем
 	header.write(tfdf_buffer);
+
+	// Готово!
 }
 
 }}

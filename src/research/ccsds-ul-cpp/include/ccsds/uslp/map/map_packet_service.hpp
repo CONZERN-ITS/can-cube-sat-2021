@@ -2,14 +2,12 @@
 #define INCLUDE_CCSDS_USLP_MAP_MAP_PACKET_SERVICE_HPP_
 
 
-
 #include <deque>
 #include <memory>
 
 #include <ccsds/uslp/ids.hpp>
 #include <ccsds/uslp/defs.hpp>
 #include <ccsds/uslp/map/abstract.hpp>
-#include <ccsds/uslp/map/detail/chunked_queue_adapter.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -32,31 +30,22 @@ protected:
 	struct data_unit_t
 	{
 		//! Пакет, которые нужно передать
-		std::unique_ptr<const uint8_t[]> packet;
-		//! Размер этого пакета (со всеми его потрохами)
-		size_t packet_size;
+		std::deque<uint8_t> packet;
+		//! В процессе работы мы будем отпиливать кусочки пакета
+		//! Поэтому тут мы сохраним его исходный размер - пригодится
+		size_t original_packet_size;
 		//! Каким типом передачи будем гнать этот пакет
 		qos_t qos;
-		//! Нужно ли отправлять этот пакет прям сразу, даже если в фрейме после него будет свободное место
-		bool flush_immidiately;
-
-		//! Начало данных пакета (для detail::chunked_queue_adadpter)
-		const uint8_t * begin() const { return packet.get(); }
-		//! Конец данных пакета (для detail::chunked_queue_adadpter)
-		const uint8_t * end() const { return packet.get() + packet_size; }
 	};
 
 	// Размер зоны именно для полезной нагрузки (без заголовка)
 	uint16_t _tfdz_size() const;
 
-	//! Будет ли заблокирован канал после выдачи следующего фрейма
-	bool _will_lock_channel() const;
+	//! Записывает EPP IDLE пакет в указанный буфер указанного размера
+	void _write_idle_packet(uint8_t * buffer, uint16_t idle_packet_size) const;
 
 private:
-	typedef std::deque<data_unit_t> data_queue_t;
-
-	data_queue_t _data_queue;
-	detail::chunked_queue_adadpter<data_queue_t> _chunk_reader;
+	std::deque<data_unit_t> _data_queue;
 };
 
 
