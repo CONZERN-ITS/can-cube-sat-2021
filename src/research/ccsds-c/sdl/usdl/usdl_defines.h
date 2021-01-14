@@ -1,0 +1,20 @@
+/*
+ * usdl_defines.h
+ *
+ *  Created on: 8 џэт. 2021 у.
+ *      Author: HP
+ */
+
+#ifndef SDL_USDL_USDL_DEFINES_H_
+#define SDL_USDL_USDL_DEFINES_H_
+
+
+#define MAP_BUFFER_STATIC
+#ifdef MAP_BUFFER_STATIC
+#define MAP_BUFFER_SIZE 100
+#endif
+
+#define MAP_COUNT 16
+
+
+#endif /* SDL_USDL_USDL_DEFINES_H_ */
