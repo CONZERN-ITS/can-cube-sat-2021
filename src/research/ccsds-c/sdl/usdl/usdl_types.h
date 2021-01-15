@@ -21,6 +21,7 @@
 typedef struct map_mx_t map_mx_t;
 typedef struct map_t map_t;
 typedef struct vc_t vc_t;
+typedef struct vc_mx_t vc_mx_t;
 
 
 typedef struct map_t {
@@ -127,7 +128,13 @@ typedef struct vc_t {
 	sod_flag_t src_or_dest_id;
 	vc_parameters_t parameters;
 	fop_t fop;
+	vc_mx_t *vc_mx;
 } vc_t;
 
+
+
+typedef struct vc_mx_t {
+
+} vc_mx_t;
 
 #endif /* SDL_USDL_USDL_TYPES_H_ */

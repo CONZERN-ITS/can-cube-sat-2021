@@ -5,16 +5,27 @@
  *      Author: HP
  */
 
-#ifndef SDL_USDL_VC_GENERATION_H_
-#define SDL_USDL_VC_GENERATION_H_
+#ifndef SDL_USDL_VC_GENERATE_H_
+#define SDL_USDL_VC_GENERATE_H_
 
 #include "usdl_types.h"
 #include "fop.h"
+#include "vc_multiplex.h"
 #include <string.h>
 #include <assert.h>
 
 int _vc_fop() {
 	return 0;
+}
+
+int _vc_pop_fop(vc_t *vc) {
+	queue_value_t *v = fop_peek(&vc->fop);
+	int ret = vc_multiplex(vc->vc_mx, v->data, v->size, &v->map_params, &v->vc_params);
+	if (ret) {
+		fop_drop(&vc->fop);
+	}
+
+	return ret;
 }
 
 int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) {
@@ -36,10 +47,12 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 	}
 
 	if (vc->parameters.cop_in_effect == COP_1) {
-
-		return fop_add_packet(&vc->fop, data, size, map_params, &p);
+		_vc_pop_fop(vc);
+		int ret = fop_add_packet(&vc->fop, data, size, map_params, &p);
+		while (_vc_pop_fop(vc));
+		return ret;
 	} else if (vc->parameters.cop_in_effect == COP_NONE) {
-		return 0;
+		return vc_multiplex(vc->vc_mx, data, size, map_params, &p);
 	} else {
 		return 0;
 	}
@@ -49,4 +62,4 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 
 
 
-#endif /* SDL_USDL_VC_GENERATION_H_ */
+#endif /* SDL_USDL_VC_GENERATE_H_ */

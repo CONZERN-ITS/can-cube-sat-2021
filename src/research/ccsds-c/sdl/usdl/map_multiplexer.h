@@ -9,10 +9,9 @@
 #define SDL_USDL_MAP_MULTIPLEXER_H_
 
 #include "usdl_types.h"
-#include "vc_generation.h"
-
 #include <string.h>
 #include <assert.h>
+#include "vc_generate.h"
 
 
 
