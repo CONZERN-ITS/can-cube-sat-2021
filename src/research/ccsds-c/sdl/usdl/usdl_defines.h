@@ -15,6 +15,6 @@
 #endif
 
 #define MAP_COUNT 16
-
+#define VC_COUNT 64
 
 #endif /* SDL_USDL_USDL_DEFINES_H_ */

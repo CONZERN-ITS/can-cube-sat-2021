@@ -138,4 +138,5 @@ typedef struct vc_params_t {
 
 
 
+typedef uint8_t mc_id_t;
 #endif /* SDL_USDL_USDL_BASIC_TYPES_H_ */

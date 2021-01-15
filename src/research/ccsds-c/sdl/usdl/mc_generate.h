@@ -10,13 +10,13 @@
 
 #define "usdl_types.h"
 
-typedef uint8_t mc_id_t;
 
-typedef struct mc_t {
-	mc_id_t;
-} mc_t;
 
-int mc_generate();
+int mc_generate(mc_t *mc, uint8_t *data, size_t size,
+		map_params_t *map_params, vc_params_t *vc_params) {
+
+
+}
 
 
 #endif /* SDL_USDL_MC_GENERATE_H_ */

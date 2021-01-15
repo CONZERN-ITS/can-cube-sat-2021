@@ -22,6 +22,7 @@ typedef struct map_mx_t map_mx_t;
 typedef struct map_t map_t;
 typedef struct vc_t vc_t;
 typedef struct vc_mx_t vc_mx_t;
+typedef struct mc_t mc_t;
 
 
 typedef struct map_t {
@@ -134,7 +135,15 @@ typedef struct vc_t {
 
 
 typedef struct vc_mx_t {
-
+	vc_t *vc_arr[VC_COUNT];
+	vc_id_t vc_active;
+	mc_t *mc;
 } vc_mx_t;
+
+
+typedef struct mc_t {
+	vc_mx_t *vc_mx;
+	mc_id_t;
+} mc_t;
 
 #endif /* SDL_USDL_USDL_TYPES_H_ */
