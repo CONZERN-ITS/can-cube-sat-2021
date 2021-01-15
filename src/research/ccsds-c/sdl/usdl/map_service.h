@@ -11,7 +11,8 @@
 
 #include "map_multiplexer.h"
 #include "usdl_types.h"
-
+#include <string.h>
+#include <assert.h>
 
 
 int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos) {
@@ -21,7 +22,7 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 	assert(map->split_allowed);
 	assert(map->size_fixed);
 	assert(map->payload_size <= MAP_BUFFER_SIZE);
-	map_buffer *buf = (qos == QOS_EXPEDITED ? map->buf_ex : map->buf_sc);
+	map_buffer *buf = (qos == QOS_EXPEDITED ? &map->buf_ex : &map->buf_sc);
 
 	map_params_t params;
 	params.qos = qos;
@@ -35,7 +36,7 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 	}
 
 	if (buf->index == map->payload_size) {
-		if (map_mx_multiplex(map->map_mx, params, buf->data, map->payload_size)) {
+		if (map_mx_multiplex(map->map_mx, &params, buf->data, map->payload_size)) {
 			params.fhd = buf->fhd = 0;
 			buf->index = 0;
 		} else {
@@ -57,7 +58,7 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 		buf->index += count_to_send;
 		data_index += count_to_send;
 		if (buf->index == map->payload_size &&
-				map_mx_multiplex(map->map_mx, params, buf->data, count_to_send)) {
+				map_mx_multiplex(map->map_mx, &params, buf->data, count_to_send)) {
 			buf->index = 0;
 			params.fhd = buf->fhd = (fhd_t)-1;
 		} else {

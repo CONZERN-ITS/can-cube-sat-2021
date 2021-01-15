@@ -11,6 +11,8 @@
 
 #include "usdl_types.h"
 
+#include <string.h>
+#include <assert.h>
 
 
 
@@ -76,10 +78,10 @@ int queue_drop(queue_t *queue, vc_id_t vc_id) {
 int queue_pop(queue_t *queue, uint8_t *data, size_t *size,
 		map_params_t *map_params, vc_params_t *vc_params) {
 
-	queue_value_t *t = queue->first->value;
 	if (!queue->first) {
 		return 0;
 	}
+	queue_value_t *t = &queue->first->value;
 
 	if (queue->first->value.size > *size) {
 		return 0;
@@ -110,9 +112,9 @@ int fop_add_packet(fop_t *fop, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params) {
 
 
-	int ret = queue_push(fop->queue, data, size, map_params, vc_params);
+	int ret = queue_push(&fop->queue, data, size, map_params, vc_params);
 	if (ret) {
-		queue_peek(fop->queue)->value.vc_params.vcf_count = fop->frame_count++;
+		queue_peek(&fop->queue)->value.vc_params.vcf_count = fop->frame_count++;
 		return size;
 	} else {
 		return 0;
@@ -120,7 +122,7 @@ int fop_add_packet(fop_t *fop, uint8_t *data, size_t size,
 }
 
 queue_value_t *fop_peek(fop_t *fop) {
-	queue_element_t *t = queue_peek(fop->queue);
+	queue_element_t *t = queue_peek(&fop->queue);
 	if (t) {
 		return &t->value;
 	} else {
@@ -129,11 +131,11 @@ queue_value_t *fop_peek(fop_t *fop) {
 }
 
 void fop_drop(fop_t *fop) {
-	queue_drop_first(fop->queue);
+	queue_drop_first(&fop->queue);
 }
 
 int fop_control() {
-
+	return 0;
 }
 
 #endif /* SDL_USDL_FOP_H_ */

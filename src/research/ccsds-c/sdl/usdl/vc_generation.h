@@ -10,9 +10,11 @@
 
 #include "usdl_types.h"
 #include "fop.h"
+#include <string.h>
+#include <assert.h>
 
 int _vc_fop() {
-
+	return 0;
 }
 
 int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) {
@@ -35,9 +37,11 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 
 	if (vc->parameters.cop_in_effect == COP_1) {
 
-		return fop_add_packet(vc->fop, data, size, map_params, &p);
+		return fop_add_packet(&vc->fop, data, size, map_params, &p);
 	} else if (vc->parameters.cop_in_effect == COP_NONE) {
-
+		return 0;
+	} else {
+		return 0;
 	}
 }
 

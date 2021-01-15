@@ -9,7 +9,10 @@
 #define SDL_USDL_MAP_MULTIPLEXER_H_
 
 #include "usdl_types.h"
+#include "vc_generation.h"
 
+#include <string.h>
+#include <assert.h>
 
 
 
@@ -28,8 +31,8 @@ int map_mx_multiplex(map_mx_t *map_mx, map_params_t *map_params, uint8_t *data, 
 	}
 }
 
-struct map_buffer map_mx_request_buffer(map_mx_t *map_mx, map_id_t map_id) {
-
+map_buffer *map_mx_request_buffer(map_mx_t *map_mx, map_id_t map_id) {
+	return 0;
 }
 
 #endif /* SDL_USDL_MAP_MULTIPLEXER_H_ */
