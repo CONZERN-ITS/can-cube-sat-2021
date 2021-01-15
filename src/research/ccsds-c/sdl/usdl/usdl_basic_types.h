@@ -136,7 +136,15 @@ typedef struct vc_params_t {
 	vcf_count_t vcf_count;
 } vc_params_t;
 
-
-
 typedef uint8_t mc_id_t;
+
+
+typedef struct mc_params_t {
+	ocfp_flag_t ocfp_flag;
+	uint8_t ocf[4];
+	mc_id_t mc_id;
+} mc_params_t;
+
 #endif /* SDL_USDL_USDL_BASIC_TYPES_H_ */
+
+
