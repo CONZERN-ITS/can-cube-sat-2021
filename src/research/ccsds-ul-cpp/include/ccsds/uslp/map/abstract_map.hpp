@@ -1,5 +1,5 @@
-#ifndef INCLUDE_CCSDS_USLP_MAP_ABSTRACT_HPP_
-#define INCLUDE_CCSDS_USLP_MAP_ABSTRACT_HPP_
+#ifndef INCLUDE_CCSDS_USLP_MAP_ABSTRACT_MAP_HPP_
+#define INCLUDE_CCSDS_USLP_MAP_ABSTRACT_MAP_HPP_
 
 #include <cstdint>
 
@@ -8,14 +8,6 @@
 
 
 namespace ccsds { namespace uslp {
-
-
-enum class tfdz_construction_rule_t
-{
-	PACKET_STREAM = 0x00,
-	MAP_ACCESS_SDU_START = 0x01,
-	MAP_ACCESS_SDU_CONTINUE = 0x02,
-};
 
 
 //! Параметры пейлоада, отправляемого этим map каналом
@@ -28,11 +20,11 @@ struct tfdf_params
 };
 
 
-class map_service
+class map_source
 {
 public:
-	map_service(gmap_id_t map_id_): map_id(map_id_) {}
-	virtual ~map_service() = default;
+	map_source(gmap_id_t map_id_): map_id(map_id_) {}
+	virtual ~map_source() = default;
 
 	virtual void tfdf_size(uint16_t value) { _tfdf_size = value; }
 	uint16_t tfdf_size() const { return _tfdf_size; }
@@ -53,4 +45,4 @@ private:
 
 
 
-#endif /* INCLUDE_CCSDS_USLP_MAP_ABSTRACT_HPP_ */
+#endif /* INCLUDE_CCSDS_USLP_MAP_ABSTRACT_MAP_HPP_ */

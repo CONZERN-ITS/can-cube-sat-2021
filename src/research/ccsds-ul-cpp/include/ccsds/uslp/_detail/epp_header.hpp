@@ -8,16 +8,20 @@ namespace ccsds { namespace uslp { namespace detail {
 
 //! Некоторые резервированные идентификаторы инкапсулируемых протоколов
 /*! Идентификаторы назначаются SAN-ой. Тут только интересные нам */
-enum class epp_protocol_id_t
+struct epp_protocol_id_t
 {
-	//! Encapsulation Idle Packet (the encapsulation data field, if present, contains no protocol data but only idle data)
-	IDLE = 0x00,
-	//! Internet Protocol Extension (IPE)
-	IPE = 0x02,
-	//! Extended Protocol ID for Encapsulation Packet Protocol
-	EXTENDED = 0x06,
-	//! Mission-specific, privately defined data
-	PRIVATE = 0x07,
+	epp_protocol_id_t() = delete;
+
+	enum value {
+		//! Encapsulation Idle Packet (the encapsulation data field, if present, contains no protocol data but only idle data)
+		IDLE = 0x00,
+		//! Internet Protocol Extension (IPE)
+		IPE = 0x02,
+		//! Extended Protocol ID for Encapsulation Packet Protocol
+		EXTENDED = 0x06,
+		//! Mission-specific, privately defined data
+		PRIVATE = 0x07,
+	};
 };
 
 //! Заголовок EPP пакета

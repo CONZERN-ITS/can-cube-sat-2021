@@ -1,4 +1,4 @@
-#include <ccsds/uslp/map/detail/epp_header.hpp>
+#include <ccsds/uslp/_detail/epp_header.hpp>
 
 #include <endian.h>
 

@@ -1,9 +1,9 @@
-#include <ccsds/uslp/frame_reader.hpp>
+#include <ccsds/uslp/_detail/frame_reader.hpp>
 #include <endian.h>
 #include <cstring>
 
 
-namespace ccsds { namespace uslp {
+namespace ccsds { namespace uslp { namespace detail {
 
 frame_reader::frame_reader(
 		uint8_t * frame_buffer, size_t frame_buffer_size, uint16_t insert_zone_size
@@ -192,5 +192,4 @@ uint16_t frame_reader::_parse_extended_header(const uint8_t * frame_buffer, exte
 }
 
 
-
-}}
+}}}

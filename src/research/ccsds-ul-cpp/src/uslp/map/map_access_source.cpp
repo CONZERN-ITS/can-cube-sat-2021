@@ -1,67 +1,66 @@
-#include <ccsds/uslp/map/map_access_service.hpp>
-
 #include <ccsds/uslp/exceptions.hpp>
 
-#include <ccsds/uslp/map/detail/tfdf_header.hpp>
+#include <ccsds/uslp/_detail/tfdf_header.hpp>
+#include <ccsds/uslp/map/map_access_source.hpp>
 
 
 namespace ccsds { namespace uslp {
 
 
-map_access_service::map_access_service(gmap_id_t map_id_)
-	: map_service(map_id_), _chunked_deque()
+map_access_source::map_access_source(gmap_id_t map_id_)
+	: map_source(map_id_), _data_queue()
 {
 	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
 	tfdf_size(detail::tfdf_header::full_size);
 }
 
 
-void map_access_service::tfdf_size(uint16_t value)
+void map_access_source::tfdf_size(uint16_t value)
 {
 	// Проверка на то, что мы можем столько
 	if (value < detail::tfdf_header::full_size)
 		throw einval_exception("map_access service requires no less than 4 bytes for tfdf zone size");
 
-	this->map_service::tfdf_size(value);
+	this->map_source::tfdf_size(value);
 }
 
 
-bool map_access_service::peek_tfdf()
+bool map_access_source::peek_tfdf()
 {
-	return !_chunked_deque.empty();
+	return !_data_queue.empty();
 }
 
 
-bool map_access_service::peek_tfdf(tfdf_params & params)
+bool map_access_source::peek_tfdf(tfdf_params & params)
 {
 	// Если в очереди нет ничего готового на отправку - то и забьем
-	if (_chunked_deque.empty())
+	if (_data_queue.empty())
 		return false;
 
-	const auto & front_elem = _chunked_deque.front();
+	const auto & front_elem = _data_queue.front();
 	params.qos = front_elem.qos;
 
 	// Если то, что есть в очереди мы не сможем отправить одним фреймом
 	// Придется чуток занять канал
-	const size_t payload_max_size = map_service::tfdf_size() - detail::tfdf_header::full_size;
-	const size_t available_size = _chunked_deque.front().data.size();
+	const size_t payload_max_size = map_source::tfdf_size() - detail::tfdf_header::full_size;
+	const size_t available_size = _data_queue.front().data.size();
 	params.channel_lock = available_size > payload_max_size;
 
 	return true;
 }
 
 
-void map_access_service::pop_tfdf(uint8_t * tfdf_buffer)
+void map_access_source::pop_tfdf(uint8_t * tfdf_buffer)
 {
-	if (_chunked_deque.empty())
+	if (_data_queue.empty())
 		return;
 
 	// О, что-то у нас да есть
-	auto & data_unit = _chunked_deque.front();
+	auto & data_unit = _data_queue.front();
 
 	// Отступаем под заголовок
 	auto * output_buffer = tfdf_buffer + detail::tfdf_header::full_size;
-	uint16_t output_buffer_size = map_service::tfdf_size() - detail::tfdf_header::full_size;
+	uint16_t output_buffer_size = map_source::tfdf_size() - detail::tfdf_header::full_size;
 	const uint8_t * const tdfz_start = output_buffer;
 
 	// Вываливаем пейлоад
@@ -85,7 +84,7 @@ void map_access_service::pop_tfdf(uint8_t * tfdf_buffer)
 	if (data_unit.data.empty())
 	{
 		element_ended = true;
-		_chunked_deque.pop_front();
+		_data_queue.pop_front();
 	}
 
 	output_buffer += to_copy_size;
@@ -99,7 +98,7 @@ void map_access_service::pop_tfdf(uint8_t * tfdf_buffer)
 	header.ctr_rule = static_cast<int>(
 			element_begun
 				? detail::tfdz_construction_rule_t::MAP_SDU_START
-				: detail::tfdz_construction_rule_t::MAD_SDU_CONTINUATION
+				: detail::tfdz_construction_rule_t::MAP_SDU_CONTINUATION
 	);
 
 	// Если элемент закончился в этом фрейме - покажем последний его валидный байт

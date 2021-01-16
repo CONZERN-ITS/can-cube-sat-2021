@@ -1,4 +1,4 @@
-#include <ccsds/uslp/map/detail/tfdf_header.hpp>
+#include <ccsds/uslp/_detail/tfdf_header.hpp>
 #include <endian.h>
 
 #include <cstring>

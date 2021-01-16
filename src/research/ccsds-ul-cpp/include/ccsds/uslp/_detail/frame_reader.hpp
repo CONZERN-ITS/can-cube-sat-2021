@@ -8,7 +8,7 @@
 #include <ccsds/uslp/defs.hpp>
 
 
-namespace ccsds { namespace uslp {
+namespace ccsds { namespace uslp { namespace detail {
 
 
 class frame_reader
@@ -70,7 +70,7 @@ private:
 };
 
 
-}}
+}}}
 
 
 

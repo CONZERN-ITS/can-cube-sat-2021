@@ -7,30 +7,38 @@
 namespace ccsds { namespace uslp { namespace detail {
 
 //! указатель сегментирования данных map канала
-enum class tfdz_construction_rule_t
+struct tfdz_construction_rule_t
 {
-	//! Стандартные пакеты размазанные по одному или нескольким транспортным фреймам
-	PACKETS_SPANNING_MULTIPLE_FRAMES = 0x00,
-	//! В этом фрейме начинается юнит MAP Access сервиса
-	MAP_SDU_START = 0x01,
-	//! В этом фрейме продолжается (или заканчивается) юнит MAP Access сервиса
-	MAD_SDU_CONTINUATION = 0x02,
+	tfdz_construction_rule_t() = delete;
+
+	enum value {
+		//! Стандартные пакеты размазанные по одному или нескольким транспортным фреймам
+		PACKETS_SPANNING_MULTIPLE_FRAMES = 0x00,
+		//! В этом фрейме начинается юнит MAP Access сервиса
+		MAP_SDU_START = 0x01,
+		//! В этом фрейме продолжается (или заканчивается) юнит MAP Access сервиса
+		MAP_SDU_CONTINUATION = 0x02,
+	};
 };
 
 //! Идентификатор типа данных в TFDZ
 /*! Устаналивается SANA-ой. Тут приведены актуальные на данный момент и интересные для нас знчения */
-enum class upid_t
+struct upid_t
 {
-	//! Space Packets or Encapsulation packets are contained within the TFDZ.
-	CCSDS_PACKETS = 0x00,
-	//! COP-1 Control Commands are contained within the TFDZ.
-	COP_1_CTRL_COMMANDS = 0x01,
-	//! COP-P Control Commands are contained within the TFDZ.
-	COP_P_CTRL_COMMANDS = 0x02,
-	//! Mission-specific information-1 as a MAPA_SDU is contained within the TFDZ.
-	MAP_ACCESS_SDU = 0x05,
-	//! UPID field signals that the entire fixed-length TFDZ contains idle data.
-	IDLE = 0x1F
+	upid_t() = delete;
+
+	enum value {
+		//! Space Packets or Encapsulation packets are contained within the TFDZ.
+		CCSDS_PACKETS = 0x00,
+		//! COP-1 Control Commands are contained within the TFDZ.
+		COP_1_CTRL_COMMANDS = 0x01,
+		//! COP-P Control Commands are contained within the TFDZ.
+		COP_P_CTRL_COMMANDS = 0x02,
+		//! Mission-specific information-1 as a MAPA_SDU is contained within the TFDZ.
+		MAP_ACCESS_SDU = 0x05,
+		//! UPID field signals that the entire fixed-length TFDZ contains idle data.
+		IDLE = 0x1F
+	};
 };
 
 

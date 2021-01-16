@@ -1,23 +1,23 @@
-#ifndef INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SERVICE_HPP_
-#define INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SERVICE_HPP_
+#ifndef INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SOURCE_HPP_
+#define INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SOURCE_HPP_
 
 #include <deque>
 #include <memory>
 
 #include <ccsds/uslp/ids.hpp>
 #include <ccsds/uslp/defs.hpp>
-#include <ccsds/uslp/map/abstract.hpp>
+#include <ccsds/uslp/map/abstract_map.hpp>
 
 
 namespace ccsds { namespace uslp {
 
 
-class map_access_service: public map_service
+class map_access_source: public map_source
 {
 public:
 
-	map_access_service(gmap_id_t map_id_);
-	virtual ~map_access_service() = default;
+	map_access_source(gmap_id_t map_id_);
+	virtual ~map_access_source() = default;
 
 	virtual void tfdf_size(uint16_t value) override;
 
@@ -38,7 +38,7 @@ protected:
 	};
 
 private:
-	std::deque<data_unit_t> _chunked_deque;
+	std::deque<data_unit_t> _data_queue;
 };
 
 
@@ -46,4 +46,4 @@ private:
 
 
 
-#endif /* INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SERVICE_HPP_ */
+#endif /* INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SOURCE_HPP_ */

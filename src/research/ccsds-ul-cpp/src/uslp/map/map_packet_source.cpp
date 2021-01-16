@@ -1,34 +1,36 @@
-#include <ccsds/uslp/map/map_packet_service.hpp>
+#include <ccsds/uslp/map/map_packet_source.hpp>
 
 #include <cassert>
 #include <cstring>
 
 #include <ccsds/uslp/exceptions.hpp>
-#include <ccsds/uslp/map/detail/tfdf_header.hpp>
-#include <ccsds/uslp/map/detail/epp_header.hpp>
+
+#include <ccsds/uslp/_detail/tfdf_header.hpp>
+#include <ccsds/uslp/_detail/epp_header.hpp>
+
 
 
 namespace ccsds { namespace uslp {
 
-map_packet_service::map_packet_service(gmap_id_t map_id_)
-	: map_service(map_id_), _data_queue()
+map_packet_source::map_packet_source(gmap_id_t map_id_)
+	: map_source(map_id_), _data_queue()
 {
 	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
 	tfdf_size(detail::tfdf_header::full_size);
 }
 
 
-void map_packet_service::tfdf_size(uint16_t value)
+void map_packet_source::tfdf_size(uint16_t value)
 {
 	// Проверка на то, что мы можем столько
 	if (value < detail::tfdf_header::full_size)
 		throw einval_exception("map_packet service requires no less than 4 bytes for tfdf zone size");
 
-	this->map_service::tfdf_size(value);
+	this->map_source::tfdf_size(value);
 }
 
 
-bool map_packet_service::peek_tfdf()
+bool map_packet_source::peek_tfdf()
 {
 	// Тут оптимизации не будет :c
 	tfdf_params dummy;
@@ -36,7 +38,7 @@ bool map_packet_service::peek_tfdf()
 }
 
 
-bool map_packet_service::peek_tfdf(tfdf_params & params)
+bool map_packet_source::peek_tfdf(tfdf_params & params)
 {
 	// У нас вообще что-нибудь есть там?
 	if (_data_queue.empty())
@@ -78,7 +80,7 @@ bool map_packet_service::peek_tfdf(tfdf_params & params)
 }
 
 
-void map_packet_service::pop_tfdf(uint8_t * tfdf_buffer)
+void map_packet_source::pop_tfdf(uint8_t * tfdf_buffer)
 {
 	// Если ничего нет - ничего и не дадим. Хотя по чесноку - этот метод не должны вызывать
 	// если ничего нет
@@ -148,13 +150,13 @@ void map_packet_service::pop_tfdf(uint8_t * tfdf_buffer)
 }
 
 
-uint16_t map_packet_service::_tfdz_size() const
+uint16_t map_packet_source::_tfdz_size() const
 {
-	return map_service::tfdf_size() - detail::tfdf_header::full_size; // У нас всегда полный заголовок
+	return map_source::tfdf_size() - detail::tfdf_header::full_size; // У нас всегда полный заголовок
 }
 
 
-void map_packet_service::_write_idle_packet(uint8_t * buffer, uint16_t idle_packet_size) const
+void map_packet_source::_write_idle_packet(uint8_t * buffer, uint16_t idle_packet_size) const
 {
 	if (0 == idle_packet_size)
 		return;

@@ -1,0 +1,258 @@
+#include <ccsds/uslp/_detail/tf_header.hpp>
+
+#include <endian.h>
+
+#include <sstream>
+#include <cstring>
+#include <cassert>
+
+#include <ccsds/uslp/exceptions.hpp>
+
+
+namespace ccsds { namespace uslp { namespace detail {
+
+// Минимально допустимое количество байт для хранения указанной величины
+static uint8_t _shortest_byte_size(uint64_t value)
+{
+	if		(value >> 7) return 8;
+	else if (value >> 6) return 7;
+	else if (value >> 5) return 6;
+	else if (value >> 4) return 5;
+	else if (value >> 3) return 4;
+	else if (value >> 2) return 3;
+	else if (value >> 1) return 2;
+	else
+		return 1;
+}
+
+
+void tf_header_extended_part_t::frame_seq_no(std::optional<uint64_t> frame_seq_no)
+{
+	if (!frame_seq_no)
+	{
+		_frame_seq_no_len = 0;
+		return;
+	}
+
+	const uint16_t len = _shortest_byte_size(*frame_seq_no);
+	if (len > 7)
+	{
+		std::stringstream error;
+		error << "invalid value for frame seq number: 0x" << std::hex << *frame_seq_no << std::dec
+				<< "value should fit in 56 bits";
+
+		throw einval_exception(error.str());
+	}
+
+	_frame_seq_no = *frame_seq_no;
+	_frame_seq_no_len = len;
+}
+
+
+void tf_header_extended_part_t::frame_seq_no(uint64_t frame_seq_no, uint8_t frame_seq_no_len)
+{
+	uint8_t minimum_len = _shortest_byte_size(frame_seq_no);
+
+	if (frame_seq_no_len > 7)
+	{
+		std::stringstream error;
+		error << "invalid frame_seq_no_len value: " << frame_seq_no_len << ". frame_seq_no_len should be in range [0, 7]";
+		throw einval_exception(error.str());
+	}
+	else if (frame_seq_no_len < minimum_len)
+	{
+		std::stringstream error;
+		error << "invalid value for frame seq number with specified length. Value"
+				<< " 0x" << std::hex << frame_seq_no << std::dec << " would not fit in"
+				<< " " << frame_seq_no_len << " bytes";
+
+		throw einval_exception(error.str());
+	}
+
+	_frame_seq_no = frame_seq_no;
+	_frame_seq_no_len = frame_seq_no_len;
+}
+
+
+uint16_t tf_header_extended_part_t::size() const noexcept
+{
+	return static_size + _frame_seq_no_len;
+}
+
+
+void tf_header_extended_part_t::write(uint8_t * buffer) const noexcept
+{
+	uint8_t * ext_header_start = buffer;
+
+	// Первое поле - длина кадра
+	const uint16_t frame_len = htobe16(this->frame_len);
+	std::memcpy(buffer, &frame_len, sizeof(frame_len));
+
+	// Второе поле - различные флаги
+	uint8_t frame_flags = 0;
+
+	bool bypass_flag;
+	bool command_flag;
+	switch (frame_class)
+	{
+	case frame_class_t::EXPEDITED_COMMAND:
+		bypass_flag = true;
+		command_flag = true;
+		break;
+
+	case frame_class_t::EXPEDITED_PAYLOAD:
+		bypass_flag = true;
+		command_flag = false;
+		break;
+
+	case frame_class_t::CONTROLLED_PAYLOAD:
+		bypass_flag = false;
+		command_flag = false;
+		break;
+
+	case frame_class_t::RESERVED:
+		bypass_flag = false;
+		command_flag = true;
+		break;
+
+	default:
+		assert(false);
+	}
+
+	frame_flags |= (bypass_flag ? 0x01 : 0x00) << 7;
+	frame_flags |= (command_flag ? 0x01 : 0x00) << 6;
+	frame_flags |= (ocf_present ? 0x01 : 0x00) << 3;
+	frame_flags |= (_frame_seq_no_len & 0x7) << 0;
+	std::memcpy(buffer + sizeof(uint16_t), &frame_flags, sizeof(frame_flags));
+
+	// теперь самое неприятное - пишем собственно длину кадра
+	uint8_t * const frame_no_bytes_start =
+			ext_header_start + sizeof(uint16_t) + sizeof(uint8_t);
+
+	for (uint8_t i = 0; i < _frame_seq_no_len; i++)
+	{
+		// Раскладываем со старшего байта
+		uint8_t byte = (_frame_seq_no >> (_frame_seq_no_len - 1 - i)) & 0xFF;
+		frame_no_bytes_start[i] = byte;
+	}
+
+	// На этом все
+}
+
+
+void tf_header_extended_part_t::read(const uint8_t * buffer)
+{
+	const uint8_t * ext_header_start = buffer;
+
+	// Будем грузить все в кандидата. Потому что хотим зачем-то exception safety
+	tf_header_extended_part_t candidate;
+
+	// Первое поле - длина кадра
+	uint16_t frame_len;
+	std::memcpy(&frame_len, ext_header_start, sizeof(uint16_t));
+	frame_len = be32toh(frame_len);
+	candidate.frame_len = frame_len + 1; // Потому что именно так оно и считается
+
+	// Второе поле - различные флаги
+	uint8_t frame_flags = *(ext_header_start + sizeof(uint16_t));
+
+	// Считаем класс фрейма
+	bool bypass_flag = (frame_flags >> 7) & 0x01 ? true : false;
+	bool command_flag = (frame_flags >> 6) & 0x01 ? true : false;
+	if (bypass_flag && command_flag)
+		candidate.frame_class = frame_class_t::EXPEDITED_COMMAND;
+	else if (bypass_flag && !command_flag)
+		candidate.frame_class = frame_class_t::EXPEDITED_PAYLOAD;
+	else if (!bypass_flag && !command_flag)
+		candidate.frame_class = frame_class_t::CONTROLLED_PAYLOAD;
+	else // if (!bypass_flag && command_flag)
+		candidate.frame_class = frame_class_t::RESERVED;
+
+	// Дальше два бита резерва
+
+	// Теперь смотрим есть ли в кадре OCF поле
+	candidate.ocf_present = (frame_flags >> 3) & 0x01 ? true : false;
+
+	// смотрим длину поля с номером кадра
+	std::optional<uint16_t> frame_seq_no;
+	uint16_t frame_no_len = (frame_flags >> 0) & 0x7;
+	if (frame_no_len)
+	{
+		const uint8_t * const frame_no_bytes_start =
+				ext_header_start + sizeof(uint16_t) + sizeof(uint8_t)
+		;
+		uint64_t frame_no = 0;
+		for (int i = 0; i < frame_no_len; i++)
+		{
+			// Считываем очередной байт
+			const uint8_t byte = frame_no_bytes_start[i];
+			// Впихиваем его в итоговое число в соответствующий разряд
+			frame_no = frame_no | static_cast<uint64_t>(byte) << (frame_no_len - 1 - i);
+		}
+
+		frame_seq_no = frame_no;
+	}
+
+	if (frame_seq_no)
+		candidate.frame_seq_no(*frame_seq_no, frame_no_len);
+
+	std::swap(*this, candidate); // @suppress("Invalid arguments")
+}
+
+
+/*static*/ uint16_t tf_header_t::extended_size_forecast(uint8_t frame_seq_no_len)
+{
+	if (frame_seq_no_len > 7)
+	{
+		std::stringstream error;
+		error << "invalid frame_seq_no_len value: " << frame_seq_no_len << ". frame_seq_no_len should be in range [0, 7]";
+		throw einval_exception(error.str());
+	}
+
+	return static_size + tf_header_extended_part_t::static_size + frame_seq_no_len;
+}
+
+
+uint16_t tf_header_t::size() const
+{
+	uint16_t retval = static_size;
+	if (ext)
+		retval += ext->size();
+
+	return retval;
+}
+
+
+void tf_header_t::write(uint8_t * buffer) const
+{
+
+}
+
+
+void tf_header_t::read(const uint8_t * buffer)
+{
+	uint32_t word;
+	std::memcpy(&word, buffer, sizeof(word));
+	word = be32toh(word);
+
+	tf_header_t candidate;
+
+	bool have_extension = (word >> 0) & 0x0001 ? false : true; // внимание - тут инверсия
+	candidate.gmap_id.map_id((word >> 1) & 0x000F);
+	candidate.gmap_id.vchannel_id((word >> 5) & 0x003F);
+	candidate.id_is_destination = (word >> 11) & 0x0001 ? true : false;
+	candidate.gmap_id.sc_id((word >> 12) & 0x00FF);
+	candidate.frame_version_no = (word >> 28) & 0x000F;
+
+	if (have_extension)
+	{
+		candidate.ext.emplace();
+		candidate.ext->read(buffer + tf_header_t::static_size);
+	}
+
+	std::swap(*this, candidate);  // @suppress("Invalid arguments")
+}
+
+
+
+}}}
