@@ -8,8 +8,11 @@
 #ifndef SDL_USDL_MC_GENERATE_H_
 #define SDL_USDL_MC_GENERATE_H_
 
-#include "usdl_types.h"
-#include "mc_multiplex.h"
+#include <ccsds/sdl/usdl/mc_generate.h>
+#include <ccsds/sdl/usdl/vc_multiplex.h>
+#include <ccsds/sdl/usdl/mc_multiplex.h>
+#include <ccsds/sdl/usdl/fop.h>
+#include <ccsds/sdl/usdl/usdl_types.h>
 
 
 int mc_generate(mc_t *mc, uint8_t *data, size_t size,

@@ -8,9 +8,9 @@
 #ifndef SDL_USDL_MAP_SERVICE_H_
 #define SDL_USDL_MAP_SERVICE_H_
 
-
-#include "map_multiplexer.h"
-#include "usdl_types.h"
+#include <ccsds/sdl/usdl/map_service.h>
+#include <ccsds/sdl/usdl/map_multiplexer.h>
+#include <ccsds/sdl/usdl/usdl_types.h>
 #include <string.h>
 #include <assert.h>
 

@@ -8,10 +8,11 @@
 #ifndef SDL_USDL_MAP_MULTIPLEXER_H_
 #define SDL_USDL_MAP_MULTIPLEXER_H_
 
-#include "usdl_types.h"
+#include <ccsds/sdl/usdl/map_multiplexer.h>
+#include <ccsds/sdl/usdl/vc_generate.h>
+#include <ccsds/sdl/usdl/usdl_types.h>
 #include <string.h>
 #include <assert.h>
-#include "vc_generate.h"
 
 
 

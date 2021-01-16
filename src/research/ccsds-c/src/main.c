@@ -5,7 +5,7 @@
  *      Author: HP
  */
 
-#include "usdl/usdl.h"
+#include <ccsds/sdl/usdl/usdl.h>
 #include <stdio.h>
 
 int main() {

@@ -8,9 +8,8 @@
 #ifndef SDL_USDL_FOP_H_
 #define SDL_USDL_FOP_H_
 
-
-#include "usdl_types.h"
-
+#include <ccsds/sdl/usdl/fop.h>
+#include <ccsds/sdl/usdl/usdl_types.h>
 #include <string.h>
 #include <assert.h>
 
