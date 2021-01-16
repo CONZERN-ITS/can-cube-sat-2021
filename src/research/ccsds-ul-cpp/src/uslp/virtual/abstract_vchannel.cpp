@@ -98,7 +98,7 @@ uint64_t vchannel_source::get_frame_seq_no() const
 
 void vchannel_source::increase_frame_seq_no()
 {
-	_frame_seq_no = _frame_seq_no & _mask_for_byte_size(_frame_seq_no_len);
+	_frame_seq_no = (_frame_seq_no + 1) & _mask_for_byte_size(_frame_seq_no_len);
 }
 
 

@@ -125,6 +125,7 @@ void map_muxer_vchannel_source::pop_frame(uint8_t * tfdf_buffer)
 		_selected_channel = nullptr; // Если блокировки нет - снимаем этот канал с выбранного
 
 	selected_channel_copy->pop_tfdf(tfdf_buffer);
+	vchannel_source::increase_frame_seq_no();
 }
 
 

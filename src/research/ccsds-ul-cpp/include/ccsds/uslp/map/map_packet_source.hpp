@@ -17,6 +17,7 @@ class map_packet_source: public map_source
 {
 public:
 	map_packet_source(gmap_id_t map_id_);
+	map_packet_source(gmap_id_t map_id_, uint16_t tfdf_size);
 	virtual ~map_packet_source() = default;
 
 	virtual void tfdf_size(uint16_t value) override;

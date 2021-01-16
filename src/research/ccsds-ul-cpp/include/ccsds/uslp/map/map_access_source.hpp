@@ -17,6 +17,7 @@ class map_access_source: public map_source
 public:
 
 	map_access_source(gmap_id_t map_id_);
+	map_access_source(gmap_id_t map_id_, uint16_t tfdf_size);
 	virtual ~map_access_source() = default;
 
 	virtual void tfdf_size(uint16_t value) override;

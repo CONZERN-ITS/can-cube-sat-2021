@@ -13,10 +13,16 @@
 namespace ccsds { namespace uslp {
 
 map_packet_source::map_packet_source(gmap_id_t map_id_)
-	: map_source(map_id_), _data_queue()
+	: map_source(map_id_, detail::tfdf_header::full_size)
 {
 	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
-	tfdf_size(detail::tfdf_header::full_size);
+}
+
+
+map_packet_source::map_packet_source(gmap_id_t map_id_, uint16_t tfdf_size)
+: map_source(map_id_, tfdf_size)
+{
+
 }
 
 
