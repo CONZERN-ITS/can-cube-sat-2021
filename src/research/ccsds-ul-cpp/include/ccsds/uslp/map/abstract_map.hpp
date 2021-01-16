@@ -23,11 +23,12 @@ struct tfdf_params
 class map_source
 {
 public:
-	map_source(gmap_id_t map_id_): map_id(map_id_) {}
+	map_source(gmap_id_t map_id_);
+	map_source(gmap_id_t map_id_, uint16_t tfdf_size_);
 	virtual ~map_source() = default;
 
-	virtual void tfdf_size(uint16_t value) { _tfdf_size = value; }
-	uint16_t tfdf_size() const { return _tfdf_size; }
+	virtual void tfdf_size(uint16_t value);
+	uint16_t tfdf_size() const noexcept { return _tfdf_size; }
 
 	virtual bool peek_tfdf() = 0;
 	virtual bool peek_tfdf(tfdf_params & params) = 0;

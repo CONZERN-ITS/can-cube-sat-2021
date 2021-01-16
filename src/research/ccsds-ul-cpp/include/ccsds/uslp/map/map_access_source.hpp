@@ -25,6 +25,8 @@ public:
 	virtual bool peek_tfdf(tfdf_params & params) override;
 	virtual void pop_tfdf(uint8_t * tfdf_buffer) override;
 
+	void add_sdu(const uint8_t * data, size_t data_size, qos_t qos);
+
 protected:
 	//! В таком виде будем хранить передаваемые нами чанки
 	struct data_unit_t

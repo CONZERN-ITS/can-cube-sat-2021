@@ -70,6 +70,12 @@ void vchannel_source::frame_seq_no_len(uint16_t value)
 }
 
 
+uint16_t vchannel_source::tfdf_size() const
+{
+	return _frame_size_l2 - detail::tf_header_t::extended_size_forecast(_frame_seq_no_len);
+}
+
+
 void vchannel_source::set_frame_seq_no(uint64_t value)
 {
 	if (value > _mask_for_byte_size(_frame_seq_no_len))

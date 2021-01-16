@@ -6,7 +6,7 @@ namespace ccsds { namespace uslp {
 
 
 mchannel_muxer_pchannel_source::mchannel_muxer_pchannel_source(std::string name_)
-	: pchannel_source(std::move(name))
+	: pchannel_source(std::move(name_))
 {
 
 }
@@ -76,7 +76,7 @@ bool mchannel_muxer_pchannel_source::peek_frame()
 	if (!_selected_mchannel)
 		_selected_mchannel = _muxer.select_next();
 
-	if (_selected_mchannel)
+	if (!_selected_mchannel)
 		return false;
 
 	return _selected_mchannel->peek_frame();
@@ -88,7 +88,7 @@ bool mchannel_muxer_pchannel_source::peek_frame(pchannel_frame_params_t & frame_
 	if (!_selected_mchannel)
 		_selected_mchannel = _muxer.select_next();
 
-	if (_selected_mchannel)
+	if (!_selected_mchannel)
 		return false;
 
 	mchannel_frame_params_t mchannel_params;

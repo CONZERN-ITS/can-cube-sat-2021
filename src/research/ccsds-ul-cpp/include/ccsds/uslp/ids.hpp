@@ -18,12 +18,17 @@ namespace ccsds { namespace uslp {
 		void sc_id(uint16_t value) { _sc_id = value; }
 		uint16_t sc_id() const { return _sc_id; }
 
-		bool operator == (const mcid_t & other) const
+		const bool operator == (const mcid_t & other) const
 		{
 			return this->_sc_id == other._sc_id;
 		}
 
-		bool operator < (const mcid_t & other) const
+		const bool operator != (const mcid_t & other) const
+		{
+			return !(*this == other);
+		}
+
+		const bool operator < (const mcid_t & other) const
 		{
 			return this->_sc_id < other._sc_id;
 		}
@@ -43,15 +48,22 @@ namespace ccsds { namespace uslp {
 			vchannel_id(vchannel_id_);
 		}
 
+		mcid_t mcid() const { return mcid_t(*this); }
+
 		void vchannel_id(uint8_t value) { _vchannel_id = value; }
 		uint8_t vchannel_id() const { return _vchannel_id; }
 
-		bool operator == (const gvcid_t & other) const
+		const bool operator == (const gvcid_t & other) const
 		{
 			return mcid_t::operator==(other) && this->_vchannel_id == other._vchannel_id;
 		}
 
-		bool operator < (const gvcid_t & other) const
+		const bool operator != (const gvcid_t & other) const
+		{
+			return !(*this == other);
+		}
+
+		const bool operator < (const gvcid_t & other) const
 		{
 			if (mcid_t::operator==(other))
 				return this->_vchannel_id < other._vchannel_id;
@@ -74,15 +86,22 @@ namespace ccsds { namespace uslp {
 			map_id(map_id_);
 		}
 
+		gvcid_t gvcid() const { return gvcid_t(*this); }
+
 		void map_id(uint8_t value) { _map_id = value; }
 		uint8_t map_id() const { return _map_id; }
 
-		bool operator == (const gmap_id_t & other) const
+		const bool operator == (const gmap_id_t & other) const
 		{
 			return gvcid_t::operator==(other) && this->_map_id == other._map_id;
 		}
 
-		bool operator < (const gmap_id_t & other) const
+		const bool operator != (const gmap_id_t & other) const
+		{
+			return !(*this == other);
+		}
+
+		const bool operator < (const gmap_id_t & other) const
 		{
 			if (gvcid_t::operator==(other))
 				return this->_map_id < other._map_id;

@@ -39,6 +39,8 @@ void vchannel_muxer_mchannel_source::frame_size_l1(uint16_t value)
 
 void vchannel_muxer_mchannel_source::add_vchannel_source(vchannel_source * source)
 {
+	if (source->gvcid.mcid() != this->mcid)
+
 	source->frame_size_l2(_frame_size_l2());
 	_muxer.add_source(source);
 }

@@ -35,7 +35,7 @@ public:
 	virtual void frame_seq_no_len(uint16_t value);
 	uint8_t frame_seq_no_len() const noexcept { return _frame_seq_no_len; }
 
-	uint16_t tfdf_size() const noexcept { return _frame_size_l2 - _frame_seq_no_len; }
+	uint16_t tfdf_size() const;
 
 	virtual void add_map_source(map_source * source) = 0;
 

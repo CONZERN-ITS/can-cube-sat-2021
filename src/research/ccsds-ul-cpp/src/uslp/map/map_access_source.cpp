@@ -113,5 +113,16 @@ void map_access_source::pop_tfdf(uint8_t * tfdf_buffer)
 	// Готово!
 }
 
+
+void map_access_source::add_sdu(const uint8_t * data, size_t data_size, qos_t qos)
+{
+	data_unit_t du;
+	std::copy(data, data + data_size, std::back_inserter(du.data));
+	du.data_original_size = data_size;
+	du.qos = qos;
+
+	_data_queue.push_back(du);
+}
+
 }}
 
