@@ -14,6 +14,9 @@
 namespace ccsds { namespace uslp {
 
 
+class mchannel_source;
+
+
 struct pchannel_frame_params_t
 {
 	gmap_id_t channel_id;
@@ -39,6 +42,8 @@ public:
 	virtual void error_control_len(error_control_len_t value);
 	error_control_len_t error_control_len() const noexcept { return _error_control_len; }
 
+	virtual void add_mchannel_source(mchannel_source * source) = 0;
+
 	virtual bool peek_frame() = 0;
 	virtual bool peek_frame(pchannel_frame_params_t & frame_params) = 0;
 	virtual void pop_frame(uint8_t * frame_buffer) = 0;
@@ -48,20 +53,6 @@ public:
 private:
 	int32_t _frame_size = 0;
 	error_control_len_t _error_control_len = error_control_len_t::ZERO;
-};
-
-
-
-class insert_zone_source
-{
-public:
-	insert_zone_source(uint16_t zone_size_): zone_size(zone_size_) {}
-	virtual ~insert_zone_source() = default;
-
-	virtual bool peek_zone() = 0;
-	virtual void write_zone(uint8_t * zone_buffer) = 0;
-
-	const uint16_t zone_size;
 };
 
 

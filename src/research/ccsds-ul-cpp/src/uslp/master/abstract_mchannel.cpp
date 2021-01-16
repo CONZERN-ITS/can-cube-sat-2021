@@ -2,6 +2,7 @@
 
 namespace ccsds { namespace uslp {
 
+
 mchannel_source::mchannel_source(mcid_t mcid_)
 	: mcid(mcid_)
 {
@@ -9,16 +10,16 @@ mchannel_source::mchannel_source(mcid_t mcid_)
 }
 
 
-mchannel_source::mchannel_source(mcid_t mcid_, uint16_t frame_data_unit_size_)
-	: mcid(mcid_)
+mchannel_source::mchannel_source(mcid_t mcid_, uint16_t frame_size_l1_)
+	: mcid(mcid_), _frame_size_l1(frame_size_l1_)
 {
-	frame_data_unit_size(frame_data_unit_size_);
+
 }
 
 
-void mchannel_source::frame_data_unit_size(uint16_t value)
+void mchannel_source::frame_size_l1(uint16_t value)
 {
-	_frame_unit_size = value;
+	_frame_size_l1 = value;
 }
 
 

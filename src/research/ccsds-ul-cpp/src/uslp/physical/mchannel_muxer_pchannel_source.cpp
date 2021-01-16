@@ -1,4 +1,5 @@
 #include <ccsds/uslp/physical/mchannel_muxer_pchannel_source.hpp>
+
 #include <cassert>
 
 namespace ccsds { namespace uslp {
@@ -28,8 +29,46 @@ mchannel_muxer_pchannel_source::mchannel_muxer_pchannel_source(
 
 void mchannel_muxer_pchannel_source::frame_size(int32_t value)
 {
+	const auto old_value = pchannel_source::frame_size();
+
 	pchannel_source::frame_size(value);
+
+	try
+	{
+		_sync_frame_size();
+	}
+	catch (...)
+	{
+		pchannel_source::frame_size(old_value);
+		throw;
+	}
 }
+
+
+void mchannel_muxer_pchannel_source::error_control_len(error_control_len_t value)
+{
+	const auto old_value = pchannel_source::error_control_len();
+
+	pchannel_source::error_control_len(value);
+
+	try
+	{
+		_sync_frame_size();
+	}
+	catch (...)
+	{
+		pchannel_source::error_control_len(old_value);
+		throw;
+	}
+}
+
+
+void mchannel_muxer_pchannel_source::add_mchannel_source(mchannel_source * source)
+{
+	source->frame_size_l1(_frame_size_l1());
+	_muxer.add_source(source);
+}
+
 
 
 bool mchannel_muxer_pchannel_source::peek_frame()
@@ -70,17 +109,16 @@ bool mchannel_muxer_pchannel_source::peek_frame(pchannel_frame_params_t & frame_
 
 void mchannel_muxer_pchannel_source::pop_frame(uint8_t * frame_buffer)
 {
+	assert(_selected_mchannel);
+
+	auto selected_mchannel_copy = _selected_mchannel;
+	_selected_mchannel = nullptr;
+
+	selected_mchannel_copy->pop_frame(frame_buffer);
 }
 
 
-void mchannel_muxer_pchannel_source::attach_master_channel_source(mchannel_source * mchannel)
-{
-	mchannel->frame_data_unit_size(_frame_data_unit_size());
-	_muxer.add_source(mchannel);
-}
-
-
-uint16_t mchannel_muxer_pchannel_source::_frame_data_unit_size()
+uint16_t mchannel_muxer_pchannel_source::_frame_size_l1()
 {
 	const auto frame_size = pchannel_source::frame_size();
 	std::decay<decltype(frame_size)>::type retval = frame_size;
@@ -102,12 +140,12 @@ uint16_t mchannel_muxer_pchannel_source::_frame_data_unit_size()
 }
 
 
-void mchannel_muxer_pchannel_source::_sync_data_unit_size()
+void mchannel_muxer_pchannel_source::_sync_frame_size()
 {
-	const auto data_size = _frame_data_unit_size();
+	const auto data_size = _frame_size_l1();
 
 	for (auto itt = _muxer.begin(); itt != _muxer.end(); itt++)
-		(*itt)->frame_data_unit_size(data_size);
+		(*itt)->frame_size_l1(data_size);
 }
 
 }}
