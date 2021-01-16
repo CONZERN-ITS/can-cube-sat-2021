@@ -22,9 +22,9 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 	assert(map->split_allowed);
 	assert(map->size_fixed);
 	assert(map->payload_size <= MAP_BUFFER_SIZE);
-	map_buffer *buf = (qos == QOS_EXPEDITED ? &map->buf_ex : &map->buf_sc);
+	map_buffer_t *buf = (qos == QOS_EXPEDITED ? &map->buf_ex : &map->buf_sc);
 
-	map_params_t params;
+	map_params_t params = {0};
 	params.qos = qos;
 	params.map_id = map->map_id;
 	params.rules = TFDZCR_SPAN;
@@ -73,7 +73,33 @@ int mapa_send();
 
 int map_stream_send();
 
+int map_request_from_down(map_t *map) {
+	map_buffer_t *buf = 0;
 
+	map_params_t params = {0};
+
+	if (map->buf_ex.index > 0) {
+		params.qos = QOS_EXPEDITED;
+		buf = &map->buf_ex;
+	} else if (map->buf_sc.index > 0) {
+		params.qos = QOS_SEQ_CONTROL;
+		buf = &map->buf_sc;
+	} else {
+		return 0;
+	}
+
+	params.map_id = map->map_id;
+	params.rules = TFDZCR_SPAN;
+	params.upid = UPID_SP_OR_EP;
+	params.fhd = buf->fhd;
+
+	int ret = map_mx_multiplex(map->map_mx, &params, buf->data, map->payload_size);
+	if (ret) {
+		buf->fhd = 0;
+		buf->index = 0;
+	}
+	return ret;
+}
 
 
 

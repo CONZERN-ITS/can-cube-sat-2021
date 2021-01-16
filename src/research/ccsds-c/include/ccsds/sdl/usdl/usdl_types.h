@@ -35,8 +35,8 @@ typedef struct map_t {
 	quality_of_service_t qos;
 
 	tfdz_construction_rules_t flags;
-	map_buffer buf_ex;
-	map_buffer buf_sc;
+	map_buffer_t buf_ex;
+	map_buffer_t buf_sc;
 #if MAP_BUFFER_SIZE > 0 && defined(MAP_BUFFER_STATIC)
 	//uint8_t buffer[MAP_BUFFER_SIZE];
 	size_t payload_size;

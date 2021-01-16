@@ -14,7 +14,7 @@ typedef struct {
 	size_t size;
 	size_t index;
 	size_t fhd;
-} map_buffer;
+} map_buffer_t;
 
 typedef enum {
 	QOS_SEQ_CONTROL,
