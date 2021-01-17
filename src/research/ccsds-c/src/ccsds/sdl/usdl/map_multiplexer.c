@@ -31,7 +31,7 @@ int map_mx_multiplex(map_mx_t *map_mx, map_params_t *map_params, uint8_t *data, 
 	}
 }
 
-map_buffer *map_mx_request_buffer(map_mx_t *map_mx, map_id_t map_id) {
+int *map_mx_request_buffer(map_mx_t *map_mx, map_id_t map_id) {
 	return 0;
 }
 
