@@ -1,5 +1,5 @@
-#ifndef INCLUDE_CCSDS_USLP_VIRTUAL_MAP_MUXER_VCHANNEL_SOURCE_HPP_
-#define INCLUDE_CCSDS_USLP_VIRTUAL_MAP_MUXER_VCHANNEL_SOURCE_HPP_
+#ifndef INCLUDE_CCSDS_USLP_VIRTUAL_MAP_RR_MUXER_HPP_
+#define INCLUDE_CCSDS_USLP_VIRTUAL_MAP_RR_MUXER_HPP_
 
 #include <ccsds/uslp/virtual/abstract_vchannel.hpp>
 #include <ccsds/uslp/map/abstract_map.hpp>
@@ -9,10 +9,10 @@
 namespace ccsds { namespace uslp {
 
 
-class map_muxer_vchannel_source: public vchannel_source
+class map_rr_muxer: public vchannel_source
 {
 public:
-	map_muxer_vchannel_source(gvcid_t gvcid_);
+	map_rr_muxer(gvcid_t gvcid_);
 
 protected:
 	virtual void add_map_source_impl(map_source * source) override;
@@ -38,4 +38,4 @@ private:
 }}
 
 
-#endif /* INCLUDE_CCSDS_USLP_VIRTUAL_MAP_MUXER_VCHANNEL_SOURCE_HPP_ */
+#endif /* INCLUDE_CCSDS_USLP_VIRTUAL_MAP_RR_MUXER_HPP_ */

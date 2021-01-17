@@ -1,24 +1,23 @@
-#include <ccsds/uslp/physical/mchannel_muxer_pchannel_source.hpp>
-
+#include <ccsds/uslp/physical/mchannel_rr_muxer.hpp>
 #include <cassert>
 
 namespace ccsds { namespace uslp {
 
 
-mchannel_muxer_pchannel_source::mchannel_muxer_pchannel_source(std::string name_)
+mchannel_rr_muxer::mchannel_rr_muxer(std::string name_)
 	: pchannel_source(std::move(name_))
 {
 
 }
 
 
-void mchannel_muxer_pchannel_source::add_mchannel_source_impl(mchannel_source * source)
+void mchannel_rr_muxer::add_mchannel_source_impl(mchannel_source * source)
 {
 	_muxer.add_source(source);
 }
 
 
-void mchannel_muxer_pchannel_source::check_and_sync_config()
+void mchannel_rr_muxer::check_and_sync_config()
 {
 	pchannel_source::check_and_sync_config();
 	auto upper_size = _frame_size_l1();
@@ -34,7 +33,7 @@ void mchannel_muxer_pchannel_source::check_and_sync_config()
 }
 
 
-bool mchannel_muxer_pchannel_source::peek_frame_impl()
+bool mchannel_rr_muxer::peek_frame_impl()
 {
 	if (!_selected_mchannel)
 		_selected_mchannel = _muxer.select_next();
@@ -46,7 +45,7 @@ bool mchannel_muxer_pchannel_source::peek_frame_impl()
 }
 
 
-bool mchannel_muxer_pchannel_source::peek_frame_impl(pchannel_frame_params_t & frame_params)
+bool mchannel_rr_muxer::peek_frame_impl(pchannel_frame_params_t & frame_params)
 {
 	if (!_selected_mchannel)
 		_selected_mchannel = _muxer.select_next();
@@ -70,7 +69,7 @@ bool mchannel_muxer_pchannel_source::peek_frame_impl(pchannel_frame_params_t & f
 }
 
 
-void mchannel_muxer_pchannel_source::pop_frame_impl(uint8_t * frame_buffer)
+void mchannel_rr_muxer::pop_frame_impl(uint8_t * frame_buffer)
 {
 	assert(_selected_mchannel);
 
@@ -81,7 +80,7 @@ void mchannel_muxer_pchannel_source::pop_frame_impl(uint8_t * frame_buffer)
 }
 
 
-uint16_t mchannel_muxer_pchannel_source::_frame_size_l1()
+uint16_t mchannel_rr_muxer::_frame_size_l1()
 {
 	const auto frame_size = pchannel_source::frame_size();
 	std::decay<decltype(frame_size)>::type retval = frame_size;

@@ -1,24 +1,24 @@
-#include <ccsds/uslp/master/vchannel_muxer_mchannel_source.hpp>
+#include <ccsds/uslp/master/vchannel_rr_muxer.hpp>
 
 #include <assert.h>
 
 namespace ccsds { namespace uslp {
 
 
-vchannel_muxer_mchannel_source::vchannel_muxer_mchannel_source(mcid_t mcid_)
+vchannel_rr_muxer::vchannel_rr_muxer(mcid_t mcid_)
 		: mchannel_source(mcid_)
 {
 
 }
 
 
-void vchannel_muxer_mchannel_source::add_vchannel_source_impl(vchannel_source * source)
+void vchannel_rr_muxer::add_vchannel_source_impl(vchannel_source * source)
 {
 	_muxer.add_source(source);
 }
 
 
-void vchannel_muxer_mchannel_source::check_and_sync_config()
+void vchannel_rr_muxer::check_and_sync_config()
 {
 	mchannel_source::check_and_sync_config();
 
@@ -34,7 +34,7 @@ void vchannel_muxer_mchannel_source::check_and_sync_config()
 }
 
 
-bool vchannel_muxer_mchannel_source::peek_frame_impl()
+bool vchannel_rr_muxer::peek_frame_impl()
 {
 	if (!_selected_vchannel)
 		_selected_vchannel = _muxer.select_next();
@@ -46,7 +46,7 @@ bool vchannel_muxer_mchannel_source::peek_frame_impl()
 }
 
 
-bool vchannel_muxer_mchannel_source::peek_frame_impl(mchannel_frame_params_t & frame_params)
+bool vchannel_rr_muxer::peek_frame_impl(mchannel_frame_params_t & frame_params)
 {
 	if (!_selected_vchannel)
 		_selected_vchannel = _muxer.select_next();
@@ -70,7 +70,7 @@ bool vchannel_muxer_mchannel_source::peek_frame_impl(mchannel_frame_params_t & f
 }
 
 
-void vchannel_muxer_mchannel_source::pop_frame_impl(uint8_t * frame_data_field)
+void vchannel_rr_muxer::pop_frame_impl(uint8_t * frame_data_field)
 {
 	assert(_selected_vchannel);
 

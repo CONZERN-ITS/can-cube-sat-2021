@@ -10,11 +10,11 @@
 namespace ccsds { namespace uslp {
 
 
-class vchannel_muxer_mchannel_source: public mchannel_source
+class vchannel_rr_muxer: public mchannel_source
 {
 public:
-	vchannel_muxer_mchannel_source(mcid_t mcid_);
-	virtual ~vchannel_muxer_mchannel_source() = default;
+	vchannel_rr_muxer(mcid_t mcid_);
+	virtual ~vchannel_rr_muxer() = default;
 
 protected:
 	virtual void add_vchannel_source_impl(vchannel_source * source) override;

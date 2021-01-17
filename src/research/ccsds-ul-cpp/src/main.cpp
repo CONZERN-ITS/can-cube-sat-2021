@@ -2,11 +2,11 @@
 #include <iomanip>
 
 #include <ccsds/uslp/ids.hpp>
-#include <ccsds/uslp/physical/mchannel_muxer_pchannel_source.hpp>
-#include <ccsds/uslp/master/vchannel_muxer_mchannel_source.hpp>
-#include <ccsds/uslp/virtual/map_muxer_vchannel_source.hpp>
+#include <ccsds/uslp/master/vchannel_rr_muxer.hpp>
 #include <ccsds/uslp/map/map_access_source.hpp>
 #include <ccsds/uslp/map/map_packet_source.hpp>
+#include <ccsds/uslp/physical/mchannel_rr_muxer.hpp>
+#include <ccsds/uslp/virtual/map_rr_muxer.hpp>
 
 
 
@@ -14,13 +14,13 @@ int main()
 {
 	uint8_t frame_buffer[142];
 
-	ccsds::uslp::mchannel_muxer_pchannel_source phys("loraloralora");
+	ccsds::uslp::mchannel_rr_muxer phys("loraloralora");
 	phys.frame_size(sizeof(frame_buffer));
 	phys.error_control_len(ccsds::uslp::error_control_len_t::FOUR_OCTETS);
 
-	ccsds::uslp::vchannel_muxer_mchannel_source master(ccsds::uslp::mcid_t(0x100));
+	ccsds::uslp::vchannel_rr_muxer master(ccsds::uslp::mcid_t(0x100));
 
-	ccsds::uslp::map_muxer_vchannel_source virt(ccsds::uslp::gvcid_t(0x100, 0));
+	ccsds::uslp::map_rr_muxer virt(ccsds::uslp::gvcid_t(0x100, 0));
 	virt.frame_seq_no_len(2);
 
 	ccsds::uslp::map_access_source map_s1(ccsds::uslp::gmap_id_t(0x100, 0, 0));

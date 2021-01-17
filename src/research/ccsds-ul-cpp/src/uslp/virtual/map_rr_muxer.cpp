@@ -1,5 +1,4 @@
-#include <ccsds/uslp/virtual/map_muxer_vchannel_source.hpp>
-
+#include <ccsds/uslp/virtual/map_rr_muxer.hpp>
 #include <cassert>
 
 
@@ -7,20 +6,20 @@ namespace ccsds { namespace uslp {
 
 
 
-map_muxer_vchannel_source::map_muxer_vchannel_source(gvcid_t gvcid_)
+map_rr_muxer::map_rr_muxer(gvcid_t gvcid_)
 	: vchannel_source(gvcid_)
 {
 
 }
 
 
-void map_muxer_vchannel_source::add_map_source_impl(map_source * source)
+void map_rr_muxer::add_map_source_impl(map_source * source)
 {
 	_muxer.add_source(source);
 }
 
 
-void map_muxer_vchannel_source::check_and_sync_config()
+void map_rr_muxer::check_and_sync_config()
 {
 	vchannel_source::check_and_sync_config();
 
@@ -35,7 +34,7 @@ void map_muxer_vchannel_source::check_and_sync_config()
 }
 
 
-bool map_muxer_vchannel_source::peek_frame_impl()
+bool map_rr_muxer::peek_frame_impl()
 {
 	if (!_selected_channel)
 		_selected_channel = _muxer.select_next();
@@ -47,7 +46,7 @@ bool map_muxer_vchannel_source::peek_frame_impl()
 }
 
 
-bool map_muxer_vchannel_source::peek_frame_impl(vchannel_frame_params & params)
+bool map_rr_muxer::peek_frame_impl(vchannel_frame_params & params)
 {
 	if (!_selected_channel)
 		_selected_channel = _muxer.select_next();
@@ -83,7 +82,7 @@ bool map_muxer_vchannel_source::peek_frame_impl(vchannel_frame_params & params)
 }
 
 
-void map_muxer_vchannel_source::pop_frame_impl(uint8_t * tfdf_buffer)
+void map_rr_muxer::pop_frame_impl(uint8_t * tfdf_buffer)
 {
 	assert(_selected_channel);
 

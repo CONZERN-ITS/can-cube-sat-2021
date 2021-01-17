@@ -10,11 +10,11 @@
 namespace ccsds { namespace uslp {
 
 
-class mchannel_muxer_pchannel_source: public pchannel_source
+class mchannel_rr_muxer: public pchannel_source
 {
 public:
-	mchannel_muxer_pchannel_source(std::string name);
-	virtual ~mchannel_muxer_pchannel_source() = default;
+	mchannel_rr_muxer(std::string name);
+	virtual ~mchannel_rr_muxer() = default;
 
 protected:
 	virtual void add_mchannel_source_impl(mchannel_source * mchannel) override;
