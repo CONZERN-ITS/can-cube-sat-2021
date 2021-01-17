@@ -40,7 +40,7 @@ void map_source::finalize()
 	if (_finalized)
 		return;
 
-	check_and_sync_config();
+	finalize_impl();
 	_finalized = true;
 }
 
@@ -84,9 +84,43 @@ void map_source::pop_tfdf(uint8_t * tfdf_buffer)
 }
 
 
-void map_source::check_and_sync_config()
+void map_source::finalize_impl()
 {
 	// Тут нам нечего проверять так то...
 }
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+void map_sink::finalize()
+{
+	if (_finalized)
+		return;
+
+	finalize_impl();
+	_finalized = true;
+}
+
+
+void map_sink::push(tfdf_params & params, const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
+{
+	if (!_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use push() on map_channel, because it is not finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	push_impl(params, tfdf_buffer, tfdf_buffer_size);
+}
+
+
+void map_sink::finalize_impl()
+{
+	// нечего!
+}
+
 
 }}

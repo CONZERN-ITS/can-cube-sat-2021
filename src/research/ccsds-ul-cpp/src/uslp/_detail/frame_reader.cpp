@@ -5,75 +5,72 @@
 
 namespace ccsds { namespace uslp { namespace detail {
 
+
 frame_reader::frame_reader(
-		uint8_t * frame_buffer, size_t frame_buffer_size, uint16_t insert_zone_size
+		const uint8_t * frame_buffer, size_t frame_buffer_size,
+		uint16_t insert_zone_size, error_control_len_t error_control_len
 )
 		: _frame_buffer(frame_buffer),
 		  _frame_buffer_size(frame_buffer_size),
-		  _insert_zone_size(insert_zone_size)
+		  _insert_zone_size(insert_zone_size),
+		  _error_control_len(error_control_len)
 {
-	bool have_extended_header = _parse_basic_header(_frame_buffer, _basic_header);
-
-	uint16_t ext_headers_size = 0;
-	if (have_extended_header)
-	{
-		_extended_header.emplace();
-		ext_headers_size = _parse_extended_header(_frame_buffer, *_extended_header);
-	}
-
-	_headers_size = sizeof(uint32_t) + ext_headers_size;
+	_frame_header.read(frame_buffer);
 }
 
 
-uint16_t frame_reader::raw_frame_headers_size()
+uint16_t frame_reader::raw_frame_headers_size() const
 {
-	return _headers_size;
+	return _frame_header.size();
 }
 
 
-uint8_t frame_reader::frame_version_no()
+uint8_t frame_reader::frame_version_no() const
 {
-	return _basic_header.frame_version_no;
+	return _frame_header.frame_version_no;
 }
 
 
-gmap_id_t frame_reader::service_id()
+gmap_id_t frame_reader::service_id() const
 {
-	return _basic_header.gmap_id;
+	return _frame_header.gmap_id;
 }
 
 
-bool frame_reader::sid_is_destination()
+bool frame_reader::sid_is_destination() const
 {
-	return _basic_header.id_is_destination;
+	return _frame_header.id_is_destination;
 }
 
 
-frame_class_t frame_reader::frame_class()
+std::optional<frame_class_t> frame_reader::frame_class() const
 {
-	return _extended_header ? _extended_header->frame_class : frame_class_t::EXPEDITED_PAYLOAD;
+	if (_frame_header.ext)
+		return _frame_header.ext->frame_class;
+	else
+		return std::nullopt;
 }
 
 
-std::optional<int64_t> frame_reader::frame_seq_no()
+std::optional<int64_t> frame_reader::frame_seq_no() const
 {
-	return _extended_header ? _extended_header->frame_seq_no : std::nullopt;
+	return _frame_header.ext ? _frame_header.ext->frame_seq_no() : std::nullopt;
 }
 
 
-const uint8_t * frame_reader::insert_zone()
+const uint8_t * frame_reader::insert_zone() const
 {
 	auto size = insert_zone_size();
 	if (!size)
 		return nullptr;
 	else
-		return _frame_buffer + _headers_size;
+		return _frame_buffer + _frame_header.size();
 }
 
 
-uint16_t frame_reader::insert_zone_size()
+uint16_t frame_reader::insert_zone_size() const
 {
-	if (!_extended_header)
+	if (!_frame_header.ext)
 	{
 		// фреймы с коротким заголовком не несут инсерт зоны
 		return 0;
@@ -83,113 +80,57 @@ uint16_t frame_reader::insert_zone_size()
 }
 
 
-const uint8_t * frame_reader::data_field()
+const uint8_t * frame_reader::data_field() const
 {
 	return _frame_buffer + raw_frame_headers_size() + insert_zone_size();
 }
 
 
-uint16_t frame_reader::data_field_size()
+uint16_t frame_reader::data_field_size() const
 {
 	// так то все что осталось - то и data field
-	return _frame_buffer_size - raw_frame_headers_size() - insert_zone_size() - ocf_field_size();
+	return _frame_buffer_size
+			- raw_frame_headers_size() - insert_zone_size() - _ocf_field_size() -
+			static_cast<uint16_t>(error_control_field_size())
+	;
 }
 
 
-const uint8_t * frame_reader::ocf_field()
+const uint8_t * frame_reader::error_control_field() const
 {
-	if (!_extended_header)
-	{
-		// Фреймы с коротким заголовоком не несут OCF полей
+	if (!static_cast<uint16_t>(error_control_field_size()))
 		return nullptr;
+
+	return _frame_buffer
+			+ raw_frame_headers_size() + insert_zone_size() + data_field_size() + _ocf_field_size()
+	;
+}
+
+
+error_control_len_t frame_reader::error_control_field_size() const
+{
+	if (!_frame_header.ext)
+	{
+		// Такие фреймы не несут контрольной суммы
+		return error_control_len_t::ZERO;
 	}
 
+	return _error_control_len;
+}
 
-	if (!_extended_header->ocf_present)
-	{
-		// Если явно не указано, что это поле есть - значит его нет
+
+const uint8_t * frame_reader::ocf_field() const
+{
+	if (!_ocf_field_size())
 		return nullptr;
-	}
 
-	return nullptr;
+	return _frame_buffer + raw_frame_headers_size() + insert_zone_size() + data_field_size();
 }
 
 
-uint16_t frame_reader::ocf_field_size()
+uint16_t frame_reader::_ocf_field_size() const
 {
-	return 0;
+	return _frame_header.ext && _frame_header.ext->ocf_present ? sizeof(uint32_t) : 0;
 }
-
-
-bool frame_reader::_parse_basic_header(const uint8_t * frame_buffer, basic_header & header)
-{
-	uint32_t word;
-	std::memcpy(&word, _frame_buffer, sizeof(word));
-	word = be32toh(word);
-
-	bool have_extension = (word >> 0) & 0x0001 ? false : true; // внимание - тут инверсия
-	header.gmap_id.map_id((word >> 1) & 0x000F);
-	header.gmap_id.vchannel_id((word >> 5) & 0x003F);
-	header.id_is_destination = (word >> 11) & 0x0001 ? true : false;
-	header.gmap_id.sc_id((word >> 12) & 0x00FF);
-	header.frame_version_no = (word >> 28) & 0x000F;
-
-	return have_extension;
-}
-
-
-uint16_t frame_reader::_parse_extended_header(const uint8_t * frame_buffer, extended_header & header)
-{
-	// Считаем начало вторичного заголовка - сразу после первичного
-	const uint8_t * ext_header_start = _frame_buffer + sizeof(uint32_t);
-
-	// Первое поле - длина кадра
-	uint16_t frame_len;
-	std::memcpy(&frame_len, ext_header_start, sizeof(uint16_t));
-	frame_len = be32toh(frame_len);
-	header.frame_len = frame_len + 1; // Потому что именно так оно и считается
-
-	// Второе поле - различные флаги
-	uint8_t frame_flags = *(ext_header_start + sizeof(uint16_t));
-
-	// Считаем класс фрейма
-	bool bypass_flag = (frame_flags >> 7) & 0x01 ? true : false;
-	bool command_flag = (frame_flags >> 6) & 0x01 ? true : false;
-	if (bypass_flag && command_flag)
-		header.frame_class = frame_class_t::EXPEDITED_COMMAND;
-	else if (bypass_flag && !command_flag)
-		header.frame_class = frame_class_t::EXPEDITED_PAYLOAD;
-	else if (!bypass_flag && !command_flag)
-		header.frame_class = frame_class_t::CONTROLLED_PAYLOAD;
-	else // if (!bypass_flag && command_flag)
-		header.frame_class = frame_class_t::RESERVED;
-
-	// Дальше два бита резерва
-
-	// Теперь смотрим есть ли в кадре OCF поле
-	header.ocf_present = (frame_flags >> 3) & 0x01 ? true : false;
-
-	// смотрим длину поля с номером кадра
-	int frame_no_len = (frame_flags >> 0) & 0x7;
-	if (frame_no_len)
-	{
-		const uint8_t * const frame_no_bytes_start =
-				ext_header_start + sizeof(uint16_t) + sizeof(uint8_t)
-		;
-		uint64_t frame_no = 0;
-		for (int i = 0; i < frame_no_len; i++)
-		{
-			// Считываем очередной байт
-			const uint8_t byte = frame_no_bytes_start[i];
-			// Впихиваем его в итоговое число в соответствующий разряд
-			frame_no = frame_no | static_cast<uint64_t>(byte) << (frame_no_len - 1 - i);
-		}
-
-		header.frame_seq_no = frame_no;
-	}
-
-	return sizeof(uint32_t) + sizeof(uint16_t) + sizeof(uint8_t) + frame_no_len;
-}
-
 
 }}}

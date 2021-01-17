@@ -18,7 +18,7 @@ public:
 
 protected:
 	virtual void add_vchannel_source_impl(vchannel_source * source) override;
-	virtual void check_and_sync_config() override;
+	virtual void finalize_impl() override;
 	virtual bool peek_frame_impl() override;
 	virtual bool peek_frame_impl(mchannel_frame_params_t & frame_params) override;
 	virtual void pop_frame_impl(uint8_t * frame_data_field) override;

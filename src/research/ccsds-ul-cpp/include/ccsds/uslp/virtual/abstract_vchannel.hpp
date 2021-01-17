@@ -11,6 +11,7 @@ namespace ccsds { namespace uslp {
 
 
 class map_source;
+class map_sink;
 
 
 struct vchannel_frame_params
@@ -52,7 +53,7 @@ protected:
 
 	virtual void add_map_source_impl(map_source * source) = 0;
 
-	virtual void check_and_sync_config();
+	virtual void finalize_impl();
 
 	virtual bool peek_frame_impl() = 0;
 	virtual bool peek_frame_impl(vchannel_frame_params & params) = 0;
@@ -63,6 +64,38 @@ private:
 	uint64_t _frame_seq_no = 0;
 	uint8_t _frame_seq_no_len = 0;
 	uint16_t _frame_size_l2 = 0;
+};
+
+
+class vchannel_sink
+{
+public:
+	vchannel_sink(gvcid_t gvcid_);
+	virtual ~vchannel_sink() = default;
+
+	void add_map_sink(map_sink * sink);
+
+	void finalize();
+
+	void push(
+			const vchannel_frame_params & frame_params,
+			const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
+	);
+
+	const gvcid_t gvcid;
+
+protected:
+	virtual void add_map_sink_impl(map_sink * sink) = 0;
+
+	virtual void finalize_impl();
+
+	virtual void push_impl(
+			const vchannel_frame_params & frame_params,
+			const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
+	) = 0;
+
+private:
+	bool _finalized = true;
 };
 
 

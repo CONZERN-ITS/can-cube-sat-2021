@@ -22,9 +22,9 @@ void mchannel_rr_muxer::add_mchannel_source_impl(mchannel_source * source)
 }
 
 
-void mchannel_rr_muxer::check_and_sync_config()
+void mchannel_rr_muxer::finalize_impl()
 {
-	pchannel_source::check_and_sync_config();
+	pchannel_source::finalize_impl();
 	auto upper_size = _frame_size_l1();
 
 	// Сначала выставляем настройки а потом финализируем

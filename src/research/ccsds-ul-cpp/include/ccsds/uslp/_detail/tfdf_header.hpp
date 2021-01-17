@@ -43,7 +43,7 @@ struct upid_t
 
 
 //! Заголовок tfdz зоны
-struct tfdf_header
+struct tfdf_header_t
 {
 	//! Длина короткого варианта заголовка
 	static constexpr uint16_t short_size = 1;

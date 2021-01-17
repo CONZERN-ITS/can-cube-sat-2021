@@ -47,7 +47,7 @@ void vchannel_source::frame_size_l2(uint16_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use frame_size_l2 on vchannel, because is it finalized";
+		error << "unable to use frame_size_l2 on vchannel, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -60,7 +60,7 @@ void vchannel_source::frame_seq_no_len(uint16_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use frame_seq_no_len on vchannel, because is it finalized";
+		error << "unable to use frame_seq_no_len on vchannel, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -73,7 +73,7 @@ void vchannel_source::add_map_source(map_source * source)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use add_map_source on vchannel, because is it finalized";
+		error << "unable to use add_map_source on vchannel, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -86,7 +86,7 @@ void vchannel_source::finalize()
 	if (_finalized)
 		return;
 
-	check_and_sync_config();
+	finalize_impl();
 	_finalized = true;
 }
 
@@ -96,7 +96,7 @@ bool vchannel_source::peek_frame()
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_frame() on vchannel, because is it not finalized";
+		error << "unable to use peek_frame() on vchannel, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -109,7 +109,7 @@ bool vchannel_source::peek_frame(vchannel_frame_params & params)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_frame(params) on vchannel, because is it not finalized";
+		error << "unable to use peek_frame(params) on vchannel, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -122,7 +122,7 @@ void vchannel_source::pop_frame(uint8_t * tfdf_buffer)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use pop_frame() on vchannel, because is it not finalized";
+		error << "unable to use pop_frame() on vchannel, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -165,7 +165,7 @@ uint16_t vchannel_source::frame_size_overhead() const
 }
 
 
-void vchannel_source::check_and_sync_config()
+void vchannel_source::finalize_impl()
 {
 	const auto min_frame_size = frame_size_overhead();
 	if (frame_size_l2() < min_frame_size)
@@ -176,6 +176,64 @@ void vchannel_source::check_and_sync_config()
 		throw einval_exception(error.str());
 	}
 }
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+vchannel_sink::vchannel_sink(gvcid_t gvcid_)
+	: gvcid(gvcid_)
+{
+
+}
+
+
+void vchannel_sink::add_map_sink(map_sink * sink)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use add_map_sink() on vchannel, because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	add_map_sink_impl(sink);
+}
+
+
+void vchannel_sink::finalize()
+{
+	if (_finalized)
+		return;
+
+	finalize_impl();
+	_finalized = true;
+}
+
+
+void vchannel_sink::finalize_impl()
+{
+	// Ничего пока не делаем. Чую тут будут танцы с фармом
+}
+
+
+void vchannel_sink::push(
+		const vchannel_frame_params & frame_params,
+		const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
+)
+{
+	if (!_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use push() on vchannel, because it is not finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	push_impl(frame_params, tfdf_buffer, tfdf_buffer_size);
+}
+
+
 
 
 }}

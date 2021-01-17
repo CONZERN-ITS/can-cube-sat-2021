@@ -40,7 +40,7 @@ public:
 
 protected:
 
-	virtual void check_and_sync_config();
+	virtual void finalize_impl();
 
 	virtual bool peek_tfdf_impl() = 0;
 	virtual bool peek_tfdf_impl(tfdf_params & params) = 0;
@@ -51,6 +51,25 @@ private:
 	uint16_t _tfdf_size = 0;
 };
 
+
+class map_sink
+{
+public:
+	map_sink(gmap_id_t map_id_): map_id(map_id_) {}
+	virtual ~map_sink() = default;
+
+	void finalize();
+	void push(tfdf_params & params, const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size);
+
+	const gmap_id_t map_id;
+
+protected:
+	virtual void finalize_impl();
+	virtual void push_impl(tfdf_params & params, const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size) = 0;
+
+private:
+	bool _finalized = false;
+};
 
 }}
 

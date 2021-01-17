@@ -18,9 +18,9 @@ void vchannel_rr_muxer::add_vchannel_source_impl(vchannel_source * source)
 }
 
 
-void vchannel_rr_muxer::check_and_sync_config()
+void vchannel_rr_muxer::finalize_impl()
 {
-	mchannel_source::check_and_sync_config();
+	mchannel_source::finalize_impl();
 
 	// Выставляем размер уровнем выше как все что есть у нас без нашего оверхеда
 	const auto upper_size = frame_size_l1() - frame_size_overhead();

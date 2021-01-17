@@ -19,7 +19,7 @@ public:
 protected:
 	virtual void add_mchannel_source_impl(mchannel_source * mchannel) override;
 
-	virtual void check_and_sync_config() override;
+	virtual void finalize_impl() override;
 
 	virtual bool peek_frame_impl() override;
 	virtual bool peek_frame_impl(pchannel_frame_params_t & frame_params) override;

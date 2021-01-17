@@ -1,9 +1,8 @@
-#include <ccsds/uslp/exceptions.hpp>
+#include <ccsds/uslp/_detail/tfdf_header.hpp>
 
 #include <sstream>
 
 #include <ccsds/uslp/exceptions.hpp>
-#include <ccsds/uslp/_detail/tfdf_header.hpp>
 #include <ccsds/uslp/map/map_access_source.hpp>
 
 
@@ -28,10 +27,10 @@ void map_access_source::add_sdu(const uint8_t * data, size_t data_size, qos_t qo
 }
 
 
-void map_access_source::check_and_sync_config()
+void map_access_source::finalize_impl()
 {
 	// Убеждаемся что в tfdf влезает заголовок и хотябы один байтик информации
-	if (detail::tfdf_header::full_size >= tfdf_size())
+	if (detail::tfdf_header_t::full_size >= tfdf_size())
 	{
 		std::stringstream error;
 		error << "tfdf zone is too small for map channel";
@@ -57,7 +56,7 @@ bool map_access_source::peek_tfdf_impl(tfdf_params & params)
 
 	// Если то, что есть в очереди мы не сможем отправить одним фреймом
 	// Придется чуток занять канал
-	const size_t payload_max_size = map_source::tfdf_size() - detail::tfdf_header::full_size;
+	const size_t payload_max_size = map_source::tfdf_size() - detail::tfdf_header_t::full_size;
 	const size_t available_size = _data_queue.front().data.size();
 	params.channel_lock = available_size > payload_max_size;
 
@@ -74,8 +73,8 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 	auto & data_unit = _data_queue.front();
 
 	// Отступаем под заголовок
-	uint8_t * const tfdz_buffer = tfdf_buffer + detail::tfdf_header::full_size;
-	const uint16_t tfdz_buffer_size = map_source::tfdf_size() - detail::tfdf_header::full_size;
+	uint8_t * const tfdz_buffer = tfdf_buffer + detail::tfdf_header_t::full_size;
+	const uint16_t tfdz_buffer_size = map_source::tfdf_size() - detail::tfdf_header_t::full_size;
 	// Сохраняем начало буфера - потом по этому началу мы посчитаем оффсет для заголовка
 
 	// Вываливаем пейлоад
@@ -103,7 +102,7 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 	}
 
 	// Пишем заголовок
-	detail::tfdf_header header;
+	detail::tfdf_header_t header;
 	header.upid = static_cast<int>(detail::upid_t::MAP_ACCESS_SDU);
 
 	// Если элемент только начался - показываем это специальным флагом
@@ -129,7 +128,7 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 uint16_t map_access_source::_tfdz_size() const
 {
 	// У нас всегда полнознамерные заголовки
-	return tfdf_size() - detail::tfdf_header::full_size;
+	return tfdf_size() - detail::tfdf_header_t::full_size;
 }
 
 

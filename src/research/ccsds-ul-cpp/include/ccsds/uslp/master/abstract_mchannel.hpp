@@ -15,14 +15,26 @@ namespace ccsds { namespace uslp {
 
 
 class vchannel_source;
+class vchannel_sink;
 
 
 class ocf_source
 {
 public:
+	ocf_source() = default;
 	virtual ~ocf_source() = default;
 
 	virtual uint32_t get_ocf() = 0;
+};
+
+
+class ocf_sink
+{
+public:
+	ocf_sink() = default;
+	virtual ~ocf_sink() = default;
+
+	virtual void put_ocf(uint32_t value) = 0;
 };
 
 
@@ -58,17 +70,16 @@ public:
 
 	bool peek_frame();
 	bool peek_frame(mchannel_frame_params_t & frame_params);
-	void pop_frame(uint8_t * tfdf_buffer);
+	void pop_frame(uint8_t * frame_data_unit_buffer);
 
 	const mcid_t mcid;
 
 protected:
-	ocf_source * get_ocf_source() { return _ocf_source; }
 	uint16_t frame_size_overhead() const;
 
 	virtual void add_vchannel_source_impl(vchannel_source * source) = 0;
 
-	virtual void check_and_sync_config();
+	virtual void finalize_impl();
 
 	virtual bool peek_frame_impl() = 0;
 	virtual bool peek_frame_impl(mchannel_frame_params_t & frame_params) = 0;
@@ -81,6 +92,40 @@ private:
 	uint16_t _frame_size_l1 = 0;
 };
 
+
+class mchannel_sink
+{
+public:
+	mchannel_sink(mcid_t mcid_);
+	virtual ~mchannel_sink() = default;
+
+	void add_vchannel_sink(vchannel_sink * sink);
+	void set_ocf_sink(ocf_sink * sink);
+
+	void finalize();
+
+	void push(
+			const mchannel_frame_params_t & frame_params,
+			const uint8_t * frame_data_unit, uint16_t frame_data_unit_size
+	);
+
+	const mcid_t mcid;
+
+protected:
+
+	virtual void add_vchannel_sink_impl(vchannel_sink * sink) = 0;
+
+	virtual void finalize_impl() = 0;
+
+	virtual void push_impl(
+			const mchannel_frame_params_t & frame_params,
+			const uint8_t * frame_data_unit, uint16_t frame_data_unit_size
+	) = 0;
+
+private:
+	bool _finalized = false;
+	ocf_sink * _ocf_sink = nullptr;
+};
 
 
 }}

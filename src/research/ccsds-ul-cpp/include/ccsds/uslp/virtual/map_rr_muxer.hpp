@@ -17,7 +17,7 @@ public:
 protected:
 	virtual void add_map_source_impl(map_source * source) override;
 
-	virtual void check_and_sync_config() override;
+	virtual void finalize_impl() override;
 
 	virtual bool peek_frame_impl() override;
 	virtual bool peek_frame_impl(vchannel_frame_params & params) override;

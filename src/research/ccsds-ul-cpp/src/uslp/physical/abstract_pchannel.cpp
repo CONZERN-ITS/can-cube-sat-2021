@@ -36,7 +36,7 @@ void pchannel_source::frame_size(int32_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to set frame size for phys channel because it is already finalized";
+		error << "unable to set frame size for phys channel because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -49,7 +49,7 @@ void pchannel_source::error_control_len(error_control_len_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to set error_control_len for phys channel because it is already finalized";
+		error << "unable to set error_control_len for phys channel because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -75,7 +75,7 @@ void pchannel_source::finalize()
 	if (_finalized)
 		return;
 
-	check_and_sync_config();
+	finalize_impl();
 
 	// Если выше будет бросок - мы до сюда не дойдем
 	_finalized = true;
@@ -87,7 +87,7 @@ bool pchannel_source::peek_frame()
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_frame() on virtual channel before it is finalized";
+		error << "unable to use peek_frame() on virtual channel because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -100,7 +100,7 @@ bool pchannel_source::peek_frame(pchannel_frame_params_t & frame_params)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_frame(frame_params) on physical channel before it is finalized";
+		error << "unable to use peek_frame(frame_params) on physical channel because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -113,7 +113,7 @@ void pchannel_source::pop_frame(uint8_t * frame_buffer)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use pop_frame() on physical channel before it is finalized";
+		error << "unable to use pop_frame() on physical channel because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -147,7 +147,7 @@ uint16_t pchannel_source::frame_size_overhead() const
 }
 
 
-void pchannel_source::check_and_sync_config()
+void pchannel_source::finalize_impl()
 {
 	// Проверяем самые базовые настройки
 
@@ -165,8 +165,86 @@ void pchannel_source::check_and_sync_config()
 				<< "Value should be in range [" << minimum_frame_size << ", " << maximum_frame_size << "]";
 		throw einval_exception(error.str());
 	}
+}
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+pchannel_sink::pchannel_sink(std::string name_)
+	: name(std::move(name_))
+{
 
 }
+
+
+void pchannel_sink::insert_zone_size(uint16_t value)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use insert_zone_size(value) on physical channel because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_insert_zone_size = value;
+}
+
+
+void pchannel_sink::error_control_len(error_control_len_t value)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use error_control_len(value) on physical channel because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_error_control_len = value;
+}
+
+
+void pchannel_sink::add_mchannel_sink(mchannel_sink * sink)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use add_mchannel_sink(sink) on physical channel because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	add_mchannel_sink_impl(sink);
+}
+
+
+void pchannel_sink::finalize()
+{
+	if (_finalized)
+		return;
+
+	finalize_impl();
+	_finalized = true;
+}
+
+
+void pchannel_sink::push_frame(const uint8_t * frame_buffer, size_t frame_buffer_size)
+{
+	if (!_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use push_frame(frame_buffer) on physical channel because it is not finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	push_frame_impl(frame_buffer, frame_buffer_size);
+}
+
+
+void pchannel_sink::finalize_impl()
+{
+	// Ничего не делаем!
+}
+
 
 
 }}

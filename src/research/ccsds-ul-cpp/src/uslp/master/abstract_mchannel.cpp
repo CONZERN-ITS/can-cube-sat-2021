@@ -1,8 +1,12 @@
 #include <ccsds/uslp/master/abstract_mchannel.hpp>
 
 #include <sstream>
+#include <cstring>
+
+#include <endian.h>
 
 #include <ccsds/uslp/_detail/tf_header.hpp>
+#include <ccsds/uslp/_detail/frame_reader.hpp>
 #include <ccsds/uslp/exceptions.hpp>
 
 
@@ -73,7 +77,7 @@ void mchannel_source::finalize()
 	if (_finalized)
 		return;
 
-	check_and_sync_config();
+	finalize_impl();
 	_finalized = true;
 }
 
@@ -104,7 +108,7 @@ bool mchannel_source::peek_frame(mchannel_frame_params_t & frame_params)
 }
 
 
-void mchannel_source::pop_frame(uint8_t * tfdf_buffer)
+void mchannel_source::pop_frame(uint8_t * frame_data_unit_buffer)
 {
 	if (!_finalized)
 	{
@@ -113,7 +117,32 @@ void mchannel_source::pop_frame(uint8_t * tfdf_buffer)
 		throw object_is_finalized(error.str());
 	}
 
-	pop_frame_impl(tfdf_buffer);
+	// Нам нужны параметры фрейма, чтобы прикинуть где будет OCF поле
+	mchannel_frame_params_t params;
+	peek_frame(params);
+
+	// Выгружаем данные фрейма
+	pop_frame_impl(frame_data_unit_buffer);
+
+	// Теперь OCF поле
+	if (_ocf_source != nullptr)
+	{
+		// Считаем отступ от TFDF поля до OCF поля
+		// У нас есть размер фрейма с заголовками и OCF
+		// Значит нужно из этого размера вычесть размер заголовков и OCF
+		// и мы получим размер TFDF. Сразу после него и лежит OCF
+		const uint16_t ocf_tfdf_offset = frame_size_l1()
+				- detail::tf_header_t::extended_size_forecast(params.frame_seq_no_length)
+				- sizeof(uint32_t)
+		;
+
+		uint8_t * const ocf_location = frame_data_unit_buffer + ocf_tfdf_offset;
+
+		// Пишем OCF по адресу
+		uint32_t word = _ocf_source->get_ocf();
+		word = htobe32(word);
+		std::memcpy(ocf_location, &word, sizeof(word));
+	}
 }
 
 
@@ -128,7 +157,7 @@ uint16_t mchannel_source::frame_size_overhead() const
 }
 
 
-void mchannel_source::check_and_sync_config()
+void mchannel_source::finalize_impl()
 {
 	// Единственное что мы тут можем проверить - размер фрейма. Что он не меньше чем должен быть
 	// Минимальный размер - чтобы влезал заголовок
@@ -142,6 +171,79 @@ void mchannel_source::check_and_sync_config()
 		throw einval_exception(error.str());
 	}
 
+}
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+mchannel_sink::mchannel_sink(mcid_t mcid_)
+	: mcid(mcid_)
+{
+
+}
+
+
+void mchannel_sink::add_vchannel_sink(vchannel_sink * sink)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use add_vchannel_sink(sink) on physical channel because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	add_vchannel_sink_impl(sink);
+}
+
+
+void mchannel_sink::set_ocf_sink(ocf_sink * sink)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use set_ocf_sink(sink) on physical channel because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_ocf_sink = sink;
+}
+
+
+void mchannel_sink::finalize()
+{
+	if (_finalized)
+		return;
+
+	finalize_impl();
+	_finalized = true;
+}
+
+
+void mchannel_sink::push(
+		const mchannel_frame_params_t & frame_params,
+		const uint8_t * frame_data_unit, uint16_t frame_data_unit_size
+)
+{
+	if (!_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use push(frame_reader) on physical channel because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	push_impl(frame_params, frame_data_unit, frame_data_unit_size);
+
+	// Если в этом фрейме есть OCF и у нас есть кому его передавать - мы его возьмем
+	if (frame_params.ocf_present && _ocf_sink != nullptr)
+	{
+		uint32_t word;
+		const uint8_t * ocf_location = frame_data_unit + frame_data_unit_size - sizeof(uint32_t);
+		std::memcpy(&word, ocf_location, sizeof(uint32_t));
+		word = htobe32(word);
+		_ocf_sink->put_ocf(word);
+	}
 }
 
 

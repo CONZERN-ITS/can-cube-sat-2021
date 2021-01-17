@@ -19,9 +19,9 @@ void map_rr_muxer::add_map_source_impl(map_source * source)
 }
 
 
-void map_rr_muxer::check_and_sync_config()
+void map_rr_muxer::finalize_impl()
 {
-	vchannel_source::check_and_sync_config();
+	vchannel_source::finalize_impl();
 
 	// Проходим по мап каналам и ставим им размер tfdf
 	const auto tfdf_size = frame_size_l2() - frame_size_overhead();

@@ -6,24 +6,24 @@
 
 #include <ccsds/uslp/exceptions.hpp>
 
-#include <ccsds/uslp/_detail/tfdf_header.hpp>
 #include <ccsds/uslp/_detail/epp_header.hpp>
+#include <ccsds/uslp/_detail/tfdf_header.hpp>
 
 
 
 namespace ccsds { namespace uslp {
 
 map_packet_source::map_packet_source(gmap_id_t map_id_)
-	: map_source(map_id_, detail::tfdf_header::full_size)
+	: map_source(map_id_, detail::tfdf_header_t::full_size)
 {
 	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
 }
 
 
-void map_packet_source::check_and_sync_config()
+void map_packet_source::finalize_impl()
 {
 	// Убеждаемся что в tfdf влезает заголовок и хотябы один байтик информации
-	if (detail::tfdf_header::full_size >= tfdf_size())
+	if (detail::tfdf_header_t::full_size >= tfdf_size())
 	{
 		std::stringstream error;
 		error << "tfdf zone is too small for map channel";
@@ -91,7 +91,7 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 
 	// Отступаем место под заголовок
 	// У нас всегда полный размер заголовка
-	uint8_t * output_buffer = tfdf_buffer + detail::tfdf_header::full_size;
+	uint8_t * output_buffer = tfdf_buffer + detail::tfdf_header_t::full_size;
 	uint16_t output_buffer_size = _tfdz_size();
 	// Это тоже запомним, пригодится
 	const uint8_t * const tfdz_start = output_buffer;
@@ -143,7 +143,7 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 		first_valid_header_offset = static_cast<uint16_t>(output_buffer - tfdz_start);
 
 	// Наконец-то пишем заголовок
-	detail::tfdf_header header;
+	detail::tfdf_header_t header;
 	header.ctr_rule = detail::tfdz_construction_rule_t::PACKETS_SPANNING_MULTIPLE_FRAMES;
 	header.upid = detail::upid_t::CCSDS_PACKETS;
 	header.first_header_offset = first_valid_header_offset;
@@ -154,7 +154,7 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 
 uint16_t map_packet_source::_tfdz_size() const
 {
-	return map_source::tfdf_size() - detail::tfdf_header::full_size; // У нас всегда полный заголовок
+	return map_source::tfdf_size() - detail::tfdf_header_t::full_size; // У нас всегда полный заголовок
 }
 
 

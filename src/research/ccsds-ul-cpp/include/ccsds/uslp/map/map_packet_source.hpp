@@ -20,7 +20,7 @@ public:
 	virtual ~map_packet_source() = default;
 
 protected:
-	virtual void check_and_sync_config() override;
+	virtual void finalize_impl() override;
 
 	virtual bool peek_tfdf_impl() override;
 	virtual bool peek_tfdf_impl(tfdf_params & params) override;
