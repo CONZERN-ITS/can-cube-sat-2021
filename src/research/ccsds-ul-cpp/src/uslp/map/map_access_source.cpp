@@ -74,16 +74,16 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 	auto & data_unit = _data_queue.front();
 
 	// Отступаем под заголовок
-	auto * output_buffer = tfdf_buffer + detail::tfdf_header::full_size;
-	uint16_t output_buffer_size = map_source::tfdf_size() - detail::tfdf_header::full_size;
-	const uint8_t * const tdfz_start = output_buffer;
+	uint8_t * const tfdz_buffer = tfdf_buffer + detail::tfdf_header::full_size;
+	const uint16_t tfdz_buffer_size = map_source::tfdf_size() - detail::tfdf_header::full_size;
+	// Сохраняем начало буфера - потом по этому началу мы посчитаем оффсет для заголовка
 
 	// Вываливаем пейлоад
 	const bool element_begun = data_unit.data.size() == data_unit.data_original_size;
 
 	uint16_t to_copy_size = static_cast<uint16_t>(
 		std::min(
-			static_cast<size_t>(output_buffer_size),
+			static_cast<size_t>(tfdz_buffer_size),
 			data_unit.data.size()
 		)
 	);
@@ -91,7 +91,7 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 	// Копируем!
 	auto to_copy_begin = std::cbegin(data_unit.data);
 	auto to_copy_end = std::next(to_copy_begin, to_copy_size);
-	std::copy(to_copy_begin, to_copy_end, output_buffer);
+	std::copy(to_copy_begin, to_copy_end, tfdz_buffer);
 
 	// Откусываем скопированное
 	bool element_ended = false;
@@ -101,9 +101,6 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 		element_ended = true;
 		_data_queue.pop_front();
 	}
-
-	output_buffer += to_copy_size;
-	output_buffer_size -= to_copy_size;
 
 	// Пишем заголовок
 	detail::tfdf_header header;
@@ -118,7 +115,7 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 
 	// Если элемент закончился в этом фрейме - покажем последний его валидный байт
 	if (element_ended)
-		header.first_header_offset = (output_buffer - tdfz_start) - 1;
+		header.first_header_offset = to_copy_size - 1;
 	else
 		header.first_header_offset = 0xFFFF; // Если нет - покажем, что он не кончился в этом фрейме
 

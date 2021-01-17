@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <cstring>
 
 #include <ccsds/uslp/ids.hpp>
 #include <ccsds/uslp/master/vchannel_rr_muxer.hpp>
@@ -35,7 +36,12 @@ int main()
 
 	phys.finalize();
 
-	const char data[1024] = "THISISTHEDATA";
+	const char data_sample[] = "\xDE\xAD\xBE\xEF";
+	char data[200];
+	for (size_t i = 0; i < sizeof(data); i++)
+		data[i] = data_sample[i % sizeof(data_sample)];
+
+
 	map_s1.add_sdu(
 			reinterpret_cast<const uint8_t*>(data),
 			sizeof(data),
@@ -57,18 +63,35 @@ int main()
 				<< frame_params.frame_seq_no << "@"
 					<< static_cast<int>(frame_params.frame_seq_no_length) << "; "
 				<< frame_params.id_is_destination << "; "
-				<< frame_params.ocf_present;
+				<< frame_params.ocf_present << "; ";
 
+		std::memset(frame_buffer, 0, sizeof(frame_buffer));
 		phys.pop_frame(frame_buffer);
 		i++;
 
-		std::cout << "   0x";
-		for (size_t i = 0; i < sizeof(frame_buffer); i++)
+		std::cout << "0x";
+		auto fmt_flags = std::cout.flags();
+		std::exception_ptr error = nullptr;
+		try
 		{
-			std::cout << std::hex << std::setw(2) << (int)frame_buffer[i] << std::dec;
+			for (size_t i = 0; i < sizeof(frame_buffer); i++)
+			{
+				std::cout << std::hex
+						<< std::setw(2)
+						<< std::setfill('0')
+						<< (int)frame_buffer[i]
+						<< std::dec
+				;
+			}
 		}
-		std::cout << std::endl;
+		catch (...)
+		{
+			error = std::current_exception();
+		}
+		std::cout.flags(fmt_flags);
+		if (error) std::rethrow_exception(error);
 
+		std::cout << std::endl;
 	}
 
 

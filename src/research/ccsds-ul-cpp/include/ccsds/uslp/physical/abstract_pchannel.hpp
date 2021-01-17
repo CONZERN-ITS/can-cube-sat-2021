@@ -34,6 +34,9 @@ public:
 	pchannel_source(std::string name_);
 	virtual ~pchannel_source() = default;
 
+	void frame_version_no(uint8_t value);
+	uint8_t frame_version_no() const noexcept { return _frame_version_no; }
+
 	void frame_size(int32_t value);
 	int32_t frame_size() const noexcept { return _frame_size; }
 
@@ -62,6 +65,7 @@ protected:
 	virtual void pop_frame_impl(uint8_t * frame_buffer) = 0;
 
 private:
+	uint8_t _frame_version_no;
 	bool _finalized = false;
 	int32_t _frame_size = 0;
 	error_control_len_t _error_control_len = error_control_len_t::ZERO;

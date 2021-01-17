@@ -16,7 +16,7 @@ namespace ccsds { namespace uslp { namespace detail {
 		{
 			uint16_t word;
 			word = htobe16(this->first_header_offset.value());
-			std::memcpy(&word, buffer + sizeof(byte), sizeof(word));
+			std::memcpy(buffer + sizeof(byte), &word, sizeof(word));
 		}
 	}
 

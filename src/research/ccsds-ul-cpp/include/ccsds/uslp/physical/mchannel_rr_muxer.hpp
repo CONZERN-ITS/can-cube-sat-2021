@@ -28,7 +28,7 @@ protected:
 private:
 	struct mchannel_status_checker_t
 	{
-		bool operator()(mchannel_source * source) const { return source->peek_frame(); }
+		const bool operator()(mchannel_source * source) const { return source->peek_frame(); }
 	};
 
 	typedef rr_muxer<mchannel_source*, mchannel_status_checker_t> muxer_t;

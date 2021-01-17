@@ -26,7 +26,7 @@ protected:
 private:
 	struct map_status_checker_t
 	{
-		bool operator()(map_source * source) const {return source->peek_tfdf(); }
+		const bool operator()(map_source * source) const {return source->peek_tfdf(); }
 	};
 
 	typedef rr_muxer<map_source*, map_status_checker_t> muxer_t;

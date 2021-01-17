@@ -1,5 +1,10 @@
 #include <ccsds/uslp/physical/mchannel_rr_muxer.hpp>
+
 #include <cassert>
+#include <cstring>
+
+#include <ccsds/uslp/_detail/tf_header.hpp>
+
 
 namespace ccsds { namespace uslp {
 
@@ -76,7 +81,49 @@ void mchannel_rr_muxer::pop_frame_impl(uint8_t * frame_buffer)
 	auto selected_mchannel_copy = _selected_mchannel;
 	_selected_mchannel = nullptr;
 
-	selected_mchannel_copy->pop_frame(frame_buffer);
+	// Нам нужны параметры фрейма, чтобы слепить заголовок. Поэтому мы еще раз делаем peek_frame()
+	pchannel_frame_params_t frame_params;
+	peek_frame(frame_params);
+
+	// Теперь самая жесть.
+	// Делаем заголовок
+	detail::tf_header_t header;
+	header.frame_version_no = frame_version_no();
+	header.gmap_id = frame_params.channel_id;
+
+	// У нас всегда будет расширенный заголовок
+	header.ext.emplace();
+	header.ext->frame_seq_no(frame_params.frame_seq_no, frame_params.frame_seq_no_length);
+	header.ext->frame_class = frame_params.frame_class;
+	header.ext->ocf_present = frame_params.ocf_present;
+	// Тут несколько неочевидно
+	header.ext->frame_len = frame_size() - 1; // Именно так следует писать длины по мнениею CCSDS
+
+	// начинаем размечать фрейм
+	// С заголовком все понятно
+	// const size_t header_buffer_size = header.size();
+	uint8_t * const header_buffer = frame_buffer;
+
+	// Контрольная сумма (она может быть а может и нет
+	const size_t error_check_buffer_size = frame_size_overhead();
+	uint8_t * const error_check_buffer = (0 != error_check_buffer_size)
+			? frame_buffer + frame_size() - frame_size_overhead()
+			: nullptr
+	;
+
+	// tfdf + ocf сразу за заголовком. Размер - весь фрейм - заголовок и контрольная сумма
+	// так то может быть еще инсерт зона, но её пока нет
+	// const size_t tfdf_and_ocf_buffer_size = frame_size() - header_buffer_size - error_check_buffer_size;
+	uint8_t * const tfdf_and_ocf_buffer = header_buffer + header.size();
+
+	// Разметили
+	// пишем заголовок
+	header.write(header_buffer);
+	// Пишем фрейм
+	selected_mchannel_copy->pop_frame(tfdf_and_ocf_buffer);
+	// Пишем конетрольную сумму TODO!
+	if (error_check_buffer)
+		std::memset(error_check_buffer, 0, error_check_buffer_size);
 }
 
 

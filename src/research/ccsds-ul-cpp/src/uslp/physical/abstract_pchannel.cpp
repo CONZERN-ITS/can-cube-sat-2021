@@ -11,9 +11,23 @@ namespace ccsds { namespace uslp {
 
 
 pchannel_source::pchannel_source(std::string name_)
-		: name(name_)
+		: name(name_), _frame_version_no(detail::tf_header_t::default_frame_version_no)
 {
 
+}
+
+
+void pchannel_source::frame_version_no(uint8_t value)
+{
+	if (value > 0x0f)
+	{
+		std::stringstream error;
+		error << "Invalid value for frame version no: " << value << ". "
+				<< "Value should be in range [0, 0x0F].";
+		throw einval_exception(error.str());
+	}
+
+	_frame_version_no = value;
 }
 
 

@@ -14,13 +14,13 @@ namespace ccsds { namespace uslp { namespace detail {
 // Минимально допустимое количество байт для хранения указанной величины
 static uint8_t _shortest_byte_size(uint64_t value)
 {
-	if		(value >> 7) return 8;
-	else if (value >> 6) return 7;
-	else if (value >> 5) return 6;
-	else if (value >> 4) return 5;
-	else if (value >> 3) return 4;
-	else if (value >> 2) return 3;
-	else if (value >> 1) return 2;
+	if		(value >> 7*8) return 8;
+	else if (value >> 6*8) return 7;
+	else if (value >> 5*8) return 6;
+	else if (value >> 4*8) return 5;
+	else if (value >> 3*8) return 4;
+	else if (value >> 2*8) return 3;
+	else if (value >> 1*8) return 2;
 	else
 		return 1;
 }
@@ -56,7 +56,8 @@ void tf_header_extended_part_t::frame_seq_no(uint64_t frame_seq_no, uint8_t fram
 	if (frame_seq_no_len > 7)
 	{
 		std::stringstream error;
-		error << "invalid frame_seq_no_len value: " << frame_seq_no_len << ". frame_seq_no_len should be in range [0, 7]";
+		error << "invalid frame_seq_no_len value: " << static_cast<int>(frame_seq_no_len) << ". "
+				<< "frame_seq_no_len should be in range [0, 7]";
 		throw einval_exception(error.str());
 	}
 	else if (frame_seq_no_len < minimum_len)
@@ -64,7 +65,7 @@ void tf_header_extended_part_t::frame_seq_no(uint64_t frame_seq_no, uint8_t fram
 		std::stringstream error;
 		error << "invalid value for frame seq number with specified length. Value"
 				<< " 0x" << std::hex << frame_seq_no << std::dec << " would not fit in"
-				<< " " << frame_seq_no_len << " bytes";
+				<< " " << static_cast<int>(frame_seq_no_len) << " bytes";
 
 		throw einval_exception(error.str());
 	}
@@ -82,7 +83,7 @@ uint16_t tf_header_extended_part_t::size() const noexcept
 
 void tf_header_extended_part_t::write(uint8_t * buffer) const noexcept
 {
-	uint8_t * ext_header_start = buffer;
+	uint8_t * const ext_header_start = buffer;
 
 	// Первое поле - длина кадра
 	const uint16_t frame_len = htobe16(this->frame_len);
@@ -132,7 +133,7 @@ void tf_header_extended_part_t::write(uint8_t * buffer) const noexcept
 	for (uint8_t i = 0; i < _frame_seq_no_len; i++)
 	{
 		// Раскладываем со старшего байта
-		uint8_t byte = (_frame_seq_no >> (_frame_seq_no_len - 1 - i)) & 0xFF;
+		uint8_t byte = (_frame_seq_no >> (_frame_seq_no_len - 1 - i)*8) & 0xFF;
 		frame_no_bytes_start[i] = byte;
 	}
 
@@ -142,7 +143,7 @@ void tf_header_extended_part_t::write(uint8_t * buffer) const noexcept
 
 void tf_header_extended_part_t::read(const uint8_t * buffer)
 {
-	const uint8_t * ext_header_start = buffer;
+	const uint8_t * const ext_header_start = buffer;
 
 	// Будем грузить все в кандидата. Потому что хотим зачем-то exception safety
 	tf_header_extended_part_t candidate;
@@ -187,7 +188,7 @@ void tf_header_extended_part_t::read(const uint8_t * buffer)
 			// Считываем очередной байт
 			const uint8_t byte = frame_no_bytes_start[i];
 			// Впихиваем его в итоговое число в соответствующий разряд
-			frame_no = frame_no | static_cast<uint64_t>(byte) << (frame_no_len - 1 - i);
+			frame_no = frame_no | static_cast<uint64_t>(byte) << (frame_no_len - 1 - i)*8;
 		}
 
 		frame_seq_no = frame_no;
@@ -205,7 +206,8 @@ void tf_header_extended_part_t::read(const uint8_t * buffer)
 	if (frame_seq_no_len > 7)
 	{
 		std::stringstream error;
-		error << "invalid frame_seq_no_len value: " << frame_seq_no_len << ". frame_seq_no_len should be in range [0, 7]";
+		error << "invalid frame_seq_no_len value: " << static_cast<int>(frame_seq_no_len) << ". "
+				<< "frame_seq_no_len should be in range [0, 7]";
 		throw einval_exception(error.str());
 	}
 
@@ -225,7 +227,23 @@ uint16_t tf_header_t::size() const
 
 void tf_header_t::write(uint8_t * buffer) const
 {
+	// Пишем первичный заголовок
+	uint32_t word = 0;
 
+	const uint8_t have_extension = ext.has_value() ? 0x01 : 0x00;
+	word |= (have_extension & 0x0001) << 0;
+	word |= (gmap_id.map_id() & 0x000F) << 1;
+	word |= (gmap_id.vchannel_id() & 0x003F) << 5;
+	word |= (id_is_destination ? 0x0001 : 0x00) << 11;
+	word |= (gmap_id.sc_id() & 0xFFFF) << 12;
+	word |= (frame_version_no & 0x000F) << 28;
+
+	word = htobe32(word);
+	std::memcpy(buffer, &word, sizeof(word));
+
+	// Расширенный
+	if (ext)
+		ext->write(buffer + sizeof(word));
 }
 
 
@@ -241,7 +259,7 @@ void tf_header_t::read(const uint8_t * buffer)
 	candidate.gmap_id.map_id((word >> 1) & 0x000F);
 	candidate.gmap_id.vchannel_id((word >> 5) & 0x003F);
 	candidate.id_is_destination = (word >> 11) & 0x0001 ? true : false;
-	candidate.gmap_id.sc_id((word >> 12) & 0x00FF);
+	candidate.gmap_id.sc_id((word >> 12) & 0xFFFF);
 	candidate.frame_version_no = (word >> 28) & 0x000F;
 
 	if (have_extension)
