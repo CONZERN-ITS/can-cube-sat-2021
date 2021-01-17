@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <sstream>
 
 #include <ccsds/uslp/exceptions.hpp>
 
@@ -19,24 +20,19 @@ map_packet_source::map_packet_source(gmap_id_t map_id_)
 }
 
 
-map_packet_source::map_packet_source(gmap_id_t map_id_, uint16_t tfdf_size)
-: map_source(map_id_, tfdf_size)
+void map_packet_source::check_and_sync_config()
 {
-
+	// Убеждаемся что в tfdf влезает заголовок и хотябы один байтик информации
+	if (detail::tfdf_header::full_size >= tfdf_size())
+	{
+		std::stringstream error;
+		error << "tfdf zone is too small for map channel";
+		throw einval_exception(error.str());
+	}
 }
 
 
-void map_packet_source::tfdf_size(uint16_t value)
-{
-	// Проверка на то, что мы можем столько
-	if (value < detail::tfdf_header::full_size)
-		throw einval_exception("map_packet service requires no less than 4 bytes for tfdf zone size");
-
-	this->map_source::tfdf_size(value);
-}
-
-
-bool map_packet_source::peek_tfdf()
+bool map_packet_source::peek_tfdf_impl()
 {
 	// Тут оптимизации не будет :c
 	tfdf_params dummy;
@@ -44,7 +40,7 @@ bool map_packet_source::peek_tfdf()
 }
 
 
-bool map_packet_source::peek_tfdf(tfdf_params & params)
+bool map_packet_source::peek_tfdf_impl(tfdf_params & params)
 {
 	// У нас вообще что-нибудь есть там?
 	if (_data_queue.empty())
@@ -86,7 +82,7 @@ bool map_packet_source::peek_tfdf(tfdf_params & params)
 }
 
 
-void map_packet_source::pop_tfdf(uint8_t * tfdf_buffer)
+void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 {
 	// Если ничего нет - ничего и не дадим. Хотя по чесноку - этот метод не должны вызывать
 	// если ничего нет

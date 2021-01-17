@@ -27,16 +27,27 @@ public:
 	map_source(gmap_id_t map_id_, uint16_t tfdf_size_);
 	virtual ~map_source() = default;
 
-	virtual void tfdf_size(uint16_t value);
+	void tfdf_size(uint16_t value);
 	uint16_t tfdf_size() const noexcept { return _tfdf_size; }
 
-	virtual bool peek_tfdf() = 0;
-	virtual bool peek_tfdf(tfdf_params & params) = 0;
-	virtual void pop_tfdf(uint8_t * tfdf_buffer) = 0;
+	void finalize();
+
+	bool peek_tfdf();
+	bool peek_tfdf(tfdf_params & params);
+	void pop_tfdf(uint8_t * tfdf_buffer);
 
 	const gmap_id_t map_id;
 
+protected:
+
+	virtual void check_and_sync_config();
+
+	virtual bool peek_tfdf_impl() = 0;
+	virtual bool peek_tfdf_impl(tfdf_params & params) = 0;
+	virtual void pop_tfdf_impl(uint8_t * tfdfd_buffer) = 0;
+
 private:
+	bool _finalized = false;
 	uint16_t _tfdf_size = 0;
 };
 

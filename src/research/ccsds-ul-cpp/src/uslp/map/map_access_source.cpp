@@ -1,5 +1,8 @@
 #include <ccsds/uslp/exceptions.hpp>
 
+#include <sstream>
+
+#include <ccsds/uslp/exceptions.hpp>
 #include <ccsds/uslp/_detail/tfdf_header.hpp>
 #include <ccsds/uslp/map/map_access_source.hpp>
 
@@ -8,36 +11,42 @@ namespace ccsds { namespace uslp {
 
 
 map_access_source::map_access_source(gmap_id_t map_id_)
-	: map_source(map_id_, detail::tfdf_header::full_size)
+	: map_source(map_id_)
 {
-	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
+
 }
 
 
-map_access_source::map_access_source(gmap_id_t map_id_, uint16_t tfdf_size)
-	: map_source(map_id_, tfdf_size)
+void map_access_source::add_sdu(const uint8_t * data, size_t data_size, qos_t qos)
 {
-	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
+	data_unit_t du;
+	std::copy(data, data + data_size, std::back_inserter(du.data));
+	du.data_original_size = data_size;
+	du.qos = qos;
+
+	_data_queue.push_back(du);
 }
 
 
-void map_access_source::tfdf_size(uint16_t value)
+void map_access_source::check_and_sync_config()
 {
-	// Проверка на то, что мы можем столько
-	if (value < detail::tfdf_header::full_size)
-		throw einval_exception("map_access service requires no less than 4 bytes for tfdf zone size");
-
-	this->map_source::tfdf_size(value);
+	// Убеждаемся что в tfdf влезает заголовок и хотябы один байтик информации
+	if (detail::tfdf_header::full_size >= tfdf_size())
+	{
+		std::stringstream error;
+		error << "tfdf zone is too small for map channel";
+		throw einval_exception(error.str());
+	}
 }
 
 
-bool map_access_source::peek_tfdf()
+bool map_access_source::peek_tfdf_impl()
 {
 	return !_data_queue.empty();
 }
 
 
-bool map_access_source::peek_tfdf(tfdf_params & params)
+bool map_access_source::peek_tfdf_impl(tfdf_params & params)
 {
 	// Если в очереди нет ничего готового на отправку - то и забьем
 	if (_data_queue.empty())
@@ -56,7 +65,7 @@ bool map_access_source::peek_tfdf(tfdf_params & params)
 }
 
 
-void map_access_source::pop_tfdf(uint8_t * tfdf_buffer)
+void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 {
 	if (_data_queue.empty())
 		return;
@@ -120,15 +129,12 @@ void map_access_source::pop_tfdf(uint8_t * tfdf_buffer)
 }
 
 
-void map_access_source::add_sdu(const uint8_t * data, size_t data_size, qos_t qos)
+uint16_t map_access_source::_tfdz_size() const
 {
-	data_unit_t du;
-	std::copy(data, data + data_size, std::back_inserter(du.data));
-	du.data_original_size = data_size;
-	du.qos = qos;
-
-	_data_queue.push_back(du);
+	// У нас всегда полнознамерные заголовки
+	return tfdf_size() - detail::tfdf_header::full_size;
 }
+
 
 }}
 

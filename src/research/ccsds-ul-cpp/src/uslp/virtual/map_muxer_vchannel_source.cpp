@@ -14,57 +14,28 @@ map_muxer_vchannel_source::map_muxer_vchannel_source(gvcid_t gvcid_)
 }
 
 
-map_muxer_vchannel_source::map_muxer_vchannel_source(gvcid_t gvcid_, uint16_t frame_size_l2_)
-	: vchannel_source(gvcid_, frame_size_l2_)
+void map_muxer_vchannel_source::add_map_source_impl(map_source * source)
 {
-
-}
-
-
-void map_muxer_vchannel_source::frame_size_l2(uint16_t value)
-{
-	const auto old_value = vchannel_source::frame_size_l2();
-
-	vchannel_source::frame_size_l2(value);
-
-	try
-	{
-		_sync_tfdf_size();
-	}
-	catch (...)
-	{
-		vchannel_source::frame_size_l2(old_value);
-		throw;
-	}
-}
-
-
-void map_muxer_vchannel_source::frame_seq_no_len(uint16_t value)
-{
-	const auto old_value = vchannel_source::frame_seq_no_len();
-
-	vchannel_source::frame_seq_no_len(value);
-
-	try
-	{
-		_sync_tfdf_size();
-	}
-	catch (...)
-	{
-		vchannel_source::frame_seq_no_len(old_value);
-		throw;
-	}
-}
-
-
-void map_muxer_vchannel_source::add_map_source(map_source * source)
-{
-	source->tfdf_size(tfdf_size());
 	_muxer.add_source(source);
 }
 
 
-bool map_muxer_vchannel_source::peek_frame()
+void map_muxer_vchannel_source::check_and_sync_config()
+{
+	vchannel_source::check_and_sync_config();
+
+	// Проходим по мап каналам и ставим им размер tfdf
+	const auto tfdf_size = frame_size_l2() - frame_size_overhead();
+	for (auto * map_source: _muxer)
+		map_source->tfdf_size(tfdf_size);
+
+	// Второй круг - вызываем финализацию
+	for (auto * map_source: _muxer)
+		map_source->finalize();
+}
+
+
+bool map_muxer_vchannel_source::peek_frame_impl()
 {
 	if (!_selected_channel)
 		_selected_channel = _muxer.select_next();
@@ -76,7 +47,7 @@ bool map_muxer_vchannel_source::peek_frame()
 }
 
 
-bool map_muxer_vchannel_source::peek_frame(vchannel_frame_params & params)
+bool map_muxer_vchannel_source::peek_frame_impl(vchannel_frame_params & params)
 {
 	if (!_selected_channel)
 		_selected_channel = _muxer.select_next();
@@ -112,7 +83,7 @@ bool map_muxer_vchannel_source::peek_frame(vchannel_frame_params & params)
 }
 
 
-void map_muxer_vchannel_source::pop_frame(uint8_t * tfdf_buffer)
+void map_muxer_vchannel_source::pop_frame_impl(uint8_t * tfdf_buffer)
 {
 	assert(_selected_channel);
 
@@ -128,12 +99,5 @@ void map_muxer_vchannel_source::pop_frame(uint8_t * tfdf_buffer)
 	vchannel_source::increase_frame_seq_no();
 }
 
-
-void map_muxer_vchannel_source::_sync_tfdf_size()
-{
-	const auto new_size = tfdf_size();
-	for (auto * source: _muxer)
-		source->tfdf_size(new_size);
-}
 
 }}

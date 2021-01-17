@@ -32,25 +32,37 @@ class pchannel_source
 {
 public:
 	pchannel_source(std::string name_);
-	pchannel_source(std::string name_, int32_t frame_size_);
-	pchannel_source(std::string name_, int32_t frame_size_, error_control_len_t err_control_len_);
 	virtual ~pchannel_source() = default;
 
-	virtual void frame_size(int32_t value);
+	void frame_size(int32_t value);
 	int32_t frame_size() const noexcept { return _frame_size; }
 
-	virtual void error_control_len(error_control_len_t value);
+	void error_control_len(error_control_len_t value);
 	error_control_len_t error_control_len() const noexcept { return _error_control_len; }
 
-	virtual void add_mchannel_source(mchannel_source * source) = 0;
+	void add_mchannel_source(mchannel_source * source);
 
-	virtual bool peek_frame() = 0;
-	virtual bool peek_frame(pchannel_frame_params_t & frame_params) = 0;
-	virtual void pop_frame(uint8_t * frame_buffer) = 0;
+	void finalize();
+
+	bool peek_frame();
+	bool peek_frame(pchannel_frame_params_t & frame_params);
+	void pop_frame(uint8_t * frame_buffer);
 
 	const std::string name;
 
+protected:
+	uint16_t frame_size_overhead() const;
+
+	virtual void add_mchannel_source_impl(mchannel_source * source) = 0;
+
+	virtual void check_and_sync_config();
+
+	virtual bool peek_frame_impl() = 0;
+	virtual bool peek_frame_impl(pchannel_frame_params_t & frame_params) = 0;
+	virtual void pop_frame_impl(uint8_t * frame_buffer) = 0;
+
 private:
+	bool _finalized = false;
 	int32_t _frame_size = 0;
 	error_control_len_t _error_control_len = error_control_len_t::ZERO;
 };

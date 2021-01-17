@@ -42,25 +42,41 @@ class mchannel_source
 {
 public:
 	mchannel_source(mcid_t mcid_);
-	mchannel_source(mcid_t mcid_, uint16_t frame_size_l1_);
 	virtual ~mchannel_source() = default;
 
-	virtual void frame_size_l1(uint16_t value);
+	void frame_size_l1(uint16_t value);
 	uint16_t frame_size_l1() const { return _frame_size_l1; }
 
-	virtual void id_is_destination(bool value);
+	void id_is_destination(bool value);
 	bool id_is_destination() const noexcept { return _id_is_destination; }
 
-	virtual void add_vchannel_source(vchannel_source * source) = 0;
-	virtual void set_ocf_source(ocf_source * source) = 0;
+	void add_vchannel_source(vchannel_source * source);
+	void set_ocf_source(ocf_source * source);
+	void reset_ocf_source() { set_ocf_source(nullptr); }
 
-	virtual bool peek_frame() = 0;
-	virtual bool peek_frame(mchannel_frame_params_t & frame_params) = 0;
-	virtual void pop_frame(uint8_t * frame_data_buffer) = 0;
+	void finalize();
+
+	bool peek_frame();
+	bool peek_frame(mchannel_frame_params_t & frame_params);
+	void pop_frame(uint8_t * tfdf_buffer);
 
 	const mcid_t mcid;
 
+protected:
+	ocf_source * get_ocf_source() { return _ocf_source; }
+	uint16_t frame_size_overhead() const;
+
+	virtual void add_vchannel_source_impl(vchannel_source * source) = 0;
+
+	virtual void check_and_sync_config();
+
+	virtual bool peek_frame_impl() = 0;
+	virtual bool peek_frame_impl(mchannel_frame_params_t & frame_params) = 0;
+	virtual void pop_frame_impl(uint8_t * tfdf_buffer) = 0;
+
 private:
+	ocf_source * _ocf_source = nullptr;
+	bool _finalized = false;
 	bool _id_is_destination = true;
 	uint16_t _frame_size_l1 = 0;
 };

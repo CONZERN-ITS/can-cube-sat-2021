@@ -48,6 +48,24 @@ namespace ccsds { namespace uslp {
 	{}
 
 
+	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+	object_is_finalized::object_is_finalized(const char * what)
+		: exception(what)
+	{
+
+	}
+
+
+	object_is_finalized::object_is_finalized(const std::string & what)
+		: exception(what)
+	{
+
+	}
+
+
 }}
 
 

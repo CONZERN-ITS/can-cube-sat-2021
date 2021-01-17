@@ -26,22 +26,21 @@ class vchannel_source
 {
 public:
 	vchannel_source(gvcid_t gvcid_);
-	vchannel_source(gvcid_t gvcid_, uint16_t frame_size_l2_);
 	virtual ~vchannel_source() = default;
 
-	virtual void frame_size_l2(uint16_t value);
+	void frame_size_l2(uint16_t value);
 	uint16_t frame_size_l2() const noexcept { return _frame_size_l2; }
 
-	virtual void frame_seq_no_len(uint16_t value);
+	void frame_seq_no_len(uint16_t value);
 	uint8_t frame_seq_no_len() const noexcept { return _frame_seq_no_len; }
 
-	uint16_t tfdf_size() const;
+	void add_map_source(map_source * source);
 
-	virtual void add_map_source(map_source * source) = 0;
+	void finalize();
 
-	virtual bool peek_frame() = 0;
-	virtual bool peek_frame(vchannel_frame_params & params) = 0;
-	virtual void pop_frame(uint8_t * tfdf_buffer) = 0;
+	bool peek_frame();
+	bool peek_frame(vchannel_frame_params & params);
+	void pop_frame(uint8_t * tfdf_buffer);
 
 	const gvcid_t gvcid;
 
@@ -49,8 +48,18 @@ protected:
 	void set_frame_seq_no(uint64_t value);
 	uint64_t get_frame_seq_no() const;
 	void increase_frame_seq_no();
+	uint16_t frame_size_overhead() const;
+
+	virtual void add_map_source_impl(map_source * source) = 0;
+
+	virtual void check_and_sync_config();
+
+	virtual bool peek_frame_impl() = 0;
+	virtual bool peek_frame_impl(vchannel_frame_params & params) = 0;
+	virtual void pop_frame_impl(uint8_t * tfdf_buffer) = 0;
 
 private:
+	bool _finalized = false;
 	uint64_t _frame_seq_no = 0;
 	uint8_t _frame_seq_no_len = 0;
 	uint16_t _frame_size_l2 = 0;

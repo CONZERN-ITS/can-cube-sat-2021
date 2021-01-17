@@ -12,66 +12,29 @@ mchannel_muxer_pchannel_source::mchannel_muxer_pchannel_source(std::string name_
 }
 
 
-mchannel_muxer_pchannel_source::mchannel_muxer_pchannel_source(std::string name_, int32_t frame_size_)
-	: pchannel_source(std::move(name_), frame_size_)
+void mchannel_muxer_pchannel_source::add_mchannel_source_impl(mchannel_source * source)
 {
-
-}
-
-
-mchannel_muxer_pchannel_source::mchannel_muxer_pchannel_source(
-		std::string name_, int32_t frame_size_, error_control_len_t err_control_len_
-) : pchannel_source(std::move(name_), frame_size_, err_control_len_)
-{
-
-}
-
-
-void mchannel_muxer_pchannel_source::frame_size(int32_t value)
-{
-	const auto old_value = pchannel_source::frame_size();
-
-	pchannel_source::frame_size(value);
-
-	try
-	{
-		_sync_frame_size();
-	}
-	catch (...)
-	{
-		pchannel_source::frame_size(old_value);
-		throw;
-	}
-}
-
-
-void mchannel_muxer_pchannel_source::error_control_len(error_control_len_t value)
-{
-	const auto old_value = pchannel_source::error_control_len();
-
-	pchannel_source::error_control_len(value);
-
-	try
-	{
-		_sync_frame_size();
-	}
-	catch (...)
-	{
-		pchannel_source::error_control_len(old_value);
-		throw;
-	}
-}
-
-
-void mchannel_muxer_pchannel_source::add_mchannel_source(mchannel_source * source)
-{
-	source->frame_size_l1(_frame_size_l1());
 	_muxer.add_source(source);
 }
 
 
+void mchannel_muxer_pchannel_source::check_and_sync_config()
+{
+	pchannel_source::check_and_sync_config();
+	auto upper_size = _frame_size_l1();
 
-bool mchannel_muxer_pchannel_source::peek_frame()
+	// Сначала выставляем настройки а потом финализируем
+	// На случай исключений, чтобы все объекты были в понятном состоянии
+	for (auto * mchannel: _muxer)
+		mchannel->frame_size_l1(upper_size);
+
+
+	for (auto * mchannel: _muxer)
+		mchannel->finalize();
+}
+
+
+bool mchannel_muxer_pchannel_source::peek_frame_impl()
 {
 	if (!_selected_mchannel)
 		_selected_mchannel = _muxer.select_next();
@@ -83,7 +46,7 @@ bool mchannel_muxer_pchannel_source::peek_frame()
 }
 
 
-bool mchannel_muxer_pchannel_source::peek_frame(pchannel_frame_params_t & frame_params)
+bool mchannel_muxer_pchannel_source::peek_frame_impl(pchannel_frame_params_t & frame_params)
 {
 	if (!_selected_mchannel)
 		_selected_mchannel = _muxer.select_next();
@@ -107,7 +70,7 @@ bool mchannel_muxer_pchannel_source::peek_frame(pchannel_frame_params_t & frame_
 }
 
 
-void mchannel_muxer_pchannel_source::pop_frame(uint8_t * frame_buffer)
+void mchannel_muxer_pchannel_source::pop_frame_impl(uint8_t * frame_buffer)
 {
 	assert(_selected_mchannel);
 
@@ -137,15 +100,6 @@ uint16_t mchannel_muxer_pchannel_source::_frame_size_l1()
 
 	// Вот теперь собственно и все
 	return static_cast<uint16_t>(retval);
-}
-
-
-void mchannel_muxer_pchannel_source::_sync_frame_size()
-{
-	const auto data_size = _frame_size_l1();
-
-	for (auto itt = _muxer.begin(); itt != _muxer.end(); itt++)
-		(*itt)->frame_size_l1(data_size);
 }
 
 }}

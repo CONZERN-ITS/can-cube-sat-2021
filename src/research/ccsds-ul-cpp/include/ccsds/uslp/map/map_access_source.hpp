@@ -17,16 +17,16 @@ class map_access_source: public map_source
 public:
 
 	map_access_source(gmap_id_t map_id_);
-	map_access_source(gmap_id_t map_id_, uint16_t tfdf_size);
 	virtual ~map_access_source() = default;
 
-	virtual void tfdf_size(uint16_t value) override;
-
-	virtual bool peek_tfdf() override;
-	virtual bool peek_tfdf(tfdf_params & params) override;
-	virtual void pop_tfdf(uint8_t * tfdf_buffer) override;
-
 	void add_sdu(const uint8_t * data, size_t data_size, qos_t qos);
+
+protected:
+	virtual void check_and_sync_config() override;
+
+	virtual bool peek_tfdf_impl() override;
+	virtual bool peek_tfdf_impl(tfdf_params & params) override;
+	virtual void pop_tfdf_impl(uint8_t * tfdf_buffer) override;
 
 protected:
 	//! В таком виде будем хранить передаваемые нами чанки
@@ -39,6 +39,9 @@ protected:
 		//! Каким типом передачи будем гнать этот блок данных
 		qos_t qos;
 	};
+
+	//! Размер зоны именно для полезной нагрузки (без заголовка)
+	uint16_t _tfdz_size() const;
 
 private:
 	std::deque<data_unit_t> _data_queue;

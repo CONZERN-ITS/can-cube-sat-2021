@@ -12,58 +12,29 @@ vchannel_muxer_mchannel_source::vchannel_muxer_mchannel_source(mcid_t mcid_)
 }
 
 
-vchannel_muxer_mchannel_source::vchannel_muxer_mchannel_source(mcid_t mcid_, uint16_t frame_size_l1_)
-	: mchannel_source(mcid_, frame_size_l1_)
+void vchannel_muxer_mchannel_source::add_vchannel_source_impl(vchannel_source * source)
 {
-
-}
-
-
-void vchannel_muxer_mchannel_source::frame_size_l1(uint16_t value)
-{
-	const auto old_value = mchannel_source::frame_size_l1();
-
-	mchannel_source::frame_size_l1(value);
-
-	try
-	{
-		_sync_frame_size();
-	}
-	catch (...)
-	{
-		mchannel_source::frame_size_l1(old_value);
-		throw;
-	}
-}
-
-
-void vchannel_muxer_mchannel_source::add_vchannel_source(vchannel_source * source)
-{
-	// TODO: Проверку на совпдаение идентификаторов каналов
-
-	source->frame_size_l2(_frame_size_l2());
 	_muxer.add_source(source);
 }
 
 
-void vchannel_muxer_mchannel_source::set_ocf_source(ocf_source * source)
+void vchannel_muxer_mchannel_source::check_and_sync_config()
 {
-	bool sync_needed = _ocf_source == nullptr;
-	_ocf_source = source;
-	try
-	{
-		if (sync_needed)
-			_sync_frame_size();
-	}
-	catch (...)
-	{
-		_ocf_source = nullptr;
-		throw;
-	}
+	mchannel_source::check_and_sync_config();
+
+	// Выставляем размер уровнем выше как все что есть у нас без нашего оверхеда
+	const auto upper_size = frame_size_l1() - frame_size_overhead();
+
+	// Идем в двах прохода, чтобы в случае ошибки объекты были в более менее понятном состоянии
+	for (auto * vchannel: _muxer)
+		vchannel->frame_size_l2(upper_size);
+
+	for (auto * vchannel: _muxer)
+		vchannel->finalize();
 }
 
 
-bool vchannel_muxer_mchannel_source::peek_frame()
+bool vchannel_muxer_mchannel_source::peek_frame_impl()
 {
 	if (!_selected_vchannel)
 		_selected_vchannel = _muxer.select_next();
@@ -75,7 +46,7 @@ bool vchannel_muxer_mchannel_source::peek_frame()
 }
 
 
-bool vchannel_muxer_mchannel_source::peek_frame(mchannel_frame_params_t & frame_params)
+bool vchannel_muxer_mchannel_source::peek_frame_impl(mchannel_frame_params_t & frame_params)
 {
 	if (!_selected_vchannel)
 		_selected_vchannel = _muxer.select_next();
@@ -99,7 +70,7 @@ bool vchannel_muxer_mchannel_source::peek_frame(mchannel_frame_params_t & frame_
 }
 
 
-void vchannel_muxer_mchannel_source::pop_frame(uint8_t * frame_data_field)
+void vchannel_muxer_mchannel_source::pop_frame_impl(uint8_t * frame_data_field)
 {
 	assert(_selected_vchannel);
 
@@ -108,22 +79,5 @@ void vchannel_muxer_mchannel_source::pop_frame(uint8_t * frame_data_field)
 	selected_vchannel_copy->pop_frame(frame_data_field);
 }
 
-
-uint16_t vchannel_muxer_mchannel_source::_frame_size_l2() const
-{
-	auto retval = this->mchannel_source::frame_size_l1();
-	if (_ocf_source != 0)
-		retval -= sizeof(uint32_t);
-
-	return retval;
-}
-
-
-void vchannel_muxer_mchannel_source::_sync_frame_size()
-{
-	const auto size = _frame_size_l2();
-	for (auto * source: _muxer)
-		source->frame_size_l2(size);
-}
 
 }}

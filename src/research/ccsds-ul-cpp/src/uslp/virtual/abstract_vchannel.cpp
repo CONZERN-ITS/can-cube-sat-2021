@@ -3,7 +3,6 @@
 #include <sstream>
 
 #include <ccsds/uslp/exceptions.hpp>
-
 #include <ccsds/uslp/_detail/tf_header.hpp>
 
 
@@ -43,36 +42,91 @@ vchannel_source::vchannel_source(gvcid_t gvcid_)
 }
 
 
-vchannel_source::vchannel_source(gvcid_t gvcid_, uint16_t frame_size_l2_)
-	: gvcid(gvcid_), _frame_size_l2(frame_size_l2_)
-{
-
-}
-
-
 void vchannel_source::frame_size_l2(uint16_t value)
 {
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use frame_size_l2 on vchannel, because is it finalized";
+		throw object_is_finalized(error.str());
+	}
+
 	_frame_size_l2 = value;
 }
 
 
 void vchannel_source::frame_seq_no_len(uint16_t value)
 {
-	if (detail::tf_header_t::extended_size_forecast(_frame_seq_no_len) > frame_size_l2())
+	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to set frame seq no len to " << value << " "
-				<< "because it would not fit frame with size " << frame_size_l2();
-
-		throw einval_exception(error.str());
+		error << "unable to use frame_seq_no_len on vchannel, because is it finalized";
+		throw object_is_finalized(error.str());
 	}
+
 	_frame_seq_no_len = value;
 }
 
 
-uint16_t vchannel_source::tfdf_size() const
+void vchannel_source::add_map_source(map_source * source)
 {
-	return _frame_size_l2 - detail::tf_header_t::extended_size_forecast(_frame_seq_no_len);
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use add_map_source on vchannel, because is it finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	add_map_source_impl(source);
+}
+
+
+void vchannel_source::finalize()
+{
+	if (_finalized)
+		return;
+
+	check_and_sync_config();
+	_finalized = true;
+}
+
+
+bool vchannel_source::peek_frame()
+{
+	if (!_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use peek_frame() on vchannel, because is it not finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	return peek_frame_impl();
+}
+
+
+bool vchannel_source::peek_frame(vchannel_frame_params & params)
+{
+	if (!_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use peek_frame(params) on vchannel, because is it not finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	return peek_frame_impl(params);
+}
+
+
+void vchannel_source::pop_frame(uint8_t * tfdf_buffer)
+{
+	if (!_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use pop_frame() on vchannel, because is it not finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	pop_frame_impl(tfdf_buffer);
 }
 
 
@@ -101,6 +155,27 @@ void vchannel_source::increase_frame_seq_no()
 	_frame_seq_no = (_frame_seq_no + 1) & _mask_for_byte_size(_frame_seq_no_len);
 }
 
+
+uint16_t vchannel_source::frame_size_overhead() const
+{
+	uint16_t retval = 0;
+	retval += detail::tf_header_t::extended_size_forecast(frame_seq_no_len());
+
+	return retval;
+}
+
+
+void vchannel_source::check_and_sync_config()
+{
+	const auto min_frame_size = frame_size_overhead();
+	if (frame_size_l2() < min_frame_size)
+	{
+		std::stringstream error;
+		error << "invalid frame size l2 on vchannel: " << frame_size_l2() << ". "
+				<< "It should be no less than " << min_frame_size;
+		throw einval_exception(error.str());
+	}
+}
 
 
 }}

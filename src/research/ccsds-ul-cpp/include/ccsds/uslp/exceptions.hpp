@@ -36,6 +36,16 @@ namespace ccsds { namespace uslp {
 		invalid_call_order(const std::string & what);
 		virtual ~invalid_call_order() = default;
 	};
+
+
+	class object_is_finalized: public exception
+	{
+	public:
+		object_is_finalized() = default;
+		object_is_finalized(const char * what);
+		object_is_finalized(const std::string & what);
+		virtual ~object_is_finalized() = default;
+	};
 }}
 
 
