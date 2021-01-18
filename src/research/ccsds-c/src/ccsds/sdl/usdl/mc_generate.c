@@ -1,7 +1,7 @@
 /*
  * mc_generate.h
  *
- *  Created on: 15 ÿíâ. 2021 ã.
+ *  Created on: 15 ÑĞ½Ğ². 2021 Ğ³.
  *      Author: HP
  */
 

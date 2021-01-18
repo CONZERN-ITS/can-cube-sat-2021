@@ -1,7 +1,7 @@
 /*
  * fop.h
  *
- *  Created on: 14 янв. 2021 г.
+ *  Created on: 14 СЏРЅРІ. 2021 Рі.
  *      Author: HP
  */
 
