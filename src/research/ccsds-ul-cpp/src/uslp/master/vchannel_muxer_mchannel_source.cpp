@@ -64,7 +64,6 @@ bool vchannel_rr_muxer::peek_frame_impl(mchannel_frame_params_t & frame_params)
 	frame_params.frame_class = vparams.frame_class;
 	frame_params.ocf_present = _ocf_source != nullptr;
 	frame_params.frame_seq_no = vparams.frame_seq_no;
-	frame_params.frame_seq_no_length = vparams.frame_seq_no_length;
 
 	return true;
 }

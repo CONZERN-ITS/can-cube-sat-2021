@@ -18,6 +18,8 @@ void vchannel_demuxer::add_vchannel_sink_impl(vchannel_sink * sink)
 
 void vchannel_demuxer::finalize_impl()
 {
+	mchannel_sink::finalize_impl();
+
 	for (auto & pair: _container)
 		pair.second->finalize();
 }
@@ -41,7 +43,6 @@ void vchannel_demuxer::push_impl(
 	vparams.channel_id = frame_params.channel_id;
 	vparams.frame_class = frame_params.frame_class;
 	vparams.frame_seq_no = frame_params.frame_seq_no;
-	vparams.frame_seq_no_length = frame_params.frame_seq_no_length;
 
 	// Передаем фрейм адресату
 	const uint8_t * tfdfd_buffer = frame_data_unit;

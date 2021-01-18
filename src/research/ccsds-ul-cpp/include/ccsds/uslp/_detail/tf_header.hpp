@@ -7,6 +7,8 @@
 #include <ccsds/uslp/defs.hpp>
 #include <ccsds/uslp/ids.hpp>
 
+#include <ccsds/uslp/common/frame_seq_no.hpp>
+
 namespace ccsds { namespace uslp { namespace detail {
 
 
@@ -17,17 +19,6 @@ struct tf_header_extended_part_t
 	static constexpr uint16_t static_size = 3;
 	//! Максимальная длина расширенной части заголовка
 	static constexpr uint16_t maximum_size = 10;
-
-	//! Прочитать номер фрейма
-	uint8_t frame_seq_no_len() const noexcept { return _frame_seq_no_len; }
-	//! Прочитать длину номера фрейма
-	std::optional<uint64_t> frame_seq_no() const noexcept { return _frame_seq_no; }
-	//! Установить номер фрейма. Длина вычисляется автомагически как минимально возможная
-	/*! Нельзя указывать значение больше чем на 7 байт. Если указать - будет бросок */
-	void frame_seq_no(std::optional<uint64_t> frame_seq_no);
-	//! Установить номер фрейма. Длина указывается явно
-	/*! Если указана не правильная длина - будет бросок) */
-	void frame_seq_no(uint64_t frame_seq_no, uint8_t frame_seq_no_len);
 
 	//! Длина расширенной части заголовка
 	uint16_t size() const noexcept;
@@ -41,12 +32,10 @@ struct tf_header_extended_part_t
 	frame_class_t frame_class;
 	//! Длина кадра (не фактическая, а прям циферка из заголовка)
 	uint16_t frame_len;
+	//! Циклический номер фрейма
+	std::optional<frame_seq_no_t> frame_seq_no;
 	//! Флаг наличия OCF поля
 	bool ocf_present;
-
-private:
-	uint64_t _frame_seq_no;
-	uint8_t _frame_seq_no_len = 0;
 };
 
 
@@ -68,6 +57,10 @@ struct tf_header_t
 	static constexpr uint16_t truncated_size_forecast() noexcept { return static_size; }
 	//! Размер расширенного заголовка с номером фрейма. Длина номера передается аргументом
 	static uint16_t extended_size_forecast(uint8_t frame_seq_no_len);
+	static uint16_t extended_size_forecast(std::optional<frame_seq_no_t> frame_seq_no)
+	{
+		return extended_size_forecast(frame_seq_no ? frame_seq_no->value_size() : 0);
+	}
 
 	//! Размер заголовка
 	uint16_t size() const;

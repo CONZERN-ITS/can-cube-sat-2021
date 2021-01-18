@@ -54,14 +54,14 @@ bool map_rr_muxer::peek_frame_impl(vchannel_frame_params & params)
 	if (!_selected_channel)
 		return false;
 
-	tfdf_params tparams;
-	bool retval = _selected_channel->peek_tfdf(tparams);
+	output_map_frame_params map_params;
+	bool retval = _selected_channel->peek_tfdf(map_params);
 	if (!retval)
 		return false;
 
 	params.channel_id = _selected_channel->map_id;
 
-	switch (tparams.qos)
+	switch (map_params.qos)
 	{
 	case qos_t::EXPIDITED:
 		params.frame_class = frame_class_t::EXPEDITED_PAYLOAD;
@@ -77,7 +77,6 @@ bool map_rr_muxer::peek_frame_impl(vchannel_frame_params & params)
 	};
 
 	params.frame_seq_no = vchannel_source::get_frame_seq_no();
-	params.frame_seq_no_length = vchannel_source::frame_seq_no_len();
 	return true;
 }
 
@@ -87,11 +86,11 @@ void map_rr_muxer::pop_frame_impl(uint8_t * tfdf_buffer)
 	assert(_selected_channel);
 
 	// Нам нужно посмотреть заблокириует ли этот map весь канал на себя или нет
-	tfdf_params tparams;
-	_selected_channel->peek_tfdf(tparams);
+	output_map_frame_params map_params;
+	_selected_channel->peek_tfdf(map_params);
 
 	auto * selected_channel_copy = _selected_channel;
-	if (!tparams.channel_lock)
+	if (!map_params.channel_lock)
 		_selected_channel = nullptr; // Если блокировки нет - снимаем этот канал с выбранного
 
 	selected_channel_copy->pop_tfdf(tfdf_buffer);

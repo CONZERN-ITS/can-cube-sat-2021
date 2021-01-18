@@ -11,73 +11,10 @@
 
 namespace ccsds { namespace uslp { namespace detail {
 
-// Минимально допустимое количество байт для хранения указанной величины
-static uint8_t _shortest_byte_size(uint64_t value)
-{
-	if		(value >> 7*8) return 8;
-	else if (value >> 6*8) return 7;
-	else if (value >> 5*8) return 6;
-	else if (value >> 4*8) return 5;
-	else if (value >> 3*8) return 4;
-	else if (value >> 2*8) return 3;
-	else if (value >> 1*8) return 2;
-	else
-		return 1;
-}
-
-
-void tf_header_extended_part_t::frame_seq_no(std::optional<uint64_t> frame_seq_no)
-{
-	if (!frame_seq_no)
-	{
-		_frame_seq_no_len = 0;
-		return;
-	}
-
-	const uint16_t len = _shortest_byte_size(*frame_seq_no);
-	if (len > 7)
-	{
-		std::stringstream error;
-		error << "invalid value for frame seq number: 0x" << std::hex << *frame_seq_no << std::dec
-				<< "value should fit in 56 bits";
-
-		throw einval_exception(error.str());
-	}
-
-	_frame_seq_no = *frame_seq_no;
-	_frame_seq_no_len = len;
-}
-
-
-void tf_header_extended_part_t::frame_seq_no(uint64_t frame_seq_no, uint8_t frame_seq_no_len)
-{
-	uint8_t minimum_len = _shortest_byte_size(frame_seq_no);
-
-	if (frame_seq_no_len > 7)
-	{
-		std::stringstream error;
-		error << "invalid frame_seq_no_len value: " << static_cast<int>(frame_seq_no_len) << ". "
-				<< "frame_seq_no_len should be in range [0, 7]";
-		throw einval_exception(error.str());
-	}
-	else if (frame_seq_no_len < minimum_len)
-	{
-		std::stringstream error;
-		error << "invalid value for frame seq number with specified length. Value"
-				<< " 0x" << std::hex << frame_seq_no << std::dec << " would not fit in"
-				<< " " << static_cast<int>(frame_seq_no_len) << " bytes";
-
-		throw einval_exception(error.str());
-	}
-
-	_frame_seq_no = frame_seq_no;
-	_frame_seq_no_len = frame_seq_no_len;
-}
-
 
 uint16_t tf_header_extended_part_t::size() const noexcept
 {
-	return static_size + _frame_seq_no_len;
+	return static_size + (frame_seq_no ? frame_seq_no->value_size() : 0);
 }
 
 
@@ -120,20 +57,29 @@ void tf_header_extended_part_t::write(uint8_t * buffer) const noexcept
 		assert(false);
 	}
 
+
+	uint8_t frame_seq_no_len = 0;
+	uint64_t frame_seq_no_value;
+	if (frame_seq_no)
+	{
+		frame_seq_no_len = frame_seq_no->value_size();
+		frame_seq_no_value = frame_seq_no->value(); //  не .value, а ->value. Это важно
+	}
+
 	frame_flags |= (bypass_flag ? 0x01 : 0x00) << 7;
 	frame_flags |= (command_flag ? 0x01 : 0x00) << 6;
 	frame_flags |= (ocf_present ? 0x01 : 0x00) << 3;
-	frame_flags |= (_frame_seq_no_len & 0x7) << 0;
+	frame_flags |= (frame_seq_no_len & 0x7) << 0;
 	std::memcpy(buffer + sizeof(uint16_t), &frame_flags, sizeof(frame_flags));
 
 	// теперь самое неприятное - пишем собственно длину кадра
 	uint8_t * const frame_no_bytes_start =
 			ext_header_start + sizeof(uint16_t) + sizeof(uint8_t);
 
-	for (uint8_t i = 0; i < _frame_seq_no_len; i++)
+	for (uint8_t i = 0; i < frame_seq_no_len; i++)
 	{
 		// Раскладываем со старшего байта
-		uint8_t byte = (_frame_seq_no >> (_frame_seq_no_len - 1 - i)*8) & 0xFF;
+		uint8_t byte = (frame_seq_no_value >> (frame_seq_no_len - 1 - i)*8) & 0xFF;
 		frame_no_bytes_start[i] = byte;
 	}
 
@@ -175,27 +121,27 @@ void tf_header_extended_part_t::read(const uint8_t * buffer)
 	candidate.ocf_present = (frame_flags >> 3) & 0x01 ? true : false;
 
 	// смотрим длину поля с номером кадра
-	std::optional<uint16_t> frame_seq_no;
-	uint16_t frame_no_len = (frame_flags >> 0) & 0x7;
-	if (frame_no_len)
+	std::optional<uint16_t> frame_seq_no_value;
+	const uint16_t frame_seq_no_len = (frame_flags >> 0) & 0x7;
+	if (frame_seq_no_len)
 	{
 		const uint8_t * const frame_no_bytes_start =
 				ext_header_start + sizeof(uint16_t) + sizeof(uint8_t)
 		;
 		uint64_t frame_no = 0;
-		for (int i = 0; i < frame_no_len; i++)
+		for (int i = 0; i < frame_seq_no_len; i++)
 		{
 			// Считываем очередной байт
 			const uint8_t byte = frame_no_bytes_start[i];
 			// Впихиваем его в итоговое число в соответствующий разряд
-			frame_no = frame_no | static_cast<uint64_t>(byte) << (frame_no_len - 1 - i)*8;
+			frame_no = frame_no | static_cast<uint64_t>(byte) << (frame_seq_no_len - 1 - i)*8;
 		}
 
-		frame_seq_no = frame_no;
+		frame_seq_no_value = frame_no;
 	}
 
-	if (frame_seq_no)
-		candidate.frame_seq_no(*frame_seq_no, frame_no_len);
+	if (frame_seq_no_value)
+		candidate.frame_seq_no.emplace(*frame_seq_no_value, frame_seq_no_len);
 
 	std::swap(*this, candidate); // @suppress("Invalid arguments")
 }

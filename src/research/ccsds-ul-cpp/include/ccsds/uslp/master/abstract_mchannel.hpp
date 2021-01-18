@@ -8,7 +8,7 @@
 
 #include <ccsds/uslp/defs.hpp>
 #include <ccsds/uslp/ids.hpp>
-#include <ccsds/uslp/operation_control_field.hpp>
+#include <ccsds/uslp/common/frame_seq_no.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -44,8 +44,7 @@ struct mchannel_frame_params_t
 	bool id_is_destination;
 	frame_class_t frame_class;
 	bool ocf_present;
-	uint64_t frame_seq_no;
-	uint8_t frame_seq_no_length;
+	std::optional<frame_seq_no_t> frame_seq_no;
 };
 
 
@@ -115,7 +114,7 @@ protected:
 
 	virtual void add_vchannel_sink_impl(vchannel_sink * sink) = 0;
 
-	virtual void finalize_impl() = 0;
+	virtual void finalize_impl();
 
 	virtual void push_impl(
 			const mchannel_frame_params_t & frame_params,

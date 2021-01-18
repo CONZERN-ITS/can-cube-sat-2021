@@ -6,7 +6,6 @@
 #include <endian.h>
 
 #include <ccsds/uslp/_detail/tf_header.hpp>
-#include <ccsds/uslp/_detail/frame_reader.hpp>
 #include <ccsds/uslp/exceptions.hpp>
 
 
@@ -132,7 +131,7 @@ void mchannel_source::pop_frame(uint8_t * frame_data_unit_buffer)
 		// Значит нужно из этого размера вычесть размер заголовков и OCF
 		// и мы получим размер TFDF. Сразу после него и лежит OCF
 		const uint16_t ocf_tfdf_offset = frame_size_l1()
-				- detail::tf_header_t::extended_size_forecast(params.frame_seq_no_length)
+				- detail::tf_header_t::extended_size_forecast(params.frame_seq_no)
 				- sizeof(uint32_t)
 		;
 
@@ -244,6 +243,12 @@ void mchannel_sink::push(
 		word = htobe32(word);
 		_ocf_sink->put_ocf(word);
 	}
+}
+
+
+void mchannel_sink::finalize_impl()
+{
+	// Ничего не делаем!
 }
 
 

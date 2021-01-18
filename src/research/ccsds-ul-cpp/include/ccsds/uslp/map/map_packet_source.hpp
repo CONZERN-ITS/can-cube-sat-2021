@@ -23,7 +23,7 @@ protected:
 	virtual void finalize_impl() override;
 
 	virtual bool peek_tfdf_impl() override;
-	virtual bool peek_tfdf_impl(tfdf_params & params) override;
+	virtual bool peek_tfdf_impl(output_map_frame_params & params) override;
 	virtual void pop_tfdf_impl(uint8_t * tfdf_buffer) override;
 
 protected:

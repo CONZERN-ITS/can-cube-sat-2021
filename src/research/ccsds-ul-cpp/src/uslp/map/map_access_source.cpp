@@ -45,7 +45,7 @@ bool map_access_source::peek_tfdf_impl()
 }
 
 
-bool map_access_source::peek_tfdf_impl(tfdf_params & params)
+bool map_access_source::peek_tfdf_impl(output_map_frame_params & params)
 {
 	// Если в очереди нет ничего готового на отправку - то и забьем
 	if (_data_queue.empty())

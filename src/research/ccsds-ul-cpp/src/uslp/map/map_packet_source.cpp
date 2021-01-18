@@ -35,12 +35,12 @@ void map_packet_source::finalize_impl()
 bool map_packet_source::peek_tfdf_impl()
 {
 	// Тут оптимизации не будет :c
-	tfdf_params dummy;
+	output_map_frame_params dummy;
 	return peek_tfdf(dummy);
 }
 
 
-bool map_packet_source::peek_tfdf_impl(tfdf_params & params)
+bool map_packet_source::peek_tfdf_impl(output_map_frame_params & params)
 {
 	// У нас вообще что-нибудь есть там?
 	if (_data_queue.empty())

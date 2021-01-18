@@ -68,7 +68,6 @@ bool mchannel_rr_muxer::peek_frame_impl(pchannel_frame_params_t & frame_params)
 	frame_params.frame_class = mchannel_params.frame_class;
 	frame_params.ocf_present = mchannel_params.ocf_present;
 	frame_params.frame_seq_no = mchannel_params.frame_seq_no;
-	frame_params.frame_seq_no_length = mchannel_params.frame_seq_no_length;
 
 	return true;
 }
@@ -93,7 +92,7 @@ void mchannel_rr_muxer::pop_frame_impl(uint8_t * frame_buffer)
 
 	// У нас всегда будет расширенный заголовок
 	header.ext.emplace();
-	header.ext->frame_seq_no(frame_params.frame_seq_no, frame_params.frame_seq_no_length);
+	header.ext->frame_seq_no = frame_params.frame_seq_no;
 	header.ext->frame_class = frame_params.frame_class;
 	header.ext->ocf_present = frame_params.ocf_present;
 	// Тут несколько неочевидно

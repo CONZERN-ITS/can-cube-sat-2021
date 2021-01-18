@@ -1,7 +1,6 @@
 #include <ccsds/uslp/physical/mchannel_demuxer.hpp>
 
-#include <ccsds/uslp/_detail/frame_reader.hpp>
-
+#include <ccsds/uslp/_detail/tf_header.hpp>
 
 namespace ccsds { namespace uslp {
 
@@ -15,6 +14,8 @@ mchannel_demuxer::mchannel_demuxer(std::string name_)
 
 void mchannel_demuxer::finalize_impl()
 {
+	pchannel_sink::finalize_impl();
+
 	for (auto & pair: _container)
 		pair.second->finalize();
 }
@@ -67,9 +68,7 @@ void mchannel_demuxer::push_frame_impl(const uint8_t * frame_buffer, size_t fram
 	params.id_is_destination = header.id_is_destination;
 	params.frame_class = header.ext->frame_class;
 	params.ocf_present = header.ext->ocf_present;
-	params.frame_seq_no_length = header.ext->frame_seq_no_len();
-	if (header.ext->frame_seq_no())
-		params.frame_seq_no = header.ext->frame_seq_no().value();
+	params.frame_seq_no = header.ext->frame_seq_no;
 
 	// Ищем канал, для которого предназначен этот кадр
 	auto itt = _container.find(header.gmap_id);

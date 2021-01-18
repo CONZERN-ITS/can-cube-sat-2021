@@ -9,6 +9,7 @@
 
 namespace ccsds { namespace uslp {
 
+
 template<typename MUXED_SOURCE_T, typename MUXED_SOURCE_STATUS_CHECKER_T>
 class rr_muxer
 {
@@ -23,18 +24,6 @@ public:
 	rr_muxer(): _next_candidate(_sources.end()) {}
 	virtual ~rr_muxer() = default;
 
-	void reset()
-	{
-		_next_candidate = _sources.begin();
-	}
-
-	void add_source(muxed_source_t source)
-	{
-		_sources.push_back(source);
-		// Здесь нужно сделать сброс, так как после добавления элемента в вектор
-		// итераторы могут инвалидироваться
-		reset();
-	}
 
 	typedef typename container_t::iterator iterator;
 	typedef typename container_t::const_iterator const_iterator;
@@ -46,6 +35,22 @@ public:
 	const_iterator cend() const { return _sources.end(); }
 	const_iterator end() const { return _sources.end(); }
 	iterator end() { return _sources.end(); }
+
+
+	void reset()
+	{
+		_next_candidate = _sources.begin();
+	}
+
+
+	void add_source(muxed_source_t source)
+	{
+		_sources.push_back(source);
+		// Здесь нужно сделать сброс, так как после добавления элемента в вектор
+		// итераторы могут инвалидироваться
+		reset();
+	}
+
 
 	muxed_source_t select_next()
 	{
@@ -83,6 +88,7 @@ public:
 		// Внутренние каретки при этом не трогаем
 		return nullptr;
 	}
+
 
 private:
 	typename container_t::iterator _next_candidate;

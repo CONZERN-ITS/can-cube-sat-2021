@@ -60,8 +60,8 @@ int main()
 
 				<< static_cast<int>(frame_params.frame_class) << "; "
 
-				<< frame_params.frame_seq_no << "@"
-					<< static_cast<int>(frame_params.frame_seq_no_length) << "; "
+				<< frame_params.frame_seq_no->value() << "@"
+					<< static_cast<int>(frame_params.frame_seq_no->value_size()) << "; "
 				<< frame_params.id_is_destination << "; "
 				<< frame_params.ocf_present << "; ";
 

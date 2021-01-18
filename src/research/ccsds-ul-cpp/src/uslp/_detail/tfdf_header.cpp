@@ -4,7 +4,9 @@
 
 #include <cstring>
 
+
 namespace ccsds { namespace uslp { namespace detail {
+
 
 void tfdf_header_t::write(uint8_t * buffer) const
 {

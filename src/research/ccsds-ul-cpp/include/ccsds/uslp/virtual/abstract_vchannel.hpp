@@ -2,9 +2,11 @@
 #define INCLUDE_CCSDS_USLP_VIRTUAL_ABSTRACT_HPP_
 
 #include <cstdint>
+#include <optional>
 
 #include <ccsds/uslp/ids.hpp>
 #include <ccsds/uslp/defs.hpp>
+#include <ccsds/uslp/common/frame_seq_no.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -18,8 +20,7 @@ struct vchannel_frame_params
 {
 	gmap_id_t channel_id;
 	frame_class_t frame_class;
-	uint64_t frame_seq_no;
-	uint8_t frame_seq_no_length;
+	std::optional<frame_seq_no_t> frame_seq_no;
 };
 
 
@@ -32,8 +33,8 @@ public:
 	void frame_size_l2(uint16_t value);
 	uint16_t frame_size_l2() const noexcept { return _frame_size_l2; }
 
-	void frame_seq_no_len(uint16_t value);
-	uint8_t frame_seq_no_len() const noexcept { return _frame_seq_no_len; }
+	void frame_seq_no_len(uint8_t value);
+	uint8_t frame_seq_no_len() const noexcept { return _frame_seq_no.value_size(); }
 
 	void add_map_source(map_source * source);
 
@@ -47,7 +48,7 @@ public:
 
 protected:
 	void set_frame_seq_no(uint64_t value);
-	uint64_t get_frame_seq_no() const;
+	frame_seq_no_t get_frame_seq_no() const;
 	void increase_frame_seq_no();
 	uint16_t frame_size_overhead() const;
 
@@ -61,8 +62,7 @@ protected:
 
 private:
 	bool _finalized = false;
-	uint64_t _frame_seq_no = 0;
-	uint8_t _frame_seq_no_len = 0;
+	frame_seq_no_t _frame_seq_no;
 	uint16_t _frame_size_l2 = 0;
 };
 
