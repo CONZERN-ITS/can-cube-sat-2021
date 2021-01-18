@@ -8,12 +8,22 @@
 #ifndef INCLUDE_CCSDS_CCSCDS_ENDIAN_H_
 #define INCLUDE_CCSDS_CCSCDS_ENDIAN_H_
 
-#include <endian.h>
+/*
+ * Вставаляет в массив поле field
+ * Для правильной работы в field передайте преобразованный
+ * к uint8_t* адрес переменной, который вы хотите вставить в массив
+ * байт arr.
+ */
+void ccsds_endian_set(uint8_t *arr, int arr_bit_size, int arr_bit_pos,
+		uint8_t *field,	int field_bit_size);
 
-void ccsds_endian_set(uint8_t *arr, int arr_bit_size, uint8_t *field,
-		int field_bit_size, int arr_bit_pos) {
-	endian_set(arr, arr_bit_size, field,
-			field_bit_size, arr_bit_pos, endian_host(), ENDIAN_MSBIT_LSBYTE);
-}
+/*
+ * Достает из массива поле field
+ * Для правильной работы в field передайте преобразованный
+ * к uint8_t* адрес переменной, в которыую вы хотите записать
+ * значение из массив байт arr.
+ */
+void ccsds_endian_get(uint8_t *arr, int arr_bit_size, int arr_bit_pos,
+		uint8_t *field,	int field_bit_size);
 
 #endif /* INCLUDE_CCSDS_CCSCDS_ENDIAN_H_ */

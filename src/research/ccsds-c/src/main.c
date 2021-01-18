@@ -9,6 +9,12 @@
 #include <stdio.h>
 #include <endian.h>
 
+void print_bit(uint8_t num) {
+	for(int i = 0; i < 8; ++i) {
+		printf("%u", num >> (7 - i) & 1);
+	}
+}
+
 
 void print_bit_arr(uint8_t *arr, size_t size) {
 	for (int i = 0; i < size; i++) {
@@ -27,7 +33,8 @@ int main() {
 	//print_bit(bit_set(0, a, 8, 0, 4, 8));
 	uint8_t arr2[3] = {0b10010010, 0b00001101, 0b00101011};
 	uint16_t value = 0b1001110110100011;
-	endian_set(arr, 28, (uint8_t *)&value, sizeof(value) * 8, 14, host_endian(), ENDIAN_MSBIT_LSBYTE);
+	endian_set(arr, 28, 14, ENDIAN_MSBIT_LSBYTE,
+			(uint8_t *)&value, sizeof(value) * 8, 0, endian_host());
 	print_bit_arr(arr, size);
 	//set_to_arr_en(arr, 3, 21, 15, a);
 	//print_bit_arr(arr, size);

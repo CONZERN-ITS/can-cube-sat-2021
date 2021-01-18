@@ -1,12 +1,7 @@
-/*
- * endian.h
- *
- *  Created on: 15 €нв. 2021 г.
- *      Author: HP
- */
-
 #ifndef SDL_ENDIAN_H_
 #define SDL_ENDIAN_H_
+
+#include <inttypes.h>
 
 typedef enum {
 	ENDIAN_LSBIT_LSBYTE,
@@ -16,15 +11,20 @@ typedef enum {
 } endian_t;
 
 
-void print_bit(uint8_t num) {
-	for(int i = 0; i < 8; ++i) {
-		printf("%u", num >> (7 - i) & 1);
-	}
-}
+/*
+ *  опирует from_bit_size бит, начина€ с позиции бита from_bit_pos
+ * из массива from с пор€дком бит и байт from_endian в массив to размером
+ * to_bit_size начина€ с позиции to_bit_pos и пор€дком бит и байт from_endian
+ *
+ * ќчень удобна дл€ сериализации и десериализации полей в заголвках разных
+ * протоколов.
+ */
+void endian_set(uint8_t *to, int to_bit_size, int to_bit_pos, endian_t to_endian,
+		uint8_t *from, int from_bit_size, int from_bit_pos, endian_t from_endian);
 
-void endian_set(uint8_t *arr, int arr_bit_size, uint8_t *field,
-		int field_bit_size, int arr_bit_pos, endian_t from, endian_t to);
-
+/*
+ * ¬озвращает пор€док бит и байт хоста
+ */
 endian_t endian_host();
 
 

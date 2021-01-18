@@ -1,19 +1,20 @@
-/*
- * endian.c
- *
- *  Created on: 18 €нв. 2021 г.
- *      Author: HP
- */
-
 #include <endian.h>
 
 
+/*
+ * —оздает маску в терминах регул€рных выржени€х по типу 0*1*0*
+ */
 #define MASK(type,l,r) (type)((type)((type)(~0) >> (8 * sizeof(type) - (r - l))) << l)
 #define MASK_U(l,r) MASK(uint8_t,l,r)
-#define SET_U(to,from,to_pos,l,r) \
-	to = (to & ~MASK_U(to_pos,(to_pos + r - l))) | ((uint8_t)((from & MASK_U(l,r)) >> l) << to_pos)
 
+/*
+ *  опирует отрезок битов из from в *to
+ * l, r задают границы копировани€ из from.
+ * to_pos - стартова€ позици€ записи бит.
+ * to_l, to_r задают допустимые границы записи бит в *to.
+ */
 int bit_set(uint8_t *to, uint8_t from, int to_l, int to_r, int to_pos, int l, int r) {
+	//ћы не хотим делать проверки при каждом вызове функции
 	if (to_l >= 8 || to_r <= 0) {
 		return -1;
 	}
@@ -30,17 +31,9 @@ int bit_set(uint8_t *to, uint8_t from, int to_l, int to_r, int to_pos, int l, in
 	return 0;
 }
 
-
-uint8_t get_from_arr(uint8_t *arr, int bit_size, int bit_pos) {
-	int i = bit_pos / 8;
-	int shift = bit_pos % 8;
-
-	uint8_t t = 0;
-	bit_set(&t, arr[i], 0, bit_size - i * 8, 0, shift, 8);
-	bit_set(&t, arr[i + 1], 0, bit_size - (i + 1) * 8, 8 - shift, 0, shift);
-	return t;
-}
-
+/*
+ * ƒостает байт из массива бит с учетом пор€дка бит и байт в arr
+ */
 uint8_t get_from_arr_en(uint8_t *arr, endian_t en, int bit_size, int bit_pos) {
 	int shift = bit_pos % 8;
 	uint8_t t = 0;
@@ -56,6 +49,15 @@ uint8_t get_from_arr_en(uint8_t *arr, endian_t en, int bit_size, int bit_pos) {
 		i1 = (bit_size - 1) / 8 - bit_pos / 8;
 		i2 = i1 - 1;
 	}
+
+	/*
+	 * Ѕайт t составл€етс€ из двух кусков, которые расположены в двух
+	 * последовтельных байтах массива.
+	 *
+	 * ¬се значени€ параметров bit_set определены с помощью чистого и
+	 * долгого размышлени€. ≈сли кто-то проверит их правильность,
+	 * прошу дополнить комментарий. - SeresHotes
+	 */
 	if (!flag_byte) {
 		if (!flag_bit) {
 			bit_set(&t, arr[i1],  0, bit_size - i1 * 8, 0, shift, 8);
@@ -78,14 +80,9 @@ uint8_t get_from_arr_en(uint8_t *arr, endian_t en, int bit_size, int bit_pos) {
 	return t;
 }
 
-void set_to_arr(uint8_t *arr, int bit_size, int bit_pos, uint8_t val) {
-	int i = bit_pos / 8;
-	int shift = bit_pos % 8;
-
-	bit_set(&arr[i], val, 0, bit_size - i * 8, shift, 0, 8 - shift);
-	bit_set(&arr[i + 1], val, 0, bit_size - (i + 1) * 8, 0, 8 - shift, 8);
-}
-
+/*
+ * «апиывает val в массив бит с учетом пор€дка бит и байт в arr
+ */
 void set_to_arr_en(uint8_t *arr, endian_t en, int bit_size, int bit_pos, uint8_t val) {
 
 	int shift = bit_pos % 8;
@@ -101,7 +98,14 @@ void set_to_arr_en(uint8_t *arr, endian_t en, int bit_size, int bit_pos, uint8_t
 		i1 = (bit_size - 1) / 8 - bit_pos / 8;
 		i2 = i1 - 1;
 	}
-
+	/*
+	 * Ѕайт val разбиваетс€ на два кусков, которые будут расположены в двух
+	 * последовтельных байтах массива.
+	 *
+	 * ¬се значени€ параметров bit_set определены с помощью чистого и
+	 * долгого размышлени€. ≈сли кто-то проверит их правильность,
+	 * прошу дополнить комментарий. - SeresHotes
+	 */
 	if (!flag_byte) {
 		if (!flag_bit) {
 			bit_set(&arr[i1], val, 0, bit_size - i1 * 8, shift, 0, 8 - shift);
@@ -123,22 +127,33 @@ void set_to_arr_en(uint8_t *arr, endian_t en, int bit_size, int bit_pos, uint8_t
 	}
 }
 
-
-void endian_set(uint8_t *arr, int arr_bit_size, uint8_t *field,
-		int field_bit_size, int arr_bit_pos, endian_t from, endian_t to) {
-	if (to / 2 == from / 2) {
-		for (int i = 0; i < (field_bit_size + 7) / 8; i++) {
-			uint8_t t = get_from_arr_en(field, from, field_bit_size, 8 * i);
-			set_to_arr_en(arr, to, arr_bit_size, arr_bit_pos + 8 * i, t);
+/*
+ *  опирует из одного массива бит в другой массив бит с учетом
+ * пор€дка бит и байт обоих массивов
+ */
+void endian_set(uint8_t *to, int to_bit_size, int to_bit_pos, endian_t to_endian,
+		uint8_t *from, int from_bit_size, int from_bit_pos, endian_t from_endian) {
+	/*
+	 * ѕор€док записи байт пр€мой, если пор€док бит совпадает
+	 * TODO: есть 50% веро€тность того, что это неверно. Ќо это
+	 * точно верно, если хост - LSBit/LSByte.
+	 */
+	if (to_endian / 2 == from_endian / 2) {
+		for (int i = 0; i < (from_bit_size + 7) / 8; i++) {
+			uint8_t t = get_from_arr_en(from, from_endian, from_bit_size, from_bit_pos + 8 * i);
+			set_to_arr_en(to, to_endian, to_bit_size, to_bit_pos + 8 * i, t);
 		}
 	} else {
-		for (int i = 0; i < (field_bit_size + 7) / 8; i++) {
-			uint8_t t = get_from_arr_en(field, from, field_bit_size, field_bit_size - 8 - 8 * i);
-			set_to_arr_en(arr, to, arr_bit_size, arr_bit_pos + 8 * i, t);
+		for (int i = 0; i < (from_bit_size + 7) / 8; i++) {
+			uint8_t t = get_from_arr_en(from, from_endian, from_bit_size, from_bit_pos - 8 - 8 * i);
+			set_to_arr_en(to, to_endian, to_bit_size, to_bit_pos + 8 * i, t);
 		}
 	}
 }
 
+/*
+ * ¬озвращает пор€док бит и байта хоста
+ */
 endian_t endian_host() {
 	uint16_t t = 1;
 	uint8_t *a = (uint8_t *)&t;
