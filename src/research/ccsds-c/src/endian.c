@@ -34,7 +34,7 @@ int bit_set(uint8_t *to, uint8_t from, int to_l, int to_r, int to_pos, int l, in
 /*
  * Достает байт из массива бит с учетом порядка бит и байт в arr
  */
-uint8_t get_from_arr_en(uint8_t *arr, endian_t en, int bit_size, int bit_pos) {
+uint8_t get_from_arr_en(const uint8_t *arr, endian_t en, int bit_size, int bit_pos) {
 	int shift = bit_pos % 8;
 	uint8_t t = 0;
 
@@ -132,7 +132,7 @@ void set_to_arr_en(uint8_t *arr, endian_t en, int bit_size, int bit_pos, uint8_t
  * порядка бит и байт обоих массивов
  */
 void endian_set(uint8_t *to, int to_bit_size, int to_bit_pos, endian_t to_endian,
-		uint8_t *from, int from_bit_size, int from_bit_pos, endian_t from_endian) {
+		const uint8_t *from, int from_bit_size, int from_bit_pos, endian_t from_endian) {
 	/*
 	 * Порядок записи байт прямой, если порядок бит совпадает
 	 * TODO: есть 50% вероятность того, что это неверно. Но это

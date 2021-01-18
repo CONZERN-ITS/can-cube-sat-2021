@@ -20,7 +20,7 @@ typedef enum {
  * протоколов.
  */
 void endian_set(uint8_t *to, int to_bit_size, int to_bit_pos, endian_t to_endian,
-		uint8_t *from, int from_bit_size, int from_bit_pos, endian_t from_endian);
+		const uint8_t *from, int from_bit_size, int from_bit_pos, endian_t from_endian);
 
 /*
  * Возвращает порядок бит и байт хоста

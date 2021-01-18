@@ -10,20 +10,20 @@
 
 /*
  * Вставаляет в массив поле field
- * Для правильной работы в field передайте преобразованный
- * к uint8_t* адрес переменной, который вы хотите вставить в массив
+ * Для правильной работы в field передайте
+ * адрес переменной, который вы хотите вставить в массив
  * байт arr.
  */
-void ccsds_endian_set(uint8_t *arr, int arr_bit_size, int arr_bit_pos,
-		uint8_t *field,	int field_bit_size);
+void ccsds_endian_insert(uint8_t *arr, int arr_bit_size, int arr_bit_pos,
+		const void *field, int field_bit_size);
 
 /*
  * Достает из массива поле field
- * Для правильной работы в field передайте преобразованный
- * к uint8_t* адрес переменной, в которыую вы хотите записать
+ * Для правильной работы в field передайте
+ * адрес переменной, в которыую вы хотите записать
  * значение из массив байт arr.
  */
-void ccsds_endian_get(uint8_t *arr, int arr_bit_size, int arr_bit_pos,
-		uint8_t *field,	int field_bit_size);
+void ccsds_endian_extract(const uint8_t *arr, int arr_bit_size, int arr_bit_pos,
+		void *field, int field_bit_size);
 
 #endif /* INCLUDE_CCSDS_CCSCDS_ENDIAN_H_ */
