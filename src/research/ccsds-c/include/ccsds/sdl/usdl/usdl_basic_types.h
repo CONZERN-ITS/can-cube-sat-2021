@@ -103,6 +103,14 @@ typedef enum {
 	SOD_DESTINATION 	= 1
 } sod_flag_t;
 
+/*
+ * End of Frame Primary Header Flag
+ */
+typedef enum {
+	EOFPH_FULL = 0,
+	EOFPH_TRUNCATED = 1
+} eofph_flag_t;
+
 typedef uint8_t vcf_count_length_t;
 typedef uint64_t vcf_count_t;
 
@@ -134,6 +142,7 @@ typedef struct vc_params_t {
 	pcc_flag_t pcc_flag;
 	vcf_count_length_t vcf_count_length;
 	vcf_count_t vcf_count;
+	eofph_flag_t eofph_flag;
 } vc_params_t;
 
 typedef uint8_t mc_id_t;
@@ -142,6 +151,7 @@ typedef struct mc_params_t {
 	ocfp_flag_t ocfp_flag;
 	uint8_t ocf[4];
 	mc_id_t mc_id;
+	uint16_t scid;
 } mc_params_t;
 
 

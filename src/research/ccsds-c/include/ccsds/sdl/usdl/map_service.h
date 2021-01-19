@@ -21,6 +21,8 @@ int mapa_send();
 
 int map_stream_send();
 
+int map_request_from_down(map_t *map);
+
 
 
 

@@ -20,7 +20,7 @@ int _vc_pop_fop(vc_t *vc);
 
 int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size);
 
-
+int vc_request_from_down(vc_t *vc);
 
 
 

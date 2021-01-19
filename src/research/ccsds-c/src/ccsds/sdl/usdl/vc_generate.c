@@ -38,6 +38,7 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 		p.vcf_count = vc->frame_count_seq_control;
 		p.pcc_flag = PCC_USER_DATA; //TODO Надо понять, как тут должно быть
 		p.sod_flag = vc->src_or_dest_id;
+		p.eofph_flag = EOFPH_FULL;
 		p.vc_id = vc->vc_id;
 	} else {
 		p.bsc_flag = BSC_EXPEDITED;
@@ -45,6 +46,7 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 		p.vcf_count = vc->frame_count_expedited;
 		p.pcc_flag = PCC_USER_DATA; //TODO Надо понять, как тут должно быть
 		p.sod_flag = vc->src_or_dest_id;
+		p.eofph_flag = EOFPH_FULL;
 		p.vc_id = vc->vc_id;
 	}
 
@@ -60,7 +62,24 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 	}
 }
 
-
+int vc_request_from_down(vc_t *vc) {
+	if (vc->parameters.cop_in_effect == COP_1) {
+		int ret = _vc_pop_fop(vc);
+		if (ret) {
+			return ret;
+		} else {
+			if (map_mx_request_from_down(vc->map_mx)) {
+				return _vc_pop_fop(vc);
+			} else {
+				return 0;
+			}
+		}
+	} else if (vc->parameters.cop_in_effect == COP_NONE) {
+		return map_mx_request_from_down(vc->map_mx);
+	} else {
+		return 0;
+	}
+}
 
 
 

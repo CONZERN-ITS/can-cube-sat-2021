@@ -29,5 +29,22 @@ int vc_multiplex(vc_mx_t *vc_mx, uint8_t *data, size_t size,
 	}
 }
 
+int vc_mx_request_from_down(vc_mx_t *vc_mx) {
+
+	vc_id_t old = vc_mx->vc_active;
+	do {
+		if (vc_mx->vc_arr[vc_mx->vc_active]) {
+			int ret = vc_request_from_down(&vc_mx->vc_arr[vc_mx->vc_active]);
+			if (ret) {
+				return ret;
+			}
+		}
+
+		vc_mx->vc_active = (vc_mx->vc_active + 1) %
+				(sizeof(vc_mx->vc_arr) / sizeof(vc_mx->vc_arr[0]));
+	} while (vc_mx->vc_active != old);
+
+	return 0;
+}
 
 #endif /* SDL_USDL_VC_MULTIPLEX_H_ */

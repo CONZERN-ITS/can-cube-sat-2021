@@ -132,6 +132,7 @@ typedef struct vc_t {
 	vc_parameters_t parameters;
 	fop_t fop;
 	vc_mx_t *vc_mx;
+	map_mx_t *map_mx;
 } vc_t;
 
 
@@ -143,10 +144,17 @@ typedef struct vc_mx_t {
 } vc_mx_t;
 
 
+typedef struct {
+	uint16_t scid;
+	transfer_frame_t tft;
+
+} mc_paramaters_t;
+
 typedef struct mc_t {
 	vc_mx_t *vc_mx;
 	mc_id_t mc_id;
 	mc_mx_t *mc_mx;
+	mc_paramaters_t map_parameters;
 } mc_t;
 
 
@@ -156,8 +164,26 @@ typedef struct mc_mx_t {
 	pc_t *pc;
 } mc_mx_t;
 
+typedef struct {
+	uint16_t scid;
+	transfer_frame_t tft;
+	int tf_length;
+	tfvn_t tfvn;
+	uint8_t fec_length;
+	bool is_fec_presented;
+	bool can_generate_oid;
+
+} pc_paramaters_t;
+
 typedef struct pc_t {
+	uint8_t *data;
+	uint8_t size;
+	int is_valid;
 	mc_mx_t *mc_mx;
+	pc_paramaters_t pc_parameters;
+	uint8_t *insert_data;
+	size_t insert_size;
+	uint8_t fec_field[4];
 } pc_t;
 
 #endif /* SDL_USDL_USDL_TYPES_H_ */

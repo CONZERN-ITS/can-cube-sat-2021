@@ -13,6 +13,7 @@
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <string.h>
 #include <assert.h>
+#include <ccsds/nl/epp/epp.h>
 
 
 int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos) {
@@ -86,6 +87,12 @@ int map_request_from_down(map_t *map) {
 		buf = &map->buf_sc;
 	} else {
 		return 0;
+	}
+	if (buf->index < map->payload_size) {
+		epp_header_t head = {0};
+		head.epp_id = EPP_ID_IDLE;
+		epp_make_header_auto_length(&head, &buf->data[buf->index],
+				map->payload_size - buf->index, map->payload_size - buf->index);
 	}
 
 	params.map_id = map->map_id;

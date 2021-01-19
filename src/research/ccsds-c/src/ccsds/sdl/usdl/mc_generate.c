@@ -19,8 +19,12 @@ int mc_generate(mc_t *mc, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params) {
 
 	mc_params_t p = {0};
+	p.scid = mc->map_parameters.scid;
 	return mc_multiplex(mc->mc_mx, data, size, map_params, vc_params, &p);
 }
 
+int mc_request_from_down(mc_t *mc) {
+	return vc_mx_request_from_down(mc->vc_mx);
+}
 
 #endif /* SDL_USDL_MC_GENERATE_H_ */
