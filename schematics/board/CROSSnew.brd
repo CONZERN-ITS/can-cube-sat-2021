@@ -558,6 +558,9 @@ design rules under a new name.</description>
 </signal>
 <signal name="CMD">
 <contactref element="U$5" pad="1"/>
+<contactref element="U$5" pad="2"/>
+<contactref element="U$5" pad="3"/>
+<contactref element="U$5" pad="4"/>
 </signal>
 </signals>
 <mfgpreviewcolors>

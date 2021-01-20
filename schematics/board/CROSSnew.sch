@@ -343,7 +343,7 @@
 </device>
 <device name="QUAD-" package="KCONNECT-_QUAD">
 <connects>
-<connect gate="G$1" pin="P$1" pad="1"/>
+<connect gate="G$1" pin="P$1" pad="1 2 3 4"/>
 </connects>
 <technologies>
 <technology name=""/>
