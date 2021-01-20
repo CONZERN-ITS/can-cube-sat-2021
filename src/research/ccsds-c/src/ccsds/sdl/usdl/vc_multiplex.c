@@ -34,7 +34,7 @@ int vc_mx_request_from_down(vc_mx_t *vc_mx) {
 	vc_id_t old = vc_mx->vc_active;
 	do {
 		if (vc_mx->vc_arr[vc_mx->vc_active]) {
-			int ret = vc_request_from_down(&vc_mx->vc_arr[vc_mx->vc_active]);
+			int ret = vc_request_from_down(vc_mx->vc_arr[vc_mx->vc_active]);
 			if (ret) {
 				return ret;
 			}

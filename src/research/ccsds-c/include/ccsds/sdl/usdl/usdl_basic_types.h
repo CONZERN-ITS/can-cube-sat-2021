@@ -12,6 +12,7 @@
 typedef struct {
 	uint8_t *data;
 	size_t size;
+	size_t max_size;
 	size_t index;
 	size_t fhd;
 } map_buffer_t;

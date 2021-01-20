@@ -1,13 +1,3 @@
-/*
- * map_service.h
- *
- *  Created on: 8 янв. 2021 г.
- *      Author: HP
- */
-
-#ifndef SDL_USDL_MAP_SERVICE_H_
-#define SDL_USDL_MAP_SERVICE_H_
-
 #include <ccsds/sdl/usdl/map_service.h>
 #include <ccsds/sdl/usdl/map_multiplexer.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
@@ -61,7 +51,7 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 		if (buf->index == map->payload_size &&
 				map_mx_multiplex(map->map_mx, &params, buf->data, count_to_send)) {
 			buf->index = 0;
-			params.fhd = buf->fhd = (fhd_t)-1;
+			params.fhd = buf->fhd = (fhd_t)~0;
 		} else {
 			break;
 		}
@@ -108,6 +98,118 @@ int map_request_from_down(map_t *map) {
 	return ret;
 }
 
+pvn_t _map_get_pvn(uint8_t v) {
+	return (v >> 5) & 3;
+}
+
+int _map_try_calc_size(uint8_t *data, int size) {
+	pvn_t pvn = _map_get_pvn(data[0]);
+	if (pvn == PVN_ENCAPSULATION_PROTOCOL) {
+		epp_header_t h = {0};
+		if (epp_extract_header(&h, data, size)) {
+			return h.packet_length;
+		} else {
+			return 0;
+		}
+	} else {
+		return -1;
+	}
+}
 
 
-#endif /* SDL_USDL_MAP_SERVICE_H_ */
+int _map_fhd_is_valid(mapr_t *map) {
+	if (map->tfdz.fhd == (fhd_t)~0) {
+		return map->packet.size - map->packet.index >= map->tfdz.size - map->tfdz.index;
+	}
+
+	return map->packet.size - map->packet.index == map->tfdz.fhd - map->tfdz.index;
+}
+
+int _map_push_from_down(mapr_t *map) {
+	if (map->state == MAPR_STATE_FINISH) {
+		return 0;
+	}
+	if (map->state == MAPR_STATE_BEGIN) {
+		if (map->tfdz.fhd == (fhd_t)~0) {
+			map->tfdz.index = map->tfdz.size;
+			return 0;
+		}
+
+		map->tfdz.index = map->tfdz.fhd;
+		map->state = MAPR_STATE_SIZE_UNKNOWN;
+	}
+
+	if (map->state == MAPR_STATE_SIZE_UNKNOWN) {
+		while (map->tfdz.index < map->tfdz.size && map->packet.index < map->packet.max_size) {
+			if (map->tfdz.index == map->tfdz.fhd) {
+				map->packet.index = 0;
+			}
+			map->packet.data[map->packet.index++] = map->tfdz.data[map->tfdz.index++];
+			int ret = _map_try_calc_size(map->packet.data, map->packet.index);
+
+			if (ret > 0 && ret <= map->packet.max_size) {
+				map->packet.size = ret;
+				map->state = MAPR_STATE_SIZE_KNOWN;
+				break;
+			} else if (ret < 0 || ret > map->packet.max_size) {
+				map->tfdz.index = map->tfdz.size;
+				map->packet.index = 0;
+				map->state = MAPR_STATE_BEGIN;
+				break;
+			}
+		}
+		if (map->packet.index == map->packet.max_size && map->state == MAPR_STATE_SIZE_UNKNOWN) {
+			map->state = MAPR_STATE_SIZE_UNKNOWN;
+			map->packet.index = 0;
+		}
+	}
+
+	if (map->state == MAPR_STATE_SIZE_KNOWN) {
+		if (!_map_fhd_is_valid(map)) {
+			map->state = MAPR_STATE_BEGIN;
+			map->packet.size = 0;
+			map->packet.index = 0;
+		}
+		while (map->tfdz.index < map->tfdz.size && map->packet.index < map->packet.size) {
+			map->packet.data[map->packet.index++] = map->tfdz.data[map->tfdz.index++];
+		}
+		if (map->packet.index == map->packet.size) {
+			map->state = MAPR_STATE_FINISH;
+			map->packet.index = 0;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int _map_save_from_down(mapr_t *map, const uint8_t *data, size_t size, const map_params_t *params) {
+
+	if (map->tfdz.size != 0 || map->tfdz.max_size < size) {
+		return 0;
+	} else {
+		memcpy(map->tfdz.data, data, size);
+		map->tfdz.size = size;
+		map->tfdz.index = 0;
+		map->tfdz.fhd = params->fhd;
+		return size;
+	}
+}
+
+
+
+int map_recieve_from_down(mapr_t *map, const uint8_t *data, size_t size, const map_params_t *params)  {
+	_map_push_from_down(map);
+	int ret = _map_save_from_down(map, data, size, params);
+	_map_push_from_down(map);
+	return ret;
+}
+
+int map_recieve(mapr_t *map, uint8_t *data, size_t size, quality_of_service_t *qos) {
+	if (map->state != MAPR_STATE_FINISH || size < map->packet.size) {
+		return 0;
+	}
+
+	memcpy(data, map->packet.data, map->packet.size);
+	return map->packet.size;
+}
+
