@@ -3,8 +3,8 @@
 namespace ccsds { namespace uslp {
 
 
-vchannel_demuxer::vchannel_demuxer(gvcid_t gvcid)
-	: mchannel_sink(gvcid)
+vchannel_demuxer::vchannel_demuxer(mcid_t mcid_)
+	: mchannel_sink(mcid_)
 {
 
 }
@@ -46,7 +46,7 @@ void vchannel_demuxer::push_impl(
 
 	// Передаем фрейм адресату
 	const uint8_t * tfdfd_buffer = frame_data_unit;
-	const uint16_t tfdf_size = frame_data_unit_size - frame_params.ocf_present ? sizeof(uint32_t) : 0;
+	const uint16_t tfdf_size = frame_data_unit_size - (frame_params.ocf_present ? sizeof(uint32_t) : 0);
 	itt->second->push(vparams, tfdfd_buffer, tfdf_size);
 }
 

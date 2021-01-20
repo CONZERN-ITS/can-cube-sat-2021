@@ -11,10 +11,10 @@
 namespace ccsds { namespace uslp {
 
 
-class vchannel_demuxer: mchannel_sink
+class vchannel_demuxer: public mchannel_sink
 {
 public:
-	vchannel_demuxer(gvcid_t gvcid);
+	vchannel_demuxer(mcid_t mcid_);
 	virtual ~vchannel_demuxer() = default;
 
 protected:

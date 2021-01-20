@@ -95,7 +95,7 @@ protected:
 	) = 0;
 
 private:
-	bool _finalized = true;
+	bool _finalized = false;
 };
 
 

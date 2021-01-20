@@ -35,6 +35,7 @@ void map_demuxer::push_impl(
 		return; // Не нашлось...
 
 	input_map_frame_params map_params;
+	map_params.frame_seq_no = frame_params.frame_seq_no;
 	switch (frame_params.frame_class)
 	{
 	case frame_class_t::CONTROLLED_PAYLOAD:

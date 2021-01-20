@@ -97,8 +97,8 @@ void tf_header_extended_part_t::read(const uint8_t * buffer)
 	// Первое поле - длина кадра
 	uint16_t frame_len;
 	std::memcpy(&frame_len, ext_header_start, sizeof(uint16_t));
-	frame_len = be32toh(frame_len);
-	candidate.frame_len = frame_len + 1; // Потому что именно так оно и считается
+	frame_len = be16toh(frame_len);
+	candidate.frame_len = frame_len;
 
 	// Второе поле - различные флаги
 	uint8_t frame_flags = *(ext_header_start + sizeof(uint16_t));
@@ -176,7 +176,7 @@ void tf_header_t::write(uint8_t * buffer) const
 	// Пишем первичный заголовок
 	uint32_t word = 0;
 
-	const uint8_t have_extension = ext.has_value() ? 0x01 : 0x00;
+	const uint8_t have_extension = ext.has_value() ? 0x00 : 0x01; // Внимание - тут инверсия
 	word |= (have_extension & 0x0001) << 0;
 	word |= (gmap_id.map_id() & 0x000F) << 1;
 	word |= (gmap_id.vchannel_id() & 0x003F) << 5;
@@ -189,7 +189,7 @@ void tf_header_t::write(uint8_t * buffer) const
 
 	// Расширенный
 	if (ext)
-		ext->write(buffer + sizeof(word));
+		ext->write(buffer + tf_header_t::static_size);
 }
 
 

@@ -33,19 +33,16 @@ void map_access_sink::push_impl(
 {
 	// Смотрим что там в tfdf заголовке
 	detail::tfdf_header_t header;
-	header.read(tfdf_buffer, tfdf_buffer_size);
+	header.read(tfdf_buffer, true);
 
 	// Если это MAP_SDU_START
 	if (detail::tfdz_construction_rule_t::MAP_SDU_START == header.ctr_rule)
 	{
 		if (!_accumulator.empty())
-		{
-			// TODO: Какой-нибудь эвент
-			_accumulator.clear();
-		}
+			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
 
 		// Забираем пакет
-		consume_frame(params, header, tfdf_buffer + header.size(), tfdf_buffer_size - header.size());
+		_consume_frame(params, header, tfdf_buffer + header.size(), tfdf_buffer_size - header.size());
 	}
 	else if (detail::tfdz_construction_rule_t::MAP_SDU_CONTINUATION == header.ctr_rule)
 	{
@@ -53,11 +50,19 @@ void map_access_sink::push_impl(
 		if (_accumulator.empty())
 			return; // Если мы пустые - однозначно выкидываем
 
-		// Смотрим совпадает ли номер фрейма
-		if (_prev_frame_seq_no + 1 != params.frame_seq_no)
+		if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
 		{
+			// Оп, это какая-то петрушка
+			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			return;
+		}
+
+		// Если номера есть - сравним и
+		if (_prev_frame_seq_no.has_value() && (*_prev_frame_seq_no + 1 != *params.frame_seq_no))
+		{
+			// Значит что-то где-то потерялось
 			// Выкидываем и сбрасываем состояние
-			_accumulator.clear();
+			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
 			return;
 		}
 
@@ -70,37 +75,77 @@ void map_access_sink::push_impl(
 		}
 
 		// Если все ок - забираем фрейм
-		consume_frame(params, header, tfdf_buffer + header.size(), tfdf_buffer_size - header.size());
+		_consume_frame(params, header, tfdf_buffer + header.size(), tfdf_buffer_size - header.size());
 	}
 }
 
 
-void map_access_sink::consume_frame(
+void map_access_sink::_consume_frame(
 		const input_map_frame_params & params,
 		const detail::tfdf_header_t & header,
 		const uint8_t * tfdz, uint16_t tfdz_size
 )
 {
-	const bool unit_ended = *header.first_header_offset == 0xFFFF;
+	assert(header.first_header_offset.has_value());
 
-	uint16_t to_copy = unit_ended  ? tfdz_size : *header.first_header_offset + 1;
-	_accumulator.resize(_accumulator.size() + to_copy);;
-	std::copy(tfdz, tfdz + to_copy, std::back_inserter(_accumulator));
+	// Если юнит не закончился в этом фрейме - в заголовке, в оффсете должно стоять 0xFFFF
+	// Мы пойдем чуток дальше и будем считать что фрейм не закончился
+	// Если в его оффсете стоит число большее, чем влезает в tfdz
+	const uint32_t sdu_part_size = static_cast<uint32_t>(*header.first_header_offset) + 1;
+	const bool sdu_complete = sdu_part_size <= tfdz_size;
 
-	// Если пейлоад закончился, то передаем его пользователю
-	if (unit_ended)
+	// Соответственно, если sdu уже закончился - берем только валидную его часть
+	// Если нет - то берем весь tfdz
+	uint16_t to_copy = sdu_complete
+			? static_cast<uint16_t>(sdu_part_size)
+			: tfdz_size
+	;
+
+	// Смотрим сколько мы можем скопировать в аккумулятор, чтобы его не переполнить
+	bool overflow = false;
+	const size_t next_step_accum_size = _accumulator.size() + to_copy;
+	if (next_step_accum_size > _max_sdu_size)
 	{
-		map_sink_event_data_unit event(std::move(_accumulator), params.qos);
-		_accumulator.clear();
-		emit_event(event);
-
-		// И на этом закончили...
-		return;
+		// Ой, ой, у нас будет переполнение
+		// Копируем что можем и отдаем пользователю как есть
+		to_copy = _max_sdu_size - _accumulator.size();
+		overflow = true;
 	}
 
-	// Запоминием параметры пакета
+	// Копируем все что можем в аккумулятор
+	_accumulator.reserve(_accumulator.size() + to_copy);
+	std::copy(tfdz, tfdz + to_copy, std::back_inserter(_accumulator));
+
+	// Запоминием параметры фрейма на будущее
 	_prev_frame_qos = params.qos;
 	_prev_frame_seq_no = params.frame_seq_no;
+
+	// Если случилось переполнение или просто мы получили весь SDU
+	// Сообщаем пользователю об этом событием
+	if (overflow || sdu_complete)
+	{
+		const auto reason = overflow
+				? map_sink_event_data_unit::release_reason_t::OVERFLOW
+				: map_sink_event_data_unit::release_reason_t::SDU_COMPLETE
+		;
+		_flush_accum(reason);
+	}
+}
+
+
+void map_access_sink::_flush_accum(map_sink_event_data_unit::release_reason_t reason)
+{
+	if (_accumulator.empty())
+		return;
+
+	// Сбрасываем номер предыдущего пакета
+	_prev_frame_seq_no.reset();
+
+	map_sink_event_data_unit event;
+	event.data = std::move(_accumulator);
+	event.qos = _prev_frame_qos;
+	event.release_reason = reason;
+	emit_event(event);
 }
 
 

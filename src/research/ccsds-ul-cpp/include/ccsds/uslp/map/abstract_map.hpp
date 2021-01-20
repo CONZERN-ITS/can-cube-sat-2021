@@ -62,8 +62,7 @@ struct input_map_frame_params
 	//! тип гарантии доставки этого кадра
 	qos_t qos;
 	//! Номер фрейма
-	frame_seq_no_t frame_seq_no;
-
+	std::optional<frame_seq_no_t> frame_seq_no;
 };
 
 

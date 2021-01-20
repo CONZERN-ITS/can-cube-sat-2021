@@ -29,13 +29,23 @@ public:
 class map_sink_event_data_unit: public map_sink_event
 {
 public:
-	map_sink_event_data_unit(std::vector<uint8_t> data_, qos_t qos_)
-		: map_sink_event(event_kind_t::DATA_UNIT),
-		  data(std::move(data_)), qos(qos_)
-	{}
+	//! Причиина по которой SDU был передан пользователю
+	enum class release_reason_t
+	{
+		//! Он пришел целиком! все довольно очевидно
+		SDU_COMPLETE,
+		//! Случилось переполнение буфера для накопления SDU
+		OVERFLOW,
+		//! Мы потеряли какой-то фрейм (то есть получили не тот, что ожидали)
+		/*! И отдаем все что смогли накопить */
+		SDU_TERMINATED
+	};
+
+	map_sink_event_data_unit(): map_sink_event(event_kind_t::DATA_UNIT) {} // @suppress("Class members should be properly initialized")
 
 	std::vector<uint8_t> data;
 	qos_t qos;
+	release_reason_t release_reason;
 };
 
 }}
