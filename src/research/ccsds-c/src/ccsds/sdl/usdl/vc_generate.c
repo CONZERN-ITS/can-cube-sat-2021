@@ -1,13 +1,3 @@
-/*
- * vc_generation.h
- *
- *  Created on: 9 янв. 2021 г.
- *      Author: HP
- */
-
-#ifndef SDL_USDL_VC_GENERATE_H_
-#define SDL_USDL_VC_GENERATE_H_
-
 #include <ccsds/sdl/usdl/vc_generate.h>
 #include <ccsds/sdl/usdl/map_multiplexer.h>
 #include <ccsds/sdl/usdl/vc_multiplex.h>
@@ -16,10 +6,18 @@
 #include <string.h>
 #include <assert.h>
 
-int _vc_fop() {
+uint32_t _vc_generate_mapcf_length(vc_t *vc, quality_of_service_t qos);
+
+int vc_init(vc_t *vc, vc_mx_t *mx, vc_parameters_t *params, vc_id_t vc_id) {
+	vc->vc_mx = mx;
+	vc->vc_id = vc_id;
+	vc->vc_mx->vc_arr[vc->vc_id] = vc;
+	vc->vc_parameters = *params;
+	vc->src_or_dest_id = SOD_SOURCE;
+	vc->mapcf_length_ex = _vc_generate_mapcf_length(vc, QOS_EXPEDITED);
+	vc->mapcf_length_sc = _vc_generate_mapcf_length(vc, QOS_SEQ_CONTROL);
 	return 0;
 }
-
 int _vc_pop_fop(vc_t *vc) {
 	queue_value_t *v = fop_peek(&vc->fop);
 	int ret = vc_multiplex(vc->vc_mx, v->data, v->size, &v->map_params, &v->vc_params);
@@ -34,7 +32,7 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 	vc_params_t p = {};
 	if (map_params->qos == QOS_SEQ_CONTROL) {
 		p.bsc_flag = BSC_SEQ_CONTROL;
-		p.vcf_count_length = vc->parameters.vcf_count_lenght_seq_control;
+		p.vcf_count_length = vc->vc_parameters.vcf_count_lenght_seq_control;
 		p.vcf_count = vc->frame_count_seq_control;
 		p.pcc_flag = PCC_USER_DATA; //TODO Надо понять, как тут должно быть
 		p.sod_flag = vc->src_or_dest_id;
@@ -42,7 +40,7 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 		p.vc_id = vc->vc_id;
 	} else {
 		p.bsc_flag = BSC_EXPEDITED;
-		p.vcf_count_length = vc->parameters.vcf_count_lenght_expedited;
+		p.vcf_count_length = vc->vc_parameters.vcf_count_lenght_expedited;
 		p.vcf_count = vc->frame_count_expedited;
 		p.pcc_flag = PCC_USER_DATA; //TODO Надо понять, как тут должно быть
 		p.sod_flag = vc->src_or_dest_id;
@@ -50,12 +48,12 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 		p.vc_id = vc->vc_id;
 	}
 
-	if (vc->parameters.cop_in_effect == COP_1) {
+	if (vc->vc_parameters.cop_in_effect == COP_1) {
 		_vc_pop_fop(vc);
 		int ret = fop_add_packet(&vc->fop, data, size, map_params, &p);
 		while (_vc_pop_fop(vc));
 		return ret;
-	} else if (vc->parameters.cop_in_effect == COP_NONE) {
+	} else if (vc->vc_parameters.cop_in_effect == COP_NONE) {
 		return vc_multiplex(vc->vc_mx, data, size, map_params, &p);
 	} else {
 		return 0;
@@ -63,7 +61,7 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 }
 
 int vc_request_from_down(vc_t *vc) {
-	if (vc->parameters.cop_in_effect == COP_1) {
+	if (vc->vc_parameters.cop_in_effect == COP_1) {
 		int ret = _vc_pop_fop(vc);
 		if (ret) {
 			return ret;
@@ -74,7 +72,7 @@ int vc_request_from_down(vc_t *vc) {
 				return 0;
 			}
 		}
-	} else if (vc->parameters.cop_in_effect == COP_NONE) {
+	} else if (vc->vc_parameters.cop_in_effect == COP_NONE) {
 		return map_mx_request_from_down(vc->map_mx);
 	} else {
 		return 0;
@@ -82,5 +80,13 @@ int vc_request_from_down(vc_t *vc) {
 }
 
 
-
-#endif /* SDL_USDL_VC_GENERATE_H_ */
+uint32_t _vc_generate_mapcf_length(vc_t *vc, quality_of_service_t qos) {
+	uint32_t size = vc->vc_mx->mc->vcf_length;
+	size -= 7;
+	if (qos == QOS_EXPEDITED) {
+		size -= vc->vc_parameters.vcf_count_lenght_expedited;
+	} else {
+		size -= vc->vc_parameters.vcf_count_lenght_seq_control;
+	}
+	return size;
+}

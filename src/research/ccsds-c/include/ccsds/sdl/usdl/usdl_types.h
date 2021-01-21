@@ -41,7 +41,7 @@ typedef struct map_t {
 	quality_of_service_t packet_qos;
 #if MAP_BUFFER_SIZE > 0 && defined(MAP_BUFFER_STATIC)
 	//uint8_t buffer[MAP_BUFFER_SIZE];
-	size_t payload_size;
+	//size_t payload_size;
 	//size_t buffer_index;
 #elif !defined(MAP_BUFFER_STATIC)
 	uint8_t *buffer;
@@ -127,14 +127,15 @@ typedef struct {
 typedef struct vc_t {
 	transfer_frame_t transfer_frame_type;
 	vc_id_t vc_id;
-	vcf_count_length_t vcf_count_length;
 	vcf_count_t frame_count_expedited;
 	vcf_count_t frame_count_seq_control;
 	sod_flag_t src_or_dest_id;
-	vc_parameters_t parameters;
+	vc_parameters_t vc_parameters;
 	fop_t fop;
 	vc_mx_t *vc_mx;
 	map_mx_t *map_mx;
+	uint32_t mapcf_length_ex;
+	uint32_t mapcf_length_sc;
 } vc_t;
 
 
@@ -145,18 +146,27 @@ typedef struct vc_mx_t {
 	mc_t *mc;
 } vc_mx_t;
 
+typedef enum {
+	MC_OCF_PROHIBTED,
+	MC_OCF_ALLOWED,
+	MC_OCF_REQUIRED
+} mc_ocf_t;
 
 typedef struct {
 	uint16_t scid;
 	transfer_frame_t tft;
 
+	mc_ocf_t ocf_flag;
 } mc_paramaters_t;
+
 
 typedef struct mc_t {
 	vc_mx_t *vc_mx;
 	mc_id_t mc_id;
 	mc_mx_t *mc_mx;
-	mc_paramaters_t map_parameters;
+	mc_paramaters_t mc_parameters;
+	uint8_t ocf[4];
+	uint32_t vcf_length;
 } mc_t;
 
 
@@ -186,6 +196,7 @@ typedef struct pc_t {
 	uint8_t *insert_data;
 	size_t insert_size;
 	uint8_t fec_field[4];
+	uint32_t mcf_length;
 } pc_t;
 
 #endif /* SDL_USDL_USDL_TYPES_H_ */

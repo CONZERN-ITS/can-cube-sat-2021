@@ -27,6 +27,7 @@ typedef struct mapr_t {
 	mapr_state_t state;
 } mapr_t;
 
+int mapp_init(map_t *map, map_mx_t *mx, map_id_t map_id);
 
 int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos);
 

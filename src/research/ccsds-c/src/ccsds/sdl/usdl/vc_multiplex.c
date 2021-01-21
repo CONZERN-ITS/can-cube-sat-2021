@@ -1,17 +1,13 @@
-/*
- * vc_multiplex.h
- *
- *  Created on: 15 янв. 2021 г.
- *      Author: HP
- */
-
-#ifndef SDL_USDL_VC_MULTIPLEX_H_
-#define SDL_USDL_VC_MULTIPLEX_H_
-
 #include <ccsds/sdl/usdl/vc_multiplex.h>
 #include <ccsds/sdl/usdl/vc_generate.h>
 #include <ccsds/sdl/usdl/mc_generate.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
+
+int vc_mx_init(vc_mx_t *vc_mx, mc_t *mc) {
+	vc_mx->mc = mc;
+	vc_mx->mc->vc_mx = vc_mx;
+	return 0;
+}
 
 int vc_multiplex(vc_mx_t *vc_mx, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params) {
@@ -46,5 +42,3 @@ int vc_mx_request_from_down(vc_mx_t *vc_mx) {
 
 	return 0;
 }
-
-#endif /* SDL_USDL_VC_MULTIPLEX_H_ */

@@ -1,20 +1,25 @@
-/*
- * p_generate.h
- *
- *  Created on: 16 янв. 2021 г.
- *      Author: HP
- */
-
-#ifndef SDL_USDL_PC_GENERATE_H_
-#define SDL_USDL_PC_GENERATE_H_
-
 #include <ccsds/sdl/usdl/pc_generate.h>
 #include <ccsds/sdl/usdl/mc_multiplex.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <ccsds/ccscds_endian.h>
+#include <string.h>
 
-int pc_generate(pc_t *pc, uint8_t *data, size_t size,
-		map_params_t *map_params, vc_params_t *vc_params, mc_params_t *mc_params) {
+uint32_t _pc_generate_mcf_length(pc_t *pc);
+
+int pc_init(pc_t *pc, const pc_paramaters_t *params, const mc_mx_t *mc_mx, const uint8_t *data, size_t size) {
+	pc->mc_mx = mc_mx;
+	pc->pc_parameters = *params;
+	pc->data = data;
+	pc->size = size;
+	pc->is_valid = 0;
+	pc->insert_size = 0;
+	pc->insert_data = 0;
+	pc->mcf_length = _pc_generate_mcf_length(pc);
+	return 0;
+}
+
+int pc_generate(pc_t *pc, const uint8_t *data, size_t size,
+		const map_params_t *map_params, const vc_params_t *vc_params, const mc_params_t *mc_params) {
 
 	if (pc->is_valid) {
 		return 0;
@@ -40,8 +45,10 @@ int pc_generate(pc_t *pc, uint8_t *data, size_t size,
 	}
 
 	// Insert zone
-	ccsds_endian_insert(pc->data, pc->size * 8, k, &pc->insert_data, pc->insert_size * 8);
-	k += pc->insert_size * 8;
+	if (pc->insert_size) {
+		memcpy(&pc->data[k / 8], pc->insert_data, pc->insert_size);
+		k += pc->insert_size * 8;
+	}
 
 	//TFDF
 	ccsds_endian_insert(pc->data, pc->size * 8, k, &map_params->rules, 3);
@@ -51,16 +58,20 @@ int pc_generate(pc_t *pc, uint8_t *data, size_t size,
 		ccsds_endian_insert(pc->data, pc->size * 8, k , &map_params->fhd, 16);
 		k += 16;
 	}
-	ccsds_endian_insert(pc->data, pc->size * 8, k, data, size * 8);
-	k += size * 8;
+	if (size) {
+		memcpy(&pc->data[k / 8], data, size);
+		k += size * 8;
+	}
 
 	//OCF
-	ccsds_endian_insert(pc->data, pc->size * 8, k, mc_params->ocf, 32);
-	k += 32;
+	if (mc_params->ocfp_flag) {
+		memcpy(&pc->data[k / 8], mc_params->ocf, 4);
+		k += 32;
+	}
 
 	//FEC
 	if (pc->pc_parameters.is_fec_presented) {
-		ccsds_endian_insert(pc->data, pc->size * 8, k, pc->fec_field, pc->pc_parameters.fec_length * 8);
+		memcpy(&pc->data[k / 8], pc->fec_field, pc->pc_parameters.fec_length);
 		k += pc->pc_parameters.fec_length * 8;
 	}
 	if (k != pc->pc_parameters.tf_length && pc->pc_parameters.tft == TF_FIXED) {
@@ -146,4 +157,12 @@ int pc_recieve(pc_t *pc, uint8_t *data, size_t *size,
 int pc_request_from_down(pc_t *pc) {
 	return mc_mx_request_from_down(pc->mc_mx);
 }
-#endif /* SDL_USDL_PC_GENERATE_H_ */
+
+uint32_t _pc_generate_mcf_length(pc_t *pc) {
+	uint32_t size = pc->pc_parameters.tf_length;
+	if (pc->pc_parameters.is_fec_presented) {
+		size -= pc->pc_parameters.fec_length;
+	}
+	size -= pc->insert_size;
+	return size;
+}

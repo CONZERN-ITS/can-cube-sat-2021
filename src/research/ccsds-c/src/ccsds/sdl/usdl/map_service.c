@@ -5,6 +5,22 @@
 #include <assert.h>
 #include <ccsds/nl/epp/epp.h>
 
+uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos);
+
+int mapp_init(map_t *map, map_mx_t *mx, map_id_t map_id) {
+	map->map_mx = mx;
+	map->map_id = map_id;
+	map->map_mx->map_arr[map->map_id] = map;
+
+	map->packet_qos = map->map_mx->vc->vc_parameters.cop_in_effect == COP_NONE ? QOS_EXPEDITED : QOS_SEQ_CONTROL;
+	map->size_fixed = 1;
+	map->split_allowed = 1;
+	map->buf_ex.size = _mapp_generate_tfdz_length(map, QOS_EXPEDITED);
+	map->buf_sc.size = _mapp_generate_tfdz_length(map, QOS_SEQ_CONTROL);
+	return 0;
+}
+
+
 
 int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos) {
 #if MAP_BUFFER_SIZE == 0
@@ -12,7 +28,6 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 #else
 	assert(map->split_allowed);
 	assert(map->size_fixed);
-	assert(map->payload_size <= MAP_BUFFER_SIZE);
 	map_buffer_t *buf = (qos == QOS_EXPEDITED ? &map->buf_ex : &map->buf_sc);
 
 	map_params_t params = {0};
@@ -26,8 +41,8 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 		return 0;
 	}
 
-	if (buf->index == map->payload_size) {
-		if (map_mx_multiplex(map->map_mx, &params, buf->data, map->payload_size)) {
+	if (buf->index == buf->size) {
+		if (map_mx_multiplex(map->map_mx, &params, buf->data, buf->size)) {
 			params.fhd = buf->fhd = 0;
 			buf->index = 0;
 		} else {
@@ -42,13 +57,13 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 	size_t count_to_send = 0;
 
 	while (1) {
-		count_to_send = map->payload_size - buf->index < size - data_index
-				? map->payload_size - buf->index : size - data_index;
+		count_to_send = buf->size - buf->index < size - data_index
+				? buf->size - buf->index : size - data_index;
 
 		memcpy(&buf->data[buf->index], &data[data_index], count_to_send);
 		buf->index += count_to_send;
 		data_index += count_to_send;
-		if (buf->index == map->payload_size &&
+		if (buf->index == buf->size &&
 				map_mx_multiplex(map->map_mx, &params, buf->data, count_to_send)) {
 			buf->index = 0;
 			params.fhd = buf->fhd = (fhd_t)~0;
@@ -78,11 +93,11 @@ int map_request_from_down(map_t *map) {
 	} else {
 		return 0;
 	}
-	if (buf->index < map->payload_size) {
+	if (buf->index < buf->size) {
 		epp_header_t head = {0};
 		head.epp_id = EPP_ID_IDLE;
 		epp_make_header_auto_length(&head, &buf->data[buf->index],
-				map->payload_size - buf->index, map->payload_size - buf->index);
+				buf->size - buf->index, buf->size - buf->index);
 	}
 
 	params.map_id = map->map_id;
@@ -90,7 +105,7 @@ int map_request_from_down(map_t *map) {
 	params.upid = UPID_SP_OR_EP;
 	params.fhd = buf->fhd;
 
-	int ret = map_mx_multiplex(map->map_mx, &params, buf->data, map->payload_size);
+	int ret = map_mx_multiplex(map->map_mx, &params, buf->data, buf->size);
 	if (ret) {
 		buf->fhd = 0;
 		buf->index = 0;
@@ -210,6 +225,20 @@ int map_recieve(mapr_t *map, uint8_t *data, size_t size, quality_of_service_t *q
 	}
 
 	memcpy(data, map->packet.data, map->packet.size);
+	map->state = MAPR_STATE_BEGIN;
+	map->packet.index = 0;
 	return map->packet.size;
 }
+
+
+uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos) {
+	uint32_t size = 0;
+	if (qos == QOS_EXPEDITED) {
+		size = map->map_mx->vc->mapcf_length_ex;
+	} else {
+		size = map->map_mx->vc->mapcf_length_sc;
+	}
+	return size - 3;
+}
+
 

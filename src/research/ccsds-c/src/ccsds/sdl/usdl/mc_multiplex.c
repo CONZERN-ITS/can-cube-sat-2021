@@ -1,17 +1,13 @@
-/*
- * mc_multiplex.h
- *
- *  Created on: 16 янв. 2021 г.
- *      Author: HP
- */
-
-#ifndef SDL_USDL_MC_MULTIPLEX_H_
-#define SDL_USDL_MC_MULTIPLEX_H_
-
 #include <ccsds/sdl/usdl/mc_multiplex.h>
 #include <ccsds/sdl/usdl/mc_generate.h>
 #include <ccsds/sdl/usdl/pc_generate.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
+
+int mc_mx_init(mc_mx_t *mc_mx, pc_t *pc) {
+	mc_mx->pc = pc;
+	mc_mx->pc->mc_mx = mc_mx;
+	return 0;
+}
 
 int mc_multiplex(mc_mx_t *mc_mx, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params, mc_params_t *mc_params) {
@@ -47,4 +43,3 @@ int mc_mx_request_from_down(mc_mx_t *mc_mx) {
 	return 0;
 }
 
-#endif /* SDL_USDL_MC_MULTIPLEX_H_ */

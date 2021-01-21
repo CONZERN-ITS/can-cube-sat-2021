@@ -1,13 +1,3 @@
-/*
- * fop.h
- *
- *  Created on: 14 янв. 2021 г.
- *      Author: HP
- */
-
-#ifndef SDL_USDL_FOP_H_
-#define SDL_USDL_FOP_H_
-
 #include <ccsds/sdl/usdl/fop.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <string.h>
@@ -136,5 +126,3 @@ void fop_drop(fop_t *fop) {
 int fop_control() {
 	return 0;
 }
-
-#endif /* SDL_USDL_FOP_H_ */
