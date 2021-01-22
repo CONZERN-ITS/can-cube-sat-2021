@@ -116,7 +116,7 @@ void event_handler(const ccsds::uslp::map_sink_event & event_)
 					<< ": " << print_bytes(event.data) << std::endl;
 	} break;
 
-	}
+	}; // switch
 }
 
 

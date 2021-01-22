@@ -38,7 +38,9 @@ public:
 		OVERFLOW,
 		//! Мы потеряли какой-то фрейм (то есть получили не тот, что ожидали)
 		/*! И отдаем все что смогли накопить */
-		SDU_TERMINATED
+		SDU_TERMINATED,
+		//! Плохой заголовок пакета для пакетного мап сервиса
+		BAD_PACKET_HEADER,
 	};
 
 	map_sink_event_data_unit(): map_sink_event(event_kind_t::DATA_UNIT) {} // @suppress("Class members should be properly initialized")

@@ -93,6 +93,8 @@ protected:
 			const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
 	) = 0;
 
+	bool is_finalized() const { return _finalized; }
+
 private:
 	event_callback_t _event_callback;
 	bool _finalized = false;

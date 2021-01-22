@@ -49,6 +49,8 @@ struct tfdf_header_t
 	static constexpr uint16_t short_size = 1;
 	//! Длина полного варианта заголовка
 	static constexpr uint16_t full_size = 3;
+	//! Значение поля first_header_offset, которое означает что оффсета нет
+	static constexpr uint16_t no_offset = 0xFFFF;
 
 	//! Правило по которому она собиралась
 	int ctr_rule;

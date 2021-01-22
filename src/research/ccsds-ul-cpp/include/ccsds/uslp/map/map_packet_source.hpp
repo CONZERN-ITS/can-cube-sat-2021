@@ -19,6 +19,9 @@ public:
 	map_packet_source(gmap_id_t map_id_);
 	virtual ~map_packet_source() = default;
 
+	void add_packet(const uint8_t * packet, size_t packet_size, qos_t qos);
+	void encapsulate_data(const uint8_t * data, size_t data_size, qos_t qos);
+
 protected:
 	virtual void finalize_impl() override;
 

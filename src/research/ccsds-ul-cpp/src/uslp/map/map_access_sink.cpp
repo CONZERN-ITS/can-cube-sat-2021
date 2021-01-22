@@ -31,9 +31,18 @@ void map_access_sink::push_impl(
 	const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
 )
 {
+	if (detail::tfdf_header_t::full_size >= tfdf_buffer_size)
+	{
+		// Этот фрейм не может быть валидным, так как в него максимум что влезает
+		// это заголовок tfdf.
+		_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+	}
+
 	// Смотрим что там в tfdf заголовке
 	detail::tfdf_header_t header;
 	header.read(tfdf_buffer, true);
+	const uint8_t * const tfdz_start = tfdf_buffer + header.size();
+	const size_t tfdz_size = tfdf_buffer_size - header.size();
 
 	// Если это MAP_SDU_START
 	if (detail::tfdz_construction_rule_t::MAP_SDU_START == header.ctr_rule)
@@ -42,7 +51,7 @@ void map_access_sink::push_impl(
 			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
 
 		// Забираем пакет
-		_consume_frame(params, header, tfdf_buffer + header.size(), tfdf_buffer_size - header.size());
+		_consume_frame(params, header, tfdz_start, tfdz_size);
 	}
 	else if (detail::tfdz_construction_rule_t::MAP_SDU_CONTINUATION == header.ctr_rule)
 	{
@@ -57,7 +66,7 @@ void map_access_sink::push_impl(
 			return;
 		}
 
-		// Если номера есть - сравним и
+		// Если номера есть - сравним их
 		if (_prev_frame_seq_no.has_value() && (*_prev_frame_seq_no + 1 != *params.frame_seq_no))
 		{
 			// Значит что-то где-то потерялось
@@ -70,12 +79,12 @@ void map_access_sink::push_impl(
 		if (_prev_frame_qos != params.qos)
 		{
 			// Выкидываем и сбрасываем состояние
-			_accumulator.clear();
+			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
 			return;
 		}
 
 		// Если все ок - забираем фрейм
-		_consume_frame(params, header, tfdf_buffer + header.size(), tfdf_buffer_size - header.size());
+		_consume_frame(params, header, tfdz_start, tfdz_size);
 	}
 }
 

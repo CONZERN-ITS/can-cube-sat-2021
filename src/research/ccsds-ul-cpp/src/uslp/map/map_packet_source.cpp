@@ -8,6 +8,7 @@
 
 #include <ccsds/uslp/_detail/epp_header.hpp>
 #include <ccsds/uslp/_detail/tfdf_header.hpp>
+#include <ccsds/uslp/_detail/tf_header.hpp>
 
 
 
@@ -20,8 +21,42 @@ map_packet_source::map_packet_source(gmap_id_t map_id_)
 }
 
 
+void map_packet_source::add_packet(const uint8_t * packet, size_t packet_size, qos_t qos)
+{
+	data_unit_t du;
+
+	du.original_packet_size = packet_size;
+	du.qos = qos;
+
+	du.packet.resize(packet_size);
+	std::copy(packet, packet + packet_size, du.packet.begin());
+
+	_data_queue.push_back(std::move(du));
+}
+
+
+void map_packet_source::encapsulate_data(const uint8_t * data, size_t data_size, qos_t qos)
+{
+	detail::epp_header_t header;
+	const auto packet_size = header.accomadate_to_payload_size(data_size);
+
+	data_unit_t du;
+	du.original_packet_size = packet_size;
+	du.qos = qos;
+
+	du.packet.resize(packet_size);
+	auto header_end_itt = std::next(du.packet.begin(), header.size());
+	header.write(du.packet.begin(), header_end_itt);
+
+	assert(data_size == static_cast<size_t>(std::distance(header_end_itt, du.packet.end())));
+	std::copy(data, data + data_size, header_end_itt);
+}
+
+
 void map_packet_source::finalize_impl()
 {
+	map_source::finalize_impl();
+
 	// Убеждаемся что в tfdf влезает заголовок и хотябы один байтик информации
 	if (detail::tfdf_header_t::full_size >= tfdf_size())
 	{
@@ -163,15 +198,12 @@ void map_packet_source::_write_idle_packet(uint8_t * buffer, uint16_t idle_packe
 	if (0 == idle_packet_size)
 		return;
 
-	detail::epp_header header;
+	detail::epp_header_t header;
 	header.protocol_id = detail::epp_protocol_id_t::IDLE;
-	if (1 == idle_packet_size)
-		header.packet_len = 0; // Особый случай, будем писать только заголовок
-	else
-		header.packet_len = idle_packet_size; // Во всех остальных случаях пишем честно
+	header.real_packet_size(idle_packet_size);
 
 	// Теперь пишем заголовок
-	header.write(buffer);
+	header.write(buffer, idle_packet_size);
 
 	// Тело пакета заполним меандром, чтобы было красиво (и радио канал лучше ловил битсинк)
 	uint8_t * const pbody_buffer = buffer + header.size();
