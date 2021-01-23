@@ -59,7 +59,7 @@ public:
 		auto selected = _sources.end();
 
 		typename std::decay<decltype(iteration_limit)>::type i;
-		for (i = 0; i < iteration_limit; i++)
+		for (i = 0; i < iteration_limit; i++, itt++)
 		{
 			// Проверяем на вывалились ли мы за пределы контейнера
 			if (_sources.end() == itt)

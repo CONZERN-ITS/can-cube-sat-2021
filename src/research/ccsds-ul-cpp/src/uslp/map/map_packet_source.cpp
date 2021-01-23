@@ -71,8 +71,7 @@ void map_packet_source::finalize_impl()
 bool map_packet_source::peek_tfdf_impl()
 {
 	// Тут оптимизации не будет :c
-	output_map_frame_params dummy;
-	return peek_tfdf_impl(dummy);
+	return !_data_queue.empty();
 }
 
 
@@ -147,7 +146,7 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 		);
 
 		// Если мы сейчас пишем первый правильный заголовок - нужно бы это указать
-		if (first_valid_header_offset == 0xFFFF && data_unit.packet.size() == data_unit.original_packet_size)
+		if (0xFFFF == first_valid_header_offset && data_unit.packet.size() == data_unit.original_packet_size)
 			first_valid_header_offset = static_cast<uint16_t>(output_buffer - tfdz_start);
 
 		// Копируем
@@ -175,7 +174,7 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 		_write_idle_packet(output_buffer, output_buffer_size);
 
 	// Опять проверяем на первый валидный заголовок
-	if (first_valid_header_offset == 0xFFFF)
+	if (0xFFFF == first_valid_header_offset)
 		first_valid_header_offset = static_cast<uint16_t>(output_buffer - tfdz_start);
 
 	// Наконец-то пишем заголовок

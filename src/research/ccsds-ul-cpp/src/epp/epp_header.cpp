@@ -16,7 +16,7 @@ namespace ccsds { namespace epp {
 uint16_t header_t::probe_header_size(const uint8_t first_buffer_byte)
 {
 	// Проверяем pvn
-	auto pvn_in_buffer = (first_buffer_byte >> 5) & 0x03;
+	auto pvn_in_buffer = (first_buffer_byte >> 5) & 0x07;
 
 	if (pvn_in_buffer != pvn)
 		return 0; // не подошло.
@@ -234,7 +234,7 @@ void header_t::real_packet_size(uint64_t value)
 	if (0 == value)
 		throw einval_exception("epp real packet size can`t be zero");
 
-	constexpr uint64_t max_size = std::numeric_limits<uint32_t>::max() + 1;
+	constexpr uint64_t max_size = static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()) + 1;
 	if (value > max_size)
 	{
 		std::stringstream error;

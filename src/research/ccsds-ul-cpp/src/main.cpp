@@ -30,13 +30,15 @@ struct downlink_stack_t
 		  virt(ccsds::uslp::gvcid_t(0x100, 0)),
 		  map_s1(ccsds::uslp::gmap_id_t(0x100, 0, 0)),
 		  map_s2(ccsds::uslp::gmap_id_t(0x100, 0, 1)),
-		  map_p3(ccsds::uslp::gmap_id_t(0x100, 0, 3))
+		  map_p3(ccsds::uslp::gmap_id_t(0x100, 0, 2))
 	{
 		phys.add_mchannel_sink(&master);
 		master.add_vchannel_sink(&virt);
 		virt.add_map_sink(&map_s1);
 		virt.add_map_sink(&map_s2);
 		virt.add_map_sink(&map_p3);
+
+		map_p3.emit_idle_packets(true);
 
 		phys.finalize();
 	}
@@ -47,12 +49,14 @@ struct downlink_stack_t
 		phys.push_frame(frame_buffer, frame_buffer_size);
 	}
 
+
 	typedef std::function<
 			void(
 					ccsds::uslp::gmap_id_t,
 					const ccsds::uslp::map_sink_event & event
 			)
 	> map_event_handler_t;
+
 
 	void set_event_handler(map_event_handler_t event_handler)
 	{
@@ -62,7 +66,7 @@ struct downlink_stack_t
 
 		for (auto * map_sink: maps)
 		{
-			map_s1.set_event_callback([event_handler, map_sink](const ccsds::uslp::map_sink_event & event){
+			map_sink->set_event_callback([event_handler, map_sink](const ccsds::uslp::map_sink_event & event){
 				event_handler(map_sink->map_id, event);
 			});
 		}
@@ -89,7 +93,6 @@ struct uplink_stack_t
 		  map_p3(ccsds::uslp::gmap_id_t(0x100, 0, 2))
 	{
 		phys.frame_size(frame_buffer_size);
-		phys.error_control_len(ccsds::uslp::error_control_len_t::ZERO);
 		phys.add_mchannel_source(&master);
 
 		master.add_vchannel_source(&virt);
@@ -98,6 +101,9 @@ struct uplink_stack_t
 		virt.add_map_source(&map_s1);
 		virt.add_map_source(&map_s2);
 		virt.add_map_source(&map_p3);
+
+		phys.error_control_len(ccsds::uslp::error_control_len_t::ZERO);
+		master.id_is_destination(true);
 
 		phys.finalize();
 	}
@@ -139,8 +145,8 @@ void event_handler(ccsds::uslp::gmap_id_t map_id, const ccsds::uslp::map_sink_ev
 	{
 	case ccsds::uslp::map_sink_event::event_kind_t::DATA_UNIT: {
 			auto & event = dynamic_cast<const ccsds::uslp::map_sink_event_data_unit & >(event_);
-			std::cout << "got mapa "
-					<< map_id.sc_id() << ", " << map_id.vchannel_id() << ", " << (int)map_id.map_id() << " "
+			std::cout << "got map sink event "
+					<< map_id.sc_id() << ", " << (int)map_id.vchannel_id() << ", " << (int)map_id.map_id() << " "
 					<< "sdu (" << event.data.size() << ") "
 					<< ": " << print_bytes(event.data) << std::endl;
 	} break;

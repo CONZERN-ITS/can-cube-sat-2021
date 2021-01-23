@@ -84,14 +84,37 @@ void map_packet_sink::push_impl(
 		const uint8_t * const packet_part_end = tfdz_start + tfdz_size;
 		_consume_bytes(packet_start, packet_part_end);
 	}
-
-
-	if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
+	else
 	{
-		// Ой, так быть не должно
-		_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+		// Мы не пустые. Проверяем последовательность фреймов
+		if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
+		{
+			// Ой, так быть не должно
+			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			return;
+		}
+
+		if (_prev_frame_seq_no.value() + 1 != params.frame_seq_no.value())
+		{
+			// Ой. Так тоже быть не должно
+			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			return;
+		}
+
+		if (_prev_frame_qos != params.qos)
+		{
+			// Ну и так тоже не должно быть
+			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			return;
+		}
+
+		// Окей, все как должно быть.
+		// Кушаем этот фрейм
+		_consume_bytes(tfdz_start, tfdz_start + tfdz_size);
 	}
 
+	_prev_frame_qos = params.qos;
+	_prev_frame_seq_no = params.frame_seq_no;
 }
 
 
@@ -110,6 +133,9 @@ void map_packet_sink::_parse_packets()
 {
 
 again:
+	if (_accumulator.empty())
+		return; // Ну тут все
+
 	if (!_current_packet_header.has_value())
 	{
 		// Если у нас еще нет заголовка
@@ -123,12 +149,10 @@ again:
 			return;
 		}
 
-		// У нас уже достаточно байт?
+		// У нас уже достаточно байт на заголовок?
 		if (_accumulator.size() < header_size)
-		{
-			// Тут мало что можно сделать.. Будем подождать
-			return;
-		}
+			return; // Ну, будем подождать
+
 		// Отлично, пробуем разобрать
 		epp::header_t epp_header;
 		try
@@ -149,16 +173,16 @@ again:
 
 	// Раз у нас есть заголовок - то может у нас хватает байтиков и на сам пакет?
 	const auto current_packet_size = _current_packet_header->real_packet_size();
-	if (current_packet_size < _accumulator.size())
-	{
-		auto current_packet_end = std::next(_accumulator.cbegin(), current_packet_size);
-		// Чудесно! Только секундочку... А это не idle пакет?
-		// Такие мы пользователю давать не будем
-		if (!_emit_idle_packets && static_cast<int>(epp::protocol_id_t::IDLE) == _current_packet_header->protocol_id)
-			_drop_accum(current_packet_end);
-		else
-			_flush_accum(current_packet_end, map_sink_event_data_unit::release_reason_t::SDU_COMPLETE);
-	}
+	if (current_packet_size > _accumulator.size())
+		return; // Нет, не хватает
+
+	auto current_packet_end = std::next(_accumulator.cbegin(), current_packet_size);
+	// Чудесно! Только секундочку... А это не idle пакет?
+	// Такие мы пользователю давать не будем
+	if (!_emit_idle_packets && static_cast<int>(epp::protocol_id_t::IDLE) == _current_packet_header->protocol_id)
+		_drop_accum(current_packet_end);
+	else
+		_flush_accum(current_packet_end, map_sink_event_data_unit::release_reason_t::SDU_COMPLETE);
 
 	// Выгребаем дальше
 	goto again;
@@ -175,9 +199,6 @@ void map_packet_sink::_flush_accum(
 		accum_t::const_iterator flush_zone_end, map_sink_event_data_unit::release_reason_t reason
 )
 {
-	if (_accumulator.empty())
-		return; // Нечего флашить
-
 	map_sink_event_data_unit event;
 	event.qos = _prev_frame_qos;
 	event.release_reason = reason;
