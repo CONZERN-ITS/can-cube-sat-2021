@@ -193,22 +193,22 @@ uint16_t map_packet_source::_tfdz_size() const
 }
 
 
-void map_packet_source::_write_idle_packet(uint8_t * buffer, uint16_t idle_packet_size) const
+void map_packet_source::_write_idle_packet(uint8_t * buffer, uint16_t buffer_size) const
 {
-	if (0 == idle_packet_size)
+	if (0 == buffer_size)
 		return;
 
 	epp::header_t header;
 	header.protocol_id = static_cast<int>(epp::protocol_id_t::IDLE);
-	header.real_packet_size(idle_packet_size);
+	header.real_packet_size(buffer_size);
 
 	// Теперь пишем заголовок
-	header.write(buffer, idle_packet_size);
+	header.write(buffer, buffer_size);
 
 	// Тело пакета заполним меандром, чтобы было красиво (и радио канал лучше ловил битсинк)
 	uint8_t * const pbody_buffer = buffer + header.size();
-	const uint16_t pbody_size = idle_packet_size - header.size();
-	std::memset(pbody_buffer, pbody_size, 0xAA);
+	const uint16_t pbody_size = buffer_size - header.size();
+	std::memset(pbody_buffer, 0xAA, pbody_size);
 }
 
 }}
