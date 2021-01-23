@@ -37,8 +37,8 @@ public:
 	void frame_version_no(uint8_t value);
 	uint8_t frame_version_no() const noexcept { return _frame_version_no; }
 
-	void frame_size(int32_t value);
-	int32_t frame_size() const noexcept { return _frame_size; }
+	void frame_size(size_t value);
+	size_t frame_size() const noexcept { return _frame_size; }
 
 	void error_control_len(error_control_len_t value);
 	error_control_len_t error_control_len() const noexcept { return _error_control_len; }
@@ -47,9 +47,9 @@ public:
 
 	void finalize();
 
-	bool peek_frame();
-	bool peek_frame(pchannel_frame_params_t & frame_params);
-	void pop_frame(uint8_t * frame_buffer);
+	bool peek();
+	bool peek(pchannel_frame_params_t & frame_params);
+	void pop(uint8_t * frame_buffer, size_t frame_buffer_size);
 
 	const std::string name;
 
@@ -60,17 +60,16 @@ protected:
 
 	virtual void finalize_impl();
 
-	virtual bool peek_frame_impl() = 0;
-	virtual bool peek_frame_impl(pchannel_frame_params_t & frame_params) = 0;
-	virtual void pop_frame_impl(uint8_t * frame_buffer) = 0;
+	virtual bool peek_impl() = 0;
+	virtual bool peek_impl(pchannel_frame_params_t & frame_params) = 0;
+	virtual void pop_impl(uint8_t * frame_buffer) = 0;
 
 private:
 	uint8_t _frame_version_no;
 	bool _finalized = false;
-	int32_t _frame_size = 0;
+	size_t _frame_size = 0;
 	error_control_len_t _error_control_len = error_control_len_t::ZERO;
 };
-
 
 
 class pchannel_sink

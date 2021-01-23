@@ -55,8 +55,8 @@ public:
 	mchannel_source(mcid_t mcid_);
 	virtual ~mchannel_source() = default;
 
-	void frame_size_l1(uint16_t value);
-	uint16_t frame_size_l1() const { return _frame_size_l1; }
+	void frame_du_size_l1(uint16_t value);
+	uint16_t frame_du_size_l1() const { return _frame_size_l1; }
 
 	void id_is_destination(bool value);
 	bool id_is_destination() const noexcept { return _id_is_destination; }
@@ -67,9 +67,9 @@ public:
 
 	void finalize();
 
-	bool peek_frame();
-	bool peek_frame(mchannel_frame_params_t & frame_params);
-	void pop_frame(uint8_t * frame_data_unit_buffer);
+	bool peek_frame_du();
+	bool peek_frame_du(mchannel_frame_params_t & frame_params);
+	void pop_frame_du(uint8_t * frame_data_unit_buffer, uint16_t frame_data_unit_size);
 
 	const mcid_t mcid;
 
@@ -80,9 +80,9 @@ protected:
 
 	virtual void finalize_impl();
 
-	virtual bool peek_frame_impl() = 0;
-	virtual bool peek_frame_impl(mchannel_frame_params_t & frame_params) = 0;
-	virtual void pop_frame_impl(uint8_t * tfdf_buffer) = 0;
+	virtual bool peek_frame_du_impl() = 0;
+	virtual bool peek_frame_du_impl(mchannel_frame_params_t & frame_params) = 0;
+	virtual void pop_frame_du_impl(uint8_t * frame_data_unit_buffer) = 0;
 
 private:
 	ocf_source * _ocf_source = nullptr;

@@ -25,12 +25,12 @@ void mchannel_rr_muxer::add_mchannel_source_impl(mchannel_source * source)
 void mchannel_rr_muxer::finalize_impl()
 {
 	pchannel_source::finalize_impl();
-	auto upper_size = _frame_size_l1();
+	auto upper_size = _frame_du_size();
 
 	// Сначала выставляем настройки а потом финализируем
 	// На случай исключений, чтобы все объекты были в понятном состоянии
 	for (auto * mchannel: _muxer)
-		mchannel->frame_size_l1(upper_size);
+		mchannel->frame_du_size_l1(upper_size);
 
 
 	for (auto * mchannel: _muxer)
@@ -38,7 +38,7 @@ void mchannel_rr_muxer::finalize_impl()
 }
 
 
-bool mchannel_rr_muxer::peek_frame_impl()
+bool mchannel_rr_muxer::peek_impl()
 {
 	if (!_selected_mchannel)
 		_selected_mchannel = _muxer.select_next();
@@ -46,11 +46,11 @@ bool mchannel_rr_muxer::peek_frame_impl()
 	if (!_selected_mchannel)
 		return false;
 
-	return _selected_mchannel->peek_frame();
+	return _selected_mchannel->peek_frame_du();
 }
 
 
-bool mchannel_rr_muxer::peek_frame_impl(pchannel_frame_params_t & frame_params)
+bool mchannel_rr_muxer::peek_impl(pchannel_frame_params_t & frame_params)
 {
 	if (!_selected_mchannel)
 		_selected_mchannel = _muxer.select_next();
@@ -59,7 +59,7 @@ bool mchannel_rr_muxer::peek_frame_impl(pchannel_frame_params_t & frame_params)
 		return false;
 
 	mchannel_frame_params_t mchannel_params;
-	bool retval = _selected_mchannel->peek_frame(mchannel_params);
+	bool retval = _selected_mchannel->peek_frame_du(mchannel_params);
 	if (!retval)
 		return false;
 
@@ -73,7 +73,7 @@ bool mchannel_rr_muxer::peek_frame_impl(pchannel_frame_params_t & frame_params)
 }
 
 
-void mchannel_rr_muxer::pop_frame_impl(uint8_t * frame_buffer)
+void mchannel_rr_muxer::pop_impl(uint8_t * frame_buffer)
 {
 	assert(_selected_mchannel);
 
@@ -82,13 +82,14 @@ void mchannel_rr_muxer::pop_frame_impl(uint8_t * frame_buffer)
 
 	// Нам нужны параметры фрейма, чтобы слепить заголовок. Поэтому мы еще раз делаем peek_frame()
 	pchannel_frame_params_t frame_params;
-	peek_frame(frame_params);
+	peek(frame_params);
 
 	// Теперь самая жесть.
 	// Делаем заголовок
 	detail::tf_header_t header;
 	header.frame_version_no = frame_version_no();
 	header.gmap_id = frame_params.channel_id;
+	header.id_is_destination = frame_params.id_is_destination;
 
 	// У нас всегда будет расширенный заголовок
 	header.ext.emplace();
@@ -106,7 +107,7 @@ void mchannel_rr_muxer::pop_frame_impl(uint8_t * frame_buffer)
 	// Контрольная сумма (она может быть а может и нет
 	const size_t error_check_buffer_size = frame_size_overhead();
 	uint8_t * const error_check_buffer = (0 != error_check_buffer_size)
-			? frame_buffer + frame_size() - frame_size_overhead()
+			? frame_buffer + frame_size() - static_cast<size_t>(error_control_len())
 			: nullptr
 	;
 
@@ -119,14 +120,14 @@ void mchannel_rr_muxer::pop_frame_impl(uint8_t * frame_buffer)
 	// пишем заголовок
 	header.write(header_buffer);
 	// Пишем фрейм
-	selected_mchannel_copy->pop_frame(tfdf_and_ocf_buffer);
+	selected_mchannel_copy->pop_frame_du(tfdf_and_ocf_buffer, _frame_du_size());
 	// Пишем конетрольную сумму TODO!
 	if (error_check_buffer)
 		std::memset(error_check_buffer, 0, error_check_buffer_size);
 }
 
 
-uint16_t mchannel_rr_muxer::_frame_size_l1()
+uint16_t mchannel_rr_muxer::_frame_du_size() const
 {
 	const auto frame_size = pchannel_source::frame_size();
 	std::decay<decltype(frame_size)>::type retval = frame_size;

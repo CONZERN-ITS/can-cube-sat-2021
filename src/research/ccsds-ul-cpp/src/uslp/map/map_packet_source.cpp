@@ -33,7 +33,10 @@ void map_packet_source::add_packet(const uint8_t * packet, size_t packet_size, q
 }
 
 
-void map_packet_source::add_encapsulated_data(const uint8_t * data, size_t data_size, qos_t qos, epp::protocol_id_t proto_id)
+void map_packet_source::add_encapsulated_data(
+		const uint8_t * data, size_t data_size,
+		qos_t qos, epp::protocol_id_t proto_id
+)
 {
 	epp::header_t header;
 	header.protocol_id = static_cast<int>(proto_id);
@@ -126,10 +129,10 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 
 	// Отступаем место под заголовок
 	// У нас всегда полный размер заголовка
-	uint8_t * output_buffer = tfdf_buffer + detail::tfdf_header_t::full_size;
+	uint8_t * const tfdz_start = tfdf_buffer + detail::tfdf_header_t::full_size;
+
+	uint8_t * output_buffer = tfdz_start;
 	uint16_t output_buffer_size = _tfdz_size();
-	// Это тоже запомним, пригодится
-	const uint8_t * const tfdz_start = output_buffer;
 
 	// Идем по пакетам и копируем их
 	uint16_t first_valid_header_offset = 0xFFFF; // Специальное значение, показывающее NULL
@@ -153,9 +156,9 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 		const auto to_copy_begin = std::cbegin(data_unit.packet);
 		const auto to_copy_end = std::next(to_copy_begin, to_copy_size);
 		std::copy(to_copy_begin, to_copy_end, output_buffer);
-
-		// Дропаем из деки скопированное и пересчитываем параметры выходного буфера
 		data_unit.packet.erase(to_copy_begin, to_copy_end);
+
+		// пересчитываем параметры выходного буфера
 		output_buffer += to_copy_size;
 		output_buffer_size -= to_copy_size;
 

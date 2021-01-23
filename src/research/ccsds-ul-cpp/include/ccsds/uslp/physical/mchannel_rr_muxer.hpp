@@ -21,19 +21,19 @@ protected:
 
 	virtual void finalize_impl() override;
 
-	virtual bool peek_frame_impl() override;
-	virtual bool peek_frame_impl(pchannel_frame_params_t & frame_params) override;
-	virtual void pop_frame_impl(uint8_t * frame_buffer) override;
+	virtual bool peek_impl() override;
+	virtual bool peek_impl(pchannel_frame_params_t & frame_params) override;
+	virtual void pop_impl(uint8_t * frame_buffer) override;
 
 private:
 	struct mchannel_status_checker_t
 	{
-		const bool operator()(mchannel_source * source) const { return source->peek_frame(); }
+		const bool operator()(mchannel_source * source) const { return source->peek_frame_du(); }
 	};
 
 	typedef rr_muxer<mchannel_source*, mchannel_status_checker_t> muxer_t;
 
-	uint16_t _frame_size_l1();
+	uint16_t _frame_du_size() const;
 
 	muxer_t _muxer;
 	mchannel_source * _selected_mchannel = nullptr;

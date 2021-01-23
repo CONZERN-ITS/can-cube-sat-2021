@@ -31,7 +31,7 @@ void pchannel_source::frame_version_no(uint8_t value)
 }
 
 
-void pchannel_source::frame_size(int32_t value)
+void pchannel_source::frame_size(size_t value)
 {
 	if (_finalized)
 	{
@@ -82,7 +82,7 @@ void pchannel_source::finalize()
 }
 
 
-bool pchannel_source::peek_frame()
+bool pchannel_source::peek()
 {
 	if (!_finalized)
 	{
@@ -91,11 +91,11 @@ bool pchannel_source::peek_frame()
 		throw object_is_finalized(error.str());
 	}
 
-	return peek_frame_impl();
+	return peek_impl();
 }
 
 
-bool pchannel_source::peek_frame(pchannel_frame_params_t & frame_params)
+bool pchannel_source::peek(pchannel_frame_params_t & frame_params)
 {
 	if (!_finalized)
 	{
@@ -104,11 +104,11 @@ bool pchannel_source::peek_frame(pchannel_frame_params_t & frame_params)
 		throw object_is_finalized(error.str());
 	}
 
-	return peek_frame_impl(frame_params);
+	return peek_impl(frame_params);
 }
 
 
-void pchannel_source::pop_frame(uint8_t * frame_buffer)
+void pchannel_source::pop(uint8_t * frame_buffer, size_t frame_buffer_size)
 {
 	if (!_finalized)
 	{
@@ -117,7 +117,8 @@ void pchannel_source::pop_frame(uint8_t * frame_buffer)
 		throw object_is_finalized(error.str());
 	}
 
-	pop_frame_impl(frame_buffer);
+	assert(frame_size() <= frame_buffer_size);
+	pop_impl(frame_buffer);
 }
 
 
@@ -143,6 +144,8 @@ uint16_t pchannel_source::frame_size_overhead() const
 		assert(false);
 	};
 
+	// TODO: Еще что-нибудь про инсерт зону
+
 	return retval;
 }
 
@@ -154,9 +157,9 @@ void pchannel_source::finalize_impl()
 	// Смотрим сколько нам нужно минимально места на кадр
 	// Прям совсем минимально.
 	// Только чтобы влез заголовок и только
-	const int32_t minimum_frame_size = frame_size_overhead();
+	const size_t minimum_frame_size = frame_size_overhead();
 	// Максимально влезает только так - больше в заголовок не поместится
-	const int32_t maximum_frame_size = 0x10000;
+	const size_t maximum_frame_size = 0x10000;
 
 	if (_frame_size < minimum_frame_size || _frame_size > maximum_frame_size)
 	{

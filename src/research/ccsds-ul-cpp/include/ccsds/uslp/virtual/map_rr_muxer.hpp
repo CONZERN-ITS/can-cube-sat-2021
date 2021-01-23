@@ -19,9 +19,9 @@ protected:
 
 	virtual void finalize_impl() override;
 
-	virtual bool peek_frame_impl() override;
-	virtual bool peek_frame_impl(vchannel_frame_params & params) override;
-	virtual void pop_frame_impl(uint8_t * tfdf_buffer) override;
+	virtual bool peek_impl() override;
+	virtual bool peek_impl(vchannel_frame_params & params) override;
+	virtual void pop_impl(uint8_t * tfdf_buffer) override;
 
 private:
 	struct map_status_checker_t

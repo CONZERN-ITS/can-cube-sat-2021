@@ -1,6 +1,7 @@
 #include <ccsds/uslp/virtual/abstract_vchannel.hpp>
 
 #include <sstream>
+#include <cassert>
 
 #include <ccsds/uslp/exceptions.hpp>
 #include <ccsds/uslp/_detail/tf_header.hpp>
@@ -17,7 +18,7 @@ vchannel_source::vchannel_source(gvcid_t gvcid_)
 }
 
 
-void vchannel_source::frame_size_l2(uint16_t value)
+void vchannel_source::tfdf_size(uint16_t value)
 {
 	if (_finalized)
 	{
@@ -66,7 +67,7 @@ void vchannel_source::finalize()
 }
 
 
-bool vchannel_source::peek_frame()
+bool vchannel_source::peek()
 {
 	if (!_finalized)
 	{
@@ -75,11 +76,11 @@ bool vchannel_source::peek_frame()
 		throw object_is_finalized(error.str());
 	}
 
-	return peek_frame_impl();
+	return peek_impl();
 }
 
 
-bool vchannel_source::peek_frame(vchannel_frame_params & params)
+bool vchannel_source::peek(vchannel_frame_params & params)
 {
 	if (!_finalized)
 	{
@@ -88,11 +89,11 @@ bool vchannel_source::peek_frame(vchannel_frame_params & params)
 		throw object_is_finalized(error.str());
 	}
 
-	return peek_frame_impl(params);
+	return peek_impl(params);
 }
 
 
-void vchannel_source::pop_frame(uint8_t * tfdf_buffer)
+void vchannel_source::pop(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
 {
 	if (!_finalized)
 	{
@@ -101,7 +102,8 @@ void vchannel_source::pop_frame(uint8_t * tfdf_buffer)
 		throw object_is_finalized(error.str());
 	}
 
-	pop_frame_impl(tfdf_buffer);
+	assert(tfdf_size() >= tfdf_buffer_size);
+	pop_impl(tfdf_buffer);
 }
 
 
@@ -135,10 +137,10 @@ uint16_t vchannel_source::frame_size_overhead() const
 void vchannel_source::finalize_impl()
 {
 	const auto min_frame_size = frame_size_overhead();
-	if (frame_size_l2() < min_frame_size)
+	if (tfdf_size() < min_frame_size)
 	{
 		std::stringstream error;
-		error << "invalid frame size l2 on vchannel: " << frame_size_l2() << ". "
+		error << "invalid frame size l2 on vchannel: " << tfdf_size() << ". "
 				<< "It should be no less than " << min_frame_size;
 		throw einval_exception(error.str());
 	}

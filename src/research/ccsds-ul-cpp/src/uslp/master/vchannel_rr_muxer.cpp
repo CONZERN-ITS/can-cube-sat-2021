@@ -22,19 +22,18 @@ void vchannel_rr_muxer::finalize_impl()
 {
 	mchannel_source::finalize_impl();
 
-	// Выставляем размер уровнем выше как все что есть у нас без нашего оверхеда
-	const auto upper_size = frame_size_l1() - frame_size_overhead();
+	const auto upper_size = this->tfdf_size();
 
 	// Идем в двах прохода, чтобы в случае ошибки объекты были в более менее понятном состоянии
 	for (auto * vchannel: _muxer)
-		vchannel->frame_size_l2(upper_size);
+		vchannel->tfdf_size(upper_size);
 
 	for (auto * vchannel: _muxer)
 		vchannel->finalize();
 }
 
 
-bool vchannel_rr_muxer::peek_frame_impl()
+bool vchannel_rr_muxer::peek_frame_du_impl()
 {
 	if (!_selected_vchannel)
 		_selected_vchannel = _muxer.select_next();
@@ -42,11 +41,11 @@ bool vchannel_rr_muxer::peek_frame_impl()
 	if (!_selected_vchannel)
 		return false;
 
-	return _selected_vchannel->peek_frame();
+	return _selected_vchannel->peek();
 }
 
 
-bool vchannel_rr_muxer::peek_frame_impl(mchannel_frame_params_t & frame_params)
+bool vchannel_rr_muxer::peek_frame_du_impl(mchannel_frame_params_t & frame_params)
 {
 	if (!_selected_vchannel)
 		_selected_vchannel = _muxer.select_next();
@@ -55,7 +54,7 @@ bool vchannel_rr_muxer::peek_frame_impl(mchannel_frame_params_t & frame_params)
 		return false;
 
 	vchannel_frame_params vparams;
-	bool retval = _selected_vchannel->peek_frame(vparams);
+	bool retval = _selected_vchannel->peek(vparams);
 	if (!retval)
 		return false;
 
@@ -69,13 +68,19 @@ bool vchannel_rr_muxer::peek_frame_impl(mchannel_frame_params_t & frame_params)
 }
 
 
-void vchannel_rr_muxer::pop_frame_impl(uint8_t * frame_data_field)
+void vchannel_rr_muxer::pop_frame_du_impl(uint8_t * frame_data_field)
 {
 	assert(_selected_vchannel);
 
 	auto * selected_vchannel_copy = _selected_vchannel;
 	_selected_vchannel = nullptr;
-	selected_vchannel_copy->pop_frame(frame_data_field);
+	selected_vchannel_copy->pop(frame_data_field, tfdf_size());
+}
+
+
+uint16_t vchannel_rr_muxer::tfdf_size() const
+{
+	return frame_du_size_l1() - frame_size_overhead();
 }
 
 

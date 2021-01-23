@@ -19,7 +19,7 @@ mchannel_source::mchannel_source(mcid_t mcid_)
 }
 
 
-void mchannel_source::frame_size_l1(uint16_t value)
+void mchannel_source::frame_du_size_l1(uint16_t value)
 {
 	if (_finalized)
 	{
@@ -81,7 +81,7 @@ void mchannel_source::finalize()
 }
 
 
-bool mchannel_source::peek_frame()
+bool mchannel_source::peek_frame_du()
 {
 	if (!_finalized)
 	{
@@ -90,11 +90,11 @@ bool mchannel_source::peek_frame()
 		throw object_is_finalized(error.str());
 	}
 
-	return peek_frame_impl();
+	return peek_frame_du_impl();
 }
 
 
-bool mchannel_source::peek_frame(mchannel_frame_params_t & frame_params)
+bool mchannel_source::peek_frame_du(mchannel_frame_params_t & frame_params)
 {
 	if (!_finalized)
 	{
@@ -103,11 +103,11 @@ bool mchannel_source::peek_frame(mchannel_frame_params_t & frame_params)
 		throw object_is_finalized(error.str());
 	}
 
-	return peek_frame_impl(frame_params);
+	return peek_frame_du_impl(frame_params);
 }
 
 
-void mchannel_source::pop_frame(uint8_t * frame_data_unit_buffer)
+void mchannel_source::pop_frame_du(uint8_t * frame_data_unit_buffer, uint16_t frame_data_unit_size)
 {
 	if (!_finalized)
 	{
@@ -118,10 +118,10 @@ void mchannel_source::pop_frame(uint8_t * frame_data_unit_buffer)
 
 	// Нам нужны параметры фрейма, чтобы прикинуть где будет OCF поле
 	mchannel_frame_params_t params;
-	peek_frame(params);
+	peek_frame_du(params);
 
 	// Выгружаем данные фрейма
-	pop_frame_impl(frame_data_unit_buffer);
+	pop_frame_du_impl(frame_data_unit_buffer);
 
 	// Теперь OCF поле
 	if (_ocf_source != nullptr)
@@ -130,7 +130,7 @@ void mchannel_source::pop_frame(uint8_t * frame_data_unit_buffer)
 		// У нас есть размер фрейма с заголовками и OCF
 		// Значит нужно из этого размера вычесть размер заголовков и OCF
 		// и мы получим размер TFDF. Сразу после него и лежит OCF
-		const uint16_t ocf_tfdf_offset = frame_size_l1()
+		const uint16_t ocf_tfdf_offset = frame_du_size_l1()
 				- detail::tf_header_t::extended_size_forecast(params.frame_seq_no)
 				- sizeof(uint32_t)
 		;
@@ -162,10 +162,10 @@ void mchannel_source::finalize_impl()
 	// Минимальный размер - чтобы влезал заголовок
 
 	auto min_frame_size = frame_size_overhead();
-	if (frame_size_l1() < min_frame_size)
+	if (frame_du_size_l1() < min_frame_size)
 	{
 		std::stringstream error;
-		error << "invalid frame size l1 on mchannel: " << frame_size_l1() << ". "
+		error << "invalid frame size l1 on mchannel: " << frame_du_size_l1() << ". "
 				<< "It should be no less than " << min_frame_size;
 		throw einval_exception(error.str());
 	}

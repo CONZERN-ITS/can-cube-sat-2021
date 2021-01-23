@@ -24,9 +24,9 @@ void map_rr_muxer::finalize_impl()
 	vchannel_source::finalize_impl();
 
 	// Проходим по мап каналам и ставим им размер tfdf
-	const auto tfdf_size = frame_size_l2() - frame_size_overhead();
+	const auto the_tfdf_size = tfdf_size() - frame_size_overhead();
 	for (auto * map_source: _muxer)
-		map_source->tfdf_size(tfdf_size);
+		map_source->tfdf_size(the_tfdf_size);
 
 	// Второй круг - вызываем финализацию
 	for (auto * map_source: _muxer)
@@ -34,7 +34,7 @@ void map_rr_muxer::finalize_impl()
 }
 
 
-bool map_rr_muxer::peek_frame_impl()
+bool map_rr_muxer::peek_impl()
 {
 	if (!_selected_channel)
 		_selected_channel = _muxer.select_next();
@@ -46,7 +46,7 @@ bool map_rr_muxer::peek_frame_impl()
 }
 
 
-bool map_rr_muxer::peek_frame_impl(vchannel_frame_params & params)
+bool map_rr_muxer::peek_impl(vchannel_frame_params & params)
 {
 	if (!_selected_channel)
 		_selected_channel = _muxer.select_next();
@@ -81,7 +81,7 @@ bool map_rr_muxer::peek_frame_impl(vchannel_frame_params & params)
 }
 
 
-void map_rr_muxer::pop_frame_impl(uint8_t * tfdf_buffer)
+void map_rr_muxer::pop_impl(uint8_t * tfdf_buffer)
 {
 	assert(_selected_channel);
 
@@ -93,7 +93,7 @@ void map_rr_muxer::pop_frame_impl(uint8_t * tfdf_buffer)
 	if (!map_params.channel_lock)
 		_selected_channel = nullptr; // Если блокировки нет - снимаем этот канал с выбранного
 
-	selected_channel_copy->pop_tfdf(tfdf_buffer);
+	selected_channel_copy->pop_tfdf(tfdf_buffer, tfdf_size());
 	vchannel_source::increase_frame_seq_no();
 }
 

@@ -99,7 +99,7 @@ void frame_seq_no_t::value(uint64_t value_, uint8_t value_size_)
 	}
 
 	// Теперь проверяем что value_ в него влезает
-	if (value_ >> value_size_)
+	if (value_ >> 8*value_size_)
 	{
 		std::stringstream error;
 		error << "Invalid frame_seq_no value: " << value_ << ". "

@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <cstring>
 #include <cassert>
+#include <fstream>
 
 #include <ccsds/uslp/ids.hpp>
 #include <ccsds/uslp/physical/mchannel_rr_muxer.hpp>
@@ -20,6 +21,7 @@
 
 
 #include <bytes_printer.hpp>
+#include <lorem_ipsum.hpp>
 
 
 struct downlink_stack_t
@@ -111,19 +113,19 @@ struct uplink_stack_t
 
 	bool peek_frame()
 	{
-		return phys.peek_frame();
+		return phys.peek();
 	}
 
 
 	bool peek_frame(ccsds::uslp::pchannel_frame_params_t & frame_params)
 	{
-		return phys.peek_frame(frame_params);
+		return phys.peek(frame_params);
 	}
 
 
-	void pop_frame(uint8_t * frame_buffer)
+	void pop_frame(uint8_t * frame_buffer, size_t frame_buffer_size)
 	{
-		return phys.pop_frame(frame_buffer);
+		return phys.pop(frame_buffer, frame_buffer_size);
 	}
 
 
@@ -163,16 +165,21 @@ int main()
 	downlink_stack.set_event_handler(event_handler);
 
 
-	const char data_sample[] = { '\xDE', '\xAD', '\xBE', '\xAF' };
-	uint8_t data[200];
-	for (size_t i = 0; i < sizeof(data); i++)
-		data[i] = data_sample[i % sizeof(data_sample)];
+	auto * data = reinterpret_cast<const uint8_t*>(lorem_impsum_1k);
+	const size_t data_size = sizeof(lorem_impsum_1k) - 1; // Без терминирующего ноля плез
 
-	//uplink_stack.map_s1.add_sdu(data, sizeof(data), ccsds::uslp::qos_t::SEQUENCE_CONTROLLED);
+
 	uplink_stack.map_p3.add_encapsulated_data(
-			data, sizeof(data),
+			data, data_size,
 			ccsds::uslp::qos_t::SEQUENCE_CONTROLLED,
 			ccsds::epp::protocol_id_t::PRIVATE
+	);
+
+	//uplink_stack.map_s1.add_sdu(data, data_size, ccsds::uslp::qos_t::SEQUENCE_CONTROLLED);
+
+	std::ofstream file(
+			"/tmp/ccsds_lorem_impsum.mapp_142",
+			std::ios::trunc | std::ios::out | std::ios::binary
 	);
 
 	int i = 0;
@@ -187,13 +194,15 @@ int main()
 				<< frame_params.frame_seq_no->value() << "@"
 					<< static_cast<int>(frame_params.frame_seq_no->value_size()) << "; "
 				<< frame_params.id_is_destination << "; "
-				<< frame_params.ocf_present << "; ";
+				<< frame_params.ocf_present << "; "
+				<< std::endl;
 
-		std::memset(frame_buffer, 0, sizeof(frame_buffer));
-		uplink_stack.pop_frame(frame_buffer);
-		std::cout << print_bytes(frame_buffer) << std::endl;
+		//std::memset(frame_buffer, 0x00, sizeof(frame_buffer));
+		uplink_stack.pop_frame(frame_buffer, sizeof(frame_buffer));
+		// std::cout << print_bytes(frame_buffer) << std::endl;
 		i++;
 
+		file.write(reinterpret_cast<const char*>(frame_buffer), sizeof(frame_buffer));
 		downlink_stack.push_frame(frame_buffer, sizeof(frame_buffer));
 	}
 

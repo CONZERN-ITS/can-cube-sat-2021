@@ -30,8 +30,8 @@ public:
 	vchannel_source(gvcid_t gvcid_);
 	virtual ~vchannel_source() = default;
 
-	void frame_size_l2(uint16_t value);
-	uint16_t frame_size_l2() const noexcept { return _frame_size_l2; }
+	void tfdf_size(uint16_t value);
+	uint16_t tfdf_size() const noexcept { return _frame_size_l2; }
 
 	void frame_seq_no_len(uint8_t value);
 	uint8_t frame_seq_no_len() const noexcept { return _frame_seq_no.value_size(); }
@@ -40,9 +40,9 @@ public:
 
 	void finalize();
 
-	bool peek_frame();
-	bool peek_frame(vchannel_frame_params & params);
-	void pop_frame(uint8_t * tfdf_buffer);
+	bool peek();
+	bool peek(vchannel_frame_params & params);
+	void pop(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size);
 
 	const gvcid_t gvcid;
 
@@ -56,9 +56,9 @@ protected:
 
 	virtual void finalize_impl();
 
-	virtual bool peek_frame_impl() = 0;
-	virtual bool peek_frame_impl(vchannel_frame_params & params) = 0;
-	virtual void pop_frame_impl(uint8_t * tfdf_buffer) = 0;
+	virtual bool peek_impl() = 0;
+	virtual bool peek_impl(vchannel_frame_params & params) = 0;
+	virtual void pop_impl(uint8_t * tfdf_buffer) = 0;
 
 private:
 	bool _finalized = false;

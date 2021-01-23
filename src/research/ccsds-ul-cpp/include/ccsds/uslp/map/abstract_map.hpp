@@ -38,7 +38,7 @@ public:
 
 	bool peek_tfdf();
 	bool peek_tfdf(output_map_frame_params & params);
-	void pop_tfdf(uint8_t * tfdf_buffer);
+	void pop_tfdf(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size);
 
 	const gmap_id_t map_id;
 
@@ -48,7 +48,7 @@ protected:
 
 	virtual bool peek_tfdf_impl() = 0;
 	virtual bool peek_tfdf_impl(output_map_frame_params & params) = 0;
-	virtual void pop_tfdf_impl(uint8_t * tfdfd_buffer) = 0;
+	virtual void pop_tfdf_impl(uint8_t * tfdf_buffer) = 0;
 
 private:
 	bool _finalized = false;

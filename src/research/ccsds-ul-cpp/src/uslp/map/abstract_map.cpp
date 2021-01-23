@@ -1,8 +1,10 @@
 #include <ccsds/uslp/map/abstract_map.hpp>
 
 #include <sstream>
+#include <cassert>
 
 #include <ccsds/uslp/exceptions.hpp>
+
 
 namespace ccsds { namespace uslp {
 
@@ -32,7 +34,6 @@ void map_source::tfdf_size(uint16_t value)
 
 	_tfdf_size = value;
 }
-
 
 
 void map_source::finalize()
@@ -71,7 +72,7 @@ bool map_source::peek_tfdf(output_map_frame_params & params)
 }
 
 
-void map_source::pop_tfdf(uint8_t * tfdf_buffer)
+void map_source::pop_tfdf(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
 {
 	if (!_finalized)
 	{
@@ -79,6 +80,8 @@ void map_source::pop_tfdf(uint8_t * tfdf_buffer)
 		error << "unable to use peek_tfdf() on map_channel, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
+
+	assert(tfdf_buffer_size >= tfdf_size());
 
 	pop_tfdf_impl(tfdf_buffer);
 }
