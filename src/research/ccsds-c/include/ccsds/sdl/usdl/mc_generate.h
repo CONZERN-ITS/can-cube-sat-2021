@@ -20,6 +20,9 @@ int mc_generate(mc_t *mc, uint8_t *data, size_t size,
 
 int mc_request_from_down(mc_t *mc);
 
+void mc_parse(mc_t *mc, uint8_t *data, size_t size,
+		map_params_t *map_params, vc_params_t *vc_params, mc_params_t *mc_params, uint8_t *ocf);
+
 uint32_t _mc_request_size(mc_t *mc);
 
 #endif /* SDL_USDL_MC_GENERATE_H_ */

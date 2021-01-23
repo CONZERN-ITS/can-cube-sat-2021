@@ -15,6 +15,12 @@
 #include "usdl_defines.h"
 #include "usdl_basic_types.h"
 
+typedef struct {
+	map_id_t map_id;
+	vc_id_t vc_id;
+	mc_id_t mc_id;
+	sc_id_t sc_id;
+} gvcid_t;
 
 
 
@@ -26,8 +32,21 @@ typedef struct mc_t mc_t;
 typedef struct mc_mx_t mc_mx_t;
 typedef struct pc_t pc_t;
 
+typedef enum {
+	MAPR_STATE_BEGIN,
+	MAPR_STATE_SIZE_UNKNOWN,
+	MAPR_STATE_SIZE_KNOWN,
+	MAPR_STATE_FINISH
+} mapr_state_t;
+
+typedef struct mapr_t {
+	map_buffer_t packet;
+	map_buffer_t tfdz;
+	mapr_state_t state;
+} mapr_t;
 
 typedef struct map_t {
+	mapr_t mapr;
 	map_id_t map_id;
 	map_mx_t *map_mx;
 	bool size_fixed;
@@ -39,15 +58,6 @@ typedef struct map_t {
 	map_buffer_t buf_sc;
 	map_buffer_t buf_packet;
 	quality_of_service_t packet_qos;
-#if MAP_BUFFER_SIZE > 0 && defined(MAP_BUFFER_STATIC)
-	//uint8_t buffer[MAP_BUFFER_SIZE];
-	//size_t payload_size;
-	//size_t buffer_index;
-#elif !defined(MAP_BUFFER_STATIC)
-	uint8_t *buffer;
-	size_t buffer_index;
-	size_t payload_size;
-#endif
 } map_t;
 
 
@@ -112,7 +122,6 @@ typedef struct {
 	cop_in_effect_t cop_in_effect;
 	clcw_version_t clcw_version;
 	clcw_report_rate_t clcw_report_rate;
-	map_t *map_set[16];
 	uint32_t truncated_frame_length;
 	union {
 		bool ocf_allowed;
@@ -129,7 +138,6 @@ typedef struct vc_t {
 	vc_id_t vc_id;
 	vcf_count_t frame_count_expedited;
 	vcf_count_t frame_count_seq_control;
-	sod_flag_t src_or_dest_id;
 	vc_parameters_t vc_parameters;
 	fop_t fop;
 	vc_mx_t *vc_mx;
@@ -155,7 +163,7 @@ typedef enum {
 typedef struct {
 	uint16_t scid;
 	transfer_frame_t tft;
-
+	sod_flag_t sod_flag;
 	mc_ocf_t ocf_flag;
 } mc_paramaters_t;
 
@@ -177,7 +185,6 @@ typedef struct mc_mx_t {
 } mc_mx_t;
 
 typedef struct {
-	uint16_t scid;
 	transfer_frame_t tft;
 	int tf_length;
 	tfvn_t tfvn;

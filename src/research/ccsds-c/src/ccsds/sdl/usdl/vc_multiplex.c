@@ -2,6 +2,7 @@
 #include <ccsds/sdl/usdl/vc_generate.h>
 #include <ccsds/sdl/usdl/mc_generate.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
+#include <ccsds/sdl/usdl/usdl_debug.h>
 
 int vc_mx_init(vc_mx_t *vc_mx, mc_t *mc) {
 	vc_mx->mc = mc;
@@ -41,4 +42,12 @@ int vc_mx_request_from_down(vc_mx_t *vc_mx) {
 	} while (vc_mx->vc_active != old);
 
 	return 0;
+}
+
+void vc_demultiplex(vc_mx_t *vc_mx, uint8_t *data, size_t size,
+		map_params_t *map_params, vc_params_t *vc_params) {
+	usdl_print_debug();
+	if (vc_mx->vc_arr[map_params->map_id]) {
+		vc_parse(vc_mx->vc_arr[map_params->map_id], data, size, map_params, vc_params);
+	}
 }

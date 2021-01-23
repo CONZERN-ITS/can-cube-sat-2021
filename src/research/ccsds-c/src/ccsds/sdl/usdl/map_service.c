@@ -1,6 +1,7 @@
 #include <ccsds/sdl/usdl/map_service.h>
 #include <ccsds/sdl/usdl/map_multiplexer.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
+#include <ccsds/sdl/usdl/usdl_debug.h>
 #include <string.h>
 #include <assert.h>
 #include <ccsds/nl/epp/epp.h>
@@ -8,6 +9,7 @@
 uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos);
 
 int mapp_init(map_t *map, map_mx_t *mx, map_id_t map_id) {
+	usdl_print_debug();
 	map->map_mx = mx;
 	map->map_id = map_id;
 	map->map_mx->map_arr[map->map_id] = map;
@@ -23,6 +25,7 @@ int mapp_init(map_t *map, map_mx_t *mx, map_id_t map_id) {
 
 
 int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos) {
+	usdl_print_debug();
 #if MAP_BUFFER_SIZE == 0
 	return 0;
 #else
@@ -71,6 +74,7 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 			break;
 		}
 	}
+
 	return data_index;
 #endif
 }
@@ -80,6 +84,7 @@ int mapa_send();
 int map_stream_send();
 
 int map_request_from_down(map_t *map) {
+	usdl_print_debug();
 	map_buffer_t *buf = 0;
 
 	map_params_t params = {0};
@@ -197,7 +202,7 @@ int _map_push_from_down(mapr_t *map) {
 	return 0;
 }
 
-int _map_save_from_down(mapr_t *map, const uint8_t *data, size_t size, const map_params_t *params) {
+int _map_save_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params) {
 
 	if (map->tfdz.size != 0 || map->tfdz.max_size < size) {
 		return 0;
@@ -212,7 +217,7 @@ int _map_save_from_down(mapr_t *map, const uint8_t *data, size_t size, const map
 
 
 
-int map_recieve_from_down(mapr_t *map, const uint8_t *data, size_t size, const map_params_t *params)  {
+int map_recieve_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params)  {
 	_map_push_from_down(map);
 	int ret = _map_save_from_down(map, data, size, params);
 	_map_push_from_down(map);
@@ -220,6 +225,7 @@ int map_recieve_from_down(mapr_t *map, const uint8_t *data, size_t size, const m
 }
 
 int map_recieve(mapr_t *map, uint8_t *data, size_t size, quality_of_service_t *qos) {
+	usdl_print_debug();
 	if (map->state != MAPR_STATE_FINISH || size < map->packet.size) {
 		return 0;
 	}
@@ -239,6 +245,12 @@ uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos) {
 		size = map->map_mx->vc->mapcf_length_sc;
 	}
 	return size - 3;
+}
+
+void map_parse(map_t *map, uint8_t *data, size_t size,
+		map_params_t *map_params) {
+	usdl_print_debug();
+	map_recieve_from_down(&map->mapr, data, size, map_params);
 }
 
 

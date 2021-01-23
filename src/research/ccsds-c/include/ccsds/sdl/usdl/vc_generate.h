@@ -26,4 +26,7 @@ int vc_request_from_down(vc_t *vc);
 
 uint32_t _vc_request_size(vc_t *vc, quality_of_service_t qos);
 
+void vc_parse(vc_t *vc, uint8_t *data, size_t size,
+		map_params_t *map_params, vc_params_t *vc_params);
+
 #endif /* SDL_USDL_VC_GENERATE_H_ */

@@ -18,4 +18,7 @@ int vc_multiplex(vc_mx_t *vc_mx, uint8_t *data, size_t size,
 
 int vc_mx_request_from_down(vc_mx_t *vc_mx);
 
+void vc_demultiplex(vc_mx_t *vc_mx, uint8_t *data, size_t size,
+		map_params_t *map_params, vc_params_t *vc_params);
+
 #endif /* SDL_USDL_VC_MULTIPLEX_H_ */

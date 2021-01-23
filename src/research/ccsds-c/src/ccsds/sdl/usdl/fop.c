@@ -2,7 +2,7 @@
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <string.h>
 #include <assert.h>
-
+#include <ccsds/sdl/usdl/usdl_debug.h>
 
 
 int queue_push(queue_t *queue, uint8_t *data, size_t size,

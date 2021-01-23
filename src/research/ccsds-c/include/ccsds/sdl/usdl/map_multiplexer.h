@@ -19,4 +19,7 @@ int map_mx_multiplex(map_mx_t *map_mx, map_params_t *map_params, uint8_t *data, 
 
 int map_mx_request_from_down(map_mx_t *map_mx);
 
+void map_demultiplex(map_mx_t *map_mx, uint8_t *data, size_t size,
+		map_params_t *map_params);
+
 #endif /* SDL_USDL_MAP_MULTIPLEXER_H_ */

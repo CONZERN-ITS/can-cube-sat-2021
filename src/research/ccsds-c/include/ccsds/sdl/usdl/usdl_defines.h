@@ -17,5 +17,6 @@
 #define MAP_COUNT 16
 #define VC_COUNT 64
 #define MC_COUNT 1
+#define USDL_DEBUG
 
 #endif /* SDL_USDL_USDL_DEFINES_H_ */

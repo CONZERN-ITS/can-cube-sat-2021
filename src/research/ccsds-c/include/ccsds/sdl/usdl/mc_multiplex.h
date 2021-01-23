@@ -18,4 +18,7 @@ int mc_multiplex(mc_mx_t *mc_mx, uint8_t *data, size_t size,
 
 int mc_mx_request_from_down(mc_mx_t *mc_mx);
 
+void mc_mx_demultiplex(mc_mx_t *mc_mx, uint8_t *data, size_t size,
+		map_params_t *map_params, vc_params_t *vc_params, mc_params_t *mc_params, uint8_t *ocf);
+
 #endif /* SDL_USDL_MC_MULTIPLEX_H_ */

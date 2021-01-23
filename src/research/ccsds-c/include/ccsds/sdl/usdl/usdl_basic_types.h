@@ -135,9 +135,9 @@ enum map_mx_state_t {
 };
 
 
+typedef uint16_t sc_id_t;
 
 typedef struct vc_params_t {
-	sod_flag_t sod_flag;
 	vc_id_t vc_id;
 	bsc_flag_t bsc_flag;
 	pcc_flag_t pcc_flag;
@@ -149,11 +149,14 @@ typedef struct vc_params_t {
 typedef uint8_t mc_id_t;
 
 typedef struct mc_params_t {
+	sod_flag_t sod_flag;
 	ocfp_flag_t ocfp_flag;
 	uint8_t ocf[4];
 	mc_id_t mc_id;
-	uint16_t scid;
+	uint16_t scid; //Переместить в pc_params
 } mc_params_t;
+
+
 
 
 #endif /* SDL_USDL_USDL_BASIC_TYPES_H_ */

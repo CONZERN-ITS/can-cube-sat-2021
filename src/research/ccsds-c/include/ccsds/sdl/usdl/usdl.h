@@ -8,9 +8,13 @@
 #ifndef SDL_USDL_USDL_H_
 #define SDL_USDL_USDL_H_
 
-#include "map_service.h"
-#include "map_multiplexer.h"
-#include "vc_generate.h"
+#include <ccsds/sdl/usdl/map_service.h>
+#include <ccsds/sdl/usdl/map_multiplexer.h>
+#include <ccsds/sdl/usdl/vc_generate.h>
+#include <ccsds/sdl/usdl/vc_multiplex.h>
+#include <ccsds/sdl/usdl/mc_generate.h>
+#include <ccsds/sdl/usdl/mc_multiplex.h>
+#include <ccsds/sdl/usdl/pc_generate.h>
 
 
 
