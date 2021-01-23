@@ -29,16 +29,18 @@ struct downlink_stack_t
 	downlink_stack_t()
 		: phys("downlink"),
 		  master(ccsds::uslp::mcid_t(0x100)),
-		  virt(ccsds::uslp::gvcid_t(0x100, 0)),
+		  virt1(ccsds::uslp::gvcid_t(0x100, 0)),
+		  virt2(ccsds::uslp::gvcid_t(0x100, 1)),
 		  map_s1(ccsds::uslp::gmap_id_t(0x100, 0, 0)),
 		  map_s2(ccsds::uslp::gmap_id_t(0x100, 0, 1)),
-		  map_p3(ccsds::uslp::gmap_id_t(0x100, 0, 2))
+		  map_p3(ccsds::uslp::gmap_id_t(0x100, 1, 2))
 	{
 		phys.add_mchannel_sink(&master);
-		master.add_vchannel_sink(&virt);
-		virt.add_map_sink(&map_s1);
-		virt.add_map_sink(&map_s2);
-		virt.add_map_sink(&map_p3);
+		master.add_vchannel_sink(&virt1);
+		master.add_vchannel_sink(&virt2);
+		virt1.add_map_sink(&map_s1);
+		virt1.add_map_sink(&map_s2);
+		virt2.add_map_sink(&map_p3);
 
 		map_p3.emit_idle_packets(true);
 
@@ -76,7 +78,8 @@ struct downlink_stack_t
 
 	ccsds::uslp::mchannel_demuxer phys;
 	ccsds::uslp::vchannel_demuxer master;
-	ccsds::uslp::map_demuxer virt;
+	ccsds::uslp::map_demuxer virt1;
+	ccsds::uslp::map_demuxer virt2;
 	ccsds::uslp::map_access_sink map_s1;
 	ccsds::uslp::map_access_sink map_s2;
 	ccsds::uslp::map_packet_sink map_p3;
@@ -89,20 +92,22 @@ struct uplink_stack_t
 	uplink_stack_t(size_t frame_buffer_size)
 		: phys("loraloralora"),
 		  master(ccsds::uslp::mcid_t(0x100)),
-		  virt(ccsds::uslp::gvcid_t(0x100, 0)),
+		  virt1(ccsds::uslp::gvcid_t(0x100, 0)),
+		  virt2(ccsds::uslp::gvcid_t(0x100, 1)),
 		  map_s1(ccsds::uslp::gmap_id_t(0x100, 0, 0)),
 		  map_s2(ccsds::uslp::gmap_id_t(0x100, 0, 1)),
-		  map_p3(ccsds::uslp::gmap_id_t(0x100, 0, 2))
+		  map_p3(ccsds::uslp::gmap_id_t(0x100, 1, 2))
 	{
 		phys.frame_size(frame_buffer_size);
 		phys.add_mchannel_source(&master);
 
-		master.add_vchannel_source(&virt);
+		master.add_vchannel_source(&virt1);
+		master.add_vchannel_source(&virt2);
 
-		virt.frame_seq_no_len(2);
-		virt.add_map_source(&map_s1);
-		virt.add_map_source(&map_s2);
-		virt.add_map_source(&map_p3);
+		virt1.frame_seq_no_len(2);
+		virt1.add_map_source(&map_s1);
+		virt1.add_map_source(&map_s2);
+		virt2.add_map_source(&map_p3);
 
 		phys.error_control_len(ccsds::uslp::error_control_len_t::ZERO);
 		master.id_is_destination(true);
@@ -134,7 +139,8 @@ struct uplink_stack_t
 
 	ccsds::uslp::mchannel_rr_muxer phys;
 	ccsds::uslp::vchannel_rr_muxer master;
-	ccsds::uslp::map_rr_muxer virt;
+	ccsds::uslp::map_rr_muxer virt1;
+	ccsds::uslp::map_rr_muxer virt2;
 	ccsds::uslp::map_access_source map_s1;
 	ccsds::uslp::map_access_source map_s2;
 	ccsds::uslp::map_packet_source map_p3;
@@ -175,10 +181,10 @@ int main()
 			ccsds::epp::protocol_id_t::PRIVATE
 	);
 
-	//uplink_stack.map_s1.add_sdu(data, data_size, ccsds::uslp::qos_t::SEQUENCE_CONTROLLED);
+	uplink_stack.map_s1.add_sdu(data, data_size, ccsds::uslp::qos_t::SEQUENCE_CONTROLLED);
 
 	std::ofstream file(
-			"/tmp/ccsds_lorem_impsum.mapp_142",
+			"/tmp/ccsds_lorem_impsum.map_142_two_vc",
 			std::ios::trunc | std::ios::out | std::ios::binary
 	);
 

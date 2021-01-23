@@ -24,7 +24,6 @@ public:
 	rr_muxer(): _next_candidate(_sources.end()) {}
 	virtual ~rr_muxer() = default;
 
-
 	typedef typename container_t::iterator iterator;
 	typedef typename container_t::const_iterator const_iterator;
 
