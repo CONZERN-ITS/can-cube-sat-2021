@@ -27,5 +27,8 @@ void endian_set(uint8_t *to, int to_bit_size, int to_bit_pos, endian_t to_endian
  */
 endian_t endian_host();
 
+uint8_t _stream_get_bit(const uint8_t *from, int bit_size, int bit_pos, endian_t en) ;
 
+void endian_stream_set(uint8_t *to, int to_bit_size, int to_bit_pos, endian_t to_endian,
+		const uint8_t *from, int from_bit_size, int from_bit_pos, endian_t from_endian) ;
 #endif /* SDL_ENDIAN_H_ */

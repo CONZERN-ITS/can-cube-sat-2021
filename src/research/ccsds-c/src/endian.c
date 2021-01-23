@@ -145,7 +145,7 @@ void endian_set(uint8_t *to, int to_bit_size, int to_bit_pos, endian_t to_endian
 		}
 	} else {
 		for (int i = 0; i < (from_bit_size + 7) / 8; i++) {
-			uint8_t t = get_from_arr_en(from, from_endian, from_bit_size, from_bit_pos - 8 - 8 * i);
+			uint8_t t = get_from_arr_en(from, from_endian, from_bit_size, from_bit_size - 8 - 8 * i);
 			set_to_arr_en(to, to_endian, to_bit_size, to_bit_pos + 8 * i, t);
 		}
 	}
@@ -160,3 +160,53 @@ endian_t endian_host() {
 	return a[0] == t ? ENDIAN_LSBIT_LSBYTE : ENDIAN_LSBIT_MSBYTE;
 }
 
+uint8_t _stream_get_bit(const uint8_t *from, int bit_size, int bit_pos, endian_t en) {
+	if (bit_pos >= bit_size) {
+		return 0;
+	}
+	int shift = bit_pos % 8;
+	int index = bit_pos / 8;
+	int size = (bit_size + 7) / 8;
+	int bit_flag = en / 2;
+	int byte_flag = en % 2;
+
+	shift = (-2 * shift + 7) * bit_flag + shift;
+	index = (-2 * index + size - 1) * byte_flag + index;
+
+	return (from[index] >> shift) & 1;
+}
+
+void _stream_set_bit(uint8_t *to, int bit_size, int bit_pos, endian_t en, uint8_t bit) {
+	if (bit_pos >= bit_size) {
+		return;
+	}
+	int shift = bit_pos % 8;
+	int index = bit_pos / 8;
+	int size = (bit_size + 7) / 8;
+	int bit_flag = en / 2;
+	int byte_flag = en % 2;
+
+	shift = (-2 * shift + 7) * bit_flag + shift;
+	index = (-2 * index + size - 1) * byte_flag + index;
+
+	to[index] &= ~(1 << shift);
+	to[index] |= bit << shift;
+
+}
+
+void endian_stream_set(uint8_t *to, int to_bit_size, int to_bit_pos, endian_t to_endian,
+		const uint8_t *from, int from_bit_size, int from_bit_pos, endian_t from_endian) {
+	if (to_endian / 2 == from_endian / 2) {
+		for (int i = 0; i < from_bit_size - from_bit_pos
+					 && i < to_bit_size - to_bit_pos; i++) {
+			int t = _stream_get_bit(from, from_bit_size, from_bit_pos + i, from_endian);
+			_stream_set_bit(to, to_bit_size, to_bit_pos + i, to_endian, t);
+		}
+	} else {
+		for (int i = 0; i < from_bit_size - from_bit_pos
+					 && i < to_bit_size - to_bit_pos; i++) {
+			int t = _stream_get_bit(from, from_bit_size, from_bit_pos + i, from_endian);
+			_stream_set_bit(to, to_bit_size, to_bit_pos + (from_bit_size - from_bit_pos - 1 - i), to_endian, t);
+		}
+	}
+}
