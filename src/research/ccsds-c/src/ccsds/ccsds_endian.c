@@ -14,8 +14,8 @@ void ccsds_endian_insert(uint8_t *arr, int arr_bit_size, int arr_bit_pos,
 			field, field_bit_size, 0, endian_host());
 }
 
-void ccsds_endian_extract(const uint8_t *arr, int arr_bit_size, int arr_bit_pos,
+void ccsds_endian_extract(const uint8_t *arr, int arr_bit_pos,
 		void *field, int field_bit_size) {
 	endian_stream_set(field, field_bit_size, 0, endian_host(),
-			arr, arr_bit_size, arr_bit_pos, ENDIAN_MSBIT_LSBYTE);
+			arr, arr_bit_pos + field_bit_size, arr_bit_pos, ENDIAN_MSBIT_LSBYTE);
 }

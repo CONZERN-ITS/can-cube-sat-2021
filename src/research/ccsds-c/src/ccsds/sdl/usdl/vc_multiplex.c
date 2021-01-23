@@ -47,7 +47,7 @@ int vc_mx_request_from_down(vc_mx_t *vc_mx) {
 void vc_demultiplex(vc_mx_t *vc_mx, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params) {
 	usdl_print_debug();
-	if (vc_mx->vc_arr[map_params->map_id]) {
-		vc_parse(vc_mx->vc_arr[map_params->map_id], data, size, map_params, vc_params);
+	if (vc_mx->vc_arr[vc_params->vc_id]) {
+		vc_parse(vc_mx->vc_arr[vc_params->vc_id], data, size, map_params, vc_params);
 	}
 }

@@ -100,29 +100,29 @@ int pc_parse(pc_t *pc, uint8_t *data, size_t size) {
 	uint8_t *ocf_pointer = 0;
 	// Заголовок
 	uint8_t tfvn = 0;
-	ccsds_endian_extract(data, pc->size * 8, 0, &tfvn, 4);
+	ccsds_endian_extract(data, 0, &tfvn, 4);
 	if (pc->pc_parameters.tfvn != tfvn) {
 		return -1;
 	}
-	ccsds_endian_extract(data, pc->size * 8, 4, &mc_params.scid, 16);
-	ccsds_endian_extract(data, pc->size * 8, 20, &mc_params.sod_flag, 1);
-	ccsds_endian_extract(data, pc->size * 8, 21, &vc_params.vc_id, 6);
-	ccsds_endian_extract(data, pc->size * 8, 27, &map_params.map_id, 4);
-	ccsds_endian_extract(data, pc->size * 8, 31, &vc_params.eofph_flag, 1);
+	ccsds_endian_extract(data, 4, &mc_params.scid, 16);
+	ccsds_endian_extract(data, 20, &mc_params.sod_flag, 1);
+	ccsds_endian_extract(data, 21, &vc_params.vc_id, 6);
+	ccsds_endian_extract(data, 27, &map_params.map_id, 4);
+	ccsds_endian_extract(data, 31, &vc_params.eofph_flag, 1);
 
 	int k = 32;
 	if (!vc_params.eofph_flag) {
-		ccsds_endian_extract(data, pc->size * 8, k, &tf_length, 16);
-		if ((pc->pc_parameters.tft == TF_FIXED && tf_length != pc->pc_parameters.tf_length) ||
-				(pc->pc_parameters.tft == TF_VARIABLE && tf_length > pc->pc_parameters.tf_length)) {
+		ccsds_endian_extract(data, k, &tf_length, 16);
+		if ((pc->pc_parameters.tft == TF_FIXED && tf_length != pc->pc_parameters.tf_length - 1) ||
+				(pc->pc_parameters.tft == TF_VARIABLE && tf_length > pc->pc_parameters.tf_length - 1)) {
 			return -1;
 		}
-		ccsds_endian_extract(data, pc->size * 8, k + 16, &vc_params.bsc_flag, 1);
-		ccsds_endian_extract(data, pc->size * 8, k + 17, &vc_params.pcc_flag, 1);
+		ccsds_endian_extract(data, k + 16, &vc_params.bsc_flag, 1);
+		ccsds_endian_extract(data, k + 17, &vc_params.pcc_flag, 1);
 		// Да, здесь должно быть 20
-		ccsds_endian_extract(data, pc->size * 8, k + 20, &mc_params.ocfp_flag, 1);
-		ccsds_endian_extract(data, pc->size * 8, k + 21, &vc_params.vcf_count_length, 3);
-		ccsds_endian_extract(data, pc->size * 8, k + 24, &vcf_count, 8 * (vc_params.vcf_count_length));
+		ccsds_endian_extract(data, k + 20, &mc_params.ocfp_flag, 1);
+		ccsds_endian_extract(data, k + 21, &vc_params.vcf_count_length, 3);
+		ccsds_endian_extract(data, k + 24, &vcf_count, 8 * (vc_params.vcf_count_length));
 		k += 8 * (vc_params.vcf_count_length) + 24;
 	}
 
@@ -131,11 +131,11 @@ int pc_parse(pc_t *pc, uint8_t *data, size_t size) {
 	k += pc->insert_size * 8;
 
 	//TFDF
-	ccsds_endian_extract(data, pc->size * 8, k, &map_params.rules, 3);
-	ccsds_endian_extract(data, pc->size * 8, k + 3, &map_params.upid, 5);
+	ccsds_endian_extract(data, k, &map_params.rules, 3);
+	ccsds_endian_extract(data, k + 3, &map_params.upid, 5);
 	k += 8;
 	if (map_params.rules <= 2) {
-		ccsds_endian_extract(data, pc->size * 8, k , &map_params.fhd, 16);
+		ccsds_endian_extract(data, k , &map_params.fhd, 16);
 		k += 16;
 	}
 	payload = &data[k / 8];
@@ -145,14 +145,14 @@ int pc_parse(pc_t *pc, uint8_t *data, size_t size) {
 	//FEC
 	if (pc->pc_parameters.is_fec_presented) {
 		m -= pc->pc_parameters.fec_length * 8;
-		ccsds_endian_extract(data, pc->size * 8, m,
+		ccsds_endian_extract(data, m,
 				pc->fec_field, pc->pc_parameters.fec_length * 8);
 	}
 
 	//OCF
 	if (mc_params.ocfp_flag == OCFP_PRESENT) {
 		m -= 32;
-		ccsds_endian_extract(data, pc->size * 8, m, mc_params.ocf, 32);
+		ccsds_endian_extract(data, m, mc_params.ocf, 32);
 	}
 
 	pl_size = (m - k) / 8;

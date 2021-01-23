@@ -31,4 +31,6 @@ int epp_extract_header(epp_header_t *epp_header, const uint8_t *arr, int size);
 
 int epp_make_header_auto_length(epp_header_t *epp_header, uint8_t *arr, int size, uint32_t packet_length);
 
+int epp_make_header_auto_length2(epp_header_t *epp_header, uint8_t *arr, int size, uint32_t payload_length);
+
 #endif /* INCLUDE_CCSDS_NL_EPP_EPP_H_ */

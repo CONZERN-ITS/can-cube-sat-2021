@@ -8,6 +8,7 @@
 #include <ccsds/sdl/usdl/usdl.h>
 #include <stdio.h>
 #include <endian.h>
+#include <ccsds/nl/epp/epp.h>
 
 void print_bit(uint8_t num) {
 	for(int i = 0; i < 8; ++i) {
@@ -73,8 +74,14 @@ int main() {
 	map_s.buf_ex.max_size = sizeof(map_buffer);
 	mapp_init(&map_s, &map_mx_s, 5);
 
+
 	uint8_t payload[] = "\xDE\xAD\xBE\xAF";
-	mapp_send(&map_s, payload, sizeof(payload), PVN_ENCAPSULATION_PROTOCOL, QOS_EXPEDITED);
+	epp_header_t epp_header = {0};
+	epp_header.epp_id = 1;
+	uint8_t pl_arr[40];
+	int epp_size = epp_make_header_auto_length2(&epp_header, pl_arr, sizeof(pl_arr), sizeof(payload));
+	memcpy(&pl_arr[epp_size], payload, sizeof(payload));
+	mapp_send(&map_s, pl_arr, sizeof(payload) + epp_size, PVN_ENCAPSULATION_PROTOCOL, QOS_EXPEDITED);
 	pc_request_from_down(&pc_s);
 
 	for (int i = 0; i < pc_p.tf_length; i++) {
@@ -106,9 +113,9 @@ int main() {
 	uint8_t map_buffer1[40];
 	uint8_t map_buffer2[40];
 	map_r.mapr.packet.data = map_buffer1;
-	map_r.mapr.packet.size = sizeof(map_buffer1);
+	map_r.mapr.packet.max_size = sizeof(map_buffer1);
 	map_r.mapr.tfdz.data = map_buffer2;
-	map_r.mapr.tfdz.size = sizeof(map_buffer2);
+	map_r.mapr.tfdz.max_size = sizeof(map_buffer2);
 	map_r.mapr.state = MAPR_STATE_BEGIN;
 	mapp_init(&map_r, &map_mx_r, 5);
 
@@ -121,10 +128,11 @@ int main() {
 		printf("0x%x ", arr3[i]);
 	}
 
+	printf("\n\nHELLO3\n");
 
-	/*
+/*
 	uint8_t arr0[] = {0b11001010, 0b00110101};
-	uint8_t arr1[4];
+	uint8_t arr1[4] = {0};
 
 	uint8_t val = 0;
 	for (int i = 3; i < 12; i++) {
@@ -132,10 +140,10 @@ int main() {
 		printf("%d", (int)val);
 	}
 	printf("\n");
-	endian_stream_set(arr1, sizeof(arr1) * 8, 6, ENDIAN_MSBIT_LSBYTE,
-					  arr0, 13, 1, ENDIAN_LSBIT_LSBYTE);
+	endian_stream_set(arr1, sizeof(arr1) * 8, 6, ENDIAN_LSBIT_LSBYTE,
+					  arr0, 13, 1, ENDIAN_MSBIT_LSBYTE);
 	print_bit_arr(arr1, sizeof(arr1));
-	*/
+*/
 	return 0;
 }
 

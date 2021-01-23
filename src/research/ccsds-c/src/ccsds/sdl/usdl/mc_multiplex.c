@@ -49,7 +49,8 @@ int mc_mx_request_from_down(mc_mx_t *mc_mx) {
 
 void mc_mx_demultiplex(mc_mx_t *mc_mx, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params, mc_params_t *mc_params, uint8_t *ocf) {
-	if (mc_mx->mc_arr[map_params->map_id]) {
-		mc_parse(mc_mx->mc_arr[map_params->map_id], data, size, map_params, vc_params, mc_params, ocf);
+	usdl_print_debug();
+	if (mc_mx->mc_arr[mc_params->mc_id]) {
+		mc_parse(mc_mx->mc_arr[mc_params->mc_id], data, size, map_params, vc_params, mc_params, ocf);
 	}
 }

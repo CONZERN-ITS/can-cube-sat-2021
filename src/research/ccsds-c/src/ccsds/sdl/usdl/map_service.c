@@ -119,7 +119,7 @@ int map_request_from_down(map_t *map) {
 }
 
 pvn_t _map_get_pvn(uint8_t v) {
-	return (v >> 5) & 3;
+	return (v >> 5) & 7;
 }
 
 int _map_try_calc_size(uint8_t *data, int size) {
@@ -138,15 +138,22 @@ int _map_try_calc_size(uint8_t *data, int size) {
 
 
 int _map_fhd_is_valid(mapr_t *map) {
+	if (map->tfdz.fhd <= map->packet.index) {
+		return 1;
+	}
 	if (map->tfdz.fhd == (fhd_t)~0) {
 		return map->packet.size - map->packet.index >= map->tfdz.size - map->tfdz.index;
 	}
+
 
 	return map->packet.size - map->packet.index == map->tfdz.fhd - map->tfdz.index;
 }
 
 int _map_push_from_down(mapr_t *map) {
 	if (map->state == MAPR_STATE_FINISH) {
+		return 0;
+	}
+	if (map->tfdz.index == map->tfdz.size) {
 		return 0;
 	}
 	if (map->state == MAPR_STATE_BEGIN) {

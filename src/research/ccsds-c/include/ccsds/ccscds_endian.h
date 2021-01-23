@@ -23,7 +23,7 @@ void ccsds_endian_insert(uint8_t *arr, int arr_bit_size, int arr_bit_pos,
  * адрес переменной, в которыую вы хотите записать
  * значение из массив байт arr.
  */
-void ccsds_endian_extract(const uint8_t *arr, int arr_bit_size, int arr_bit_pos,
+void ccsds_endian_extract(const uint8_t *arr, int arr_bit_pos,
 		void *field, int field_bit_size);
 
 #endif /* INCLUDE_CCSDS_CCSCDS_ENDIAN_H_ */
