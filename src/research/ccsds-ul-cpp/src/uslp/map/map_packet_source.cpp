@@ -5,19 +5,17 @@
 #include <sstream>
 
 #include <ccsds/uslp/exceptions.hpp>
-
-#include <ccsds/uslp/_detail/epp_header.hpp>
 #include <ccsds/uslp/_detail/tfdf_header.hpp>
 #include <ccsds/uslp/_detail/tf_header.hpp>
 
 
-
 namespace ccsds { namespace uslp {
 
+
 map_packet_source::map_packet_source(gmap_id_t map_id_)
-	: map_source(map_id_, detail::tfdf_header_t::full_size)
+	: map_source(map_id_)
 {
-	// С порога ставим себе размер зоны, чтобы в нее хоть заголовок влез
+
 }
 
 
@@ -35,9 +33,10 @@ void map_packet_source::add_packet(const uint8_t * packet, size_t packet_size, q
 }
 
 
-void map_packet_source::encapsulate_data(const uint8_t * data, size_t data_size, qos_t qos)
+void map_packet_source::add_encapsulated_data(const uint8_t * data, size_t data_size, qos_t qos, epp::protocol_id_t proto_id)
 {
-	detail::epp_header_t header;
+	epp::header_t header;
+	header.protocol_id = static_cast<int>(proto_id);
 	const auto packet_size = header.accomadate_to_payload_size(data_size);
 
 	data_unit_t du;
@@ -50,6 +49,8 @@ void map_packet_source::encapsulate_data(const uint8_t * data, size_t data_size,
 
 	assert(data_size == static_cast<size_t>(std::distance(header_end_itt, du.packet.end())));
 	std::copy(data, data + data_size, header_end_itt);
+
+	_data_queue.push_back(std::move(du));
 }
 
 
@@ -71,7 +72,7 @@ bool map_packet_source::peek_tfdf_impl()
 {
 	// Тут оптимизации не будет :c
 	output_map_frame_params dummy;
-	return peek_tfdf(dummy);
+	return peek_tfdf_impl(dummy);
 }
 
 
@@ -198,8 +199,8 @@ void map_packet_source::_write_idle_packet(uint8_t * buffer, uint16_t idle_packe
 	if (0 == idle_packet_size)
 		return;
 
-	detail::epp_header_t header;
-	header.protocol_id = detail::epp_protocol_id_t::IDLE;
+	epp::header_t header;
+	header.protocol_id = static_cast<int>(epp::protocol_id_t::IDLE);
 	header.real_packet_size(idle_packet_size);
 
 	// Теперь пишем заголовок

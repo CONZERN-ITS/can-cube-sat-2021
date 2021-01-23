@@ -1,4 +1,4 @@
-#include <ccsds/uslp/_detail/epp_header.hpp>
+#include <ccsds/epp/epp_header.hpp>
 
 #include <endian.h>
 
@@ -10,10 +10,10 @@
 #include <ccsds/uslp/exceptions.hpp>
 
 
-namespace ccsds { namespace uslp { namespace detail {
+namespace ccsds { namespace epp {
 
 
-uint16_t epp_header_t::probe_header_size(const uint8_t first_buffer_byte)
+uint16_t header_t::probe_header_size(const uint8_t first_buffer_byte)
 {
 	// Проверяем pvn
 	auto pvn_in_buffer = (first_buffer_byte >> 5) & 0x03;
@@ -36,7 +36,7 @@ uint16_t epp_header_t::probe_header_size(const uint8_t first_buffer_byte)
 }
 
 
-uint16_t epp_header_t::size() const
+uint16_t header_t::size() const
 {
 	// Если есть это поле - то заголовок полюбому огромный
 	if (ccsds_field)
@@ -52,7 +52,7 @@ uint16_t epp_header_t::size() const
 	// Смотрим четверку
 
 
-	if (protocol_id == static_cast<int>(epp_protocol_id_t::EXTENDED) || protocol_id_extension)
+	if (protocol_id == static_cast<int>(protocol_id_t::EXTENDED) || protocol_id_extension)
 	{
 		// Так-то должно быть верно оба условия, но нас устроит хотябы одно.
 		// Не будем умничать - будем писать как сказали
@@ -81,7 +81,7 @@ uint16_t epp_header_t::size() const
 }
 
 
-void epp_header_t::write(uint8_t * buffer, size_t buffer_size) const
+void header_t::write(uint8_t * buffer, size_t buffer_size) const
 {
 	// Будем писать по-разному в зависимости от
 	const auto header_size = size();
@@ -153,7 +153,7 @@ void epp_header_t::write(uint8_t * buffer, size_t buffer_size) const
 }
 
 
-void epp_header_t::read(const uint8_t * buffer, size_t buffer_size)
+void header_t::read(const uint8_t * buffer, size_t buffer_size)
 {
 	if (0 == buffer_size)
 	{
@@ -229,7 +229,7 @@ void epp_header_t::read(const uint8_t * buffer, size_t buffer_size)
 }
 
 
-void epp_header_t::real_packet_size(uint64_t value)
+void header_t::real_packet_size(uint64_t value)
 {
 	if (0 == value)
 		throw einval_exception("epp real packet size can`t be zero");
@@ -247,7 +247,7 @@ void epp_header_t::real_packet_size(uint64_t value)
 }
 
 
-uint64_t epp_header_t::accomadate_to_payload_size(uint64_t payload_size)
+uint64_t header_t::accomadate_to_payload_size(uint64_t payload_size)
 {
 	// Действуем итеративно
 	packet_size = payload_size;
@@ -272,7 +272,7 @@ uint64_t epp_header_t::accomadate_to_payload_size(uint64_t payload_size)
 }
 
 
-uint8_t epp_header_t::_make_second_byte() const
+uint8_t header_t::_make_second_byte() const
 {
 	// Если расширенный айдишник не указан, а нам надо что-то писать - нужно писать нули
 	uint8_t pid_ext = protocol_id_extension ? protocol_id_extension.value() : 0x00;
@@ -287,11 +287,11 @@ uint8_t epp_header_t::_make_second_byte() const
 }
 
 
-void epp_header_t::_load_second_byte(uint8_t byte2)
+void header_t::_load_second_byte(uint8_t byte2)
 {
 	protocol_id_extension = (byte2 >> 0) & 0x0F;
 	user_defined_field = (byte2 >> 4) & 0x0F;
 }
 
 
-}}}
+}}

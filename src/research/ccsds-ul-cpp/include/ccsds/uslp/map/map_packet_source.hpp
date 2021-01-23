@@ -5,6 +5,8 @@
 #include <deque>
 #include <memory>
 
+#include <ccsds/epp/epp_header.hpp>
+
 #include <ccsds/uslp/ids.hpp>
 #include <ccsds/uslp/defs.hpp>
 #include <ccsds/uslp/map/abstract_map.hpp>
@@ -20,7 +22,7 @@ public:
 	virtual ~map_packet_source() = default;
 
 	void add_packet(const uint8_t * packet, size_t packet_size, qos_t qos);
-	void encapsulate_data(const uint8_t * data, size_t data_size, qos_t qos);
+	void add_encapsulated_data(const uint8_t * data, size_t data_size, qos_t qos, epp::protocol_id_t proto_id);
 
 protected:
 	virtual void finalize_impl() override;

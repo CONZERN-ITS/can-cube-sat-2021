@@ -6,7 +6,7 @@
 #include <string>
 
 
-namespace ccsds { namespace uslp {
+namespace ccsds {
 
 	class exception: public std::runtime_error
 	{
@@ -46,7 +46,7 @@ namespace ccsds { namespace uslp {
 		object_is_finalized(const std::string & what);
 		virtual ~object_is_finalized() = default;
 	};
-}}
+}
 
 
 

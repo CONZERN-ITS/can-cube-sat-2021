@@ -5,30 +5,26 @@
 #include <optional>
 #include <array>
 
-namespace ccsds { namespace uslp { namespace detail {
+namespace ccsds { namespace epp {
 
 //! Некоторые резервированные идентификаторы инкапсулируемых протоколов
 /*! Идентификаторы назначаются SAN-ой. Тут только интересные нам */
-struct epp_protocol_id_t
+enum class protocol_id_t
 {
-	epp_protocol_id_t() = delete;
-
-	enum value {
-		//! Encapsulation Idle Packet (the encapsulation data field, if present, contains no protocol data but only idle data)
-		IDLE = 0x00,
-		//! Internet Protocol Extension (IPE)
-		IPE = 0x02,
-		//! Extended Protocol ID for Encapsulation Packet Protocol
-		EXTENDED = 0x06,
-		//! Mission-specific, privately defined data
-		PRIVATE = 0x07,
-	};
+	//! Encapsulation Idle Packet (the encapsulation data field, if present, contains no protocol data but only idle data)
+	IDLE = 0x00,
+	//! Internet Protocol Extension (IPE)
+	IPE = 0x02,
+	//! Extended Protocol ID for Encapsulation Packet Protocol
+	EXTENDED = 0x06,
+	//! Mission-specific, privately defined data
+	PRIVATE = 0x07,
 };
 
 //! Заголовок EPP пакета
 /*! Тут все очень сложно и заголовок бывает какой захочет длины (хоть весь пакет в 1 байт)
 	Поэтому лучше почитать спеку */
-struct epp_header_t
+struct header_t
 {
 	//! packet version number для этих пакетов
 	/*! Три бита по единичке. Живут в самом старшем разряде первого байта */
@@ -64,7 +60,7 @@ struct epp_header_t
 	template<typename UINT8_FWD_ITERATOR>
 	void read(UINT8_FWD_ITERATOR begin, UINT8_FWD_ITERATOR end_)
 	{
-		const auto buffer_size = std::distance(begin, end_);
+		const auto buffer_size = static_cast<size_t>(std::distance(begin, end_));
 		std::array<uint8_t, maximum_size> buffer = {0};
 
 		auto end = std::next(begin, std::min(buffer.size(), buffer_size));
@@ -119,7 +115,8 @@ protected:
 	void _load_second_byte(uint8_t byte2);
 };
 
-}}}
+
+}}
 
 
 #endif /* INCLUDE_CCSDS_USLP_MAP_DETAIL_EPP_HEADER_HPP_ */

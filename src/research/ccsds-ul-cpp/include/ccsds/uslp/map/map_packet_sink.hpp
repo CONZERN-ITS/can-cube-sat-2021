@@ -5,8 +5,8 @@
 #include <limits>
 #include <deque>
 
+#include <ccsds/epp/epp_header.hpp>
 #include <ccsds/uslp/map/abstract_map.hpp>
-#include <ccsds/uslp/_detail/epp_header.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -47,7 +47,7 @@ private:
 	//! Буфер для накопления пакета
 	accum_t _accumulator;
 	//! Разобранный заголовок текущего пакета
-	std::optional<detail::epp_header_t> _current_packet_header;
+	std::optional<epp::header_t> _current_packet_header;
 	//! Максимально разрешенный размер пакета
 	size_t _max_packet_size = std::numeric_limits<size_t>::max();
 	//! Передавать ли idle пакеты в эвенты

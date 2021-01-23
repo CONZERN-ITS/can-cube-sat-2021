@@ -115,7 +115,7 @@ again:
 		// Если у нас еще нет заголовка
 		// Смотрим хватает ли у нас на него байт
 		// Мы работаем только с epp пакетами
-		const auto header_size = detail::epp_header_t::probe_header_size(_accumulator.front());
+		const auto header_size = epp::header_t::probe_header_size(_accumulator.front());
 		if (0 == header_size)
 		{
 			// Значит это не заголовок... Сбрасывем все
@@ -129,20 +129,11 @@ again:
 			// Тут мало что можно сделать.. Будем подождать
 			return;
 		}
-
-		// Поскольку дека не константна по длине... сделаем небольшую копию байтиков
-		std::array<uint8_t, detail::epp_header_t::maximum_size> epp_header_buffer = {0};
-		std::copy(
-				_accumulator.begin(),
-				std::next(_accumulator.begin(), header_size),
-				epp_header_buffer.begin()
-		);
-
 		// Отлично, пробуем разобрать
-		detail::epp_header_t epp_header;
+		epp::header_t epp_header;
 		try
 		{
-			epp_header.read(epp_header_buffer.data(), header_size);
+			epp_header.read(_accumulator.begin(), _accumulator.end());
 		}
 		catch (std::exception & e)
 		{
@@ -163,14 +154,10 @@ again:
 		auto current_packet_end = std::next(_accumulator.cbegin(), current_packet_size);
 		// Чудесно! Только секундочку... А это не idle пакет?
 		// Такие мы пользователю давать не будем
-		if (!_emit_idle_packets && detail::epp_protocol_id_t::IDLE == _current_packet_header->protocol_id)
-		{
+		if (!_emit_idle_packets && static_cast<int>(epp::protocol_id_t::IDLE) == _current_packet_header->protocol_id)
 			_drop_accum(current_packet_end);
-		}
 		else
-		{
 			_flush_accum(current_packet_end, map_sink_event_data_unit::release_reason_t::SDU_COMPLETE);
-		}
 	}
 
 	// Выгребаем дальше
