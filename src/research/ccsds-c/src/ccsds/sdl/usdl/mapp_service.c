@@ -1,12 +1,12 @@
-#include <ccsds/sdl/usdl/map_service.h>
 #include <ccsds/sdl/usdl/map_multiplexer.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <ccsds/sdl/usdl/usdl_debug.h>
 #include <string.h>
 #include <assert.h>
 #include <ccsds/nl/epp/epp.h>
+#include <ccsds/sdl/usdl/mapp_service.h>
 
-uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos);
+static uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos);
 
 int mapp_init(map_t *map, map_mx_t *mx, map_id_t map_id) {
 	usdl_print_debug();
@@ -62,7 +62,9 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 	while (1) {
 		count_to_send = buf->size - buf->index < size - data_index
 				? buf->size - buf->index : size - data_index;
-
+		if (count_to_send == 0) {
+			break;
+		}
 		memcpy(&buf->data[buf->index], &data[data_index], count_to_send);
 		buf->index += count_to_send;
 		data_index += count_to_send;
@@ -244,7 +246,7 @@ int map_recieve(mapr_t *map, uint8_t *data, size_t size, quality_of_service_t *q
 }
 
 
-uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos) {
+static uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos) {
 	uint32_t size = 0;
 	if (qos == QOS_EXPEDITED) {
 		size = map->map_mx->vc->mapcf_length_ex;

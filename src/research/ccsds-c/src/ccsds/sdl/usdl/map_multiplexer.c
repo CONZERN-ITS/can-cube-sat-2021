@@ -1,10 +1,10 @@
 #include <ccsds/sdl/usdl/map_multiplexer.h>
 #include <ccsds/sdl/usdl/vc_generate.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
-#include <ccsds/sdl/usdl/map_service.h>
 #include <ccsds/sdl/usdl/usdl_debug.h>
 #include <string.h>
 #include <assert.h>
+#include <ccsds/sdl/usdl/mapp_service.h>
 
 
 int map_mx_init(map_mx_t *map_mx, vc_t *vc) {

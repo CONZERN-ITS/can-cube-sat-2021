@@ -8,13 +8,18 @@
 #ifndef SDL_USDL_USDL_BASIC_TYPES_H_
 #define SDL_USDL_USDL_BASIC_TYPES_H_
 
+typedef uint16_t fhd_t;
+typedef uint16_t lvo_t;
 
 typedef struct {
 	uint8_t *data;
 	size_t size;
 	size_t max_size;
 	size_t index;
-	size_t fhd;
+	union {
+		fhd_t fhd;
+		lvo_t lvo;
+	};
 } map_buffer_t;
 
 typedef enum {
@@ -61,12 +66,15 @@ typedef enum {
 
 
 typedef uint8_t vc_id_t;
-typedef uint16_t fhd_t;
 
 typedef struct {
 	map_id_t map_id;
 	upid_t upid;
-	fhd_t fhd;
+
+	union{
+		fhd_t fhd;
+		lvo_t lvo;
+	};
 	tfdz_construction_rules_t rules;
 	quality_of_service_t qos;
 } map_params_t;
