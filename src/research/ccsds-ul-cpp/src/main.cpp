@@ -4,21 +4,22 @@
 #include <cstring>
 #include <cassert>
 #include <fstream>
+#include <numeric>
 
 #include <ccsds/uslp/ids.hpp>
+#include <ccsds/uslp/idle_pattern.hpp>
+
 #include <ccsds/uslp/physical/mchannel_rr_muxer.hpp>
 #include <ccsds/uslp/master/vchannel_rr_muxer.hpp>
 #include <ccsds/uslp/virtual/map_rr_muxer.hpp>
 #include <ccsds/uslp/map/map_access_source.hpp>
 #include <ccsds/uslp/map/map_packet_source.hpp>
 
-
 #include <ccsds/uslp/physical/mchannel_demuxer.hpp>
 #include <ccsds/uslp/master/vchannel_demuxer.hpp>
 #include <ccsds/uslp/virtual/map_demuxer.hpp>
 #include <ccsds/uslp/map/map_access_sink.hpp>
 #include <ccsds/uslp/map/map_packet_sink.hpp>
-
 
 #include <bytes_printer.hpp>
 #include <lorem_ipsum.hpp>
@@ -163,17 +164,29 @@ void event_handler(ccsds::uslp::gmap_id_t map_id, const ccsds::uslp::map_sink_ev
 }
 
 
+static uint8_t _natural_data[4096];
+
+
 int main()
 {
+	std::iota(std::begin(_natural_data), std::end(_natural_data), static_cast<uint8_t>(0));
+
+	const uint8_t idle_pattern[] = {0xCA, 0xDE, 0xBA, 0xBA};
+	ccsds::uslp::idle_pattern_generator::instance().assign(
+			std::cbegin(idle_pattern),
+			std::cend(idle_pattern)
+	);
+
 	uint8_t frame_buffer[142];
 	uplink_stack_t uplink_stack(sizeof(frame_buffer));
 	downlink_stack_t downlink_stack;
 	downlink_stack.set_event_handler(event_handler);
 
+	//auto * data = reinterpret_cast<const uint8_t*>(lorem_impsum_1k);
+	//const size_t data_size = sizeof(lorem_impsum_1k) - 1; // Без терминирующего ноля плез
 
-	auto * data = reinterpret_cast<const uint8_t*>(lorem_impsum_1k);
-	const size_t data_size = sizeof(lorem_impsum_1k) - 1; // Без терминирующего ноля плез
-
+	const auto * data = _natural_data;
+	const size_t data_size = sizeof(_natural_data);
 
 	uplink_stack.map_p3.add_encapsulated_data(
 			data, data_size,
@@ -203,15 +216,14 @@ int main()
 				<< frame_params.ocf_present << "; "
 				<< std::endl;
 
-		//std::memset(frame_buffer, 0x00, sizeof(frame_buffer));
+		std::memset(frame_buffer, 0x00, sizeof(frame_buffer));
 		uplink_stack.pop_frame(frame_buffer, sizeof(frame_buffer));
-		// std::cout << print_bytes(frame_buffer) << std::endl;
+		std::cout << print_bytes(frame_buffer) << std::endl;
 		i++;
 
 		file.write(reinterpret_cast<const char*>(frame_buffer), sizeof(frame_buffer));
 		downlink_stack.push_frame(frame_buffer, sizeof(frame_buffer));
 	}
-
 
 	return 0;
 }

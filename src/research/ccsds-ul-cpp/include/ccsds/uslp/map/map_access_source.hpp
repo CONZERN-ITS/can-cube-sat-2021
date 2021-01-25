@@ -43,6 +43,7 @@ protected:
 	uint16_t _tfdz_size() const;
 
 private:
+
 	std::deque<data_unit_t> _data_queue;
 };
 

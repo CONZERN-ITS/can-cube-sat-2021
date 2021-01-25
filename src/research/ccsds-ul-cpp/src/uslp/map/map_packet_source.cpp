@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include <ccsds/uslp/exceptions.hpp>
+#include <ccsds/uslp/idle_pattern.hpp>
 #include <ccsds/uslp/_detail/tfdf_header.hpp>
 #include <ccsds/uslp/_detail/tf_header.hpp>
 
@@ -208,10 +209,15 @@ void map_packet_source::_write_idle_packet(uint8_t * buffer, uint16_t buffer_siz
 	// Теперь пишем заголовок
 	header.write(buffer, buffer_size);
 
-	// Тело пакета заполним меандром, чтобы было красиво (и радио канал лучше ловил битсинк)
+	// Тело пакета заполним айдлами
 	uint8_t * const pbody_buffer = buffer + header.size();
 	const uint16_t pbody_size = buffer_size - header.size();
-	std::memset(pbody_buffer, 0xAA, pbody_size);
+	const auto & idle_generator = idle_pattern_generator::instance();
+	std::copy(
+			idle_generator.begin(),
+			idle_generator.end(pbody_size),
+			pbody_buffer
+	);
 }
 
 }}

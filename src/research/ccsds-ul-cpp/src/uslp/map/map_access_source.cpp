@@ -1,9 +1,10 @@
-#include <ccsds/uslp/_detail/tfdf_header.hpp>
+#include <ccsds/uslp/map/map_access_source.hpp>
 
 #include <sstream>
 
 #include <ccsds/uslp/exceptions.hpp>
-#include <ccsds/uslp/map/map_access_source.hpp>
+#include <ccsds/uslp/idle_pattern.hpp>
+#include <ccsds/uslp/_detail/tfdf_header.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -114,11 +115,23 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 
 	// Если элемент закончился в этом фрейме - покажем последний его валидный байт
 	if (element_ended)
+	{
 		header.first_header_offset = to_copy_size - 1;
-	else
-		header.first_header_offset = 0xFFFF; // Если нет - покажем, что он не кончился в этом фрейме
 
-	// Все посчитали - теперь пишем
+		// И забьем лишние данные айдлами
+		const auto & idle_generator = idle_pattern_generator::instance();
+		std::copy(
+				idle_generator.begin(),
+				idle_generator.end(tfdz_buffer_size - to_copy_size),
+				tfdz_buffer + to_copy_size
+		);
+	}
+	else
+	{
+		header.first_header_offset = 0xFFFF; // Если нет - покажем, что он не кончился в этом фрейме
+	}
+
+	// Все посчитали - теперь пишем заголовок
 	header.write(tfdf_buffer);
 
 	// Готово!
