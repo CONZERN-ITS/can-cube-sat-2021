@@ -21,8 +21,8 @@
 #include <ccsds/uslp/map/map_access_sink.hpp>
 #include <ccsds/uslp/map/map_packet_sink.hpp>
 
-#include <bytes_printer.hpp>
-#include <lorem_ipsum.hpp>
+#include "bytes_printer.hpp"
+#include "lorem_ipsum.hpp"
 
 
 struct downlink_stack_t
