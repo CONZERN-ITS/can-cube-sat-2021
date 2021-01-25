@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <vector>
 
-#include <ccsds/uslp/defs.hpp>
+#include <ccsds/uslp/common/defs.hpp>
 
 
 namespace ccsds { namespace uslp {

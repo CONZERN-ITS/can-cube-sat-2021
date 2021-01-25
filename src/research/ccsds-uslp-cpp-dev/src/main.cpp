@@ -6,7 +6,7 @@
 #include <fstream>
 #include <numeric>
 
-#include <ccsds/uslp/ids.hpp>
+#include <ccsds/uslp/common/ids.hpp>
 #include <ccsds/uslp/idle_pattern.hpp>
 
 #include <ccsds/uslp/physical/mchannel_rr_muxer.hpp>

@@ -6,7 +6,7 @@
 #include <vector>
 #include <limits>
 
-#include <ccsds/uslp/defs.hpp>
+#include <ccsds/uslp/common/defs.hpp>
 #include <ccsds/uslp/common/frame_seq_no.hpp>
 #include <ccsds/uslp/map/abstract_map.hpp>
 

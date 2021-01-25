@@ -5,8 +5,9 @@
 
 #include <endian.h>
 
-#include <ccsds/uslp/_detail/tf_header.hpp>
 #include <ccsds/uslp/exceptions.hpp>
+#include <ccsds/uslp/virtual/abstract_vchannel.hpp>
+#include <ccsds/uslp/_detail/tf_header.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -53,6 +54,20 @@ void mchannel_source::add_vchannel_source(vchannel_source * source)
 		error << "unable to set use add_vchannel_source() on mchannel, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
+
+	if (source->gvcid.mcid() != this->mcid)
+	{
+		std::stringstream error;
+		error << "invalid gvcid sink "
+				<< static_cast<int>(source->gvcid.sc_id())
+				<< "," << static_cast<int>(source->gvcid.vchannel_id())
+				<< " for vchannel attached to mchannel sink "
+				<< static_cast<int>(this->mcid.sc_id())
+		;
+
+		throw einval_exception(error.str());
+	}
+
 
 	add_vchannel_source_impl(source);
 }
@@ -169,7 +184,6 @@ void mchannel_source::finalize_impl()
 				<< "It should be no less than " << min_frame_size;
 		throw einval_exception(error.str());
 	}
-
 }
 
 
@@ -191,6 +205,19 @@ void mchannel_sink::add_vchannel_sink(vchannel_sink * sink)
 		std::stringstream error;
 		error << "unable to use add_vchannel_sink(sink) on physical channel because it is finalized";
 		throw object_is_finalized(error.str());
+	}
+
+	if (sink->gvcid.mcid() != this->mcid)
+	{
+		std::stringstream error;
+		error << "invalid gvcid sink "
+				<< static_cast<int>(sink->gvcid.sc_id())
+				<< "," << static_cast<int>(sink->gvcid.vchannel_id())
+				<< " for vchannel attached to mchannel source "
+				<< static_cast<int>(this->mcid.sc_id())
+		;
+
+		throw einval_exception(error.str());
 	}
 
 	add_vchannel_sink_impl(sink);

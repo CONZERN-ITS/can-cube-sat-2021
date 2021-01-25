@@ -5,10 +5,10 @@
 
 #include <ccsds/uslp/exceptions.hpp>
 #include <ccsds/uslp/_detail/tf_header.hpp>
+#include <ccsds/uslp/map/abstract_map.hpp>
 
 
 namespace ccsds { namespace uslp {
-
 
 
 vchannel_source::vchannel_source(gvcid_t gvcid_)
@@ -51,6 +51,21 @@ void vchannel_source::add_map_source(map_source * source)
 		std::stringstream error;
 		error << "unable to use add_map_source on vchannel, because it is finalized";
 		throw object_is_finalized(error.str());
+	}
+
+	if (source->map_id.gvcid() != this->gvcid)
+	{
+		std::stringstream error;
+		error << "invalid gmap id "
+				<< static_cast<int>(source->map_id.sc_id())
+				<< "," << static_cast<int>(source->map_id.vchannel_id())
+				<< "," << static_cast<int>(source->map_id.map_id())
+				<< " for map channel attached to vchannel source"
+				<< static_cast<int>(this->gvcid.sc_id())
+				<< "," << static_cast<int>(this->gvcid.vchannel_id())
+		;
+
+		throw einval_exception(error.str());
 	}
 
 	add_map_source_impl(source);
@@ -166,6 +181,22 @@ void vchannel_sink::add_map_sink(map_sink * sink)
 		error << "unable to use add_map_sink() on vchannel, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
+
+	if (sink->map_id.gvcid() != this->gvcid)
+	{
+		std::stringstream error;
+		error << "invalid gmap id "
+				<< static_cast<int>(sink->map_id.sc_id())
+				<< "," << static_cast<int>(sink->map_id.vchannel_id())
+				<< "," << static_cast<int>(sink->map_id.map_id())
+				<< " for map channel attached to vchannel sink"
+				<< static_cast<int>(this->gvcid.sc_id())
+				<< "," << static_cast<int>(this->gvcid.vchannel_id())
+		;
+
+		throw einval_exception(error.str());
+	}
+
 
 	add_map_sink_impl(sink);
 }

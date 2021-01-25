@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <optional>
 
-#include <ccsds/uslp/ids.hpp>
-#include <ccsds/uslp/defs.hpp>
+#include <ccsds/uslp/common/ids.hpp>
+#include <ccsds/uslp/common/defs.hpp>
 #include <ccsds/uslp/common/frame_seq_no.hpp>
 
 

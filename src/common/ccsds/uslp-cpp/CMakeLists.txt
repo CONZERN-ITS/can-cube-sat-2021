@@ -9,12 +9,12 @@ add_library(ccsds-uslp-cpp STATIC
 	"${_src_dir}/include/ccsds/epp/epp_header.hpp"
 	"${_src_dir}/src/epp/epp_header.cpp"
 
+	"${_src_dir}/include/ccsds/uslp/common/rr_muxer.hpp"
+	"${_src_dir}/include/ccsds/uslp/common/ids.hpp"
+	"${_src_dir}/include/ccsds/uslp/common/defs.hpp"
 	"${_src_dir}/include/ccsds/uslp/common/frame_seq_no.hpp"
 	"${_src_dir}/src/uslp/common/frame_seq_no.cpp"
-	"${_src_dir}/include/ccsds/uslp/common/rr_muxer.hpp"
-
-	"${_src_dir}/include/ccsds/uslp/ids.hpp"
-	"${_src_dir}/include/ccsds/uslp/defs.hpp"
+	
 	"${_src_dir}/include/ccsds/uslp/exceptions.hpp"
 	"${_src_dir}/src/uslp/exceptions.cpp"
 	"${_src_dir}/include/ccsds/uslp/idle_pattern.hpp"
