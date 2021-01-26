@@ -8,6 +8,11 @@ set(_src_dir ${CMAKE_CURRENT_LIST_DIR})
 add_library(ccsds-uslp-cpp STATIC
 	"${_src_dir}/include/ccsds/epp/epp_header.hpp"
 	"${_src_dir}/src/epp/epp_header.cpp"
+	
+	"${_src_dir}/include/ccsds/uslp/output_stack.hpp"
+	"${_src_dir}/src/uslp/output_stack.cpp"
+	"${_src_dir}/include/ccsds/uslp/input_stack.hpp"
+	"${_src_dir}/src/uslp/input_stack.cpp"
 
 	"${_src_dir}/include/ccsds/uslp/common/rr_muxer.hpp"
 	"${_src_dir}/include/ccsds/uslp/common/ids.hpp"

@@ -11,7 +11,7 @@
 namespace ccsds { namespace uslp {
 
 
-map_packet_sink::map_packet_sink(gmap_id_t channel_id) // @suppress("Class members should be properly initialized")
+map_packet_sink::map_packet_sink(gmapid_t channel_id) // @suppress("Class members should be properly initialized")
 	: map_sink(channel_id)
 {
 
@@ -58,7 +58,7 @@ void map_packet_sink::push_impl(
 	if (detail::tfdf_header_t::full_size >= tfdf_buffer_size)
 	{
 		// Этот фрейм не может быть валидным, так как в него ничего не влезает
-		_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+		_flush_accum(map_sdu_event::INCOMPLETE);
 		return;
 	}
 
@@ -90,21 +90,21 @@ void map_packet_sink::push_impl(
 		if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
 		{
 			// Ой, так быть не должно
-			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			_flush_accum(map_sdu_event::INCOMPLETE);
 			return;
 		}
 
 		if (_prev_frame_seq_no.value() + 1 != params.frame_seq_no.value())
 		{
 			// Ой. Так тоже быть не должно
-			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			_flush_accum(map_sdu_event::INCOMPLETE);
 			return;
 		}
 
 		if (_prev_frame_qos != params.qos)
 		{
 			// Ну и так тоже не должно быть
-			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			_flush_accum(map_sdu_event::INCOMPLETE);
 			return;
 		}
 
@@ -145,7 +145,7 @@ again:
 		if (0 == header_size)
 		{
 			// Значит это не заголовок... Сбрасывем все
-			_flush_accum(map_sink_event_data_unit::release_reason_t::BAD_PACKET_HEADER);
+			_flush_accum(map_sdu_event::CORRUPTED);
 			return;
 		}
 
@@ -163,7 +163,7 @@ again:
 		{
 			// К сожалению - весь наш буфер уходит в труху, потому что мы не можем найти
 			// границы никакого пакета
-			_flush_accum(map_sink_event_data_unit::release_reason_t::BAD_PACKET_HEADER);
+			_flush_accum(map_sdu_event::CORRUPTED);
 			return;
 		}
 
@@ -182,26 +182,24 @@ again:
 	if (!_emit_idle_packets && static_cast<int>(epp::protocol_id_t::IDLE) == _current_packet_header->protocol_id)
 		_drop_accum(current_packet_end);
 	else
-		_flush_accum(current_packet_end, map_sink_event_data_unit::release_reason_t::SDU_COMPLETE);
+		_flush_accum(current_packet_end, 0);
 
 	// Выгребаем дальше
 	goto again;
 }
 
 
-void map_packet_sink::_flush_accum(map_sink_event_data_unit::release_reason_t reason)
+void map_packet_sink::_flush_accum(int event_flags)
 {
-	_flush_accum(_accumulator.end(), reason);
+	_flush_accum(_accumulator.end(), event_flags);
 }
 
 
-void map_packet_sink::_flush_accum(
-		accum_t::const_iterator flush_zone_end, map_sink_event_data_unit::release_reason_t reason
-)
+void map_packet_sink::_flush_accum(accum_t::const_iterator flush_zone_end, int event_flags)
 {
-	map_sink_event_data_unit event;
+	map_sdu_event event;
 	event.qos = _prev_frame_qos;
-	event.release_reason = reason;
+	event.flags = event_flags | map_sdu_event::MAPP;
 
 	event.data.reserve(std::distance(_accumulator.cbegin(), flush_zone_end));
 	std::copy(_accumulator.cbegin(), flush_zone_end, std::back_inserter(event.data));

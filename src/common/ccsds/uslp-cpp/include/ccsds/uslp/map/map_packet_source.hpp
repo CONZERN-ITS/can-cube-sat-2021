@@ -18,11 +18,11 @@ namespace ccsds { namespace uslp {
 class map_packet_source: public map_source
 {
 public:
-	map_packet_source(gmap_id_t map_id_);
+	map_packet_source(gmapid_t map_id_);
 	virtual ~map_packet_source() = default;
 
 	void add_packet(const uint8_t * packet, size_t packet_size, qos_t qos);
-	void add_encapsulated_data(const uint8_t * data, size_t data_size, qos_t qos, epp::protocol_id_t proto_id);
+	void add_encapsulate_data(const uint8_t * data, size_t data_size, qos_t qos, epp::protocol_id_t proto_id);
 
 protected:
 	virtual void finalize_impl() override;

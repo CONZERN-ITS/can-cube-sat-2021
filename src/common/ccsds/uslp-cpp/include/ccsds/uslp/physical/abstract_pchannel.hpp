@@ -1,6 +1,7 @@
 #ifndef INCLUDE_CCSDS_USLP_PHYSICAL_ABSTRACT_HPP_
 #define INCLUDE_CCSDS_USLP_PHYSICAL_ABSTRACT_HPP_
 
+
 #include <cstdint>
 #include <cstddef>
 #include <string>
@@ -20,7 +21,7 @@ class mchannel_sink;
 
 struct pchannel_frame_params_t
 {
-	gmap_id_t channel_id;
+	gmapid_t channel_id;
 	bool id_is_destination;
 	frame_class_t frame_class;
 	bool ocf_present;
@@ -101,7 +102,6 @@ private:
 	bool _finalized = false;
 	uint16_t _insert_zone_size = 0;
 	error_control_len_t _error_control_len = error_control_len_t::ZERO;
-
 };
 
 

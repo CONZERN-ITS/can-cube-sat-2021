@@ -23,7 +23,7 @@ namespace detail
 class map_access_sink: public map_sink
 {
 public:
-	map_access_sink(gmap_id_t mapid_);
+	map_access_sink(gmapid_t mapid_);
 	virtual ~map_access_sink() = default;
 
 	void max_sdu_size(size_t value) { _max_sdu_size = value; }
@@ -44,9 +44,7 @@ private:
 			const uint8_t * tfdz, uint16_t tfdz_size
 	);
 
-	void _flush_accum(
-			map_sink_event_data_unit::release_reason_t reason
-	);
+	void _flush_accum(int event_flags);
 
 	//! Аккумулятор для накопления полного SDU
 	std::vector<uint8_t> _accumulator;
@@ -61,7 +59,7 @@ private:
 	std::optional<frame_seq_no_t> _prev_frame_seq_no;
 
 	//! Коллбек для событий
-	event_callback_t _event_callback;
+	event_handler_t _event_callback;
 };
 
 

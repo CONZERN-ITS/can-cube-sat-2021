@@ -18,7 +18,7 @@ class map_sink;
 
 struct vchannel_frame_params
 {
-	gmap_id_t channel_id;
+	gmapid_t channel_id;
 	frame_class_t frame_class;
 	std::optional<frame_seq_no_t> frame_seq_no;
 };

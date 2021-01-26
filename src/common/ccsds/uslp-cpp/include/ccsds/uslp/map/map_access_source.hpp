@@ -15,7 +15,7 @@ namespace ccsds { namespace uslp {
 class map_access_source: public map_source
 {
 public:
-	map_access_source(gmap_id_t map_id_);
+	map_access_source(gmapid_t map_id_);
 	virtual ~map_access_source() = default;
 
 	void add_sdu(const uint8_t * data, size_t data_size, qos_t qos);

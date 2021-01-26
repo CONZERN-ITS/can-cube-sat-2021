@@ -10,7 +10,7 @@
 namespace ccsds { namespace uslp {
 
 
-map_access_source::map_access_source(gmap_id_t map_id_)
+map_access_source::map_access_source(gmapid_t map_id_)
 	: map_source(map_id_)
 {
 

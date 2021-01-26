@@ -10,7 +10,7 @@
 namespace ccsds { namespace uslp {
 
 
-map_access_sink::map_access_sink(gmap_id_t mapid_)
+map_access_sink::map_access_sink(gmapid_t mapid_)
 		: map_sink(mapid_),
 		  _prev_frame_qos(qos_t::EXPIDITED) // Просто чтобы не иметь UB
 {
@@ -35,7 +35,7 @@ void map_access_sink::push_impl(
 	{
 		// Этот фрейм не может быть валидным, так как в него максимум что влезает
 		// это заголовок tfdf.
-		_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+		_flush_accum(map_sdu_event::INCOMPLETE);
 	}
 
 	// Смотрим что там в tfdf заголовке
@@ -48,7 +48,7 @@ void map_access_sink::push_impl(
 	if (detail::tfdz_construction_rule_t::MAP_SDU_START == header.ctr_rule)
 	{
 		if (!_accumulator.empty())
-			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			_flush_accum(map_sdu_event::INCOMPLETE);
 
 		// Забираем пакет
 		_consume_frame(params, header, tfdz_start, tfdz_size);
@@ -62,7 +62,7 @@ void map_access_sink::push_impl(
 		if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
 		{
 			// Оп, это какая-то петрушка
-			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			_flush_accum(map_sdu_event::INCOMPLETE);
 			return;
 		}
 
@@ -71,7 +71,7 @@ void map_access_sink::push_impl(
 		{
 			// Значит что-то где-то потерялось
 			// Выкидываем и сбрасываем состояние
-			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			_flush_accum(map_sdu_event::INCOMPLETE);
 			return;
 		}
 
@@ -79,7 +79,7 @@ void map_access_sink::push_impl(
 		if (_prev_frame_qos != params.qos)
 		{
 			// Выкидываем и сбрасываем состояние
-			_flush_accum(map_sink_event_data_unit::release_reason_t::SDU_TERMINATED);
+			_flush_accum(map_sdu_event::INCOMPLETE);
 			return;
 		}
 
@@ -132,17 +132,11 @@ void map_access_sink::_consume_frame(
 	// Если случилось переполнение или просто мы получили весь SDU
 	// Сообщаем пользователю об этом событием
 	if (overflow || sdu_complete)
-	{
-		const auto reason = overflow
-				? map_sink_event_data_unit::release_reason_t::OVERFLOW
-				: map_sink_event_data_unit::release_reason_t::SDU_COMPLETE
-		;
-		_flush_accum(reason);
-	}
+		_flush_accum(overflow ? map_sdu_event::INCOMPLETE : 0);
 }
 
 
-void map_access_sink::_flush_accum(map_sink_event_data_unit::release_reason_t reason)
+void map_access_sink::_flush_accum(int event_flags)
 {
 	if (_accumulator.empty())
 		return;
@@ -150,10 +144,10 @@ void map_access_sink::_flush_accum(map_sink_event_data_unit::release_reason_t re
 	// Сбрасываем номер предыдущего пакета
 	_prev_frame_seq_no.reset();
 
-	map_sink_event_data_unit event;
+	map_sdu_event event;
 	event.data = std::move(_accumulator);
 	event.qos = _prev_frame_qos;
-	event.release_reason = reason;
+	event.flags = event_flags | map_sdu_event::MAPA;
 	emit_event(event);
 }
 

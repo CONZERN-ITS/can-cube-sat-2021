@@ -9,15 +9,8 @@
 namespace ccsds { namespace uslp {
 
 
-map_source::map_source(gmap_id_t map_id_)
+map_source::map_source(gmapid_t map_id_)
 	: map_id(map_id_)
-{
-
-}
-
-
-map_source::map_source(gmap_id_t map_id_, uint16_t tfdf_size_)
-	: map_id(map_id_), _tfdf_size(tfdf_size_)
 {
 
 }
@@ -93,11 +86,18 @@ void map_source::finalize_impl()
 }
 
 
+void map_source::emit_event(const event & event)
+{
+	if (_event_handler)
+		_event_handler(event);
+}
+
+
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-void map_sink::set_event_callback(event_callback_t event_callback)
+void map_sink::set_event_handler(event_handler_t event_callback)
 {
 	if (!_finalized)
 	{
@@ -106,7 +106,7 @@ void map_sink::set_event_callback(event_callback_t event_callback)
 		throw object_is_finalized(error.str());
 	}
 
-	_event_callback = event_callback;
+	_event_handler = event_callback;
 }
 
 
@@ -142,10 +142,10 @@ void map_sink::finalize_impl()
 }
 
 
-void map_sink::emit_event(const map_sink_event & event)
+void map_sink::emit_event(const event & event)
 {
-	if (_event_callback)
-		_event_callback(event);
+	if (_event_handler)
+		_event_handler(event);
 }
 
 

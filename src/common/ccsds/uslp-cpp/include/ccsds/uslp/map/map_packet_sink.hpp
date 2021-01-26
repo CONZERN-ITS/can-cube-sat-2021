@@ -14,11 +14,11 @@ namespace ccsds { namespace uslp {
 class map_packet_sink: public map_sink
 {
 public:
-	map_packet_sink(gmap_id_t channel_id);
+	map_packet_sink(gmapid_t channel_id);
 	virtual ~map_packet_sink() = default;
 
 	void max_packet_size(size_t value);
-	size_t max_packet__size() const { return _max_packet_size; }
+	size_t max_packet_size() const { return _max_packet_size; }
 
 	void emit_idle_packets(bool value);
 	bool emit_idle_packets() const { return _emit_idle_packets; }
@@ -35,8 +35,8 @@ private:
 
 	void _consume_bytes(const uint8_t * begin, const uint8_t * end);
 	void _parse_packets();
-	void _flush_accum(accum_t::const_iterator flush_zone_end, map_sink_event_data_unit::release_reason_t reason);
-	void _flush_accum(map_sink_event_data_unit::release_reason_t reason);
+	void _flush_accum(accum_t::const_iterator flush_zone_end, int event_flags);
+	void _flush_accum(int event_flags);
 	void _drop_accum(accum_t::const_iterator drop_zone_end);
 
 	//! QOS последнего пришедшего фрейма

@@ -40,7 +40,7 @@ public:
 
 struct mchannel_frame_params_t
 {
-	gmap_id_t channel_id;
+	gmapid_t channel_id;
 	bool id_is_destination;
 	frame_class_t frame_class;
 	bool ocf_present;

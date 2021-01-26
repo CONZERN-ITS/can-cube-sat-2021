@@ -13,7 +13,7 @@
 namespace ccsds { namespace uslp {
 
 
-map_packet_source::map_packet_source(gmap_id_t map_id_)
+map_packet_source::map_packet_source(gmapid_t map_id_)
 	: map_source(map_id_)
 {
 
@@ -34,7 +34,7 @@ void map_packet_source::add_packet(const uint8_t * packet, size_t packet_size, q
 }
 
 
-void map_packet_source::add_encapsulated_data(
+void map_packet_source::add_encapsulate_data(
 		const uint8_t * data, size_t data_size,
 		qos_t qos, epp::protocol_id_t proto_id
 )

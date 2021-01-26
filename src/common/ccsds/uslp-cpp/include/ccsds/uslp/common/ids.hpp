@@ -76,11 +76,11 @@ namespace ccsds { namespace uslp {
 	};
 
 
-	class gmap_id_t: public gvcid_t
+	class gmapid_t: public gvcid_t
 	{
 	public:
-		gmap_id_t() = default;
-		gmap_id_t(uint16_t sc_id_, uint8_t vchannel_id_, uint8_t map_id_)
+		gmapid_t() = default;
+		gmapid_t(uint16_t sc_id_, uint8_t vchannel_id_, uint8_t map_id_)
 			: gvcid_t(sc_id_, vchannel_id_)
 		{
 			map_id(map_id_);
@@ -91,17 +91,17 @@ namespace ccsds { namespace uslp {
 		void map_id(uint8_t value) { _map_id = value; }
 		uint8_t map_id() const { return _map_id; }
 
-		const bool operator == (const gmap_id_t & other) const
+		const bool operator == (const gmapid_t & other) const
 		{
 			return gvcid_t::operator==(other) && this->_map_id == other._map_id;
 		}
 
-		const bool operator != (const gmap_id_t & other) const
+		const bool operator != (const gmapid_t & other) const
 		{
 			return !(*this == other);
 		}
 
-		const bool operator < (const gmap_id_t & other) const
+		const bool operator < (const gmapid_t & other) const
 		{
 			if (gvcid_t::operator==(other))
 				return this->_map_id < other._map_id;

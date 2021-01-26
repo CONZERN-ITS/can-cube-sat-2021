@@ -7,7 +7,7 @@
 #include <ccsds/uslp/common/defs.hpp>
 #include <ccsds/uslp/common/ids.hpp>
 
-#include <ccsds/uslp/map/map_sink_events.h>
+#include <ccsds/uslp/events.hpp>
 #include <ccsds/uslp/common/frame_seq_no.hpp>
 
 
@@ -27,9 +27,12 @@ struct output_map_frame_params
 class map_source
 {
 public:
-	map_source(gmap_id_t map_id_);
-	map_source(gmap_id_t map_id_, uint16_t tfdf_size_);
+	typedef std::function<void(const event &)> event_handler_t;
+
+	map_source(gmapid_t map_id_);
 	virtual ~map_source() = default;
+
+	void set_event_handler(event_handler_t event_callback);
 
 	void tfdf_size(uint16_t value);
 	uint16_t tfdf_size() const noexcept { return _tfdf_size; }
@@ -40,9 +43,10 @@ public:
 	bool peek_tfdf(output_map_frame_params & params);
 	void pop_tfdf(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size);
 
-	const gmap_id_t map_id;
+	const gmapid_t map_id;
 
 protected:
+	void emit_event(const event & event);
 
 	virtual void finalize_impl();
 
@@ -51,6 +55,7 @@ protected:
 	virtual void pop_tfdf_impl(uint8_t * tfdf_buffer) = 0;
 
 private:
+	event_handler_t _event_handler = nullptr;
 	bool _finalized = false;
 	uint16_t _tfdf_size = 0;
 };
@@ -69,12 +74,12 @@ struct input_map_frame_params
 class map_sink
 {
 public:
-	typedef std::function<void(const map_sink_event &)> event_callback_t;
+	typedef std::function<void(const event &)> event_handler_t;
 
-	map_sink(gmap_id_t map_id_): map_id(map_id_) {}
+	map_sink(gmapid_t map_id_): map_id(map_id_) {}
 	virtual ~map_sink() = default;
 
-	void set_event_callback(event_callback_t event_callback);
+	void set_event_handler(event_handler_t event_callback);
 
 	void finalize();
 
@@ -83,10 +88,10 @@ public:
 			const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
 	);
 
-	const gmap_id_t map_id;
+	const gmapid_t map_id;
 
 protected:
-	void emit_event(const map_sink_event & event);
+	void emit_event(const event & event);
 	virtual void finalize_impl();
 	virtual void push_impl(
 			const input_map_frame_params & params,
@@ -96,13 +101,12 @@ protected:
 	bool is_finalized() const { return _finalized; }
 
 private:
-	event_callback_t _event_callback;
+	event_handler_t _event_handler = nullptr;
 	bool _finalized = false;
 };
 
+
 }}
-
-
 
 
 #endif /* INCLUDE_CCSDS_USLP_MAP_ABSTRACT_MAP_HPP_ */

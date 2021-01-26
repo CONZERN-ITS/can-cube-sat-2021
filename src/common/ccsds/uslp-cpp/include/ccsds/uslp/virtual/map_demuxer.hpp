@@ -16,7 +16,7 @@ public:
 	virtual ~map_demuxer() = default;
 
 protected:
-	typedef std::map<gmap_id_t, map_sink*> container_t;
+	typedef std::map<gmapid_t, map_sink*> container_t;
 
 	virtual void add_map_sink_impl(map_sink * sink) override;
 

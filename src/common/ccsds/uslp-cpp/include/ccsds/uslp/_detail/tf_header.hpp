@@ -73,7 +73,7 @@ struct tf_header_t
 	//! Номер версии фрейма
 	uint8_t frame_version_no = default_frame_version_no;
 	//! Идентификатор канала кадра
-	gmap_id_t gmap_id;
+	gmapid_t gmap_id;
 	//! Дополнение к идентификатору - показывает фрейм исходит с этого канала или предназначен для него
 	bool id_is_destination;
 
