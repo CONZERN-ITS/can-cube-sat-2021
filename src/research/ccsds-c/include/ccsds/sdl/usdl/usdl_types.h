@@ -16,6 +16,20 @@
 #include "usdl_basic_types.h"
 
 typedef struct {
+	uint8_t *data;
+	size_t size;
+	size_t max_size;
+	size_t index;
+	union {
+		fhd_t fhd;
+		lvo_t lvo;
+	};
+	tfdz_construction_rules_t rules;
+} map_buffer_t;
+
+
+
+typedef struct {
 	map_id_t map_id;
 	vc_id_t vc_id;
 	mc_id_t mc_id;
@@ -43,9 +57,14 @@ typedef struct mapr_t {
 	map_buffer_t packet;
 	map_buffer_t tfdz;
 	mapr_state_t state;
+
+	tfdz_construction_rules_t rules;
 } mapr_t;
 
 typedef struct map_t {
+	void (*map_parse)(map_t *map, uint8_t *data, size_t size, map_params_t *map_params);
+	int (*map_request_from_down)(map_t *map);
+
 	mapr_t mapr;
 	map_id_t map_id;
 	map_mx_t *map_mx;
@@ -53,7 +72,6 @@ typedef struct map_t {
 	bool split_allowed;
 	quality_of_service_t qos;
 
-	tfdz_construction_rules_t flags;
 	map_buffer_t buf_ex;
 	map_buffer_t buf_sc;
 	map_buffer_t buf_packet;

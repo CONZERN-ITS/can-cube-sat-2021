@@ -22,6 +22,7 @@ int mc_multiplex(mc_mx_t *mc_mx, uint8_t *data, size_t size,
 			mc_id_t old = mc_mx->mc_active;
 			do {
 				mc_mx->mc_active++;
+				mc_mx->mc_active %= (sizeof(mc_mx->mc_arr) / sizeof(mc_mx->mc_arr[0]));
 			} while (mc_mx->mc_active != old && mc_mx->mc_arr[mc_mx->mc_active] == 0);
 		}
 		return ret;

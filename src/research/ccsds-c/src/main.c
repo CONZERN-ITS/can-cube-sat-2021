@@ -72,21 +72,23 @@ int main() {
 	uint8_t map_buffer[40];
 	map_s.buf_ex.data = map_buffer;
 	map_s.buf_ex.max_size = sizeof(map_buffer);
-	mapp_init(&map_s, &map_mx_s, 5);
-
+	//mapp_init(&map_s, &map_mx_s, 5);
+	mapa_init(&map_s, &map_mx_s, 5);
 
 	uint8_t payload[] = "\xDE\xAD\xBE\xAF";
 	epp_header_t epp_header = {0};
 	epp_header.epp_id = 1;
 	uint8_t pl_arr[40];
-	int epp_size = epp_make_header_auto_length2(&epp_header, pl_arr, sizeof(pl_arr), sizeof(payload));
-	memcpy(&pl_arr[epp_size], payload, sizeof(payload));
-	mapp_send(&map_s, pl_arr, sizeof(payload) + epp_size, PVN_ENCAPSULATION_PROTOCOL, QOS_EXPEDITED);
-	pc_request_from_down(&pc_s);
-
-	for (int i = 0; i < pc_p.tf_length; i++) {
-		printf("0x%x ", pc_arr[i]);
+	int pl_size = 35;
+	for (int i = 0; i < pl_size; i++) {
+		pl_arr[i] = i + 2;
 	}
+	//int epp_size = epp_make_header_auto_length2(&epp_header, pl_arr, sizeof(pl_arr), sizeof(payload));
+	//memcpy(&pl_arr[epp_size], payload, sizeof(payload));
+	//mapp_send(&map_s, pl_arr, sizeof(payload) + epp_size, PVN_ENCAPSULATION_PROTOCOL, QOS_EXPEDITED);
+	//memcpy(pl_arr, payload, sizeof(payload));
+
+
 
 	printf("\n\nHELLO2\n");
 
@@ -110,22 +112,41 @@ int main() {
 	map_mx_init(&map_mx_r, &vc_r);
 
 	map_t map_r = {0};
-	uint8_t map_buffer1[40];
-	uint8_t map_buffer2[40];
+	uint8_t map_buffer1[40] = {0};
+	uint8_t map_buffer2[40] = {0};;
 	map_r.mapr.packet.data = map_buffer1;
 	map_r.mapr.packet.max_size = sizeof(map_buffer1);
 	map_r.mapr.tfdz.data = map_buffer2;
 	map_r.mapr.tfdz.max_size = sizeof(map_buffer2);
 	map_r.mapr.state = MAPR_STATE_BEGIN;
-	mapp_init(&map_r, &map_mx_r, 5);
+	//mapp_init(&map_r, &map_mx_r, 5);
+	mapa_init(&map_r, &map_mx_r, 5);
 
-	pc_parse(&pc_r, pc_arr, sizeof(pc_arr));
-	uint8_t arr3[40];
+	uint8_t arr3[40] = {0};
 	quality_of_service_t qos = 0;
-	int s = map_recieve(&map_r.mapr, arr3, sizeof(arr3), &qos);
+	//int s = mapp_recieve(&map_r.mapr, arr3, sizeof(arr3), &qos);
 
-	for (int i = 0; i < s; i++) {
-		printf("0x%x ", arr3[i]);
+
+	int sent = 0;
+	while (sent < pl_size) {
+		int s =	mapa_send(&map_s, &pl_arr[sent], pl_size - sent, QOS_EXPEDITED);
+		sent += s;
+		pc_request_from_down(&pc_s);
+		for (int i = 0; i < pc_p.tf_length && s; i++) {
+			printf("0x%x ", pc_arr[i]);
+		}
+		printf("\n");
+		if (pc_parse(&pc_r, pc_arr, sizeof(pc_arr))) {
+			pc_s.is_valid = 0;
+		}
+
+		s = mapa_recieve(&map_r.mapr, arr3, sizeof(arr3), &qos);
+		for (int i = 0; i < s; i++) {
+			printf("0x%x ", arr3[i]);
+		}
+		if (s) {
+			break;
+		}
 	}
 
 	printf("\n\nHELLO3\n");

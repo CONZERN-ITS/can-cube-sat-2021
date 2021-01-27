@@ -20,6 +20,7 @@ int vc_multiplex(vc_mx_t *vc_mx, uint8_t *data, size_t size,
 			mc_id_t old = vc_mx->vc_active;
 			do {
 				vc_mx->vc_active++;
+				vc_mx->vc_active %= (sizeof(vc_mx->vc_arr) / sizeof(vc_mx->vc_arr[0]));
 			} while (vc_mx->vc_active != old && vc_mx->vc_arr[vc_mx->vc_active] == 0);
 		}
 		return ret;

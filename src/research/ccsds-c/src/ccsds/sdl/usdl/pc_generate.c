@@ -77,7 +77,7 @@ int pc_generate(pc_t *pc, const uint8_t *data, size_t size,
 		memcpy(&pc->data[k / 8], pc->fec_field, pc->pc_parameters.fec_length);
 		k += pc->pc_parameters.fec_length * 8;
 	}
-	if (k != pc->pc_parameters.tf_length && pc->pc_parameters.tft == TF_FIXED) {
+	if (k / 8 != pc->pc_parameters.tf_length && pc->pc_parameters.tft == TF_FIXED) {
 		return 0;
 	} else if (k > pc->pc_parameters.tf_length && pc->pc_parameters.tft == TF_VARIABLE) {
 		return 0;

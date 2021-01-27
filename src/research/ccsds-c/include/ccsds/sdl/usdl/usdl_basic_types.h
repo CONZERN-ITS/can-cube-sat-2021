@@ -11,16 +11,6 @@
 typedef uint16_t fhd_t;
 typedef uint16_t lvo_t;
 
-typedef struct {
-	uint8_t *data;
-	size_t size;
-	size_t max_size;
-	size_t index;
-	union {
-		fhd_t fhd;
-		lvo_t lvo;
-	};
-} map_buffer_t;
 
 typedef enum {
 	QOS_SEQ_CONTROL,

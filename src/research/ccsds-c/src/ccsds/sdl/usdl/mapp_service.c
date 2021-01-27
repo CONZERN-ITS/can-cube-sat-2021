@@ -6,10 +6,18 @@
 #include <ccsds/nl/epp/epp.h>
 #include <ccsds/sdl/usdl/mapp_service.h>
 
+static void mapp_parse(map_t *map, uint8_t *data, size_t size,
+		map_params_t *map_params);
+
+int mapp_request_from_down(map_t *map);
+
 static uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos);
 
 int mapp_init(map_t *map, map_mx_t *mx, map_id_t map_id) {
 	usdl_print_debug();
+	map->map_parse = mapp_parse;
+	map->map_request_from_down = mapp_request_from_down;
+
 	map->map_mx = mx;
 	map->map_id = map_id;
 	map->map_mx->map_arr[map->map_id] = map;
@@ -81,11 +89,7 @@ int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_serv
 #endif
 }
 
-int mapa_send();
-
-int map_stream_send();
-
-int map_request_from_down(map_t *map) {
+int mapp_request_from_down(map_t *map) {
 	usdl_print_debug();
 	map_buffer_t *buf = 0;
 
@@ -120,11 +124,11 @@ int map_request_from_down(map_t *map) {
 	return ret;
 }
 
-pvn_t _map_get_pvn(uint8_t v) {
+static pvn_t _map_get_pvn(uint8_t v) {
 	return (v >> 5) & 7;
 }
 
-int _map_try_calc_size(uint8_t *data, int size) {
+static int _map_try_calc_size(uint8_t *data, int size) {
 	pvn_t pvn = _map_get_pvn(data[0]);
 	if (pvn == PVN_ENCAPSULATION_PROTOCOL) {
 		epp_header_t h = {0};
@@ -139,7 +143,7 @@ int _map_try_calc_size(uint8_t *data, int size) {
 }
 
 
-int _map_fhd_is_valid(mapr_t *map) {
+static int _map_fhd_is_valid(mapr_t *map) {
 	if (map->tfdz.fhd <= map->packet.index) {
 		return 1;
 	}
@@ -151,7 +155,7 @@ int _map_fhd_is_valid(mapr_t *map) {
 	return map->packet.size - map->packet.index == map->tfdz.fhd - map->tfdz.index;
 }
 
-int _map_push_from_down(mapr_t *map) {
+static int _map_push_from_down(mapr_t *map) {
 	if (map->state == MAPR_STATE_FINISH) {
 		return 0;
 	}
@@ -211,7 +215,7 @@ int _map_push_from_down(mapr_t *map) {
 	return 0;
 }
 
-int _map_save_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params) {
+static int _map_save_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params) {
 
 	if (map->tfdz.size != 0 || map->tfdz.max_size < size) {
 		return 0;
@@ -226,14 +230,14 @@ int _map_save_from_down(mapr_t *map,  const uint8_t *data, size_t size, const ma
 
 
 
-int map_recieve_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params)  {
+static int map_recieve_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params)  {
 	_map_push_from_down(map);
 	int ret = _map_save_from_down(map, data, size, params);
 	_map_push_from_down(map);
 	return ret;
 }
 
-int map_recieve(mapr_t *map, uint8_t *data, size_t size, quality_of_service_t *qos) {
+int mapp_recieve(mapr_t *map, uint8_t *data, size_t size, quality_of_service_t *qos) {
 	usdl_print_debug();
 	if (map->state != MAPR_STATE_FINISH || size < map->packet.size) {
 		return 0;
@@ -256,7 +260,7 @@ static uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos)
 	return size - 3;
 }
 
-void map_parse(map_t *map, uint8_t *data, size_t size,
+static void mapp_parse(map_t *map, uint8_t *data, size_t size,
 		map_params_t *map_params) {
 	usdl_print_debug();
 	map_recieve_from_down(&map->mapr, data, size, map_params);
