@@ -217,7 +217,7 @@ static int _map_push_from_down(mapr_t *map) {
 
 static int _map_save_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params) {
 
-	if (map->tfdz.size != 0 || map->tfdz.max_size < size) {
+	if (map->tfdz.size != map->tfdz.index || map->tfdz.max_size < size) {
 		return 0;
 	} else {
 		memcpy(map->tfdz.data, data, size);

@@ -169,7 +169,7 @@ static int _map_push_from_down(mapr_t *map) {
 
 		memcpy(&map->packet.data[map->packet.index], map->tfdz.data, count_to_send);
 		map->packet.index += count_to_send;
-		map->tfdz.index = map->tfdz.size = 0;
+		map->tfdz.index = map->tfdz.size;
 		if (map->tfdz.lvo != (lvo_t)~0) {
 			map->state = MAPR_STATE_FINISH;
 			map->packet.size = map->packet.index;
@@ -180,7 +180,7 @@ static int _map_push_from_down(mapr_t *map) {
 
 static int _map_save_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params) {
 
-	if (map->tfdz.size != 0 || map->tfdz.max_size < size) {
+	if (map->tfdz.size != map->tfdz.index || map->tfdz.max_size < size) {
 		return 0;
 	} else {
 		memcpy(map->tfdz.data, data, size);
