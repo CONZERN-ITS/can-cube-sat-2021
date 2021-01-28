@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <endian.h>
 #include <ccsds/nl/epp/epp.h>
+#include <stdlib.h>
 
 void print_bit(uint8_t num) {
 	for(int i = 0; i < 8; ++i) {
@@ -24,35 +25,44 @@ void print_bit_arr(uint8_t *arr, size_t size) {
 	}
 }
 
-#define MAIN_MAPP
+//#define MAIN_MAPP
 
-int main() {
+typedef enum {
+	USLPS_MAPP,
+	USLPS_MAPA,
+	USLPS_VCF,
+} uslp_service_t;
 
-	printf("HELLO\n");
-	pc_t pc_s = {0};
+typedef struct uslp_t {
+	pc_t pc;
+	mc_mx_t mc_mx;
+	mc_t mc;
+	vc_mx_t vc_mx;
+	vc_t vc;
+	map_mx_t map_mx;
+	map_t map;
+} uslp_t;
+
+void main_uslp_init(uslp_t *uslp, size_t tf_length, uslp_service_t service, size_t max_packet_size) {
 	pc_paramaters_t pc_p = {0};
 	pc_p.can_generate_oid = 0;
 	pc_p.is_fec_presented = 0;
-	pc_p.tf_length = 30;
+	pc_p.tf_length = tf_length;
 	pc_p.tft = TF_FIXED;
 	pc_p.tfvn = 0x0C;
-	uint8_t pc_arr[40];
-	pc_init(&pc_s, &pc_p, pc_arr, sizeof(pc_arr));
+	uint8_t *pc_arr = malloc(tf_length);
+	pc_init(&uslp->pc, &pc_p, pc_arr, tf_length);
 
-	mc_mx_t mc_mx_s = {0};
-	mc_mx_init(&mc_mx_s, &pc_s);
+	mc_mx_init(&uslp->mc_mx, &uslp->pc);
 
-	mc_t mc_s = {0};
 	mc_paramaters_t mc_p = {0};
 	mc_p.ocf_flag = 0;
 	mc_p.scid = 0x1234;
 	mc_p.tft = TF_FIXED;
-	mc_init(&mc_s, &mc_mx_s, &mc_p, 0);
+	mc_init(&uslp->mc, &uslp->mc_mx, &mc_p, 0);
 
-	vc_mx_t vc_mx_s = {0};
-	vc_mx_init(&vc_mx_s, &mc_s);
+	vc_mx_init(&uslp->vc_mx, &uslp->mc);
 
-	vc_t vc_s = {0};
 	vc_parameters_t vc_p = {0};
 	vc_p.clcw_report_rate = 0;
 	vc_p.clcw_version = 0;
@@ -64,112 +74,98 @@ int main() {
 	vc_p.vc_id = 0;
 	vc_p.vcf_count_lenght_expedited = 1;
 	vc_p.vcf_count_lenght_seq_control = 1;
-	vc_init(&vc_s, &vc_mx_s, &vc_p, 0);
+	vc_init(&uslp->vc, &uslp->vc_mx, &vc_p, 0);
 
-	map_mx_t map_mx_s = {0};
-	map_mx_init(&map_mx_s, &vc_s);
+	map_mx_init(&uslp->map_mx, &uslp->vc);
 
-	map_t map_s = {0};
-	uint8_t map_buffer[40];
-	map_s.buf_ex.data = map_buffer;
-	map_s.buf_ex.max_size = sizeof(map_buffer);
-#ifdef MAIN_MAPP
-	mapp_init(&map_s, &map_mx_s, 5);
-#else
-	mapa_init(&map_s, &map_mx_s, 5);
-#endif
-
-
-
-
-	printf("\n\nHELLO2\n");
-
-	pc_t pc_r = {0};
-	pc_init(&pc_r, &pc_p, 0, 0);
-
-	mc_mx_t mc_mx_r = {0};
-	mc_mx_init(&mc_mx_r, &pc_r);
-
-	mc_t mc_r = {0};
-	mc_p.scid = 0x1235;
-	mc_init(&mc_r, &mc_mx_r, &mc_p, 0);
-
-	vc_mx_t vc_mx_r = {0};
-	vc_mx_init(&vc_mx_r, &mc_r);
-
-	vc_t vc_r = {0};
-	vc_init(&vc_r, &vc_mx_r, &vc_p, 0);
-
-	map_mx_t map_mx_r = {0};
-	map_mx_init(&map_mx_r, &vc_r);
-
-	map_t map_r = {0};
-	uint8_t map_buffer1[40] = {0};
-	uint8_t map_buffer2[40] = {0};;
-	map_r.mapr.packet.data = map_buffer1;
-	map_r.mapr.packet.max_size = sizeof(map_buffer1);
-	map_r.mapr.tfdz.data = map_buffer2;
-	map_r.mapr.tfdz.max_size = sizeof(map_buffer2);
-	map_r.mapr.state = MAPR_STATE_BEGIN;
-#ifdef MAIN_MAPP
-	mapp_init(&map_r, &map_mx_r, 5);
-#else
-	mapa_init(&map_r, &map_mx_r, 5);
-#endif
-
-	uint8_t arr3[40] = {0};
-	quality_of_service_t qos = 0;
-
-	uint8_t payload[] = "\xDE\xAD\xBE\xAF";
-	epp_header_t epp_header = {0};
-	epp_header.epp_id = 1;
-
-	uint8_t pl_arr[40];
-	int pl_size = 35;
-#ifdef MAIN_MAPP
-	int epp_size = epp_make_header_auto_length2(&epp_header, pl_arr, sizeof(pl_arr), pl_size);
-	for (int i = 0; i < pl_size; i++) {
-		pl_arr[i + epp_size] = i + 1;
+	uint8_t *map_buffer = malloc(tf_length);
+	uint8_t *map_buffer_p = malloc(max_packet_size);
+	uslp->map.buf_ex.data = map_buffer;
+	uslp->map.buf_ex.max_size = tf_length;
+	uslp->map.mapr.tfdz.data = map_buffer;
+	uslp->map.mapr.tfdz.max_size = tf_length;
+	uslp->map.mapr.packet.data = map_buffer_p;
+	uslp->map.mapr.packet.max_size = max_packet_size;
+	if (service == USLPS_MAPA) {
+		mapa_init(&uslp->map, &uslp->map_mx, 5);
+	} else {
+		mapp_init(&uslp->map, &uslp->map_mx, 5);
 	}
-	pl_size += epp_size;
-#else
-	for (int i = 0; i < pl_size; i++) {
-		pl_arr[i] = i + 1;
-	}
-#endif
+}
+
+void test_send_recieve(uslp_t *us, uslp_t *ur, uint8_t *data, size_t size, uslp_service_t service) {
+	int s = 0;
 	int sent = 0;
-	while (sent < pl_size) {
-#ifdef MAIN_MAPP
-		int s = mapp_send(&map_s, &pl_arr[sent], pl_size - sent, PVN_ENCAPSULATION_PROTOCOL, QOS_EXPEDITED);
-#else
-		int s =	mapa_send(&map_s, &pl_arr[sent], pl_size - sent, QOS_EXPEDITED);
-#endif
+	int recieved = 0;
+	while (sent < size || recieved < size) {
+		if (service == USLPS_MAPP) {
+			s = mapp_send(&us->map, &data[sent], size - sent, PVN_ENCAPSULATION_PROTOCOL, QOS_EXPEDITED);
+		} else {
+			s =	mapa_send(&us->map, &data[sent], size - sent, QOS_EXPEDITED);
+		}
+
 
 		sent += s;
-		pc_request_from_down(&pc_s);
-		for (int i = 0; i < pc_p.tf_length && s; i++) {
-			printf("0x%x ", pc_arr[i]);
-		}
-		printf("\n");
-		if (pc_parse(&pc_r, pc_arr, sizeof(pc_arr))) {
-			pc_s.is_valid = 0;
+		pc_request_from_down(&us->pc);
+		if (us->pc.is_valid) {
+			for (int i = 0; i < us->pc.pc_parameters.tf_length && s; i++) {
+				printf("0x%x ", us->pc.data[i]);
+			}
+			printf("\n");
+			if (pc_parse(&ur->pc, us->pc.data, us->pc.pc_parameters.tf_length)) {
+				us->pc.is_valid = 0;
+			}
 		}
 
-
-#ifdef MAIN_MAPP
-		s = mapp_recieve(&map_r.mapr, arr3, sizeof(arr3), &qos);
-#else
-		s = mapa_recieve(&map_r.mapr, arr3, sizeof(arr3), &qos);
-#endif
-
-		for (int i = 0; i < s; i++) {
-			printf("0x%x ", arr3[i]);
+		quality_of_service_t qos = 0;
+		if (service == USLPS_MAPP) {
+			s = mapp_recieve(&ur->map.mapr, data, size, &qos);
+		} else {
+			s = mapa_recieve(&ur->map.mapr, data, size, &qos);
 		}
+		recieved += s;
 		if (s) {
 			break;
 		}
 	}
+	if (s) {
+		for (int i = 0; i < s; i++) {
+			printf("0x%x ", data[i]);
+		}
+		printf("\n");
+	}
 
+}
+
+int main() {
+	const int size = 0x80;
+	uint8_t pl_arr[size];
+	int pl_size = size - 4;
+	const uslp_service_t test_service = USLPS_MAPA;
+	printf("HELLO\n");
+	uslp_t us = {0};
+	uslp_t ur = {0};
+	main_uslp_init(&us, 30, test_service, size);
+	main_uslp_init(&ur, 30, test_service, size);
+
+
+	epp_header_t epp_header = {0};
+	epp_header.epp_id = 1;
+
+
+	if (test_service == USLPS_MAPP) {
+		int epp_size = epp_make_header_auto_length2(&epp_header, pl_arr, sizeof(pl_arr), pl_size);
+		for (int i = 0; i < pl_size; i++) {
+			pl_arr[i + epp_size] = i + 1;
+		}
+		pl_size += epp_size;
+	} else {
+		for (int i = 0; i < pl_size; i++) {
+			pl_arr[i] = i + 1;
+		}
+	}
+
+	test_send_recieve(&us, &ur, pl_arr, pl_size, test_service);
 	printf("\n\nHELLO3\n");
 
 /*
