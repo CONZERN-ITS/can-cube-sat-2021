@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/its-ccsds-link.dir/src/main.cpp.o -o its-ccsds-link  ../ccsds-uslp-cpp/libccsds-uslp-cpp.a ../sx126x/libsx126x.a 

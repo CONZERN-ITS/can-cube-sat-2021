@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsx126x.a CMakeFiles/sx126x.dir/remote/src/sx126x_api.c.o CMakeFiles/sx126x.dir/remote/src/sx126x_drv.c.o CMakeFiles/sx126x.dir/src/sx126x_board_rpi.c.o
+/usr/bin/ranlib libsx126x.a
