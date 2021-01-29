@@ -17,7 +17,7 @@ static void _default_event_callback(const event &)
 
 
 pchannel_source::pchannel_source(std::string name_)
-		: name(name_), _frame_version_no(detail::tf_header_t::default_frame_version_no)
+		: channel_id(name_), _frame_version_no(detail::tf_header_t::default_frame_version_no)
 {
 	set_event_callback(_default_event_callback);
 }
@@ -207,7 +207,7 @@ void pchannel_source::finalize_impl()
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 pchannel_sink::pchannel_sink(std::string name_)
-	: name(std::move(name_))
+	: channel_id(std::move(name_))
 {
 	set_event_callback(_default_event_callback);
 }

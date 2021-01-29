@@ -59,7 +59,7 @@ bool map_rr_muxer::peek_impl(vchannel_frame_params & params)
 	if (!retval)
 		return false;
 
-	params.channel_id = _selected_channel->map_id;
+	params.channel_id = _selected_channel->channel_id;
 
 	switch (map_params.qos)
 	{

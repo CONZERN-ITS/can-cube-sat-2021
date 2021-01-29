@@ -56,7 +56,7 @@ public:
 	bool peek(pchannel_frame_params_t & frame_params);
 	void pop(uint8_t * frame_buffer, size_t frame_buffer_size);
 
-	const std::string name;
+	const std::string channel_id;
 
 protected:
 	uint16_t frame_size_overhead() const;
@@ -101,7 +101,7 @@ public:
 
 	void push_frame(const uint8_t * frame_buffer, size_t frame_buffer_size);
 
-	const std::string name;
+	const std::string channel_id;
 
 protected:
 	void emit_event(const event & evt);

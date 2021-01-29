@@ -23,7 +23,7 @@ void mchannel_demuxer::finalize_impl()
 
 void mchannel_demuxer::add_mchannel_sink_impl(mchannel_sink * sink)
 {
-	_container.insert(std::make_pair(sink->mcid, sink));
+	_container.insert(std::make_pair(sink->channel_id, sink));
 }
 
 

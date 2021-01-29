@@ -11,7 +11,7 @@ map_demuxer::map_demuxer(gvcid_t gvcid_)
 
 void map_demuxer::add_map_sink_impl(map_sink * sink)
 {
-	_container.insert(std::make_pair(sink->map_id, sink));
+	_container.insert(std::make_pair(sink->channel_id, sink));
 }
 
 

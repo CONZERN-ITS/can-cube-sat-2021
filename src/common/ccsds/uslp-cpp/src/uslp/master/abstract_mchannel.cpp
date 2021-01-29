@@ -20,7 +20,7 @@ static void _default_event_callback(const event &)
 
 
 mchannel_source::mchannel_source(mcid_t mcid_)
-	: mcid(mcid_)
+	: channel_id(mcid_)
 {
 	set_event_callback(_default_event_callback);
 }
@@ -74,14 +74,14 @@ void mchannel_source::add_vchannel_source(vchannel_source * source)
 		throw object_is_finalized(error.str());
 	}
 
-	if (source->gvcid.mcid() != this->mcid)
+	if (source->channel_id.mcid() != this->channel_id)
 	{
 		std::stringstream error;
 		error << "invalid gvcid sink "
-				<< static_cast<int>(source->gvcid.sc_id())
-				<< "," << static_cast<int>(source->gvcid.vchannel_id())
+				<< static_cast<int>(source->channel_id.sc_id())
+				<< "," << static_cast<int>(source->channel_id.vchannel_id())
 				<< " for vchannel attached to mchannel sink "
-				<< static_cast<int>(this->mcid.sc_id())
+				<< static_cast<int>(this->channel_id.sc_id())
 		;
 
 		throw einval_exception(error.str());
@@ -216,7 +216,7 @@ void mchannel_source::finalize_impl()
 
 
 mchannel_sink::mchannel_sink(mcid_t mcid_)
-	: mcid(mcid_)
+	: channel_id(mcid_)
 {
 	set_event_callback(&_default_event_callback);
 }
@@ -231,14 +231,14 @@ void mchannel_sink::add_vchannel_sink(vchannel_sink * sink)
 		throw object_is_finalized(error.str());
 	}
 
-	if (sink->gvcid.mcid() != this->mcid)
+	if (sink->channel_id.mcid() != this->channel_id)
 	{
 		std::stringstream error;
 		error << "invalid gvcid sink "
-				<< static_cast<int>(sink->gvcid.sc_id())
-				<< "," << static_cast<int>(sink->gvcid.vchannel_id())
+				<< static_cast<int>(sink->channel_id.sc_id())
+				<< "," << static_cast<int>(sink->channel_id.vchannel_id())
 				<< " for vchannel attached to mchannel source "
-				<< static_cast<int>(this->mcid.sc_id())
+				<< static_cast<int>(this->channel_id.sc_id())
 		;
 
 		throw einval_exception(error.str());

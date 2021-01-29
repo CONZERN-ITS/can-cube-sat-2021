@@ -76,7 +76,7 @@ public:
 	bool peek_frame_du(mchannel_frame_params_t & frame_params);
 	void pop_frame_du(uint8_t * frame_data_unit_buffer, uint16_t frame_data_unit_size);
 
-	const mcid_t mcid;
+	const mcid_t channel_id;
 
 protected:
 	uint16_t frame_size_overhead() const;
@@ -119,7 +119,7 @@ public:
 			const uint8_t * frame_data_unit, uint16_t frame_data_unit_size
 	);
 
-	const mcid_t mcid;
+	const mcid_t channel_id;
 
 protected:
 	void emit_event(const event & evt);

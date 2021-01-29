@@ -12,7 +12,7 @@ vchannel_demuxer::vchannel_demuxer(mcid_t mcid_)
 
 void vchannel_demuxer::add_vchannel_sink_impl(vchannel_sink * sink)
 {
-	_container.insert(std::make_pair(sink->gvcid, sink));
+	_container.insert(std::make_pair(sink->channel_id, sink));
 }
 
 

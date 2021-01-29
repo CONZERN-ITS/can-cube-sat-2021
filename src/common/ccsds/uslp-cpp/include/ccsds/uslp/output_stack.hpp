@@ -21,6 +21,10 @@ class output_stack
 public:
 	output_stack();
 
+	bool peek_frame();
+	bool peek_frame(pchannel_frame_params_t & frame_params);
+	void pop_frame(uint8_t * frame_buffer, size_t frame_buffer_size);
+
 	template<typename T, typename... ARGS>
 	T * create_map(gmapid_t mapid, ARGS && ...args);
 

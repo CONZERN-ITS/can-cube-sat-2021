@@ -50,7 +50,7 @@ public:
 	bool peek(vchannel_frame_params & params);
 	void pop(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size);
 
-	const gvcid_t gvcid;
+	const gvcid_t channel_id;
 
 protected:
 	void set_frame_seq_no(uint64_t value);
@@ -95,7 +95,7 @@ public:
 			const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
 	);
 
-	const gvcid_t gvcid;
+	const gvcid_t channel_id;
 
 protected:
 	void emit_event(const event & evt);

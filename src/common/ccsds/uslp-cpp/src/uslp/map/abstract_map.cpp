@@ -16,7 +16,7 @@ static void _default_event_callback(const event &)
 
 
 map_source::map_source(gmapid_t map_id_)
-	: map_id(map_id_)
+	: channel_id(map_id_)
 {
 	set_event_callback(_default_event_callback);
 }
@@ -27,7 +27,7 @@ void map_source::tfdf_size(uint16_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use tfdf_size() on map channel, because it is finalized";
+		error << "unable to use tfdf_size() on map source, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -40,7 +40,7 @@ void map_source::set_event_callback(event_handler_t event_callback)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use set_event_callback() on map channel, because it is finalized";
+		error << "unable to use set_event_callback() on map source, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -63,7 +63,7 @@ bool map_source::peek_tfdf()
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_tfdf() on map_channel, because it is not finalized";
+		error << "unable to use peek_tfdf() on map source, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -76,7 +76,7 @@ bool map_source::peek_tfdf(output_map_frame_params & params)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_tfdf(params) on map_channel, because it is not finalized";
+		error << "unable to use peek_tfdf(params) on map source, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -89,7 +89,7 @@ void map_source::pop_tfdf(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_tfdf() on map_channel, because it is not finalized";
+		error << "unable to use peek_tfdf() on map source, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -116,7 +116,7 @@ void map_source::emit_event(const event & event)
 
 
 map_sink::map_sink(gmapid_t map_id_)
-	: map_id(map_id_)
+	: channel_id(map_id_)
 {
 	set_event_callback(_default_event_callback);
 }
@@ -124,10 +124,10 @@ map_sink::map_sink(gmapid_t map_id_)
 
 void map_sink::set_event_callback(event_callback_t event_callback)
 {
-	if (!_finalized)
+	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use set_event_callback() on map_channel, because it is finalized";
+		error << "unable to use set_event_callback() on map sink, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -153,7 +153,7 @@ void map_sink::push(
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use push() on map_channel, because it is not finalized";
+		error << "unable to use push() on map sink, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 

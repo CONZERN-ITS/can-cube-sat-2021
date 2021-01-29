@@ -43,7 +43,7 @@ public:
 	bool peek_tfdf(output_map_frame_params & params);
 	void pop_tfdf(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size);
 
-	const gmapid_t map_id;
+	const gmapid_t channel_id;
 
 protected:
 	void emit_event(const event & evt);
@@ -88,7 +88,7 @@ public:
 			const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
 	);
 
-	const gmapid_t map_id;
+	const gmapid_t channel_id;
 
 protected:
 	void emit_event(const event & event);

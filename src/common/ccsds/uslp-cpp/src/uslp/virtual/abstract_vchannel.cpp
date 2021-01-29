@@ -18,7 +18,7 @@ static void _default_event_callback(const event &)
 
 
 vchannel_source::vchannel_source(gvcid_t gvcid_)
-	: gvcid(gvcid_)
+	: channel_id(gvcid_)
 {
 	set_event_callback(_default_event_callback);
 }
@@ -72,16 +72,16 @@ void vchannel_source::add_map_source(map_source * source)
 		throw object_is_finalized(error.str());
 	}
 
-	if (source->map_id.gvcid() != this->gvcid)
+	if (source->channel_id.gvcid() != this->channel_id)
 	{
 		std::stringstream error;
 		error << "invalid gmap id "
-				<< static_cast<int>(source->map_id.sc_id())
-				<< "," << static_cast<int>(source->map_id.vchannel_id())
-				<< "," << static_cast<int>(source->map_id.map_id())
+				<< static_cast<int>(source->channel_id.sc_id())
+				<< "," << static_cast<int>(source->channel_id.vchannel_id())
+				<< "," << static_cast<int>(source->channel_id.map_id())
 				<< " for map channel attached to vchannel source"
-				<< static_cast<int>(this->gvcid.sc_id())
-				<< "," << static_cast<int>(this->gvcid.vchannel_id())
+				<< static_cast<int>(this->channel_id.sc_id())
+				<< "," << static_cast<int>(this->channel_id.vchannel_id())
 		;
 
 		throw einval_exception(error.str());
@@ -192,7 +192,7 @@ void vchannel_source::finalize_impl()
 
 
 vchannel_sink::vchannel_sink(gvcid_t gvcid_)
-	: gvcid(gvcid_)
+	: channel_id(gvcid_)
 {
 	set_event_callback(&_default_event_callback);
 }
@@ -220,16 +220,16 @@ void vchannel_sink::add_map_sink(map_sink * sink)
 		throw object_is_finalized(error.str());
 	}
 
-	if (sink->map_id.gvcid() != this->gvcid)
+	if (sink->channel_id.gvcid() != this->channel_id)
 	{
 		std::stringstream error;
 		error << "invalid gmap id "
-				<< static_cast<int>(sink->map_id.sc_id())
-				<< "," << static_cast<int>(sink->map_id.vchannel_id())
-				<< "," << static_cast<int>(sink->map_id.map_id())
+				<< static_cast<int>(sink->channel_id.sc_id())
+				<< "," << static_cast<int>(sink->channel_id.vchannel_id())
+				<< "," << static_cast<int>(sink->channel_id.map_id())
 				<< " for map channel attached to vchannel sink"
-				<< static_cast<int>(this->gvcid.sc_id())
-				<< "," << static_cast<int>(this->gvcid.vchannel_id())
+				<< static_cast<int>(this->channel_id.sc_id())
+				<< "," << static_cast<int>(this->channel_id.vchannel_id())
 		;
 
 		throw einval_exception(error.str());

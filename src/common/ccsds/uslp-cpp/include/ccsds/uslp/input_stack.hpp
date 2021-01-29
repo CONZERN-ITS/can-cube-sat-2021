@@ -3,6 +3,7 @@
 
 #include <map>
 #include <memory>
+#include <algorithm>
 
 #include <ccsds/uslp/physical/abstract_pchannel.hpp>
 #include <ccsds/uslp/master/abstract_mchannel.hpp>
@@ -15,15 +16,13 @@
 namespace ccsds { namespace uslp {
 
 
-class input_stack_event
+class input_stack_event_handler
 {
 public:
-	enum class kind
-	{
-		SDU_ARRIVED,
-		SDU_REJECTED
+	input_stack_event_handler() = default;
+	virtual ~input_stack_event_handler() = default;
 
-	};
+	virtual void on_map_sdu_event(gmapid_t mapid, const map_sdu_event & event) = 0;
 };
 
 
@@ -31,6 +30,10 @@ class input_stack
 {
 public:
 	input_stack();
+
+	void set_event_handler(input_stack_event_handler * event_handler);
+
+	void push_frame(const uint8_t * frame_data, size_t frame_data_size);
 
 	template<typename T, typename... ARGS>
 	T * create_map(gmapid_t mapid, ARGS && ...args);
@@ -46,13 +49,31 @@ public:
 
 private:
 	template<typename T>
-	void register_events(T * sink);
+	void _register_events(T * sink);
+
+	void _event_callback(const gmapid_t & mapid, const event & evt);
+	void _event_callback(const gvcid_t & gvcid, const event & evt);
+	void _event_callback(const mcid_t & mcid, const event & evt);
+	void _event_callback(const std::string & pchannel_id, const event & evt);
+
+	input_stack_event_handler * _event_handler;
 
 	std::map<gmapid_t, std::unique_ptr<map_sink>> _maps;
 	std::map<gvcid_t, std::unique_ptr<vchannel_sink>> _virtuals;
 	std::map<mcid_t, std::unique_ptr<mchannel_sink>> _masters;
 	std::unique_ptr<pchannel_sink> _pchannel;
 };
+
+
+template<typename T>
+//typename std::enable_if<std::is_base_of<map_sink, T>::value, void>::type
+// Просто чертова шаблонная магия. Удалось обойтись без enable_if!
+void input_stack::_register_events(T * sink)
+{
+	auto channel_id = sink->channel_id;
+	auto callback = [channel_id, this](const event & evt) { this->_event_callback(channel_id, evt); };
+	sink->set_event_callback(std::move(callback));
+}
 
 
 template<typename T, typename... ARGS>
@@ -73,6 +94,7 @@ T * input_stack::create_map(gmapid_t mapid, ARGS && ...args)
 	auto * retval = map.get();
 	itt->second->add_map_sink(retval);
 	_maps.emplace(mapid, std::move(map));
+	_register_events(retval);
 	return retval;
 }
 
@@ -95,6 +117,7 @@ T * input_stack::create_vchannel(gvcid_t gvcid, ARGS && ...args)
 	auto * retval = vchannel.get();
 	itt->second->add_vchannel_sink(retval);
 	_virtuals.emplace(gvcid, std::move(vchannel));
+	_register_events(retval);
 	return retval;
 }
 
@@ -112,6 +135,7 @@ T * input_stack::create_mchannel(mcid_t mcid, ARGS && ...args)
 	auto * retval = mchannel.get();
 	_pchannel->add_mchannel_sink(retval);
 	_masters.emplace(mcid, std::move(mchannel));
+	_register_events(retval);
 	return retval;
 }
 
@@ -124,6 +148,7 @@ T * input_stack::create_pchannel(std::string name, ARGS && ...args)
 
 	auto * retval = new T(std::move(name), std::forward<ARGS>(args)...);
 	_pchannel.reset(retval);
+	_register_events(retval);
 	return retval;
 }
 
