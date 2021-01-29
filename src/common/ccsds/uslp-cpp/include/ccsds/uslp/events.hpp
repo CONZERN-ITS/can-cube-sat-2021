@@ -44,6 +44,16 @@ struct map_sdu_event: public event
 };
 
 
+class event_handler
+{
+public:
+	event_handler() = default;
+	virtual ~event_handler() = default;
+
+//	virtual void on_map_sdu_event(gmapid_t mapid, const map_sdu_event & evt) = 0;
+};
+
+
 }}
 
 

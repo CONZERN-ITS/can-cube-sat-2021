@@ -11,10 +11,16 @@
 namespace ccsds { namespace uslp {
 
 
+static void _default_event_callback(const event &)
+{
+
+}
+
+
 vchannel_source::vchannel_source(gvcid_t gvcid_)
 	: gvcid(gvcid_)
 {
-
+	set_event_callback(_default_event_callback);
 }
 
 
@@ -41,6 +47,19 @@ void vchannel_source::frame_seq_no_len(uint8_t len)
 	}
 
 	_frame_seq_no.value(0, len);
+}
+
+
+void vchannel_source::set_event_callback(event_callback_t callback)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use set_event_callback on vchannel, because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_event_callback = std::move(callback);
 }
 
 
@@ -149,6 +168,12 @@ uint16_t vchannel_source::frame_size_overhead() const
 }
 
 
+void vchannel_source::emit_event(const event & evt)
+{
+	_event_callback(evt);
+}
+
+
 void vchannel_source::finalize_impl()
 {
 	const auto min_frame_size = frame_size_overhead();
@@ -169,7 +194,20 @@ void vchannel_source::finalize_impl()
 vchannel_sink::vchannel_sink(gvcid_t gvcid_)
 	: gvcid(gvcid_)
 {
+	set_event_callback(&_default_event_callback);
+}
 
+
+void vchannel_sink::set_event_callback(event_callback_t event_callback)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use set_event_callbck() on vchannel sink, because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_event_callback = std::move(event_callback);
 }
 
 
@@ -178,7 +216,7 @@ void vchannel_sink::add_map_sink(map_sink * sink)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use add_map_sink() on vchannel, because it is finalized";
+		error << "unable to use add_map_sink() on vchannel sink, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -226,7 +264,7 @@ void vchannel_sink::push(
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use push() on vchannel, because it is not finalized";
+		error << "unable to use push() on vchannel sink, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -234,6 +272,10 @@ void vchannel_sink::push(
 }
 
 
+void vchannel_sink::emit_event(const event & evt)
+{
+	_event_callback(evt);
+}
 
 
 }}

@@ -9,11 +9,17 @@
 
 namespace ccsds { namespace uslp {
 
+static void _default_event_callback(const event &)
+{
+
+}
+
+
 
 pchannel_source::pchannel_source(std::string name_)
 		: name(name_), _frame_version_no(detail::tf_header_t::default_frame_version_no)
 {
-
+	set_event_callback(_default_event_callback);
 }
 
 
@@ -27,6 +33,13 @@ void pchannel_source::frame_version_no(uint8_t value)
 		throw einval_exception(error.str());
 	}
 
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use frame_version_no() on pchannel source because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
 	_frame_version_no = value;
 }
 
@@ -36,7 +49,7 @@ void pchannel_source::frame_size(size_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to set frame size for phys channel because it is finalized";
+		error << "unable to use frame_size() on pchannel source because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -49,11 +62,24 @@ void pchannel_source::error_control_len(error_control_len_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to set error_control_len for phys channel because it is finalized";
+		error << "unable to use error_control_len() for pchannel source because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
 	_error_control_len = value;
+}
+
+
+void pchannel_source::set_event_callback(event_callback_t event_callback)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use set_event_callback() on pchannel source because pchannel is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_event_callback = std::move(event_callback);
 }
 
 
@@ -62,7 +88,7 @@ void pchannel_source::add_mchannel_source(mchannel_source * source)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to add mchannel source to pchannel because pchannel is finalized";
+		error << "unable to use add_mchannel_source() on pchannel source because pchannel is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -87,7 +113,7 @@ bool pchannel_source::peek()
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_frame() on virtual channel because it is finalized";
+		error << "unable to use peek_frame() on pchannel source because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -100,7 +126,7 @@ bool pchannel_source::peek(pchannel_frame_params_t & frame_params)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_frame(frame_params) on physical channel because it is finalized";
+		error << "unable to use peek_frame() on pchannel source because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -113,7 +139,7 @@ void pchannel_source::pop(uint8_t * frame_buffer, size_t frame_buffer_size)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use pop_frame() on physical channel because it is finalized";
+		error << "unable to use pop_frame() on pchannel source because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -150,6 +176,12 @@ uint16_t pchannel_source::frame_size_overhead() const
 }
 
 
+void pchannel_source::emit_event(const event & evt)
+{
+	_event_callback(evt);
+}
+
+
 void pchannel_source::finalize_impl()
 {
 	// Проверяем самые базовые настройки
@@ -177,7 +209,7 @@ void pchannel_source::finalize_impl()
 pchannel_sink::pchannel_sink(std::string name_)
 	: name(std::move(name_))
 {
-
+	set_event_callback(_default_event_callback);
 }
 
 
@@ -186,7 +218,7 @@ void pchannel_sink::insert_zone_size(uint16_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use insert_zone_size(value) on physical channel because it is finalized";
+		error << "unable to use insert_zone_size() on pchannel because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -199,11 +231,24 @@ void pchannel_sink::error_control_len(error_control_len_t value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use error_control_len(value) on physical channel because it is finalized";
+		error << "unable to use error_control_len() on pchannel sink because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
 	_error_control_len = value;
+}
+
+
+void pchannel_sink::set_event_callback(event_callback_t event_callback)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use set_event_callback() on pchannel sink because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_event_callback = std::move(event_callback);
 }
 
 
@@ -212,7 +257,7 @@ void pchannel_sink::add_mchannel_sink(mchannel_sink * sink)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use add_mchannel_sink(sink) on physical channel because it is finalized";
+		error << "unable to use add_mchannel_sink() on pchannel sink because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -235,11 +280,17 @@ void pchannel_sink::push_frame(const uint8_t * frame_buffer, size_t frame_buffer
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use push_frame(frame_buffer) on physical channel because it is not finalized";
+		error << "unable to use push_frame() on pchannel sink because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
 	push_frame_impl(frame_buffer, frame_buffer_size);
+}
+
+
+void pchannel_sink::emit_event(const event & evt)
+{
+	_event_callback(evt);
 }
 
 

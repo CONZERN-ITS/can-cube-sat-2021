@@ -59,7 +59,7 @@ private:
 	std::optional<frame_seq_no_t> _prev_frame_seq_no;
 
 	//! Коллбек для событий
-	event_handler_t _event_callback;
+	event_callback_t _event_callback;
 };
 
 

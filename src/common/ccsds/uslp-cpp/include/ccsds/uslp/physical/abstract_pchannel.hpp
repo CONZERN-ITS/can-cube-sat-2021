@@ -1,12 +1,12 @@
 #ifndef INCLUDE_CCSDS_USLP_PHYSICAL_ABSTRACT_HPP_
 #define INCLUDE_CCSDS_USLP_PHYSICAL_ABSTRACT_HPP_
 
-
+#include <functional>
 #include <cstdint>
 #include <cstddef>
 #include <string>
-#include <functional>
 
+#include <ccsds/uslp/events.hpp>
 #include <ccsds/uslp/common/defs.hpp>
 #include <ccsds/uslp/common/ids.hpp>
 #include <ccsds/uslp/common/frame_seq_no.hpp>
@@ -32,6 +32,8 @@ struct pchannel_frame_params_t
 class pchannel_source
 {
 public:
+	typedef std::function<void(const event &)> event_callback_t;
+
 	pchannel_source(std::string name_);
 	virtual ~pchannel_source() = default;
 
@@ -43,6 +45,8 @@ public:
 
 	void error_control_len(error_control_len_t value);
 	error_control_len_t error_control_len() const noexcept { return _error_control_len; }
+
+	void set_event_callback(event_callback_t event_callback);
 
 	void add_mchannel_source(mchannel_source * source);
 
@@ -56,6 +60,7 @@ public:
 
 protected:
 	uint16_t frame_size_overhead() const;
+	void emit_event(const event & evt);
 
 	virtual void add_mchannel_source_impl(mchannel_source * source) = 0;
 
@@ -66,6 +71,7 @@ protected:
 	virtual void pop_impl(uint8_t * frame_buffer) = 0;
 
 private:
+	event_callback_t _event_callback;
 	uint8_t _frame_version_no;
 	bool _finalized = false;
 	size_t _frame_size = 0;
@@ -76,6 +82,8 @@ private:
 class pchannel_sink
 {
 public:
+	typedef std::function<void(const event &)> event_callback_t;
+
 	pchannel_sink(std::string name_);
 	virtual ~pchannel_sink() = default;
 
@@ -84,6 +92,8 @@ public:
 
 	void error_control_len(error_control_len_t value);
 	error_control_len_t error_control_len() const noexcept { return _error_control_len; }
+
+	void set_event_callback(event_callback_t event_callback);
 
 	void add_mchannel_sink(mchannel_sink * sink);
 
@@ -94,11 +104,14 @@ public:
 	const std::string name;
 
 protected:
+	void emit_event(const event & evt);
+
 	virtual void finalize_impl();
 	virtual void add_mchannel_sink_impl(mchannel_sink * sink) = 0;
 	virtual void push_frame_impl(const uint8_t * frame_buffer, size_t frame_buffer_size) = 0;
 
 private:
+	event_callback_t _event_callback;
 	bool _finalized = false;
 	uint16_t _insert_zone_size = 0;
 	error_control_len_t _error_control_len = error_control_len_t::ZERO;

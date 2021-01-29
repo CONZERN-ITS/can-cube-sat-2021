@@ -1,11 +1,12 @@
 #ifndef INCLUDE_CCSDS_USLP_MASTER_ABSTRACT_HPP_
 #define INCLUDE_CCSDS_USLP_MASTER_ABSTRACT_HPP_
 
+#include <functional>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <functional>
 
+#include <ccsds/uslp/events.hpp>
 #include <ccsds/uslp/common/defs.hpp>
 #include <ccsds/uslp/common/ids.hpp>
 #include <ccsds/uslp/common/frame_seq_no.hpp>
@@ -52,6 +53,8 @@ struct mchannel_frame_params_t
 class mchannel_source
 {
 public:
+	typedef std::function<void(const event &)> event_callback_t;
+
 	mchannel_source(mcid_t mcid_);
 	virtual ~mchannel_source() = default;
 
@@ -60,6 +63,8 @@ public:
 
 	void id_is_destination(bool value);
 	bool id_is_destination() const noexcept { return _id_is_destination; }
+
+	void set_event_callback(event_callback_t event_callback);
 
 	void add_vchannel_source(vchannel_source * source);
 	void set_ocf_source(ocf_source * source);
@@ -76,6 +81,8 @@ public:
 protected:
 	uint16_t frame_size_overhead() const;
 
+	void emit_event(const event & evt);
+
 	virtual void add_vchannel_source_impl(vchannel_source * source) = 0;
 
 	virtual void finalize_impl();
@@ -85,6 +92,7 @@ protected:
 	virtual void pop_frame_du_impl(uint8_t * frame_data_unit_buffer) = 0;
 
 private:
+	event_callback_t _event_callback;
 	ocf_source * _ocf_source = nullptr;
 	bool _finalized = false;
 	bool _id_is_destination = true;
@@ -95,10 +103,13 @@ private:
 class mchannel_sink
 {
 public:
+	typedef std::function<void(const event &)> event_callback_t;
+
 	mchannel_sink(mcid_t mcid_);
 	virtual ~mchannel_sink() = default;
 
 	void add_vchannel_sink(vchannel_sink * sink);
+	void set_event_callback(event_callback_t event_callback);
 	void set_ocf_sink(ocf_sink * sink);
 
 	void finalize();
@@ -111,6 +122,7 @@ public:
 	const mcid_t mcid;
 
 protected:
+	void emit_event(const event & evt);
 
 	virtual void add_vchannel_sink_impl(vchannel_sink * sink) = 0;
 
@@ -122,6 +134,7 @@ protected:
 	) = 0;
 
 private:
+	event_callback_t _event_callback;
 	bool _finalized = false;
 	ocf_sink * _ocf_sink = nullptr;
 };

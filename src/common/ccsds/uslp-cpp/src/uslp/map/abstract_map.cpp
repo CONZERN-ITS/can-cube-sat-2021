@@ -9,10 +9,16 @@
 namespace ccsds { namespace uslp {
 
 
+static void _default_event_callback(const event &)
+{
+
+}
+
+
 map_source::map_source(gmapid_t map_id_)
 	: map_id(map_id_)
 {
-
+	set_event_callback(_default_event_callback);
 }
 
 
@@ -26,6 +32,19 @@ void map_source::tfdf_size(uint16_t value)
 	}
 
 	_tfdf_size = value;
+}
+
+
+void map_source::set_event_callback(event_handler_t event_callback)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use set_event_callback() on map channel, because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_event_callback = std::move(event_callback);
 }
 
 
@@ -88,8 +107,7 @@ void map_source::finalize_impl()
 
 void map_source::emit_event(const event & event)
 {
-	if (_event_handler)
-		_event_handler(event);
+	_event_callback(event);
 }
 
 
@@ -97,7 +115,14 @@ void map_source::emit_event(const event & event)
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-void map_sink::set_event_handler(event_handler_t event_callback)
+map_sink::map_sink(gmapid_t map_id_)
+	: map_id(map_id_)
+{
+	set_event_callback(_default_event_callback);
+}
+
+
+void map_sink::set_event_callback(event_callback_t event_callback)
 {
 	if (!_finalized)
 	{
@@ -106,7 +131,7 @@ void map_sink::set_event_handler(event_handler_t event_callback)
 		throw object_is_finalized(error.str());
 	}
 
-	_event_handler = event_callback;
+	_event_callback = std::move(event_callback);
 }
 
 
@@ -144,8 +169,7 @@ void map_sink::finalize_impl()
 
 void map_sink::emit_event(const event & event)
 {
-	if (_event_handler)
-		_event_handler(event);
+	_event_callback(event);
 }
 
 

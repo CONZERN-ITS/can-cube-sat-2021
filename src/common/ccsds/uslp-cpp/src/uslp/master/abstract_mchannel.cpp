@@ -13,10 +13,16 @@
 namespace ccsds { namespace uslp {
 
 
+static void _default_event_callback(const event &)
+{
+
+}
+
+
 mchannel_source::mchannel_source(mcid_t mcid_)
 	: mcid(mcid_)
 {
-
+	set_event_callback(_default_event_callback);
 }
 
 
@@ -38,11 +44,24 @@ void mchannel_source::id_is_destination(bool value)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use id_is_destination on mchannel, because it is finalized";
+		error << "unable to use id_is_destination on mchannel source, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
 	_id_is_destination = value;
+}
+
+
+void mchannel_source::set_event_callback(event_callback_t event_callback)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use set_event_callback on mchannel source, because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_event_callback = std::move(event_callback);
 }
 
 
@@ -51,7 +70,7 @@ void mchannel_source::add_vchannel_source(vchannel_source * source)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to set use add_vchannel_source() on mchannel, because it is finalized";
+		error << "unable to set use add_vchannel_source() on mchannel source, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -68,7 +87,6 @@ void mchannel_source::add_vchannel_source(vchannel_source * source)
 		throw einval_exception(error.str());
 	}
 
-
 	add_vchannel_source_impl(source);
 }
 
@@ -78,7 +96,7 @@ void mchannel_source::set_ocf_source(ocf_source * source)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use set_ocf_source() on mchannel, because it is finalized";
+		error << "unable to use set_ocf_source() on mchannel source, because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -101,7 +119,7 @@ bool mchannel_source::peek_frame_du()
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_frame() on mchannel, because it is not finalized";
+		error << "unable to use peek_frame() on mchannel source, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -114,7 +132,7 @@ bool mchannel_source::peek_frame_du(mchannel_frame_params_t & frame_params)
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use peek_frame(frame_params) on mchannel, because it is not finalized";
+		error << "unable to use peek_frame(frame_params) on mchannel source, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -127,7 +145,7 @@ void mchannel_source::pop_frame_du(uint8_t * frame_data_unit_buffer, uint16_t fr
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use pop_frame() on mchannel, because it is not finalized";
+		error << "unable to use pop_frame() on mchannel source, because it is not finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -171,6 +189,12 @@ uint16_t mchannel_source::frame_size_overhead() const
 }
 
 
+void mchannel_source::emit_event(const event & evt)
+{
+	_event_callback(evt);
+}
+
+
 void mchannel_source::finalize_impl()
 {
 	// Единственное что мы тут можем проверить - размер фрейма. Что он не меньше чем должен быть
@@ -180,7 +204,7 @@ void mchannel_source::finalize_impl()
 	if (frame_du_size_l1() < min_frame_size)
 	{
 		std::stringstream error;
-		error << "invalid frame size l1 on mchannel: " << frame_du_size_l1() << ". "
+		error << "invalid frame size l1 on mchannel source: " << frame_du_size_l1() << ". "
 				<< "It should be no less than " << min_frame_size;
 		throw einval_exception(error.str());
 	}
@@ -194,7 +218,7 @@ void mchannel_source::finalize_impl()
 mchannel_sink::mchannel_sink(mcid_t mcid_)
 	: mcid(mcid_)
 {
-
+	set_event_callback(&_default_event_callback);
 }
 
 
@@ -203,7 +227,7 @@ void mchannel_sink::add_vchannel_sink(vchannel_sink * sink)
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use add_vchannel_sink(sink) on physical channel because it is finalized";
+		error << "unable to use add_vchannel_sink() on mchannel sink because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -224,12 +248,25 @@ void mchannel_sink::add_vchannel_sink(vchannel_sink * sink)
 }
 
 
+void mchannel_sink::set_event_callback(event_callback_t event_callback)
+{
+	if (_finalized)
+	{
+		std::stringstream error;
+		error << "unable to use set_event_callback() on mchannel sink because it is finalized";
+		throw object_is_finalized(error.str());
+	}
+
+	_event_callback = std::move(event_callback);
+}
+
+
 void mchannel_sink::set_ocf_sink(ocf_sink * sink)
 {
 	if (_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use set_ocf_sink(sink) on physical channel because it is finalized";
+		error << "unable to use set_ocf_sink() on mchannel sink because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -255,7 +292,7 @@ void mchannel_sink::push(
 	if (!_finalized)
 	{
 		std::stringstream error;
-		error << "unable to use push(frame_reader) on physical channel because it is finalized";
+		error << "unable to use push() on mchannel sink because it is finalized";
 		throw object_is_finalized(error.str());
 	}
 
@@ -270,6 +307,12 @@ void mchannel_sink::push(
 		word = htobe32(word);
 		_ocf_sink->put_ocf(word);
 	}
+}
+
+
+void mchannel_sink::emit_event(const event & evt)
+{
+	_event_callback(evt);
 }
 
 
