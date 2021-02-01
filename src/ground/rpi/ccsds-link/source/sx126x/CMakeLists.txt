@@ -13,7 +13,6 @@ add_library(sx126x STATIC
 	${_remote_src_dir}/src/sx126x_api.c
 	${_remote_src_dir}/src/sx126x_drv.c
 
-	${_local_src_dir}/inc/sx126x_board_rpi.h
 	${_local_src_dir}/src/sx126x_board_rpi.c
 )
 
