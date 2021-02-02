@@ -30,7 +30,7 @@ static int _send_packet(sx126x_drv_t * radio, uint8_t psize)
 	rc = sx126x_drv_payload_write(radio, _pbuff, psize);
 	if (0 != rc) return rc;
 
-	rc = sx126x_drv_mode_tx(&_radio, 0);
+	rc = sx126x_drv_mode_tx(radio, 0);
 	if (0 != rc) return rc;
 
 	printf("sent packet %d\n", (int)_pbuff[0]);
@@ -38,15 +38,15 @@ static int _send_packet(sx126x_drv_t * radio, uint8_t psize)
 }
 
 
-static int _fetch_packet(sx126x_drv_t * radio)
+static int _fetch_packet(sx126x_drv_t * drv)
 {
 	int rc;
 	uint8_t rx_size;
 
-	rc = sx126x_drv_payload_rx_size(radio, &rx_size);
+	rc = sx126x_drv_payload_rx_size(drv, &rx_size);
 	if (0 != rc) return rc;
 
-	rc = sx126x_drv_payload_read(radio, _pbuff, rx_size);
+	rc = sx126x_drv_payload_read(drv, _pbuff, rx_size);
 	if (0 != rc) return rc;
 
 	printf("got packet %d\n", (int)_pbuff[0]);
@@ -65,13 +65,13 @@ static void _event_handler(sx126x_drv_t * drv, void * user_arg, sx126x_evt_kind_
 		{
 			// Если эфир свободен
 			// Отправляем свой пакет
-			rc = _send_packet(&_radio, APP_PACKET_SIZE);
+			rc = _send_packet(drv, APP_PACKET_SIZE);
 			if (0 != rc) break;
 		}
 		else
 		{
 			// Если нет - достаем пакет и идем слушать новый
-			rc = _fetch_packet(&_radio);
+			rc = _fetch_packet(drv);
 			if (0 != rc) break;
 
 			rc = sx126x_drv_mode_rx(drv, 0);
@@ -192,7 +192,7 @@ int main(void)
 		if (rc)
 			printf("poll error: %d\n", rc);
 
-		usleep(5000);
+		usleep(500*1000);
 		printf("poll cycle_compete\n");
 	}
 
