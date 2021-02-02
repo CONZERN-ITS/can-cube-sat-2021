@@ -17808,6 +17808,10 @@ variable-capacitance diode</description>
 <part name="R19" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="24k9"/>
 <part name="X11" library="CanCubeSat" deviceset="JST-6" device=""/>
 <part name="X1" library="CanCubeSat" deviceset="JST-6" device=""/>
+<part name="R29" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
+<part name="R30" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
+<part name="R31" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
+<part name="R32" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 </parts>
 <sheets>
 <sheet>
@@ -19199,6 +19203,22 @@ variable-capacitance diode</description>
 <attribute name="VALUE" x="765.81" y="-15.24" size="1.778" layer="96" rot="R180"/>
 <attribute name="NAME" x="765.81" y="-36.322" size="1.778" layer="95" rot="R180"/>
 </instance>
+<instance part="R29" gate="G$1" x="-198.12" y="81.28" smashed="yes" rot="R270">
+<attribute name="NAME" x="-196.6214" y="85.09" size="1.778" layer="95" rot="R270"/>
+<attribute name="VALUE" x="-201.422" y="85.09" size="1.778" layer="96" rot="R270"/>
+</instance>
+<instance part="R30" gate="G$1" x="-195.58" y="165.1" smashed="yes" rot="R270">
+<attribute name="NAME" x="-194.0814" y="168.91" size="1.778" layer="95" rot="R270"/>
+<attribute name="VALUE" x="-198.882" y="168.91" size="1.778" layer="96" rot="R270"/>
+</instance>
+<instance part="R31" gate="G$1" x="279.4" y="335.28" smashed="yes" rot="R270">
+<attribute name="NAME" x="280.8986" y="339.09" size="1.778" layer="95" rot="R270"/>
+<attribute name="VALUE" x="276.098" y="339.09" size="1.778" layer="96" rot="R270"/>
+</instance>
+<instance part="R32" gate="G$1" x="281.94" y="256.54" smashed="yes" rot="R270">
+<attribute name="NAME" x="283.4386" y="260.35" size="1.778" layer="95" rot="R270"/>
+<attribute name="VALUE" x="278.638" y="260.35" size="1.778" layer="96" rot="R270"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -19831,18 +19851,14 @@ variable-capacitance diode</description>
 </net>
 <net name="B5-KHEAT" class="0">
 <segment>
-<pinref part="R8" gate="G$1" pin="1"/>
-<wire x1="-213.36" y1="73.66" x2="-198.12" y2="73.66" width="0.1524" layer="91"/>
-<pinref part="U$8" gate="G$1" pin="G"/>
-<wire x1="-198.12" y1="73.66" x2="-198.12" y2="71.12" width="0.1524" layer="91"/>
-<wire x1="-198.12" y1="73.66" x2="-198.12" y2="91.44" width="0.1524" layer="91"/>
-<junction x="-198.12" y="73.66"/>
-<label x="-198.12" y="81.28" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
 <wire x1="154.94" y1="177.8" x2="154.94" y2="193.04" width="0.1524" layer="91"/>
 <label x="154.94" y="182.88" size="1.778" layer="95" rot="R90"/>
 <pinref part="BSK3" gate="A" pin="5"/>
+</segment>
+<segment>
+<pinref part="R29" gate="G$1" pin="1"/>
+<wire x1="-198.12" y1="86.36" x2="-198.12" y2="99.06" width="0.1524" layer="91"/>
+<label x="-198.12" y="88.9" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="N$33" class="0">
@@ -20008,18 +20024,14 @@ variable-capacitance diode</description>
 </net>
 <net name="SINS-KVCC" class="0">
 <segment>
-<wire x1="-210.82" y1="157.48" x2="-195.58" y2="157.48" width="0.1524" layer="91"/>
-<wire x1="-195.58" y1="157.48" x2="-195.58" y2="154.94" width="0.1524" layer="91"/>
-<wire x1="-195.58" y1="157.48" x2="-195.58" y2="175.26" width="0.1524" layer="91"/>
-<junction x="-195.58" y="157.48"/>
-<label x="-195.58" y="165.1" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$22" gate="G$1" pin="G"/>
-<pinref part="R24" gate="G$1" pin="1"/>
-</segment>
-<segment>
 <wire x1="157.48" y1="177.8" x2="157.48" y2="193.04" width="0.1524" layer="91"/>
 <label x="157.48" y="182.88" size="1.778" layer="95" rot="R90"/>
 <pinref part="BSK3" gate="A" pin="6"/>
+</segment>
+<segment>
+<pinref part="R30" gate="G$1" pin="1"/>
+<wire x1="-195.58" y1="170.18" x2="-195.58" y2="182.88" width="0.1524" layer="91"/>
+<label x="-195.58" y="172.72" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="SCL-TM" class="0">
@@ -20152,18 +20164,14 @@ variable-capacitance diode</description>
 </net>
 <net name="MAG" class="0">
 <segment>
-<pinref part="R22" gate="G$1" pin="1"/>
-<wire x1="264.16" y1="327.66" x2="279.4" y2="327.66" width="0.1524" layer="91"/>
-<pinref part="U$19" gate="G$1" pin="G"/>
-<wire x1="279.4" y1="327.66" x2="279.4" y2="325.12" width="0.1524" layer="91"/>
-<wire x1="279.4" y1="327.66" x2="279.4" y2="342.9" width="0.1524" layer="91"/>
-<junction x="279.4" y="327.66"/>
-<label x="279.4" y="337.82" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
 <pinref part="U1" gate="G$1" pin="PA11"/>
 <wire x1="358.14" y1="167.64" x2="345.44" y2="167.64" width="0.1524" layer="91"/>
 <label x="345.44" y="167.64" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R31" gate="G$1" pin="1"/>
+<wire x1="279.4" y1="340.36" x2="279.4" y2="347.98" width="0.1524" layer="91"/>
+<label x="279.4" y="342.9" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="GND-GPS" class="0">
@@ -20180,18 +20188,14 @@ variable-capacitance diode</description>
 </net>
 <net name="GPS" class="0">
 <segment>
-<pinref part="R23" gate="G$1" pin="1"/>
-<wire x1="266.7" y1="248.92" x2="281.94" y2="248.92" width="0.1524" layer="91"/>
-<pinref part="U$20" gate="G$1" pin="G"/>
-<wire x1="281.94" y1="248.92" x2="281.94" y2="246.38" width="0.1524" layer="91"/>
-<wire x1="281.94" y1="248.92" x2="281.94" y2="264.16" width="0.1524" layer="91"/>
-<junction x="281.94" y="248.92"/>
-<label x="281.94" y="259.08" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
 <pinref part="U1" gate="G$1" pin="PA12"/>
 <wire x1="358.14" y1="165.1" x2="345.44" y2="165.1" width="0.1524" layer="91"/>
 <label x="345.44" y="165.1" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R32" gate="G$1" pin="1"/>
+<wire x1="281.94" y1="261.62" x2="281.94" y2="269.24" width="0.1524" layer="91"/>
+<label x="281.94" y="264.16" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="N$43" class="0">
@@ -20511,6 +20515,50 @@ variable-capacitance diode</description>
 <junction x="713.74" y="-68.58"/>
 <pinref part="X1" gate="G$1" pin="4"/>
 <wire x1="751.84" y1="-27.94" x2="756.92" y2="-27.94" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$7" class="0">
+<segment>
+<pinref part="R8" gate="G$1" pin="1"/>
+<wire x1="-213.36" y1="73.66" x2="-198.12" y2="73.66" width="0.1524" layer="91"/>
+<pinref part="R29" gate="G$1" pin="2"/>
+<wire x1="-198.12" y1="73.66" x2="-198.12" y2="76.2" width="0.1524" layer="91"/>
+<pinref part="U$8" gate="G$1" pin="G"/>
+<wire x1="-198.12" y1="71.12" x2="-198.12" y2="73.66" width="0.1524" layer="91"/>
+<junction x="-198.12" y="73.66"/>
+</segment>
+</net>
+<net name="N$10" class="0">
+<segment>
+<pinref part="R30" gate="G$1" pin="2"/>
+<pinref part="U$22" gate="G$1" pin="G"/>
+<wire x1="-195.58" y1="160.02" x2="-195.58" y2="157.48" width="0.1524" layer="91"/>
+<pinref part="R24" gate="G$1" pin="1"/>
+<wire x1="-195.58" y1="157.48" x2="-195.58" y2="154.94" width="0.1524" layer="91"/>
+<wire x1="-210.82" y1="157.48" x2="-195.58" y2="157.48" width="0.1524" layer="91"/>
+<junction x="-195.58" y="157.48"/>
+</segment>
+</net>
+<net name="N$11" class="0">
+<segment>
+<pinref part="R31" gate="G$1" pin="2"/>
+<pinref part="U$19" gate="G$1" pin="G"/>
+<wire x1="279.4" y1="330.2" x2="279.4" y2="327.66" width="0.1524" layer="91"/>
+<pinref part="R22" gate="G$1" pin="1"/>
+<wire x1="279.4" y1="327.66" x2="279.4" y2="325.12" width="0.1524" layer="91"/>
+<wire x1="264.16" y1="327.66" x2="279.4" y2="327.66" width="0.1524" layer="91"/>
+<junction x="279.4" y="327.66"/>
+</segment>
+</net>
+<net name="N$13" class="0">
+<segment>
+<pinref part="R23" gate="G$1" pin="1"/>
+<wire x1="266.7" y1="248.92" x2="281.94" y2="248.92" width="0.1524" layer="91"/>
+<pinref part="U$20" gate="G$1" pin="G"/>
+<wire x1="281.94" y1="248.92" x2="281.94" y2="246.38" width="0.1524" layer="91"/>
+<pinref part="R32" gate="G$1" pin="2"/>
+<wire x1="281.94" y1="251.46" x2="281.94" y2="248.92" width="0.1524" layer="91"/>
+<junction x="281.94" y="248.92"/>
 </segment>
 </net>
 </nets>
