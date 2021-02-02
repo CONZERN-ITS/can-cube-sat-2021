@@ -24,7 +24,7 @@
 
 
 #define SX126X_RPI_SPI_DEVICE_PATH "/dev/spidev0.0"
-#define SX126X_RPI_SPI_MAX_SPEED (10*1000*1000)
+#define SX126X_RPI_SPI_MAX_SPEED (5*1000*1000)
 
 
 struct sx126x_board_t
@@ -90,7 +90,7 @@ static int _gpio_init(sx126x_board_t * dev)
 			SX126X_RPI_GPIO_BUSY,
 			SX126X_RPI_GPIO_DIO1
 	};
-	unsigned int line_count = sizeof(line_offsets);
+	unsigned int line_count = sizeof(line_offsets)/sizeof(*line_offsets);
 	int rc = gpiod_chip_get_lines(dev->gpio_chip, line_offsets, line_count, &line_bulk);
 	if (rc < 0)
 		goto bad_exit;
@@ -103,7 +103,7 @@ static int _gpio_init(sx126x_board_t * dev)
 	dev->line_dio1 = gpiod_line_bulk_get_line(&line_bulk, 4);
 
 	// Теперь запрашиваем их все для себя
-	rc = gpiod_line_request_output(dev->line_txen, SX126X_RPI_GPIO_CONSUMER_PREFIX "nrst", 1);
+	rc = gpiod_line_request_output(dev->line_nrst, SX126X_RPI_GPIO_CONSUMER_PREFIX "nrst", 1);
 	if (rc < 0) goto bad_exit;
 
 	rc = gpiod_line_request_output(dev->line_rxen, SX126X_RPI_GPIO_CONSUMER_PREFIX "rxen", 0);
@@ -149,11 +149,25 @@ static int _spi_init(sx126x_board_t * dev)
 
 	// Выставляем максимальную скорость
 	const uint32_t speed = SX126X_RPI_SPI_MAX_SPEED;
-	int rc = ioctl(dev->spidev_fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
+	int rc = ioctl(dev->spidev_fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
 	if (rc < 0)
 		goto bad_exit;
 
-	rc = ioctl(dev->spidev_fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+	// Режим CPHA = 0, CPOL = 0
+	const uint32_t mode = SPI_MODE_0;
+	rc = ioctl(dev->spidev_fd, SPI_IOC_WR_MODE32, &mode);
+	if (rc < 0)
+		goto bad_exit;
+
+	// MSB вперед
+	const uint8_t lsb_first = false;
+	rc = ioctl(dev->spidev_fd, SPI_IOC_WR_LSB_FIRST, &lsb_first);
+	if (rc < 0)
+		goto bad_exit;
+
+	// 8 бит на слово
+	const uint8_t bits_per_word = 8;
+	rc = ioctl(dev->spidev_fd, SPI_IOC_WR_BITS_PER_WORD, &bits_per_word);
 	if (rc < 0)
 		goto bad_exit;
 
@@ -252,7 +266,7 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd)
 	int rc;
 	do
 	{
-		int rc = gpiod_line_get_value(brd->line_busy);
+		rc = gpiod_line_get_value(brd->line_busy);
 		if (rc < 0)
 			return rc;
 
@@ -318,12 +332,12 @@ int sx126x_brd_cmd_write(sx126x_board_t * brd, uint8_t cmd_code, const uint8_t *
 	struct spi_ioc_transfer tran[2] = { 0 };
 
 	// Первый проход - отправляем код команды
-	tran[0].tx_buf = (uint64_t)&cmd_code;
+	tran[0].tx_buf = (size_t)&cmd_code;
 	tran[0].len = 1;
 	tran[0].cs_change = false;
 
 	// Второй проход - отправляем аргументы
-	tran[1].tx_buf = (uint64_t)args;
+	tran[1].tx_buf = (size_t)args;
 	tran[1].len = args_size;
 	tran[1].cs_change = true;
 
@@ -340,20 +354,20 @@ int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status
 	struct spi_ioc_transfer tran[3] = {0};
 
 	// Загоняем код команды
-	tran[0].tx_buf = (uint64_t)&cmd_code;
+	tran[0].tx_buf = (size_t)&cmd_code;
 	tran[0].len = 1;
 	tran[0].cs_change = false;
 
 	// Читаем статус устройства
 	*status = 0xFF; // Гоним единички на TX
-	tran[1].tx_buf = (uint64_t)status;
-	tran[1].rx_buf = (uint64_t)status;
+	tran[1].tx_buf = (size_t)status;
+	tran[1].rx_buf = (size_t)status;
 	tran[1].len = 1;
 	tran[1].cs_change = false;
 
 	memset(data, 0xFF, data_size);
-	tran[2].tx_buf = (uint64_t)data;
-	tran[2].rx_buf = (uint64_t)data;
+	tran[2].tx_buf = (size_t)data;
+	tran[2].rx_buf = (size_t)data;
 	tran[2].len = data_size;
 	tran[2].cs_change = true;
 
@@ -377,19 +391,19 @@ int sx126x_brd_reg_write(sx126x_board_t * brd, uint16_t addr, const uint8_t * da
 	struct spi_ioc_transfer tran[3] = {0};
 
 	// Код команды
-	tran[0].tx_buf = (uint64_t)&cmd_code;
+	tran[0].tx_buf = (size_t)&cmd_code;
 	tran[0].len = 1;
 	tran[0].cs_change = false;
 
 	// Адрес регистра
-	tran[1].tx_buf = (uint64_t)&addr_bytes;
+	tran[1].tx_buf = (size_t)addr_bytes;
 	tran[1].len = sizeof(addr_bytes);
 	tran[1].cs_change = false;
 
 	// Значения
-	tran[2].tx_buf = (uint64_t)data;
+	tran[2].tx_buf = (size_t)data;
 	tran[2].len = data_size;
-	tran[2].cs_change = false;
+	tran[2].cs_change = true;
 
 	int rc = ioctl(brd->spidev_fd, SPI_IOC_MESSAGE(sizeof(tran)/sizeof(*tran)), tran);
 	if (rc < 0)
@@ -408,28 +422,28 @@ int sx126x_brd_reg_read(sx126x_board_t * brd, uint16_t addr, uint8_t * data, uin
 			(addr >> 0) & 0xFF,
 	};
 
-	struct spi_ioc_transfer tran[3] = {0};
+	struct spi_ioc_transfer tran[4] = {0};
 
 	// Код команды
-	tran[0].tx_buf = (uint64_t)&cmd_code;
+	tran[0].tx_buf = (size_t)&cmd_code;
 	tran[0].len = 1;
 	tran[0].cs_change = false;
 
 	// Адрес регистра
-	tran[1].tx_buf = (uint64_t)&addr_bytes;
+	tran[1].tx_buf = (size_t)&addr_bytes;
 	tran[1].len = sizeof(addr_bytes);
 	tran[1].cs_change = false;
 
 	// Читаем статус (выкидываем его вернее)
 	uint8_t _status = 0xFF;
-	tran[2].tx_buf = (uint64_t)_status;
+	tran[2].tx_buf = (size_t)&_status;
 	tran[2].len = data_size;
 	tran[2].cs_change = false;
 
 	// Читаем данные
 	memset(data, 0xFF, data_size);
-	tran[3].tx_buf = (uint64_t)data;
-	tran[3].rx_buf = (uint64_t)data;
+	tran[3].tx_buf = (size_t)data;
+	tran[3].rx_buf = (size_t)data;
 	tran[3].len = data_size;
 	tran[3].cs_change = true;
 
@@ -448,17 +462,17 @@ int sx126x_brd_buf_write(sx126x_board_t * brd, uint8_t offset, const uint8_t * d
 	struct spi_ioc_transfer tran[3] = {0};
 
 	// Код команды
-	tran[0].tx_buf = (uint64_t)&cmd_code;
+	tran[0].tx_buf = (size_t)&cmd_code;
 	tran[0].len = 1;
 	tran[0].cs_change = false;
 
 	// Оффсет в буфере
-	tran[1].tx_buf = (uint64_t)&offset;
+	tran[1].tx_buf = (size_t)&offset;
 	tran[1].len = 1;
 	tran[1].cs_change = false;
 
 	// Значения
-	tran[2].tx_buf = (uint64_t)data;
+	tran[2].tx_buf = (size_t)data;
 	tran[2].len = data_size;
 	tran[2].cs_change = true;
 
@@ -474,27 +488,27 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 {
 	const uint8_t cmd_code = SX126X_CMD_READ_BUFFER;
 
-	struct spi_ioc_transfer tran[3] = {0};
+	struct spi_ioc_transfer tran[4] = {0};
 	// Код команды
-	tran[0].tx_buf = (uint64_t)&cmd_code;
+	tran[0].tx_buf = (size_t)&cmd_code;
 	tran[0].len = 1;
 	tran[0].cs_change = false;
 
 	// Адрес регистра
-	tran[1].tx_buf = (uint64_t)&offset;
+	tran[1].tx_buf = (size_t)&offset;
 	tran[1].len = 1;
 	tran[1].cs_change = false;
 
 	// Читаем статус (выкидываем его вернее)
 	uint8_t _status = 0xFF;
-	tran[2].tx_buf = (uint64_t)_status;
+	tran[2].tx_buf = (size_t)_status;
 	tran[2].len = data_size;
 	tran[2].cs_change = false;
 
 	// Читаем данные
 	memset(data, 0xFF, data_size);
-	tran[3].tx_buf = (uint64_t)data;
-	tran[3].rx_buf = (uint64_t)data;
+	tran[3].tx_buf = (size_t)data;
+	tran[3].rx_buf = (size_t)data;
 	tran[3].len = data_size;
 	tran[3].cs_change = true;
 

@@ -193,6 +193,7 @@ int main(void)
 			printf("poll error: %d\n", rc);
 
 		usleep(5000);
+		printf("poll cycle_compete\n");
 	}
 
 
