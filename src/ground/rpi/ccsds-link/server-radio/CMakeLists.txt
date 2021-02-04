@@ -9,7 +9,6 @@ LANGUAGES
 set(CMAKE_CXX_STANDARD 17)
 set(_src_dir ${CMAKE_CURRENT_LIST_DIR}/src)
 
-
 add_executable(server-radio
 	${_src_dir}/main.c
 	${_src_dir}/network.h
@@ -25,5 +24,6 @@ target_link_libraries(server-radio
 PRIVATE
 	sx126x
 	gpiod
+	zmq
 )
 

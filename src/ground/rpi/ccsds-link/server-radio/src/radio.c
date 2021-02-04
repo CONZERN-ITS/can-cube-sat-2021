@@ -1,7 +1,6 @@
 #include "radio.h"
 
-
-static sx126x_drv_t _radio;
+#include <string.h>
 
 
 static void _event_handler(
@@ -15,7 +14,7 @@ static void _event_handler(
 }
 
 
-int radio_init()
+int radio_init(radio_t * radio)
 {
 	int rc;
 
@@ -63,41 +62,47 @@ int radio_init()
 	};
 
 
-	rc = sx126x_drv_ctor(&_radio, NULL);
+	rc = sx126x_drv_ctor(&radio->dev, NULL);
 	if (0 != rc)
 		return rc;
 
-	rc = sx126x_drv_register_event_handler(&_radio, _event_handler, NULL);
+	rc = sx126x_drv_register_event_handler(&radio->dev, _event_handler, NULL);
 	if (0 != rc)
 		return rc;
 
-	rc = sx126x_drv_reset(&_radio);
+	rc = sx126x_drv_reset(&radio->dev);
 	if (0 != rc)
 		return rc;
 
-	rc = sx126x_drv_mode_standby_rc(&_radio);
+	rc = sx126x_drv_mode_standby_rc(&radio->dev);
 	if (0 != rc)
 		return rc;
 
-	rc = sx126x_drv_configure_basic(&_radio, &basic_cfg);
+	rc = sx126x_drv_configure_basic(&radio->dev, &basic_cfg);
 	if (0 != rc)
 		return rc;
 
-	rc = sx126x_drv_configure_lora_modem(&_radio, &modem_cfg);
+	rc = sx126x_drv_configure_lora_modem(&radio->dev, &modem_cfg);
 	if (0 != rc)
 		return rc;
 
-	rc = sx126x_drv_configure_lora_packet(&_radio, &packet_cfg);
+	rc = sx126x_drv_configure_lora_packet(&radio->dev, &packet_cfg);
 	if (0 != rc)
 		return rc;
 
-	rc = sx126x_drv_configure_lora_cad(&_radio, &cad_cfg);
+	rc = sx126x_drv_configure_lora_cad(&radio->dev, &cad_cfg);
 	if (0 != rc)
 		return rc;
 
-	rc = sx126x_drv_configure_lora_rx_timeout(&_radio, &rx_timeout_cfg);
+	rc = sx126x_drv_configure_lora_rx_timeout(&radio->dev, &rx_timeout_cfg);
 	if (0 != rc)
 		return rc;
 
 	return 0;
+}
+
+
+void radio_deinit(radio_t * radio)
+{
+	sx126x_drv_dtor(&radio->dev);
 }

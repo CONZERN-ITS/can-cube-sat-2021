@@ -6,8 +6,15 @@
 #define RADIO_PACKET_SIZE 200
 
 
-int radio_init(void);
+typedef struct radio_t
+{
+	sx126x_drv_t dev;
+} radio_t;
 
+
+int radio_init(radio_t * radio);
+
+void radio_deinit(radio_t * radio);
 
 
 #endif /* SERVER_RADIO_SRC_RADIO_CONFIG_H_ */
