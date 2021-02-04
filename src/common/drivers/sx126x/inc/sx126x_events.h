@@ -2,6 +2,7 @@
 #define RADIO_SX126X_EVENTS_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "sx126x_defs.h"
 

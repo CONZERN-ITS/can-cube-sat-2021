@@ -1,10 +1,13 @@
 #include <unistd.h>
+#include <poll.h>
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 
 #include <sx126x_drv.h>
+#include <sx126x_board_rpi.h>
 
 
 #define APP_PACKET_SIZE 200
@@ -186,8 +189,31 @@ int main(void)
 	rc = _send_packet(&_radio, APP_PACKET_SIZE);
 	printf("first tx: %d\n", rc);
 
+
+	int event_fd = sx126x_brd_rpi_get_event_fd(_radio.api.board);
+	if (event_fd < 0)
+	{
+		perror("unable to fetch event fd");
+		return EXIT_FAILURE;
+	}
+
+
 	while(1)
 	{
+		struct pollfd fds[1] = {0};
+		fds[0].fd = event_fd;
+		fds[0].events = POLLIN;
+
+		// Сперва поллим события
+		// Поставим таймаут, чтобы если вдруг что-то пошло не так
+		// мы бы могли всеравно подергать радио
+		rc = poll(fds, sizeof(fds)/sizeof(*fds), 1000);
+		if (rc < 0)
+		{
+			perror("poll for interrupt line failed");
+			return EXIT_FAILURE;
+		}
+
 		rc = sx126x_drv_poll(&_radio);
 		if (rc)
 			printf("poll error: %d\n", rc);

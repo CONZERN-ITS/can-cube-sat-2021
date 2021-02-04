@@ -9,7 +9,7 @@ typedef struct sx126x_board_t sx126x_board_t;
 int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg);
 void sx126x_brd_dtor(sx126x_board_t * brd);
 
-uint32_t sx126x_brd_get_time(sx126x_board_t * brd);
+int sx126x_brd_get_time(sx126x_board_t * brd, uint32_t * value);
 
 int sx126x_brd_get_chip_type(sx126x_board_t * brd, sx126x_chip_type_t * chip_type);
 

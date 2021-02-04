@@ -345,6 +345,7 @@ typedef enum sx126x_error_t
 	SX126x_ERROR_UNEXPECTED_VALUE		= 0x03,
 	SX126X_ERROR_BAD_STATE				= 0x04,
 	SX126X_ERROR_INVALID_VALUE			= 0x05,
+	SX126X_ERROR_BOARD					= 0x06,
 } sx126x_error_t;
 
 

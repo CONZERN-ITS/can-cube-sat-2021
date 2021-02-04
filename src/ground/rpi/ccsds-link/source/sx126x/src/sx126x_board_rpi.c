@@ -1,4 +1,4 @@
-#include <sx126x_board.h>
+#include <sx126x_board_rpi.h>
 
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>
@@ -7,11 +7,14 @@
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <gpiod.h>
+
 
 #define SX126X_RPI_GPIO_CONSUMER_PREFIX "sx126x_svc_"
 
@@ -190,7 +193,7 @@ int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg)
 	// Настраиваем SPI
 	int rc = _spi_init(&_dev);
 	if (rc != 0)
-		return rc;
+		return SX126X_ERROR_BOARD;
 
 	// Настраиваем GPIO
 	rc = _gpio_init(&_dev);
@@ -198,7 +201,7 @@ int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg)
 	// Настраиваем время
 	rc = clock_gettime(CLOCK_MONOTONIC, &_dev.start_time);
 	if (rc < 0)
-		return rc;
+		return SX126X_ERROR_BOARD;
 
 	// Кажется, у нас все хорошо?
 	*brd = &_dev;
@@ -211,26 +214,26 @@ void sx126x_brd_dtor(sx126x_board_t * brd)
 	if (!brd)
 		return;
 
-	if (brd != &_dev)
-		return; // ЭТО НЕ НАШИ
+	assert(brd == &_dev);
 
 	_spi_deinit(brd);
 	_gpio_deinit(brd);
 }
 
 
-uint32_t sx126x_brd_get_time(sx126x_board_t * brd)
+int sx126x_brd_get_time(sx126x_board_t * brd, uint32_t * value)
 {
 	struct timespec current_global_time;
 	int rc = clock_gettime(CLOCK_MONOTONIC, &current_global_time);
 	if (rc < 0)
-		return 0; // Вот тут честно говоря чуток не продумано. FIXME
+		return SX126X_ERROR_BOARD;
 
 	const time_t seconds_delta = current_global_time.tv_sec - brd->start_time.tv_sec;
 	const long nseconds_delta = current_global_time.tv_nsec - brd->start_time.tv_nsec;
 
 	// Пересчитываем в миллисекунды
-	return seconds_delta * 1000 + nseconds_delta / (1000 * 1000);
+	*value = seconds_delta * 1000 + nseconds_delta / (1000 * 1000);
+	return 0;
 }
 
 
@@ -247,7 +250,7 @@ int sx126x_brd_reset(sx126x_board_t * brd)
 	// Опускаем ресет линию и чуточку ждем
 	int rc = gpiod_line_set_value(brd->line_nrst, 0);
 	if (rc < 0)
-		return rc;
+		return SX126X_ERROR_BOARD;
 
 	// Чуточку поспим
 	usleep(50*1000);
@@ -255,7 +258,7 @@ int sx126x_brd_reset(sx126x_board_t * brd)
 	// Включаем линию сброса обратноs
 	rc = gpiod_line_set_value(brd->line_nrst, 1);
 	if (rc < 0)
-		return rc;
+		return SX126X_ERROR_BOARD;
 
 	return 0;
 }
@@ -268,7 +271,7 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd)
 	{
 		rc = gpiod_line_get_value(brd->line_busy);
 		if (rc < 0)
-			return rc;
+			return SX126X_ERROR_BOARD;
 
 	} while(rc != 0);
 
@@ -295,11 +298,11 @@ int sx126x_brd_antenna_mode(sx126x_board_t * brd, sx126x_antenna_mode_t mode)
 	// Глушим оба пина
 	rc = gpiod_line_set_value(brd->line_rxen, 0);
 	if (rc < 0)
-		return rc;
+		return SX126X_ERROR_BOARD;
 
 	rc = gpiod_line_set_value(brd->line_txen, 0);
 	if (rc < 0)
-		return rc;
+		return SX126X_ERROR_BOARD;
 
 	switch (mode)
 	{
@@ -310,17 +313,17 @@ int sx126x_brd_antenna_mode(sx126x_board_t * brd, sx126x_antenna_mode_t mode)
 	case SX126X_ANTENNA_TX:
 		rc = gpiod_line_set_value(brd->line_txen, 1);
 		if (rc < 0)
-			return rc;
+			return SX126X_ERROR_BOARD;
 		break;
 
 	case SX126X_ANTENNA_RX:
 		rc = gpiod_line_set_value(brd->line_rxen, 1);
 		if (rc < 0)
-			return rc;
+			return SX126X_ERROR_BOARD;
 		break;
 
 	default:
-		return -1;
+		return SX126X_ERROR_BOARD;
 	}
 
 	return 0;
@@ -341,7 +344,7 @@ int sx126x_brd_cmd_write(sx126x_board_t * brd, uint8_t cmd_code, const uint8_t *
 
 	int rc = ioctl(brd->spidev_fd, SPI_IOC_MESSAGE(sizeof(tran)/sizeof(*tran)), tran);
 	if (rc < 0)
-		return -1;
+		return SX126X_ERROR_BOARD;
 
 	return 0;
 }
@@ -370,7 +373,7 @@ int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status
 
 	int rc = ioctl(brd->spidev_fd, SPI_IOC_MESSAGE(sizeof(tran)/sizeof(*tran)), tran);
 	if (rc < 0)
-		return -1;
+		return SX126X_ERROR_BOARD;
 
 	return 0;
 }
@@ -401,7 +404,7 @@ int sx126x_brd_reg_write(sx126x_board_t * brd, uint16_t addr, const uint8_t * da
 
 	int rc = ioctl(brd->spidev_fd, SPI_IOC_MESSAGE(sizeof(tran)/sizeof(*tran)), tran);
 	if (rc < 0)
-		return -1;
+		return SX126X_ERROR_BOARD;
 
 	return 0;
 }
@@ -439,7 +442,7 @@ int sx126x_brd_reg_read(sx126x_board_t * brd, uint16_t addr, uint8_t * data, uin
 
 	int rc = ioctl(brd->spidev_fd, SPI_IOC_MESSAGE(sizeof(tran)/sizeof(*tran)), tran);
 	if (rc < 0)
-		return -1;
+		return SX126X_ERROR_BOARD;
 
 	return 0;
 }
@@ -465,7 +468,7 @@ int sx126x_brd_buf_write(sx126x_board_t * brd, uint8_t offset, const uint8_t * d
 
 	int rc = ioctl(brd->spidev_fd, SPI_IOC_MESSAGE(sizeof(tran)/sizeof(*tran)), tran);
 	if (rc < 0)
-		return -1;
+		return SX126X_ERROR_BOARD;
 
 	return 0;
 }
@@ -497,7 +500,13 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 
 	int rc = ioctl(brd->spidev_fd, SPI_IOC_MESSAGE(sizeof(tran)/sizeof(*tran)), tran);
 	if (rc < 0)
-		return -1;
+		return SX126X_ERROR_BOARD;
 
 	return 0;
+}
+
+
+int sx126x_brd_rpi_get_event_fd(sx126x_board_t * board)
+{
+	return gpiod_line_event_get_fd(board->line_dio1);
 }
