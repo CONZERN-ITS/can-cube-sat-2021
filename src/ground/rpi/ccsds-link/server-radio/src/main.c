@@ -8,8 +8,7 @@
 
 #include <sx126x_board_rpi.h>
 
-#include "radio_config.h"
-
+#include "radio.h"
 
 static uint8_t _pbuff[255] = {0};
 
@@ -110,42 +109,42 @@ static void _event_handler(sx126x_drv_t * drv, void * user_arg, sx126x_evt_kind_
 int main(void)
 {
 	int rc;
-
-	int event_fd = sx126x_brd_rpi_get_event_fd(_radio.api.board);
-	if (event_fd < 0)
-	{
-		perror("unable to fetch event fd");
-		return EXIT_FAILURE;
-	}
-
-	while(1)
-	{
-		struct pollfd fds[1] = {0};
-		fds[0].fd = event_fd;
-		fds[0].events = POLLIN;
-
-		// Сперва поллим события
-		// Поставим таймаут, чтобы если вдруг что-то пошло не так
-		// мы бы могли всеравно подергать радио
-		rc = poll(fds, sizeof(fds)/sizeof(*fds), 5000);
-		int flush_rc = 0;
-		if (rc < 0)
-		{
-			perror("poll for interrupt line failed");
-			return EXIT_FAILURE;
-		}
-		else if (rc > 0)
-		{
-			// Сливаем евент
-			flush_rc = sx126x_brd_rpi_flush_event(_radio.api.board);
-		}
-		printf("poll rc = %d, flush rc = %d\n", rc, flush_rc);
-
-
-		rc = sx126x_drv_poll(&_radio);
-		if (rc)
-			printf("drv_poll error: %d\n", rc);
-	}
+//
+//	int event_fd = sx126x_brd_rpi_get_event_fd(_radio.api.board);
+//	if (event_fd < 0)
+//	{
+//		perror("unable to fetch event fd");
+//		return EXIT_FAILURE;
+//	}
+//
+//	while(1)
+//	{
+//		struct pollfd fds[1] = {0};
+//		fds[0].fd = event_fd;
+//		fds[0].events = POLLIN;
+//
+//		// Сперва поллим события
+//		// Поставим таймаут, чтобы если вдруг что-то пошло не так
+//		// мы бы могли всеравно подергать радио
+//		rc = poll(fds, sizeof(fds)/sizeof(*fds), 5000);
+//		int flush_rc = 0;
+//		if (rc < 0)
+//		{
+//			perror("poll for interrupt line failed");
+//			return EXIT_FAILURE;
+//		}
+//		else if (rc > 0)
+//		{
+//			// Сливаем евент
+//			flush_rc = sx126x_brd_rpi_flush_event(_radio.api.board);
+//		}
+//		printf("poll rc = %d, flush rc = %d\n", rc, flush_rc);
+//
+//
+//		rc = sx126x_drv_poll(&_radio);
+//		if (rc)
+//			printf("drv_poll error: %d\n", rc);
+//	}
 
 
 	return 0;
