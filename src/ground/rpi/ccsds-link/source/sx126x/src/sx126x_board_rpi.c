@@ -506,7 +506,16 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 }
 
 
-int sx126x_brd_rpi_get_event_fd(sx126x_board_t * board)
+int sx126x_brd_rpi_get_event_fd(sx126x_board_t * brd)
 {
-	return gpiod_line_event_get_fd(board->line_dio1);
+	return gpiod_line_event_get_fd(brd->line_dio1);
+}
+
+
+int sx126x_brd_rpi_flush_event(sx126x_board_t * brd)
+{
+	struct gpiod_line_event event;
+
+	int rc = gpiod_line_event_read(brd->line_dio1, &event);
+	return rc;
 }

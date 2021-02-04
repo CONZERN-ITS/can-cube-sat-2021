@@ -207,19 +207,24 @@ int main(void)
 		// Сперва поллим события
 		// Поставим таймаут, чтобы если вдруг что-то пошло не так
 		// мы бы могли всеравно подергать радио
-		rc = poll(fds, sizeof(fds)/sizeof(*fds), 1000);
+		rc = poll(fds, sizeof(fds)/sizeof(*fds), 5000);
+		int flush_rc = 0;
 		if (rc < 0)
 		{
 			perror("poll for interrupt line failed");
 			return EXIT_FAILURE;
 		}
+		else if (rc > 0)
+		{
+			// Сливаем евент
+			flush_rc = sx126x_brd_rpi_flush_event(_radio.api.board);
+		}
+		printf("poll rc = %d, flush rc = %d\n", rc, flush_rc);
+
 
 		rc = sx126x_drv_poll(&_radio);
 		if (rc)
-			printf("poll error: %d\n", rc);
-
-		usleep(500*1000);
-		printf("poll cycle_compete\n");
+			printf("drv_poll error: %d\n", rc);
 	}
 
 
