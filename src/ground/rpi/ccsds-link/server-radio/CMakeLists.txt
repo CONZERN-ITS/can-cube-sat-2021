@@ -17,10 +17,12 @@ add_executable(server-radio
 
 
 add_subdirectory(libs/sx126x)
+add_subdirectory(libs/log.c)
 
 target_link_libraries(server-radio
 PRIVATE
 	sx126x
+	logc
 	gpiod
 	zmq
 )
