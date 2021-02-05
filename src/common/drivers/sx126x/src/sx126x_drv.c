@@ -837,7 +837,7 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 			SX126X_RETURN_IF_NONZERO(rc);
 
 			evt_arg.rx_done.timed_out = false;
-			evt_arg.rx_done.crv_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
+			evt_arg.rx_done.crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
 			// Сбегаем к чипу и достанем статистику пакета
 			if (SX126X_PACKET_TYPE_LORA == drv->_modem_type)
 			{

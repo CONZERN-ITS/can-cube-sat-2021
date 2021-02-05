@@ -11,10 +11,8 @@ set(_src_dir ${CMAKE_CURRENT_LIST_DIR}/src)
 
 add_executable(server-radio
 	${_src_dir}/main.c
-	${_src_dir}/network.h
-	${_src_dir}/network.c
-	${_src_dir}/radio.h
-	${_src_dir}/radio.c
+	${_src_dir}/server.h
+	${_src_dir}/server.c
 )
 
 

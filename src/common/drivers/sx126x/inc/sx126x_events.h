@@ -22,7 +22,7 @@ typedef union sx126x_evt_arg_t
 	struct
 	{
 		bool timed_out;
-		bool crv_valid;
+		bool crc_valid;
 		union
 		{
 			sx126x_lora_packet_status_t lora;
