@@ -1,12 +1,12 @@
 #include "server.h"
 
-#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
 
 #include <zmq.h>
+#include <log.h>
 
 #include <sx126x_board_rpi.h>
 
@@ -69,14 +69,14 @@ static int _zmq_init(server_t * server)
 	server->data_socket = zmq_socket(server->zmq, ZMQ_PAIR);
 	if (!server->data_socket)
 	{
-		perror("unable to allocate server data socket");
+		log_error("unable to allocate server data socket: %d", errno);
 		goto bad_exit;
 	}
 
 	rc = zmq_bind(server->data_socket, SERVER_DATA_SOCKET_EP);
 	if (rc < 0)
 	{
-		perror("unable to bind server data socket");
+		log_error("unable to bind server data socket: %d", errno);
 		goto bad_exit;
 	}
 
@@ -84,14 +84,14 @@ static int _zmq_init(server_t * server)
 	server->telemetry_socket = zmq_socket(server->zmq, ZMQ_PUB);
 	if (!server->telemetry_socket)
 	{
-		perror("unable to allocate server telemetry socket");
+		log_error("unable to allocate server telemetry socket: %d", errno);
 		goto bad_exit;
 	}
 
 	rc = zmq_bind(server->telemetry_socket, SERVER_TELEMETRY_SOCKET_EP);
 	if (rc < 0)
 	{
-		perror("unable to bind server telemetry socket");
+		log_error("unable to bind server telemetry socket: %d", errno);
 		goto bad_exit;
 	}
 
@@ -254,6 +254,8 @@ static void _load_tx_packet(server_t * server)
 			server->tx_buffer_size = frame_size;
 			server->tx_cookie_wait = cookie;
 			state = STATE_FLUSH;
+
+			log_info("loaded tx frame %d", server->tx_cookie_wait);
 			} break;
 
 		default:
@@ -280,7 +282,7 @@ bool _try_go_tx(server_t * server)
 	rc = sx126x_drv_payload_write(&server->dev, server->tx_buffer, server->tx_buffer_size);
 	if (0 != rc)
 	{
-		printf("unable to write tx payload to radio: %d. Dropping frame\n", rc);
+		log_error("unable to write tx payload to radio: %d. Dropping frame", rc);
 		server->tx_cookie_dropped = server->tx_cookie_wait;
 		server->tx_cookie_wait = 0;
 		return false;
@@ -289,7 +291,7 @@ bool _try_go_tx(server_t * server)
 	rc = sx126x_drv_mode_tx(&server->dev, server->tx_timeout_ms);
 	if (0 != rc)
 	{
-		printf("unable to switch radio to TX mode: %d. Dropping frame\n", rc);
+		log_error("unable to switch radio to TX mode: %d. Dropping frame", rc);
 		server->tx_cookie_dropped = server->tx_cookie_wait;
 		server->tx_cookie_wait = 0;
 		return false;
@@ -305,7 +307,7 @@ static void _go_rx(server_t * server)
 {
 	int rc = sx126x_drv_mode_rx(&server->dev, RADIO_RX_TIMEOUT_MS);
 	if (0 != rc)
-		printf("unable to switch radio to rx!\n");
+		log_error("unable to switch radio to rx: %d", rc);
 }
 
 
@@ -316,7 +318,7 @@ static void _fetch_rx_frame(server_t * server)
 	rc = sx126x_drv_payload_read(&server->dev, server->rx_buffer, server->rx_buffer_capacity);
 	if (0 != rc)
 	{
-		printf("unable to read frame from radio buffer\n");
+		log_error("unable to read frame from radio buffer: %d", rc);
 		return;
 	}
 
@@ -348,7 +350,7 @@ static void _upload_rx_and_stats(server_t * server)
 		if (rc < 0)
 		{
 			if (errno != EAGAIN)
-				perror("unable to upload tx frame cookie");
+				log_error("unable to upload tx frame cookie: %d", errno);
 
 			goto end;
 		}
@@ -415,7 +417,7 @@ static void _event_handler(
 		if (arg->tx_done.timed_out)
 		{
 			// Ой, что-то пошло не так
-			printf("TX TIMED OUT!\n");
+			log_error("TX TIMED OUT!");
 			server->tx_cookie_dropped = server->tx_cookie_in_progress;
 			server->tx_cookie_in_progress = 0;
 		}
@@ -486,20 +488,20 @@ void server_run(server_t * server)
 
 		if (pollitems[0].revents)
 		{
-			printf("radio event\n");
+			log_trace("radio event: %d", pollitems[0].revents);
 			// Ага, что-то прозошло с радио
 			rc = sx126x_drv_poll(&server->dev);
 			if (0 != rc)
-				printf("radio poll error %d\n", rc);
+				log_error("radio poll error %d", rc);
 
 			rc = sx126x_brd_rpi_flush_event(server->dev.api.board);
 			if (0 != rc)
-				printf("unable to flush radio event\n");
+				log_error("unable to flush radio event: %d", rc);
 		}
 
 		if (pollitems[1].revents)
 		{
-			printf("zmq_event\n");
+			log_trace("zmq_event");
 			// Что-то пришло на сокет
 			// Это может быть только пакет для отправки
 			// Вчитываем его
