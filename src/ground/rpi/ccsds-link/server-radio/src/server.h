@@ -5,9 +5,12 @@
 
 #define RADIO_PACKET_SIZE 200
 #define RADIO_RX_TIMEDOUT_LIMIT 5
-#define RADIO_TX_TIMEOUT_MS (2000)
-#define RADIO_RX_TIMEOUT_MS (2000)
+#define RADIO_TX_TIMEOUT_MS (5000)
+#define RADIO_RX_TIMEOUT_MS (5000)
 #define SERVER_POLL_TIMEOUT_MS (500)
+
+#define SERVER_DATA_SOCKET_EP "tcp://0.0.0.0:5050"
+#define SERVER_TELEMETRY_SOCKET_EP "tcp://0.0.0.0:5051"
 
 typedef uint16_t msg_cookie_t;
 

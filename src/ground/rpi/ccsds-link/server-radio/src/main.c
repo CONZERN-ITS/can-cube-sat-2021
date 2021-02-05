@@ -19,11 +19,18 @@ int main(void)
 	int rc;
 
 	rc = server_init(&server);
-	if (rc <= 0)
+	if (rc != 0)
+	{
 		printf("server init failed: %d\n", rc);
+		return EXIT_FAILURE;
+	}
 
+	printf("server initialization complete\n");
 	server_run(&server);
 
+	printf("server loop ended\n");
 	server_deinit(&server);
-	return 0;
+
+	printf("server destroyed\n");
+	return EXIT_SUCCESS;
 }

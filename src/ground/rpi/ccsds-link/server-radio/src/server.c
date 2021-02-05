@@ -22,6 +22,18 @@ static void _event_handler(
 
 static void _zmq_deinit(server_t * server)
 {
+	if (server->data_socket)
+	{
+		zmq_close(server->data_socket);
+		server->data_socket = NULL;
+	}
+
+	if (server->telemetry_socket)
+	{
+		zmq_close(server->telemetry_socket);
+		server->telemetry_socket = NULL;
+	}
+
 	if (server->zmq)
 	{
 		int rc = zmq_ctx_destroy(server->zmq);
@@ -38,25 +50,50 @@ static void _zmq_deinit(server_t * server)
 				break;
 			}; // switch
 		} // if rc
-	}
 
-	server->zmq = NULL;
+		server->zmq = NULL;
+	}
 }
 
 
 static int _zmq_init(server_t * server)
 {
+	int rc;
+
+
 	server->zmq = zmq_ctx_new();
 	if (!server->zmq)
 		goto bad_exit;
 
+
 	server->data_socket = zmq_socket(server->zmq, ZMQ_PAIR);
 	if (!server->data_socket)
+	{
+		perror("unable to allocate server data socket");
 		goto bad_exit;
+	}
+
+	rc = zmq_bind(server->data_socket, SERVER_DATA_SOCKET_EP);
+	if (rc < 0)
+	{
+		perror("unable to bind server data socket");
+		goto bad_exit;
+	}
+
 
 	server->telemetry_socket = zmq_socket(server->zmq, ZMQ_PUB);
 	if (!server->telemetry_socket)
+	{
+		perror("unable to allocate server telemetry socket");
 		goto bad_exit;
+	}
+
+	rc = zmq_bind(server->telemetry_socket, SERVER_TELEMETRY_SOCKET_EP);
+	if (rc < 0)
+	{
+		perror("unable to bind server telemetry socket");
+		goto bad_exit;
+	}
 
 	return 0;
 
@@ -129,40 +166,41 @@ static int _radio_init(server_t * server)
 
 	rc = sx126x_drv_ctor(radio, NULL);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
 	rc = sx126x_drv_register_event_handler(radio, _event_handler, server);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
 	rc = sx126x_drv_reset(radio);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
 	rc = sx126x_drv_mode_standby_rc(radio);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
 	rc = sx126x_drv_configure_basic(radio, &basic_cfg);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
 	rc = sx126x_drv_configure_lora_modem(radio, &modem_cfg);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
 	rc = sx126x_drv_configure_lora_packet(radio, &packet_cfg);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
 	rc = sx126x_drv_configure_lora_cad(radio, &cad_cfg);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
 	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
 	if (0 != rc)
-		return rc;
+		goto bad_exit;
 
+	return 0;
 
 bad_exit:
 	_radio_deinit(server);
@@ -304,12 +342,14 @@ static void _upload_rx_and_stats(server_t * server)
 				server->data_socket,
 				&cookies[i],
 				sizeof(cookies[i]),
-				ZMQ_SNDMORE
+				ZMQ_DONTWAIT | ZMQ_SNDMORE
 		);
 
 		if (rc < 0)
 		{
-			perror("unable to upload tx frame cookie");
+			if (errno != EAGAIN)
+				perror("unable to upload tx frame cookie");
+
 			goto end;
 		}
 	}
@@ -319,11 +359,13 @@ static void _upload_rx_and_stats(server_t * server)
 			server->data_socket,
 			server->rx_buffer,
 			server->rx_buffer_size,
-			0
+			ZMQ_DONTWAIT
 	);
 	if (rc < 0)
 	{
-		perror("unable to send rx frame to client");
+		if (errno != EAGAIN)
+			perror("unable to send rx frame to client");
+
 		goto end;
 	}
 
@@ -355,8 +397,8 @@ static void _event_handler(
 			{
 				// Мы уже долго ждали, будем отправлять
 				went_tx = _try_go_tx(server);
-				// Счетчик полюбому сбросим
-				server->rx_timedout_cnt = 0;
+				if (went_tx)
+					server->rx_timedout_cnt = 0;
 			}
 		}
 		else
@@ -421,6 +463,9 @@ int server_init(server_t * server)
 
 void server_run(server_t * server)
 {
+	// Запускам цикл радио
+	_go_rx(server);
+
 	int radio_fd = sx126x_brd_rpi_get_event_fd(server->dev.api.board);
 
 	zmq_pollitem_t pollitems[2] = {0};
@@ -441,14 +486,20 @@ void server_run(server_t * server)
 
 		if (pollitems[0].revents)
 		{
+			printf("radio event\n");
 			// Ага, что-то прозошло с радио
 			rc = sx126x_drv_poll(&server->dev);
 			if (0 != rc)
 				printf("radio poll error %d\n", rc);
+
+			rc = sx126x_brd_rpi_flush_event(server->dev.api.board);
+			if (0 != rc)
+				printf("unable to flush radio event\n");
 		}
 
 		if (pollitems[1].revents)
 		{
+			printf("zmq_event\n");
 			// Что-то пришло на сокет
 			// Это может быть только пакет для отправки
 			// Вчитываем его
