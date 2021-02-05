@@ -160,6 +160,9 @@ int sx126x_drv_register_event_handler(sx126x_drv_t * drv, sx126x_evt_handler_t h
 //! Сброс чипа через RST пин и состояния драйвера
 int sx126x_drv_reset(sx126x_drv_t * drv);
 
+//! Состояние модуля
+sx126x_drv_state_t sx126x_drv_state(sx126x_drv_t * drv);
+
 //! Переводит чип в режим standby на RC цепочке
 /*! Это самый базовый режим в котором отключено все что можно.
 	Этот режим следует использовать для проведения базовой конфигурации чипа */
@@ -179,6 +182,8 @@ int sx126x_drv_payload_write(sx126x_drv_t * drv, const uint8_t * data, uint8_t d
 int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size);
 
 int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size);
+
+int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value);
 
 //! Базовая конфигурация чипа и драйвера
 /*! Большинство опций, которые используются здесь не поддерживают

@@ -430,6 +430,9 @@ static void _event_handler(
 			// Это странно конечно, мы уже много раз так так сделали?
 			if (server->rx_timedout_cnt >= server->rx_timedout_limit)
 			{
+				if (server->rx_timedout_cnt % server->rx_timedout_limit == 0)
+					log_warn("no rx");
+
 				// Мы уже долго ждали, будем отправлять
 				went_tx = _try_go_tx(server);
 				if (went_tx)
@@ -531,10 +534,6 @@ void server_run(server_t * server)
 			rc = sx126x_drv_poll(&server->dev);
 			if (0 != rc)
 				log_error("radio poll error %d", rc);
-
-			rc = sx126x_brd_rpi_flush_event(server->dev.api.board);
-			if (0 != rc)
-				log_error("unable to flush radio event: %d", rc);
 		}
 
 		if (pollitems[1].revents)
@@ -544,6 +543,16 @@ void server_run(server_t * server)
 			// Это может быть только пакет для отправки
 			// Вчитываем его
 			_load_tx_packet(server);
+		}
+
+		if (sx126x_drv_state(&server->dev) == SX126X_DRVSTATE_RX)
+		{
+			int8_t rssi;
+			rc = sx126x_drv_rssi_inst(&server->dev, &rssi);
+			if (0 != rc)
+				log_warn("unable to get rssi %d", rc);
+
+			log_trace("rssi: %d", (int)rssi);
 		}
 	}
 }

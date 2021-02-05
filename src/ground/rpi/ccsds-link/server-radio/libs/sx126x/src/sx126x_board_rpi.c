@@ -81,7 +81,7 @@ static int _gpio_init(sx126x_board_t * dev)
 {
 	dev->gpio_chip = gpiod_chip_open(SX126X_RPI_GPIO_CHIP_PATH);
 	if (NULL == dev->gpio_chip)
-		return -ENOENT;
+		return -1;
 
 	// Окей, девайс открыли, запрашиваем линии
 	struct gpiod_line_bulk line_bulk;
@@ -148,7 +148,7 @@ static int _spi_init(sx126x_board_t * dev)
 {
 	dev->spidev_fd = open(SX126X_RPI_SPI_DEVICE_PATH, O_RDWR);
 	if (dev->spidev_fd < 0)
-		return errno;
+		return -1;
 
 	// Выставляем максимальную скорость
 	const uint32_t speed = SX126X_RPI_SPI_MAX_SPEED;
@@ -279,15 +279,15 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd)
 }
 
 
-void sx126x_brd_enable_irq(sx126x_board_t * brd)
+int sx126x_brd_cleanup_irq(sx126x_board_t * brd)
 {
-	// Ничего не делаем. Эти функции вообще убрать бы
-}
+	struct gpiod_line_event event;
 
+	int rc = gpiod_line_event_read(brd->line_dio1, &event);
+	if (0 != rc)
+		return SX126X_ERROR_BOARD;
 
-void sx126x_brd_disable_irq(sx126x_board_t * brd)
-{
-	// Снова ничего не делаем. Эти функции убрать бы!
+	return 0;
 }
 
 
@@ -511,11 +511,3 @@ int sx126x_brd_rpi_get_event_fd(sx126x_board_t * brd)
 	return gpiod_line_event_get_fd(brd->line_dio1);
 }
 
-
-int sx126x_brd_rpi_flush_event(sx126x_board_t * brd)
-{
-	struct gpiod_line_event event;
-
-	int rc = gpiod_line_event_read(brd->line_dio1, &event);
-	return rc;
-}

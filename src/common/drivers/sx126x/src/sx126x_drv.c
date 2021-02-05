@@ -422,6 +422,9 @@ static int _fetch_clear_irq(sx126x_drv_t * drv, uint16_t * irq_status)
 		SX126X_RETURN_IF_NONZERO(rc);
 	}
 
+	rc = sx126x_brd_cleanup_irq(drv->api.board);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	return 0;
 }
 
@@ -475,20 +478,22 @@ int sx126x_drv_reset(sx126x_drv_t * drv)
 {
 	int rc;
 
-	sx126x_brd_disable_irq(drv->api.board);
-
 	rc = sx126x_brd_reset(drv->api.board);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
-
-	sx126x_brd_enable_irq(drv->api.board);
 
 	rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	drv->state = SX126X_DRVSTATE_STANDBY_RC;
 	return 0;
+}
+
+
+sx126x_drv_state_t sx126x_drv_state(sx126x_drv_t * drv)
+{
+	return drv->state;
 }
 
 
@@ -644,6 +649,18 @@ int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer
 	int rc;
 	// Выгребаем
 	rc = sx126x_brd_buf_read(drv->api.board, 0, buffer, buffer_size);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value)
+{
+	if (drv->state != SX126X_DRVSTATE_CAD && drv->state != SX126X_DRVSTATE_RX)
+		return SX126X_ERROR_BAD_STATE;
+
+	int rc = sx126x_api_get_rssi_inst(&drv->api, value);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;

@@ -17,8 +17,7 @@ int sx126x_brd_reset(sx126x_board_t * brd);
 
 int sx126x_brd_wait_on_busy(sx126x_board_t * brd);
 
-void sx126x_brd_enable_irq(sx126x_board_t * brd);
-void sx126x_brd_disable_irq(sx126x_board_t * brd);
+int sx126x_brd_cleanup_irq(sx126x_board_t * brd);
 
 int sx126x_brd_antenna_mode(sx126x_board_t * brd, sx126x_antenna_mode_t mode);
 
