@@ -18,6 +18,7 @@ static void _event_handler(
 		const sx126x_evt_arg_t * arg
 );
 
+static void _upload_rx_and_stats(server_t * server);
 
 
 static void _zmq_deinit(server_t * server)
@@ -233,8 +234,10 @@ static void _load_tx_packet(server_t * server)
 		{
 		case STATE_COOKIE: {
 			// Мы сейчас копируем куку сообщения
-			if (sizeof(cookie) > zmq_msg_size(&msg))
+			const size_t msg_size = zmq_msg_size(&msg);
+			if (sizeof(cookie) > msg_size)
 			{
+				log_error("unable to load tx frame cookie. Message is too small (%d)", msg_size);
 				state = STATE_FLUSH;
 				break;
 			}
@@ -246,6 +249,12 @@ static void _load_tx_packet(server_t * server)
 		case STATE_FRAME: {
 			// Мы сейчас копируем само сообщение
 			size_t frame_size = zmq_msg_size(&msg);
+			if (0 == frame_size)
+			{
+				log_error("unable to load tx frame. Message have zero size");
+				break;
+			}
+
 			if (frame_size > server->tx_buffer_capacity)
 				frame_size = server->tx_buffer_capacity;
 
@@ -255,7 +264,8 @@ static void _load_tx_packet(server_t * server)
 			server->tx_cookie_wait = cookie;
 			state = STATE_FLUSH;
 
-			log_info("loaded tx frame %d", server->tx_cookie_wait);
+			log_info("loaded tx frame %d with size %zd", server->tx_cookie_wait, server->tx_buffer_size);
+			_upload_rx_and_stats(server);
 			} break;
 
 		default:
@@ -272,20 +282,23 @@ static void _load_tx_packet(server_t * server)
 }
 
 
+
 bool _try_go_tx(server_t * server)
 {
 	int rc;
+	bool retval = true;
 
 	if (0 == server->tx_cookie_wait)
 		return false;
 
+	log_trace("going tx");
 	rc = sx126x_drv_payload_write(&server->dev, server->tx_buffer, server->tx_buffer_size);
 	if (0 != rc)
 	{
 		log_error("unable to write tx payload to radio: %d. Dropping frame", rc);
 		server->tx_cookie_dropped = server->tx_cookie_wait;
-		server->tx_cookie_wait = 0;
-		return false;
+		retval = false;
+		goto end;
 	}
 
 	rc = sx126x_drv_mode_tx(&server->dev, server->tx_timeout_ms);
@@ -293,13 +306,19 @@ bool _try_go_tx(server_t * server)
 	{
 		log_error("unable to switch radio to TX mode: %d. Dropping frame", rc);
 		server->tx_cookie_dropped = server->tx_cookie_wait;
-		server->tx_cookie_wait = 0;
-		return false;
+		retval = false;
+		goto end;
 	}
 
 	server->tx_cookie_in_progress = server->tx_cookie_wait;
+
+end:
 	server->tx_cookie_wait = 0;
-	return true;
+	_upload_rx_and_stats(server);
+	if (retval)
+		log_trace("went tx!");
+
+	return retval;
 }
 
 
@@ -323,6 +342,7 @@ static void _fetch_rx_frame(server_t * server)
 	}
 
 	server->tx_buffer_size = server->rx_buffer_capacity;
+	log_debug("got rx frame");
 }
 
 
@@ -338,6 +358,14 @@ static void _upload_rx_and_stats(server_t * server)
 			server->tx_cookie_dropped,
 	};
 
+	log_debug(
+			"sending tx status. Cookies: %d %d %d %d",
+			server->tx_cookie_wait,
+			server->tx_cookie_in_progress,
+			server->tx_cookie_sent,
+			server->tx_cookie_dropped
+	);
+
 	for (size_t i = 0; i < sizeof(cookies)/sizeof(*cookies); i++)
 	{
 		rc = zmq_send(
@@ -349,14 +377,19 @@ static void _upload_rx_and_stats(server_t * server)
 
 		if (rc < 0)
 		{
-			if (errno != EAGAIN)
-				log_error("unable to upload tx frame cookie: %d", errno);
+			if (EAGAIN == errno)
+				log_warn("unable to send tx status %zd (EAGAIN). There is no peer?", i);
+			else
+				log_error("unable to send tx status: %d", errno);
 
 			goto end;
 		}
 	}
 
 	// Отправляем сообщение (даже если его нет)
+	if (server->rx_buffer_size)
+		log_debug("sending rx data (%d)", server->rx_buffer_size);
+
 	rc = zmq_send(
 			server->data_socket,
 			server->rx_buffer,
@@ -365,8 +398,10 @@ static void _upload_rx_and_stats(server_t * server)
 	);
 	if (rc < 0)
 	{
-		if (errno != EAGAIN)
-			perror("unable to send rx frame to client");
+		if (EAGAIN == errno)
+			log_warn("unable to send rx data (EAGAIN). There is no peer?");
+		else
+			log_error("unable to upload rx data: %d", errno);
 
 		goto end;
 	}
@@ -501,7 +536,7 @@ void server_run(server_t * server)
 
 		if (pollitems[1].revents)
 		{
-			log_trace("zmq_event");
+			log_trace("zmq_event %d", pollitems[1].revents);
 			// Что-то пришло на сокет
 			// Это может быть только пакет для отправки
 			// Вчитываем его

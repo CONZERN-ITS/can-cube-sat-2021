@@ -2,9 +2,10 @@
 #include <poll.h>
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+
+#include <log.h>
 
 #include <sx126x_board_rpi.h>
 
@@ -17,20 +18,21 @@ static server_t server;
 int main(void)
 {
 	int rc;
+	log_set_level(LOG_DEBUG);
 
 	rc = server_init(&server);
 	if (rc != 0)
 	{
-		printf("server init failed: %d\n", rc);
+		log_fatal("server init failed: %d", rc);
 		return EXIT_FAILURE;
 	}
 
-	printf("server initialization complete\n");
+	log_info("server initialization complete");
 	server_run(&server);
 
-	printf("server loop ended\n");
+	log_info("server loop ended");
 	server_deinit(&server);
 
-	printf("server destroyed\n");
+	log_info("server destroyed");
 	return EXIT_SUCCESS;
 }
