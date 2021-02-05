@@ -304,7 +304,7 @@ bool _try_go_tx(server_t * server)
 	rc = sx126x_drv_mode_tx(&server->dev, server->tx_timeout_ms);
 	if (0 != rc)
 	{
-		log_error("unable to switch radio to TX mode: %d. Dropping frame", rc);
+		log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
 		server->tx_cookie_dropped = server->tx_cookie_wait;
 		retval = false;
 		goto end;
@@ -315,9 +315,6 @@ bool _try_go_tx(server_t * server)
 end:
 	server->tx_cookie_wait = 0;
 	_upload_rx_and_stats(server);
-	if (retval)
-		log_trace("went tx!");
-
 	return retval;
 }
 
@@ -342,7 +339,7 @@ static void _fetch_rx_frame(server_t * server)
 	}
 
 	server->tx_buffer_size = server->rx_buffer_capacity;
-	log_debug("got rx frame");
+	log_trace("fetched rx frame from radio");
 }
 
 
@@ -427,6 +424,7 @@ static void _event_handler(
 	case SX126X_EVTKIND_RX_DONE:
 		if (arg->rx_done.timed_out)
 		{
+			log_trace("rx timedout event");
 			// Значит мы ничего не получили и эфир свободный
 			server->rx_timedout_cnt++;
 			// Это странно конечно, мы уже много раз так так сделали?
@@ -440,6 +438,7 @@ static void _event_handler(
 		}
 		else
 		{
+			log_trace("rx done");
 			// Мы получили пакет!
 			// Выгружаем его с радио
 			_fetch_rx_frame(server);
@@ -459,6 +458,7 @@ static void _event_handler(
 		else
 		{
 			// Все пошло так
+			log_info("tx done");
 			server->tx_cookie_sent = server->tx_cookie_in_progress;
 			server->tx_cookie_in_progress = 0;
 		}
@@ -469,8 +469,11 @@ static void _event_handler(
 	}
 
 	// Если в результате этого события мы не пошли в TX - уходим в RX
-	if (!went_tx)
+	if (went_tx)
+		log_info("tx begun");
+	else
 		_go_rx(server);
+
 }
 
 
