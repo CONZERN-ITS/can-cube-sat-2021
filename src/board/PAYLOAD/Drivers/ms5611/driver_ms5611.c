@@ -87,6 +87,39 @@ int ms5611_read_prom_value(void * handle, uint16_t device_addr, uint8_t prom_sta
 }
 
 
+//Code from AN520
+unsigned char crc4(unsigned int n_prom[])
+{
+	int cnt;		// simple counter
+	unsigned int n_rem;		// crc reminder
+	unsigned int crc_read; 		// original value of the crc
+	unsigned char  n_bit;
+	n_rem = 0x00;
+	crc_read = n_prom[7]; 		//save read CRC
+	n_prom[7]=(0xFF00 & (n_prom[7]));		//CRC byte is replaced by 0
+	for (cnt = 0; cnt < 16; cnt++)		// operation is performed on bytes
+	{
+		if (cnt%2==1)
+			n_rem ^= (unsigned short) ((n_prom[cnt>>1]) & 0x00FF);
+		else
+			n_rem ^= (unsigned short) (n_prom[cnt>>1]>>8);
+
+		for (n_bit = 8; n_bit > 0; n_bit--)
+		{
+			if (n_rem & (0x8000))
+				n_rem = (n_rem << 1) ^ 0x3000;
+			else
+				n_rem = (n_rem << 1);
+		}
+	}
+
+	n_rem = (0x000F & (n_rem >> 12));  // final 4-bit reminder is CRC code
+	n_prom[7] = crc_read; 		// restore the crc_read to its original place
+	return (n_rem ^ 0x0);		//return crc4 code
+}
+
+
+
 int ms5611_read_all_prom_data(void * handle, uint16_t device_addr, uint8_t prom_start_addr, struct prom_data * _prom)
 {
 	ms5611_read_prom_value(handle, device_addr, prom_start_addr, 1, &_prom->c1);
@@ -99,9 +132,22 @@ int ms5611_read_all_prom_data(void * handle, uint16_t device_addr, uint8_t prom_
 	uint16_t prom_crc4 = 0;
 	ms5611_read_prom_value(handle, device_addr, prom_start_addr, 7, &prom_crc4);
 
-	//TODO:дописать проверку crc4
+	unsigned int prom_array[8] = {0};
 
-	return 0;
+	prom_array[1] = (unsigned int)_prom->c1;
+	prom_array[2] = (unsigned int)_prom->c2;
+	prom_array[3] = (unsigned int)_prom->c3;
+	prom_array[4] = (unsigned int)_prom->c4;
+	prom_array[5] = (unsigned int)_prom->c5;
+	prom_array[6] = (unsigned int)_prom->c6;
+	prom_array[7] = (unsigned int)prom_crc4;
+
+	//TODO:проверить crc функцию
+	unsigned char crc = crc4(prom_array);
+	if ((unsigned int)crc == (unsigned int)prom_crc4)
+		return 0;
+
+	return -1;
 }
 
 
@@ -167,34 +213,3 @@ void ms5611_calculate_temp_and_pressure(uint32_t * raw_temp, uint32_t * raw_pres
 	*end_temp = temp;
 }
 
-
-//Code from AN520
-unsigned char crc4(unsigned int n_prom[])
-{
-	int cnt;		// simple counter
-	unsigned int n_rem;		// crc reminder
-	unsigned int crc_read; 		// original value of the crc
-	unsigned char  n_bit;
-	n_rem = 0x00;
-	crc_read = n_prom[7]; 		//save read CRC
-	n_prom[7]=(0xFF00 & (n_prom[7]));		//CRC byte is replaced by 0
-	for (cnt = 0; cnt < 16; cnt++)		// operation is performed on bytes
-	{
-		if (cnt%2==1)
-			n_rem ^= (unsigned short) ((n_prom[cnt>>1]) & 0x00FF);
-		else
-			n_rem ^= (unsigned short) (n_prom[cnt>>1]>>8);
-
-		for (n_bit = 8; n_bit > 0; n_bit--)
-		{
-			if (n_rem & (0x8000))
-				n_rem = (n_rem << 1) ^ 0x3000;
-			else
-				n_rem = (n_rem << 1);
-		}
-	}
-
-	n_rem = (0x000F & (n_rem >> 12));  // final 4-bit reminder is CRC code
-	n_prom[7] = crc_read; 		// restore the crc_read to its original place
-	return (n_rem ^ 0x0);		//return crc4 code
-}
