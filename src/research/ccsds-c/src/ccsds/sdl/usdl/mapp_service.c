@@ -144,7 +144,7 @@ static int _map_try_calc_size(uint8_t *data, int size) {
 
 
 static int _map_fhd_is_valid(mapr_t *map) {
-	if (map->tfdz.fhd <= map->packet.index) {
+	if (map->tfdz.fhd <= map->tfdz.index) {
 		return 1;
 	}
 	if (map->tfdz.fhd == (fhd_t)~0) {

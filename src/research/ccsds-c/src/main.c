@@ -10,6 +10,9 @@
 #include <endian.h>
 #include <ccsds/nl/epp/epp.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 void print_bit(uint8_t num) {
 	for(int i = 0; i < 8; ++i) {
@@ -42,7 +45,6 @@ typedef struct uslp_t {
 	map_mx_t map_mx;
 	map_t map;
 } uslp_t;
-
 void main_uslp_init(uslp_t *uslp, size_t tf_length, uslp_service_t service, size_t max_packet_size) {
 	pc_paramaters_t pc_p = {0};
 	pc_p.can_generate_oid = 0;
@@ -87,9 +89,9 @@ void main_uslp_init(uslp_t *uslp, size_t tf_length, uslp_service_t service, size
 	uslp->map.mapr.packet.data = map_buffer_p;
 	uslp->map.mapr.packet.max_size = max_packet_size;
 	if (service == USLPS_MAPA) {
-		mapa_init(&uslp->map, &uslp->map_mx, 5);
+		mapa_init(&uslp->map, &uslp->map_mx, 0x01);
 	} else {
-		mapp_init(&uslp->map, &uslp->map_mx, 5);
+		mapp_init(&uslp->map, &uslp->map_mx, 0x01);
 	}
 }
 
@@ -134,21 +136,149 @@ void test_send_recieve(uslp_t *us, uslp_t *ur, uint8_t *data, size_t size, uslp_
 		}
 		printf("\n");
 	}
-
 }
 
+typedef struct {
+	int parse_fault_count;
+	int packet_recieved;
+} test_t;
+
+test_t test_recieve(uslp_t *ur, uint8_t *data, size_t frame_length, size_t frame_count,
+		uint8_t *dest, size_t d_size, uslp_service_t service) {
+	int s = 0;
+	int recieved = 0;
+	test_t test = {0};
+	for (int i = 0; i < frame_count; i++) {
+		uint8_t *frame = &data[i * frame_length];
+
+		if (!pc_parse(&ur->pc, frame, frame_length)) {
+			test.parse_fault_count++;
+		}
+
+		quality_of_service_t qos = 0;
+		if (service == USLPS_MAPP) {
+			s = mapp_recieve(&ur->map.mapr, dest, d_size - recieved, &qos);
+		} else {
+			s = mapa_recieve(&ur->map.mapr, dest, d_size - recieved, &qos);
+		}
+		recieved += s;
+		if (s) {
+			test.packet_recieved++;
+		}
+	}
+	return test;
+}
+
+
+
 int main() {
-	const int size = 0x80;
+	const int frame_length = 142;
+	const int size = 2000;
 	uint8_t pl_arr[size];
+	memset(pl_arr, 0, size);
 	int pl_size = size - 4;
 	const uslp_service_t test_service = USLPS_MAPA;
 	printf("HELLO\n");
 	uslp_t us = {0};
 	uslp_t ur = {0};
-	main_uslp_init(&us, 30, test_service, size);
-	main_uslp_init(&ur, 30, test_service, size);
+	map_t *mappr;
+	map_t *mapar;
+	main_uslp_init(&us, frame_length, test_service, size);
+	main_uslp_init(&ur, frame_length, USLPS_MAPA, size);
+
+	{
+		static map_t map;
+		size_t tf_length = frame_length;
+		size_t max_packet_size = size;
+
+		uint8_t *map_buffer = malloc(tf_length);
+		uint8_t *map_buffer_p = malloc(max_packet_size);
+		map.buf_ex.data = map_buffer;
+		map.buf_ex.max_size = tf_length;
+		map.mapr.tfdz.data = map_buffer;
+		map.mapr.tfdz.max_size = tf_length;
+		map.mapr.packet.data = map_buffer_p;
+		map.mapr.packet.max_size = max_packet_size;
+		mapp_init(&map, &ur.map_mx, 0x02);
+		mappr = &map;
+	}
+	mapar = &ur.map;
+
+	const char filename[] = "input2";
+	int fid = open(filename, O_RDONLY | O_BINARY);
+
+	if (fid < 0) {
+		fprintf(stderr, "can't open file\n");
+		fflush(stderr);
+		return -1;
+	}
+	pl_size = 0;
+	while (1) {
+		int s = read(fid, &pl_arr[pl_size], size - pl_size);
+		if (s < 0) {
+			fprintf(stderr, "read error\n");
+			fflush(stderr);
+			return -1;
+		} else if (s) {
+			pl_size += s;
+		} else {
+			break;
+		}
+	}
+	//test_t test = test_recieve(&ur, pl_arr, frame_length, pl_size / frame_length, dest, size, USLPS_MAPA);
+	//printf("%d %d\n", test.packet_recieved, test.parse_fault_count);
+	{
+		uint8_t dest[size];
+		uint8_t *data = pl_arr;
+		int frame_count = pl_size / frame_length;
+		int s = 0;
+		int recieved = 0;
+		test_t test = {0};
+		for (int i = 0; i < frame_count; i++) {
+			uint8_t *frame = &data[i * frame_length];
+
+			if (!pc_parse(&ur.pc, frame, frame_length)) {
+				test.parse_fault_count++;
+			}
+
+			quality_of_service_t qos = 0;
+			s = mapp_recieve(&mappr->mapr, dest, size, &qos);
+			if (s) {
+				recieved += s;
+				test.packet_recieved++;
+				printf("MAPP: ");
+				for (int i = 0; i < s; i++) {
+					printf("0x%02X ", dest[i]);
+				}
+				printf("\n");
+			}
+
+			s = mapa_recieve(&mapar->mapr, dest, size, &qos);
+			if (s) {
+				recieved += s;
+				test.packet_recieved++;
+				printf("MAPP: ");
+				for (int i = 0; i < s; i++) {
+					printf("0x%2X", dest[i]);
+				}
+				printf("\n");
+			}
+		}
+
+		const char filename[] = "output";
+		int fid = open(filename, O_WRONLY | O_BINARY | O_CREAT);
+
+		if (fid < 0) {
+			fprintf(stderr, "can't open file\n");
+			fflush(stderr);
+			return -1;
+		}
+		write(fid, dest, recieved);
+	}
 
 
+
+	/*
 	epp_header_t epp_header = {0};
 	epp_header.epp_id = 1;
 

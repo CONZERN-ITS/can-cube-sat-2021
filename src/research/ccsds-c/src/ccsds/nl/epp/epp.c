@@ -87,7 +87,7 @@ int epp_extract_header(epp_header_t *epp_header, const uint8_t *arr, int size) {
 		return 0;
 	}
 
-	if (epp_header->lol > 2) {
+	if (epp_header->lol >= 2) {
 		ccsds_endian_extract(arr, k, &epp_header->udf, 4);
 		ccsds_endian_extract(arr, k + 4, &epp_header->epp_id_ex, 4);
 		k += 8;
