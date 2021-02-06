@@ -3,7 +3,7 @@
 <eagle version="9.4.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="yes"/>
+<setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -5371,27 +5371,24 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <rectangle x1="18.75" y1="-0.25" x2="19.25" y2="0.25" layer="51" rot="R270"/>
 <rectangle x1="16.75" y1="-0.25" x2="17.25" y2="0.25" layer="51" rot="R270"/>
 </package>
-<package name="1X10">
+<package name="1X08">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 0.1"</description>
-<wire x1="12.7" y1="-1.27" x2="-12.7" y2="-1.27" width="0.254" layer="21"/>
-<wire x1="-12.7" y1="1.27" x2="-12.7" y2="-1.27" width="0.254" layer="21"/>
-<wire x1="12.7" y1="1.27" x2="12.7" y2="-1.27" width="0.254" layer="21"/>
-<wire x1="-12.7" y1="1.27" x2="-10.16" y2="1.27" width="0.254" layer="21"/>
-<wire x1="-10.16" y1="1.27" x2="12.7" y2="1.27" width="0.254" layer="21"/>
 <wire x1="-10.16" y1="1.27" x2="-10.16" y2="-1.27" width="0.254" layer="21"/>
-<pad name="1" x="-11.43" y="0" drill="1.016" shape="square" rot="R90"/>
-<pad name="2" x="-8.89" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<pad name="3" x="-6.35" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<pad name="4" x="-3.81" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<pad name="5" x="-1.27" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<pad name="6" x="1.27" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<pad name="7" x="3.81" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<pad name="8" x="6.35" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<pad name="9" x="8.89" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<pad name="10" x="11.43" y="0" drill="1.016" shape="octagon" rot="R90"/>
-<text x="-12.7762" y="1.8288" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="-12.7" y="-3.175" size="1.27" layer="27">&gt;VALUE</text>
-<rectangle x1="8.636" y1="-0.254" x2="9.144" y2="0.254" layer="51"/>
+<wire x1="10.16" y1="1.27" x2="10.16" y2="-1.27" width="0.254" layer="21"/>
+<wire x1="-10.16" y1="1.27" x2="-7.62" y2="1.27" width="0.254" layer="21"/>
+<wire x1="-7.62" y1="1.27" x2="10.16" y2="1.27" width="0.254" layer="21"/>
+<wire x1="10.16" y1="-1.27" x2="-10.16" y2="-1.27" width="0.254" layer="21"/>
+<wire x1="-7.62" y1="1.27" x2="-7.62" y2="-1.27" width="0.254" layer="21"/>
+<pad name="1" x="-8.89" y="0" drill="1.016" shape="square" rot="R90"/>
+<pad name="2" x="-6.35" y="0" drill="1.016" shape="octagon" rot="R90"/>
+<pad name="3" x="-3.81" y="0" drill="1.016" shape="octagon" rot="R90"/>
+<pad name="4" x="-1.27" y="0" drill="1.016" shape="octagon" rot="R90"/>
+<pad name="5" x="1.27" y="0" drill="1.016" shape="octagon" rot="R90"/>
+<pad name="6" x="3.81" y="0" drill="1.016" shape="octagon" rot="R90"/>
+<pad name="7" x="6.35" y="0" drill="1.016" shape="octagon" rot="R90"/>
+<pad name="8" x="8.89" y="0" drill="1.016" shape="octagon" rot="R90"/>
+<text x="-10.2362" y="1.8288" size="1.27" layer="25" ratio="10">&gt;NAME</text>
+<text x="-10.16" y="-3.175" size="1.27" layer="27">&gt;VALUE</text>
 <rectangle x1="6.096" y1="-0.254" x2="6.604" y2="0.254" layer="51"/>
 <rectangle x1="3.556" y1="-0.254" x2="4.064" y2="0.254" layer="51"/>
 <rectangle x1="1.016" y1="-0.254" x2="1.524" y2="0.254" layer="51"/>
@@ -5399,37 +5396,32 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <rectangle x1="-4.064" y1="-0.254" x2="-3.556" y2="0.254" layer="51"/>
 <rectangle x1="-6.604" y1="-0.254" x2="-6.096" y2="0.254" layer="51"/>
 <rectangle x1="-9.144" y1="-0.254" x2="-8.636" y2="0.254" layer="51"/>
-<rectangle x1="-11.684" y1="-0.254" x2="-11.176" y2="0.254" layer="51"/>
-<rectangle x1="11.176" y1="-0.254" x2="11.684" y2="0.254" layer="51"/>
+<rectangle x1="8.636" y1="-0.254" x2="9.144" y2="0.254" layer="51"/>
 </package>
-<package name="1X10M">
+<package name="1X08M">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 2MM"</description>
-<wire x1="10.25" y1="1.25" x2="10.25" y2="-1.25" width="0.2032" layer="21"/>
-<wire x1="10.25" y1="-1.25" x2="-10.25" y2="-1.25" width="0.2032" layer="21"/>
-<wire x1="-10.25" y1="-1.25" x2="-10.25" y2="1.25" width="0.2032" layer="21"/>
-<wire x1="-10.25" y1="1.25" x2="10.25" y2="1.25" width="0.2032" layer="21"/>
-<pad name="1" x="-9" y="0" drill="0.9144" shape="square"/>
-<pad name="2" x="-7" y="0" drill="0.9144"/>
-<pad name="3" x="-5" y="0" drill="0.9144" rot="R270"/>
-<pad name="4" x="-3" y="0" drill="0.9144" rot="R270"/>
-<pad name="5" x="-1" y="0" drill="0.9144" rot="R270"/>
-<pad name="6" x="1" y="0" drill="0.9144" rot="R270"/>
-<pad name="7" x="3" y="0" drill="0.9144" rot="R270"/>
-<pad name="8" x="5" y="0" drill="0.9144" rot="R270"/>
-<pad name="9" x="7" y="0" drill="0.9144" rot="R270"/>
-<pad name="10" x="9" y="0" drill="0.9144" rot="R270"/>
-<text x="-11" y="-1" size="1.016" layer="25" ratio="14" rot="R90">&gt;NAME</text>
-<text x="12" y="-1" size="0.8128" layer="27" ratio="10" rot="R90">&gt;VALUE</text>
+<wire x1="8.25" y1="1.25" x2="8.25" y2="-1.25" width="0.2032" layer="21"/>
+<wire x1="8.25" y1="-1.25" x2="-8.25" y2="-1.25" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="-1.25" x2="-8.25" y2="1.25" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="1.25" x2="8.25" y2="1.25" width="0.2032" layer="21"/>
+<pad name="1" x="-7" y="0" drill="0.9144" shape="square"/>
+<pad name="2" x="-5" y="0" drill="0.9144"/>
+<pad name="3" x="-3" y="0" drill="0.9144" rot="R270"/>
+<pad name="4" x="-1" y="0" drill="0.9144" rot="R270"/>
+<pad name="5" x="1" y="0" drill="0.9144" rot="R270"/>
+<pad name="6" x="3" y="0" drill="0.9144" rot="R270"/>
+<pad name="7" x="5" y="0" drill="0.9144" rot="R270"/>
+<pad name="8" x="7" y="0" drill="0.9144" rot="R270"/>
+<text x="-9" y="-1" size="1.016" layer="25" ratio="14" rot="R90">&gt;NAME</text>
+<text x="10" y="-1" size="0.8128" layer="27" ratio="10" rot="R90">&gt;VALUE</text>
+<rectangle x1="-5.25" y1="-0.25" x2="-4.75" y2="0.25" layer="51"/>
 <rectangle x1="-7.25" y1="-0.25" x2="-6.75" y2="0.25" layer="51"/>
-<rectangle x1="-9.25" y1="-0.25" x2="-8.75" y2="0.25" layer="51"/>
-<rectangle x1="-3.25" y1="-0.25" x2="-2.75" y2="0.25" layer="51" rot="R270"/>
-<rectangle x1="-5.25" y1="-0.25" x2="-4.75" y2="0.25" layer="51" rot="R270"/>
-<rectangle x1="0.75" y1="-0.25" x2="1.25" y2="0.25" layer="51" rot="R270"/>
 <rectangle x1="-1.25" y1="-0.25" x2="-0.75" y2="0.25" layer="51" rot="R270"/>
-<rectangle x1="4.75" y1="-0.25" x2="5.25" y2="0.25" layer="51" rot="R270"/>
+<rectangle x1="-3.25" y1="-0.25" x2="-2.75" y2="0.25" layer="51" rot="R270"/>
 <rectangle x1="2.75" y1="-0.25" x2="3.25" y2="0.25" layer="51" rot="R270"/>
-<rectangle x1="8.75" y1="-0.25" x2="9.25" y2="0.25" layer="51" rot="R270"/>
+<rectangle x1="0.75" y1="-0.25" x2="1.25" y2="0.25" layer="51" rot="R270"/>
 <rectangle x1="6.75" y1="-0.25" x2="7.25" y2="0.25" layer="51" rot="R270"/>
+<rectangle x1="4.75" y1="-0.25" x2="5.25" y2="0.25" layer="51" rot="R270"/>
 </package>
 </packages>
 <symbols>
@@ -5489,13 +5481,13 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pin name="19" x="-2.54" y="-22.86" visible="pad" length="short" direction="pas" function="dot"/>
 <pin name="20" x="-2.54" y="-25.4" visible="pad" length="short" direction="pas" function="dot"/>
 </symbol>
-<symbol name="PINHD10">
-<wire x1="-6.35" y1="-15.24" x2="1.27" y2="-15.24" width="0.4064" layer="94"/>
-<wire x1="1.27" y1="-15.24" x2="1.27" y2="12.7" width="0.4064" layer="94"/>
+<symbol name="PINHD8">
+<wire x1="-6.35" y1="-10.16" x2="1.27" y2="-10.16" width="0.4064" layer="94"/>
+<wire x1="1.27" y1="-10.16" x2="1.27" y2="12.7" width="0.4064" layer="94"/>
 <wire x1="1.27" y1="12.7" x2="-6.35" y2="12.7" width="0.4064" layer="94"/>
-<wire x1="-6.35" y1="12.7" x2="-6.35" y2="-15.24" width="0.4064" layer="94"/>
+<wire x1="-6.35" y1="12.7" x2="-6.35" y2="-10.16" width="0.4064" layer="94"/>
 <text x="-6.35" y="13.335" size="1.778" layer="95">&gt;NAME</text>
-<text x="-6.35" y="-17.78" size="1.778" layer="96">&gt;VALUE</text>
+<text x="-6.35" y="-12.7" size="1.778" layer="96">&gt;VALUE</text>
 <pin name="1" x="-2.54" y="10.16" visible="pad" length="short" direction="pas" function="dot"/>
 <pin name="2" x="-2.54" y="7.62" visible="pad" length="short" direction="pas" function="dot"/>
 <pin name="3" x="-2.54" y="5.08" visible="pad" length="short" direction="pas" function="dot"/>
@@ -5504,8 +5496,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pin name="6" x="-2.54" y="-2.54" visible="pad" length="short" direction="pas" function="dot"/>
 <pin name="7" x="-2.54" y="-5.08" visible="pad" length="short" direction="pas" function="dot"/>
 <pin name="8" x="-2.54" y="-7.62" visible="pad" length="short" direction="pas" function="dot"/>
-<pin name="9" x="-2.54" y="-10.16" visible="pad" length="short" direction="pas" function="dot"/>
-<pin name="10" x="-2.54" y="-12.7" visible="pad" length="short" direction="pas" function="dot"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -5633,16 +5623,15 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="PINHD-1X10" prefix="JP" uservalue="yes">
+<deviceset name="PINHD-1X8" prefix="JP" uservalue="yes">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt;</description>
 <gates>
-<gate name="A" symbol="PINHD10" x="0" y="0"/>
+<gate name="A" symbol="PINHD8" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="1X10">
+<device name="" package="1X08">
 <connects>
 <connect gate="A" pin="1" pad="1"/>
-<connect gate="A" pin="10" pad="10"/>
 <connect gate="A" pin="2" pad="2"/>
 <connect gate="A" pin="3" pad="3"/>
 <connect gate="A" pin="4" pad="4"/>
@@ -5650,16 +5639,14 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <connect gate="A" pin="6" pad="6"/>
 <connect gate="A" pin="7" pad="7"/>
 <connect gate="A" pin="8" pad="8"/>
-<connect gate="A" pin="9" pad="9"/>
 </connects>
 <technologies>
 <technology name=""/>
 </technologies>
 </device>
-<device name="M" package="1X10M">
+<device name="M" package="1X08M">
 <connects>
 <connect gate="A" pin="1" pad="1"/>
-<connect gate="A" pin="10" pad="10"/>
 <connect gate="A" pin="2" pad="2"/>
 <connect gate="A" pin="3" pad="3"/>
 <connect gate="A" pin="4" pad="4"/>
@@ -5667,7 +5654,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <connect gate="A" pin="6" pad="6"/>
 <connect gate="A" pin="7" pad="7"/>
 <connect gate="A" pin="8" pad="8"/>
-<connect gate="A" pin="9" pad="9"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -15705,7 +15691,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="U$28" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
 <part name="U$29" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
 <part name="U$30" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
-<part name="BSK5" library="pinheadCS" deviceset="PINHD-1X10" device=""/>
+<part name="BSK5" library="pinheadCS" deviceset="PINHD-1X8" device=""/>
 <part name="U$5" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R6" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="U$6" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
@@ -18321,32 +18307,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="R23" gate="G$1" pin="2"/>
 </segment>
 </net>
-<net name="SCL-INA" class="0">
-<segment>
-<pinref part="BSK5" gate="A" pin="9"/>
-<wire x1="139.7" y1="309.88" x2="139.7" y2="327.66" width="0.1524" layer="91"/>
-<label x="139.7" y="317.5" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
-<wire x1="110.49" y1="-48.26" x2="110.49" y2="-38.1" width="0.1524" layer="91"/>
-<wire x1="130.81" y1="-38.1" x2="110.49" y2="-38.1" width="0.1524" layer="91"/>
-<label x="114.3" y="-38.1" size="1.778" layer="95"/>
-<pinref part="U$57" gate="G$1" pin="SCL"/>
-</segment>
-</net>
-<net name="SDA-INA" class="0">
-<segment>
-<pinref part="BSK5" gate="A" pin="10"/>
-<wire x1="142.24" y1="309.88" x2="142.24" y2="327.66" width="0.1524" layer="91"/>
-<label x="142.24" y="317.5" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
-<wire x1="113.03" y1="-48.26" x2="113.03" y2="-40.64" width="0.1524" layer="91"/>
-<wire x1="133.35" y1="-40.64" x2="113.03" y2="-40.64" width="0.1524" layer="91"/>
-<label x="119.38" y="-40.64" size="1.778" layer="95"/>
-<pinref part="U$57" gate="G$1" pin="SDA"/>
-</segment>
-</net>
 <net name="SCL-TM" class="0">
 <segment>
 <pinref part="BSK5" gate="A" pin="5"/>
@@ -18387,6 +18347,12 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="JP6" gate="A" pin="13"/>
 <wire x1="279.4" y1="38.1" x2="279.4" y2="53.34" width="0.1524" layer="91"/>
 <label x="279.4" y="48.26" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<wire x1="110.49" y1="-48.26" x2="110.49" y2="-38.1" width="0.1524" layer="91"/>
+<wire x1="130.81" y1="-38.1" x2="110.49" y2="-38.1" width="0.1524" layer="91"/>
+<label x="114.3" y="-38.1" size="1.778" layer="95"/>
+<pinref part="U$57" gate="G$1" pin="SCL"/>
 </segment>
 </net>
 <net name="SDA-TM" class="0">
@@ -18429,6 +18395,12 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="JP6" gate="A" pin="14"/>
 <wire x1="279.4" y1="30.48" x2="279.4" y2="15.24" width="0.1524" layer="91"/>
 <label x="279.4" y="15.24" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<wire x1="113.03" y1="-48.26" x2="113.03" y2="-40.64" width="0.1524" layer="91"/>
+<wire x1="133.35" y1="-40.64" x2="113.03" y2="-40.64" width="0.1524" layer="91"/>
+<label x="119.38" y="-40.64" size="1.778" layer="95"/>
+<pinref part="U$57" gate="G$1" pin="SDA"/>
 </segment>
 </net>
 <net name="N$150" class="0">

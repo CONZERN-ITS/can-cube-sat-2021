@@ -21147,7 +21147,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <junction x="-88.9" y="127"/>
 </segment>
 </net>
-<net name="SCL-INA" class="0">
+<net name="SCL-TM" class="0">
 <segment>
 <wire x1="-273.05" y1="220.98" x2="-273.05" y2="231.14" width="0.1524" layer="91"/>
 <wire x1="-252.73" y1="231.14" x2="-273.05" y2="231.14" width="0.1524" layer="91"/>
@@ -21160,7 +21160,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="BKU" gate="A" pin="10"/>
 </segment>
 </net>
-<net name="SDA-INA" class="0">
+<net name="SDA-TM" class="0">
 <segment>
 <wire x1="-270.51" y1="220.98" x2="-270.51" y2="228.6" width="0.1524" layer="91"/>
 <wire x1="-250.19" y1="228.6" x2="-270.51" y2="228.6" width="0.1524" layer="91"/>

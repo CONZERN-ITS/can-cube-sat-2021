@@ -2138,6 +2138,21 @@
 <vertex x="3.3" y="-1.15"/>
 </polygon>
 </package>
+<package name="MS5611">
+<wire x1="-9.5" y1="6.5" x2="-9.5" y2="-6.5" width="0.127" layer="21"/>
+<wire x1="-9.5" y1="-6.5" x2="9.5" y2="-6.5" width="0.127" layer="21"/>
+<wire x1="9.5" y1="-6.5" x2="9.5" y2="6.5" width="0.127" layer="21"/>
+<wire x1="9.5" y1="6.5" x2="-9.5" y2="6.5" width="0.127" layer="21"/>
+<hole x="-7" y="-4" drill="3.2"/>
+<pad name="P$1" x="-7.62" y="5.23" drill="1.016" shape="octagon"/>
+<pad name="P$2" x="-5.08" y="5.23" drill="1.016" shape="octagon"/>
+<pad name="P$3" x="-2.54" y="5.23" drill="1.016" shape="octagon"/>
+<pad name="P$4" x="0" y="5.23" drill="1.016" shape="octagon"/>
+<pad name="P$5" x="2.54" y="5.23" drill="1.016" shape="octagon"/>
+<pad name="P$6" x="5.08" y="5.23" drill="1.016" shape="octagon"/>
+<pad name="P$7" x="7.62" y="5.23" drill="1.016" shape="octagon"/>
+<text x="-4" y="7" size="1.27" layer="25">MS5611</text>
+</package>
 </packages>
 <packages3d>
 <package3d name="SOIC8" urn="urn:adsk.eagle:package:8087957/1" type="box">
@@ -3059,6 +3074,20 @@
 <pin name="4" x="7.62" y="0" visible="pad" length="middle" direction="pas" swaplevel="1" rot="R180"/>
 <pin name="5" x="7.62" y="2.54" visible="pad" length="middle" direction="pas" swaplevel="1" rot="R180"/>
 <pin name="6" x="7.62" y="5.08" visible="pad" length="middle" direction="pas" swaplevel="1" rot="R180"/>
+</symbol>
+<symbol name="MS5611">
+<pin name="PS" x="-12.7" y="7.62" length="middle"/>
+<pin name="SDO" x="-12.7" y="2.54" length="middle"/>
+<pin name="CSB" x="-12.7" y="-2.54" length="middle"/>
+<pin name="GND" x="12.7" y="0" length="middle" rot="R180"/>
+<pin name="VCC" x="12.7" y="5.08" length="middle" rot="R180"/>
+<wire x1="-7.62" y1="10.16" x2="-7.62" y2="-10.16" width="0.254" layer="94"/>
+<wire x1="-7.62" y1="-10.16" x2="7.62" y2="-10.16" width="0.254" layer="94"/>
+<wire x1="7.62" y1="-10.16" x2="7.62" y2="10.16" width="0.254" layer="94"/>
+<wire x1="7.62" y1="10.16" x2="-7.62" y2="10.16" width="0.254" layer="94"/>
+<text x="-5.842" y="11.176" size="1.27" layer="95">MS5611</text>
+<pin name="SDA" x="-12.7" y="-7.62" length="middle"/>
+<pin name="SCL" x="12.7" y="-5.08" length="middle" rot="R180"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -4883,6 +4912,27 @@
 <connect gate="G$1" pin="4" pad="4"/>
 <connect gate="G$1" pin="5" pad="5"/>
 <connect gate="G$1" pin="6" pad="6"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="MS5611">
+<gates>
+<gate name="G$1" symbol="MS5611" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="MS5611">
+<connects>
+<connect gate="G$1" pin="CSB" pad="P$3"/>
+<connect gate="G$1" pin="GND" pad="P$6"/>
+<connect gate="G$1" pin="PS" pad="P$1"/>
+<connect gate="G$1" pin="SCL" pad="P$5"/>
+<connect gate="G$1" pin="SDA" pad="P$4"/>
+<connect gate="G$1" pin="SDO" pad="P$2"/>
+<connect gate="G$1" pin="VCC" pad="P$7"/>
 </connects>
 <technologies>
 <technology name=""/>
