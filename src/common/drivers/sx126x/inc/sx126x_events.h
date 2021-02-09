@@ -26,7 +26,7 @@ typedef union sx126x_evt_arg_t
 		union
 		{
 			sx126x_lora_packet_status_t lora;
-			sx126x_lora_packet_status_t gfsk;
+			sx126x_gfsk_packet_status_t gfsk;
 		} packet_status;
 	} rx_done;
 
