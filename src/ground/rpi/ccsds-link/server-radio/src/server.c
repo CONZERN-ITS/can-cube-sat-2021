@@ -77,6 +77,13 @@ static int _zmq_init(server_t * server)
 		goto bad_exit;
 	}
 
+	const char topic[] = "radio.uplink_frame";
+	rc = zmq_setsockopt(server->uplink_socket, ZMQ_SUBSCRIBE, topic, sizeof(topic)-1);
+	if (rc < 0)
+	{
+		log_error("unable to subscribe uplink socket: %d", errno);
+		goto bad_exit;
+	}
 
 	server->telemetry_socket = zmq_socket(server->zmq, ZMQ_PUB);
 	if (!server->telemetry_socket)
