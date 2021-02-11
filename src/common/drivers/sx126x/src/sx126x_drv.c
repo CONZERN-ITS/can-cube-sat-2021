@@ -863,7 +863,7 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 			}
 			else if (SX126X_PACKET_TYPE_GFSK == drv->_modem_type)
 			{
-				rc = sx126x_api_get_lora_packet_status(&drv->api, &evt_arg.rx_done.packet_status.gfsk);
+				rc = sx126x_api_get_gfsk_packet_status(&drv->api, &evt_arg.rx_done.packet_status.gfsk);
 				SX126X_RETURN_IF_NONZERO(rc);
 			}
 
