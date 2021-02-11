@@ -391,7 +391,7 @@ static int _radio_init(server_t * server)
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
 			.stop_timer_on_preable = false,
-			.lora_symb_timeout = 50
+			.lora_symb_timeout = 100
 	};
 
 
@@ -495,7 +495,7 @@ static void _radio_fetch_rx(server_t * server)
 		return;
 	}
 
-	server->tx_buffer_size = server->rx_buffer_capacity;
+	server->rx_buffer_size = server->rx_buffer_capacity;
 	log_trace("fetched rx frame from radio");
 }
 
@@ -560,7 +560,10 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 
 	// Если в результате этого события мы не пошли в TX - уходим в RX
 	if (went_tx)
+	{
 		log_info("tx begun");
+		server->rx_timedout_cnt = 0;
+	}
 	else
 		_radio_go_rx(server);
 }
