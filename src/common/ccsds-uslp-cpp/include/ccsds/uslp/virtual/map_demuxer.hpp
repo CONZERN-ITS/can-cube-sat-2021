@@ -9,16 +9,16 @@
 namespace ccsds { namespace uslp {
 
 
-class map_demuxer: public vchannel_sink
+class map_demuxer: public vchannel_acceptor
 {
 public:
 	map_demuxer(gvcid_t gvcid_);
 	virtual ~map_demuxer() = default;
 
 protected:
-	typedef std::map<gmapid_t, map_sink*> container_t;
+	typedef std::map<gmapid_t, map_acceptor*> container_t;
 
-	virtual void add_map_sink_impl(map_sink * sink) override;
+	virtual void add_map_acceptor_impl(map_acceptor * acceptor) override;
 
 	virtual void finalize_impl() override;
 

@@ -20,11 +20,11 @@ namespace detail
 }
 
 
-class map_access_sink: public map_sink
+class map_access_acceptor: public map_acceptor
 {
 public:
-	map_access_sink(gmapid_t mapid_);
-	virtual ~map_access_sink() = default;
+	map_access_acceptor(gmapid_t mapid_);
+	virtual ~map_access_acceptor() = default;
 
 	void max_sdu_size(size_t value) { _max_sdu_size = value; }
 	size_t max_sdu_size() const { return _max_sdu_size; }

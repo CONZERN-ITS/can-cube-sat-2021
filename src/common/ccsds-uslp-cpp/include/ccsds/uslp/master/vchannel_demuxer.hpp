@@ -11,16 +11,16 @@
 namespace ccsds { namespace uslp {
 
 
-class vchannel_demuxer: public mchannel_sink
+class vchannel_demuxer: public mchannel_acceptor
 {
 public:
 	vchannel_demuxer(mcid_t mcid_);
 	virtual ~vchannel_demuxer() = default;
 
 protected:
-	typedef std::map<gvcid_t, vchannel_sink*> container_t;
+	typedef std::map<gvcid_t, vchannel_acceptor*> container_t;
 
-	virtual void add_vchannel_sink_impl(vchannel_sink * sink) override;
+	virtual void add_vchannel_acceptor_impl(vchannel_acceptor * sink) override;
 	virtual void finalize_impl() override;
 	virtual void push_impl(
 			const mchannel_frame_params_t & frame_params,

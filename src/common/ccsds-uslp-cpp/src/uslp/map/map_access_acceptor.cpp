@@ -1,4 +1,4 @@
-#include <ccsds/uslp/map/map_access_sink.hpp>
+#include <ccsds/uslp/map/map_access_acceptor.hpp>
 
 #include <sstream>
 #include <cassert>
@@ -10,23 +10,23 @@
 namespace ccsds { namespace uslp {
 
 
-map_access_sink::map_access_sink(gmapid_t mapid_)
-		: map_sink(mapid_),
+map_access_acceptor::map_access_acceptor(gmapid_t mapid_)
+		: map_acceptor(mapid_),
 		  _prev_frame_qos(qos_t::EXPIDITED) // Просто чтобы не иметь UB
 {
 
 }
 
 
-void map_access_sink::finalize_impl()
+void map_access_acceptor::finalize_impl()
 {
-	map_sink::finalize_impl();
+	map_acceptor::finalize_impl();
 
 	// нужно бы проверить, что стоит колбек на эвенты...
 }
 
 
-void map_access_sink::push_impl(
+void map_access_acceptor::push_impl(
 	const input_map_frame_params & params,
 	const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
 )
@@ -35,7 +35,7 @@ void map_access_sink::push_impl(
 	{
 		// Этот фрейм не может быть валидным, так как в него максимум что влезает
 		// это заголовок tfdf.
-		_flush_accum(map_sdu_event::INCOMPLETE);
+		_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 	}
 
 	// Смотрим что там в tfdf заголовке
@@ -48,7 +48,7 @@ void map_access_sink::push_impl(
 	if (detail::tfdz_construction_rule_t::MAP_SDU_START == header.ctr_rule)
 	{
 		if (!_accumulator.empty())
-			_flush_accum(map_sdu_event::INCOMPLETE);
+			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 
 		// Забираем пакет
 		_consume_frame(params, header, tfdz_start, tfdz_size);
@@ -62,7 +62,7 @@ void map_access_sink::push_impl(
 		if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
 		{
 			// Оп, это какая-то петрушка
-			_flush_accum(map_sdu_event::INCOMPLETE);
+			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -71,7 +71,7 @@ void map_access_sink::push_impl(
 		{
 			// Значит что-то где-то потерялось
 			// Выкидываем и сбрасываем состояние
-			_flush_accum(map_sdu_event::INCOMPLETE);
+			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -79,7 +79,7 @@ void map_access_sink::push_impl(
 		if (_prev_frame_qos != params.qos)
 		{
 			// Выкидываем и сбрасываем состояние
-			_flush_accum(map_sdu_event::INCOMPLETE);
+			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -89,7 +89,7 @@ void map_access_sink::push_impl(
 }
 
 
-void map_access_sink::_consume_frame(
+void map_access_acceptor::_consume_frame(
 		const input_map_frame_params & params,
 		const detail::tfdf_header_t & header,
 		const uint8_t * tfdz, uint16_t tfdz_size
@@ -132,11 +132,11 @@ void map_access_sink::_consume_frame(
 	// Если случилось переполнение или просто мы получили весь SDU
 	// Сообщаем пользователю об этом событием
 	if (overflow || sdu_complete)
-		_flush_accum(overflow ? map_sdu_event::INCOMPLETE : 0);
+		_flush_accum(overflow ? event_accepted_map_sdu::INCOMPLETE : 0);
 }
 
 
-void map_access_sink::_flush_accum(int event_flags)
+void map_access_acceptor::_flush_accum(int event_flags)
 {
 	if (_accumulator.empty())
 		return;
@@ -144,10 +144,10 @@ void map_access_sink::_flush_accum(int event_flags)
 	// Сбрасываем номер предыдущего пакета
 	_prev_frame_seq_no.reset();
 
-	map_sdu_event event;
+	event_accepted_map_sdu event;
 	event.data = std::move(_accumulator);
 	event.qos = _prev_frame_qos;
-	event.flags = event_flags | map_sdu_event::MAPA;
+	event.flags = event_flags | event_accepted_map_sdu::MAPA;
 	emit_event(event);
 }
 

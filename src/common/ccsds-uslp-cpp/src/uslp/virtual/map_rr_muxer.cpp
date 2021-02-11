@@ -7,21 +7,21 @@ namespace ccsds { namespace uslp {
 
 
 map_rr_muxer::map_rr_muxer(gvcid_t gvcid_)
-	: vchannel_source(gvcid_)
+	: vchannel_emitter(gvcid_)
 {
 
 }
 
 
-void map_rr_muxer::add_map_source_impl(map_source * source)
+void map_rr_muxer::add_map_emitter_impl(map_emitter * emitter)
 {
-	_muxer.add_source(source);
+	_muxer.add_source(emitter);
 }
 
 
 void map_rr_muxer::finalize_impl()
 {
-	vchannel_source::finalize_impl();
+	vchannel_emitter::finalize_impl();
 
 	// Проходим по мап каналам и ставим им размер tfdf
 	const auto the_tfdf_size = tfdf_size() - frame_size_overhead();
@@ -60,6 +60,8 @@ bool map_rr_muxer::peek_impl(vchannel_frame_params & params)
 		return false;
 
 	params.channel_id = _selected_channel->channel_id;
+	params.frame_seq_no = vchannel_emitter::get_frame_seq_no();
+	params.payload_cookies = std::move(map_params.payload_cookies);
 
 	switch (map_params.qos)
 	{
@@ -76,7 +78,6 @@ bool map_rr_muxer::peek_impl(vchannel_frame_params & params)
 		break;
 	};
 
-	params.frame_seq_no = vchannel_source::get_frame_seq_no();
 	return true;
 }
 
@@ -94,7 +95,7 @@ void map_rr_muxer::pop_impl(uint8_t * tfdf_buffer)
 		_selected_channel = nullptr; // Если блокировки нет - снимаем этот канал с выбранного
 
 	selected_channel_copy->pop_tfdf(tfdf_buffer, tfdf_size());
-	vchannel_source::increase_frame_seq_no();
+	vchannel_emitter::increase_frame_seq_no();
 }
 
 

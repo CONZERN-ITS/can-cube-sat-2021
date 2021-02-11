@@ -9,6 +9,7 @@
 
 namespace ccsds { namespace uslp {
 
+
 static void _default_event_callback(const event &)
 {
 
@@ -16,14 +17,14 @@ static void _default_event_callback(const event &)
 
 
 
-pchannel_source::pchannel_source(std::string name_)
+pchannel_emitter::pchannel_emitter(std::string name_)
 		: channel_id(name_), _frame_version_no(detail::tf_header_t::default_frame_version_no)
 {
 	set_event_callback(_default_event_callback);
 }
 
 
-void pchannel_source::frame_version_no(uint8_t value)
+void pchannel_emitter::frame_version_no(uint8_t value)
 {
 	if (value > 0x0f)
 	{
@@ -44,7 +45,7 @@ void pchannel_source::frame_version_no(uint8_t value)
 }
 
 
-void pchannel_source::frame_size(size_t value)
+void pchannel_emitter::frame_size(size_t value)
 {
 	if (_finalized)
 	{
@@ -57,7 +58,7 @@ void pchannel_source::frame_size(size_t value)
 }
 
 
-void pchannel_source::error_control_len(error_control_len_t value)
+void pchannel_emitter::error_control_len(error_control_len_t value)
 {
 	if (_finalized)
 	{
@@ -70,7 +71,7 @@ void pchannel_source::error_control_len(error_control_len_t value)
 }
 
 
-void pchannel_source::set_event_callback(event_callback_t event_callback)
+void pchannel_emitter::set_event_callback(event_callback_t event_callback)
 {
 	if (_finalized)
 	{
@@ -83,7 +84,7 @@ void pchannel_source::set_event_callback(event_callback_t event_callback)
 }
 
 
-void pchannel_source::add_mchannel_source(mchannel_source * source)
+void pchannel_emitter::add_mchannel_source(mchannel_emitter * source)
 {
 	if (_finalized)
 	{
@@ -96,7 +97,7 @@ void pchannel_source::add_mchannel_source(mchannel_source * source)
 }
 
 
-void pchannel_source::finalize()
+void pchannel_emitter::finalize()
 {
 	if (_finalized)
 		return;
@@ -108,7 +109,7 @@ void pchannel_source::finalize()
 }
 
 
-bool pchannel_source::peek()
+bool pchannel_emitter::peek()
 {
 	if (!_finalized)
 	{
@@ -121,7 +122,7 @@ bool pchannel_source::peek()
 }
 
 
-bool pchannel_source::peek(pchannel_frame_params_t & frame_params)
+bool pchannel_emitter::peek(pchannel_frame_params_t & frame_params)
 {
 	if (!_finalized)
 	{
@@ -134,7 +135,7 @@ bool pchannel_source::peek(pchannel_frame_params_t & frame_params)
 }
 
 
-void pchannel_source::pop(uint8_t * frame_buffer, size_t frame_buffer_size)
+void pchannel_emitter::pop(uint8_t * frame_buffer, size_t frame_buffer_size)
 {
 	if (!_finalized)
 	{
@@ -148,7 +149,7 @@ void pchannel_source::pop(uint8_t * frame_buffer, size_t frame_buffer_size)
 }
 
 
-uint16_t pchannel_source::frame_size_overhead() const
+uint16_t pchannel_emitter::frame_size_overhead() const
 {
 	uint16_t retval = 0;
 
@@ -176,13 +177,13 @@ uint16_t pchannel_source::frame_size_overhead() const
 }
 
 
-void pchannel_source::emit_event(const event & evt)
+void pchannel_emitter::emit_event(const emitter_event & evt)
 {
 	_event_callback(evt);
 }
 
 
-void pchannel_source::finalize_impl()
+void pchannel_emitter::finalize_impl()
 {
 	// Проверяем самые базовые настройки
 
@@ -206,14 +207,14 @@ void pchannel_source::finalize_impl()
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-pchannel_sink::pchannel_sink(std::string name_)
+pchannel_acceptor::pchannel_acceptor(std::string name_)
 	: channel_id(std::move(name_))
 {
 	set_event_callback(_default_event_callback);
 }
 
 
-void pchannel_sink::insert_zone_size(uint16_t value)
+void pchannel_acceptor::insert_zone_size(uint16_t value)
 {
 	if (_finalized)
 	{
@@ -226,7 +227,7 @@ void pchannel_sink::insert_zone_size(uint16_t value)
 }
 
 
-void pchannel_sink::error_control_len(error_control_len_t value)
+void pchannel_acceptor::error_control_len(error_control_len_t value)
 {
 	if (_finalized)
 	{
@@ -239,7 +240,7 @@ void pchannel_sink::error_control_len(error_control_len_t value)
 }
 
 
-void pchannel_sink::set_event_callback(event_callback_t event_callback)
+void pchannel_acceptor::set_event_callback(event_callback_t event_callback)
 {
 	if (_finalized)
 	{
@@ -252,7 +253,7 @@ void pchannel_sink::set_event_callback(event_callback_t event_callback)
 }
 
 
-void pchannel_sink::add_mchannel_sink(mchannel_sink * sink)
+void pchannel_acceptor::add_mchannel_acceptor(mchannel_acceptor * sink)
 {
 	if (_finalized)
 	{
@@ -261,11 +262,11 @@ void pchannel_sink::add_mchannel_sink(mchannel_sink * sink)
 		throw object_is_finalized(error.str());
 	}
 
-	add_mchannel_sink_impl(sink);
+	add_mchannel_acceptor_impl(sink);
 }
 
 
-void pchannel_sink::finalize()
+void pchannel_acceptor::finalize()
 {
 	if (_finalized)
 		return;
@@ -275,7 +276,7 @@ void pchannel_sink::finalize()
 }
 
 
-void pchannel_sink::push_frame(const uint8_t * frame_buffer, size_t frame_buffer_size)
+void pchannel_acceptor::push_frame(const uint8_t * frame_buffer, size_t frame_buffer_size)
 {
 	if (!_finalized)
 	{
@@ -288,13 +289,13 @@ void pchannel_sink::push_frame(const uint8_t * frame_buffer, size_t frame_buffer
 }
 
 
-void pchannel_sink::emit_event(const event & evt)
+void pchannel_acceptor::emit_event(const acceptor_event & evt)
 {
 	_event_callback(evt);
 }
 
 
-void pchannel_sink::finalize_impl()
+void pchannel_acceptor::finalize_impl()
 {
 	// Ничего не делаем!
 }

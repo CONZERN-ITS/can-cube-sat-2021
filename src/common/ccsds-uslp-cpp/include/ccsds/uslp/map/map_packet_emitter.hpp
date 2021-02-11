@@ -15,14 +15,25 @@
 namespace ccsds { namespace uslp {
 
 
-class map_packet_source: public map_source
+class map_packet_source: public map_emitter
 {
 public:
 	map_packet_source(gmapid_t map_id_);
 	virtual ~map_packet_source() = default;
 
-	void add_packet(const uint8_t * packet, size_t packet_size, qos_t qos);
-	void add_encapsulate_data(const uint8_t * data, size_t data_size, qos_t qos, epp::protocol_id_t proto_id);
+	void add_packet(
+			payload_cookie_t cookie,
+			const uint8_t * packet,
+			size_t packet_size,
+			qos_t qos
+	);
+	void add_encapsulate_data(
+			payload_cookie_t cookie,
+			const uint8_t * data,
+			size_t data_size,
+			qos_t qos,
+			epp::protocol_id_t proto_id
+	);
 
 protected:
 	virtual void finalize_impl() override;
@@ -42,6 +53,8 @@ protected:
 		size_t original_packet_size;
 		//! Каким типом передачи будем гнать этот пакет
 		qos_t qos;
+		//! Идентификатор данных
+		payload_cookie_t cookie;
 	};
 
 	// Размер зоны именно для полезной нагрузки (без заголовка)

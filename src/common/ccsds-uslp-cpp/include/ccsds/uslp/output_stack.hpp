@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <cassert>
+#include <stdexcept>
 
 #include <ccsds/uslp/physical/abstract_pchannel.hpp>
 #include <ccsds/uslp/master/abstract_mchannel.hpp>
@@ -38,10 +39,10 @@ public:
 	T * create_pchannel(std::string name, ARGS && ...args);
 
 private:
-	std::map<gmapid_t, std::unique_ptr<map_source>> _maps;
-	std::map<gvcid_t, std::unique_ptr<vchannel_source>> _virtuals;
-	std::map<mcid_t, std::unique_ptr<mchannel_source>> _masters;
-	std::unique_ptr<pchannel_source> _pchannel;
+	std::map<gmapid_t, std::unique_ptr<map_emitter>> _maps;
+	std::map<gvcid_t, std::unique_ptr<vchannel_emitter>> _virtuals;
+	std::map<mcid_t, std::unique_ptr<mchannel_emitter>> _masters;
+	std::unique_ptr<pchannel_emitter> _pchannel;
 };
 
 

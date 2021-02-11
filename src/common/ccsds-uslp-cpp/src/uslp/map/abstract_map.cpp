@@ -15,14 +15,14 @@ static void _default_event_callback(const event &)
 }
 
 
-map_source::map_source(gmapid_t map_id_)
+map_emitter::map_emitter(gmapid_t map_id_)
 	: channel_id(map_id_)
 {
 	set_event_callback(_default_event_callback);
 }
 
 
-void map_source::tfdf_size(uint16_t value)
+void map_emitter::tfdf_size(uint16_t value)
 {
 	if (_finalized)
 	{
@@ -35,7 +35,7 @@ void map_source::tfdf_size(uint16_t value)
 }
 
 
-void map_source::set_event_callback(event_handler_t event_callback)
+void map_emitter::set_event_callback(event_callback_t event_callback)
 {
 	if (_finalized)
 	{
@@ -48,7 +48,7 @@ void map_source::set_event_callback(event_handler_t event_callback)
 }
 
 
-void map_source::finalize()
+void map_emitter::finalize()
 {
 	if (_finalized)
 		return;
@@ -58,7 +58,7 @@ void map_source::finalize()
 }
 
 
-bool map_source::peek_tfdf()
+bool map_emitter::peek_tfdf()
 {
 	if (!_finalized)
 	{
@@ -71,7 +71,7 @@ bool map_source::peek_tfdf()
 }
 
 
-bool map_source::peek_tfdf(output_map_frame_params & params)
+bool map_emitter::peek_tfdf(output_map_frame_params & params)
 {
 	if (!_finalized)
 	{
@@ -84,7 +84,7 @@ bool map_source::peek_tfdf(output_map_frame_params & params)
 }
 
 
-void map_source::pop_tfdf(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
+void map_emitter::pop_tfdf(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
 {
 	if (!_finalized)
 	{
@@ -99,13 +99,13 @@ void map_source::pop_tfdf(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
 }
 
 
-void map_source::finalize_impl()
+void map_emitter::finalize_impl()
 {
 	// Тут нам нечего проверять так то...
 }
 
 
-void map_source::emit_event(const event & event)
+void map_emitter::emit_event(const emitter_event & event)
 {
 	_event_callback(event);
 }
@@ -115,14 +115,14 @@ void map_source::emit_event(const event & event)
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-map_sink::map_sink(gmapid_t map_id_)
+map_acceptor::map_acceptor(gmapid_t map_id_)
 	: channel_id(map_id_)
 {
 	set_event_callback(_default_event_callback);
 }
 
 
-void map_sink::set_event_callback(event_callback_t event_callback)
+void map_acceptor::set_event_callback(event_callback_t event_callback)
 {
 	if (_finalized)
 	{
@@ -135,7 +135,7 @@ void map_sink::set_event_callback(event_callback_t event_callback)
 }
 
 
-void map_sink::finalize()
+void map_acceptor::finalize()
 {
 	if (_finalized)
 		return;
@@ -145,7 +145,7 @@ void map_sink::finalize()
 }
 
 
-void map_sink::push(
+void map_acceptor::push(
 		const input_map_frame_params & params,
 		const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
 )
@@ -161,15 +161,15 @@ void map_sink::push(
 }
 
 
-void map_sink::finalize_impl()
+void map_acceptor::emit_event(const acceptor_event & event)
 {
-	// нечего делать!
+	_event_callback(event);
 }
 
 
-void map_sink::emit_event(const event & event)
+void map_acceptor::finalize_impl()
 {
-	_event_callback(event);
+	// нечего делать!
 }
 
 

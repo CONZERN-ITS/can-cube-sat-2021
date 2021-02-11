@@ -13,7 +13,7 @@ namespace ccsds { namespace uslp {
 class _default_input_stack_event_handler: public input_stack_event_handler
 {
 protected:
-	virtual void on_map_sdu_event(gmapid_t mapid, const map_sdu_event & evt) override
+	virtual void on_map_sdu_event(gmapid_t mapid, const event_accepted_map_sdu & evt) override
 	{
 
 	}
@@ -48,8 +48,8 @@ void input_stack::_event_callback(const gmapid_t & mapid, const event & evt)
 {
 	switch (evt.kind)
 	{
-	case event::kind_t::MAP_SDU:
-		_event_handler->on_map_sdu_event(mapid, dynamic_cast<const map_sdu_event&>(evt));
+	case event::kind_t::ACCEPTED_MAP_SDU:
+		_event_handler->on_map_sdu_event(mapid, dynamic_cast<const event_accepted_map_sdu&>(evt));
 		break;
 
 	default:

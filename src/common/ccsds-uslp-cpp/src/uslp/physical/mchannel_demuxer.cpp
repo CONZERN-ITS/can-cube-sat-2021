@@ -6,7 +6,7 @@ namespace ccsds { namespace uslp {
 
 
 mchannel_demuxer::mchannel_demuxer(std::string name_)
-		: pchannel_sink(std::move(name_))
+		: pchannel_acceptor(std::move(name_))
 {
 
 }
@@ -14,14 +14,14 @@ mchannel_demuxer::mchannel_demuxer(std::string name_)
 
 void mchannel_demuxer::finalize_impl()
 {
-	pchannel_sink::finalize_impl();
+	pchannel_acceptor::finalize_impl();
 
 	for (auto & pair: _container)
 		pair.second->finalize();
 }
 
 
-void mchannel_demuxer::add_mchannel_sink_impl(mchannel_sink * sink)
+void mchannel_demuxer::add_mchannel_acceptor_impl(mchannel_acceptor * sink)
 {
 	_container.insert(std::make_pair(sink->channel_id, sink));
 }
@@ -41,7 +41,7 @@ void mchannel_demuxer::push_frame_impl(const uint8_t * frame_buffer, size_t fram
 
 
 	// Разбираем инсерт зону
-	const uint16_t insert_zone_size = pchannel_sink::insert_zone_size();
+	const uint16_t insert_zone_size = pchannel_acceptor::insert_zone_size();
 	// const uint8_t * const insert_zone_begin = frame_buffer + header.size();
 
 	// TODO Делаем что-нибудь там с инсерт зоной

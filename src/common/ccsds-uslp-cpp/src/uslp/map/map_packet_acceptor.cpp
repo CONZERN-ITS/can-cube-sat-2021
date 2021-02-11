@@ -1,4 +1,4 @@
-#include <ccsds/uslp/map/map_packet_sink.hpp>
+#include <ccsds/uslp/map/map_packet_acceptor.hpp>
 
 #include <sstream>
 #include <cassert>
@@ -12,7 +12,7 @@ namespace ccsds { namespace uslp {
 
 
 map_packet_sink::map_packet_sink(gmapid_t channel_id) // @suppress("Class members should be properly initialized")
-	: map_sink(channel_id)
+	: map_acceptor(channel_id)
 {
 
 }
@@ -46,7 +46,7 @@ void map_packet_sink::emit_idle_packets(bool value)
 
 void map_packet_sink::finalize_impl()
 {
-	map_sink::finalize_impl();
+	map_acceptor::finalize_impl();
 }
 
 
@@ -58,7 +58,7 @@ void map_packet_sink::push_impl(
 	if (detail::tfdf_header_t::full_size >= tfdf_buffer_size)
 	{
 		// Этот фрейм не может быть валидным, так как в него ничего не влезает
-		_flush_accum(map_sdu_event::INCOMPLETE);
+		_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 		return;
 	}
 
@@ -90,21 +90,21 @@ void map_packet_sink::push_impl(
 		if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
 		{
 			// Ой, так быть не должно
-			_flush_accum(map_sdu_event::INCOMPLETE);
+			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 			return;
 		}
 
 		if (_prev_frame_seq_no.value() + 1 != params.frame_seq_no.value())
 		{
 			// Ой. Так тоже быть не должно
-			_flush_accum(map_sdu_event::INCOMPLETE);
+			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 			return;
 		}
 
 		if (_prev_frame_qos != params.qos)
 		{
 			// Ну и так тоже не должно быть
-			_flush_accum(map_sdu_event::INCOMPLETE);
+			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -145,7 +145,7 @@ again:
 		if (0 == header_size)
 		{
 			// Значит это не заголовок... Сбрасывем все
-			_flush_accum(map_sdu_event::CORRUPTED);
+			_flush_accum(event_accepted_map_sdu::CORRUPTED);
 			return;
 		}
 
@@ -163,7 +163,7 @@ again:
 		{
 			// К сожалению - весь наш буфер уходит в труху, потому что мы не можем найти
 			// границы никакого пакета
-			_flush_accum(map_sdu_event::CORRUPTED);
+			_flush_accum(event_accepted_map_sdu::CORRUPTED);
 			return;
 		}
 
@@ -197,9 +197,9 @@ void map_packet_sink::_flush_accum(int event_flags)
 
 void map_packet_sink::_flush_accum(accum_t::const_iterator flush_zone_end, int event_flags)
 {
-	map_sdu_event event;
+	event_accepted_map_sdu event;
 	event.qos = _prev_frame_qos;
-	event.flags = event_flags | map_sdu_event::MAPP;
+	event.flags = event_flags | event_accepted_map_sdu::MAPP;
 
 	event.data.reserve(std::distance(_accumulator.cbegin(), flush_zone_end));
 	std::copy(_accumulator.cbegin(), flush_zone_end, std::back_inserter(event.data));

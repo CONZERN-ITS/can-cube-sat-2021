@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <vector>
 
 #include <ccsds/uslp/events.hpp>
 #include <ccsds/uslp/common/defs.hpp>
@@ -15,8 +16,8 @@
 namespace ccsds { namespace uslp {
 
 
-class vchannel_source;
-class vchannel_sink;
+class vchannel_emitter;
+class vchannel_acceptor;
 
 
 class ocf_source
@@ -46,17 +47,19 @@ struct mchannel_frame_params_t
 	frame_class_t frame_class;
 	bool ocf_present;
 	std::optional<frame_seq_no_t> frame_seq_no;
+	//! Список кукисов юнитов полезной нагрузки, которые едут в этом фрейме
+	std::vector<payload_cookie_t> payload_cookies;
 };
 
 
 //! Абстрактный класс - источник транспортных фреймов уровня мастер канала
-class mchannel_source
+class mchannel_emitter
 {
 public:
-	typedef std::function<void(const event &)> event_callback_t;
+	typedef std::function<void(const emitter_event &)> event_callback_t;
 
-	mchannel_source(mcid_t mcid_);
-	virtual ~mchannel_source() = default;
+	mchannel_emitter(mcid_t mcid_);
+	virtual ~mchannel_emitter() = default;
 
 	void frame_du_size_l1(uint16_t value);
 	uint16_t frame_du_size_l1() const { return _frame_size_l1; }
@@ -66,7 +69,7 @@ public:
 
 	void set_event_callback(event_callback_t event_callback);
 
-	void add_vchannel_source(vchannel_source * source);
+	void add_vchannel_source(vchannel_emitter * source);
 	void set_ocf_source(ocf_source * source);
 	void reset_ocf_source() { set_ocf_source(nullptr); }
 
@@ -81,9 +84,9 @@ public:
 protected:
 	uint16_t frame_size_overhead() const;
 
-	void emit_event(const event & evt);
+	void emit_event(const emitter_event & evt);
 
-	virtual void add_vchannel_source_impl(vchannel_source * source) = 0;
+	virtual void add_vchannel_source_impl(vchannel_emitter * source) = 0;
 
 	virtual void finalize_impl();
 
@@ -100,15 +103,15 @@ private:
 };
 
 
-class mchannel_sink
+class mchannel_acceptor
 {
 public:
-	typedef std::function<void(const event &)> event_callback_t;
+	typedef std::function<void(const acceptor_event &)> event_callback_t;
 
-	mchannel_sink(mcid_t mcid_);
-	virtual ~mchannel_sink() = default;
+	mchannel_acceptor(mcid_t mcid_);
+	virtual ~mchannel_acceptor() = default;
 
-	void add_vchannel_sink(vchannel_sink * sink);
+	void add_vchannel_acceptor(vchannel_acceptor * sink);
 	void set_event_callback(event_callback_t event_callback);
 	void set_ocf_sink(ocf_sink * sink);
 
@@ -122,9 +125,9 @@ public:
 	const mcid_t channel_id;
 
 protected:
-	void emit_event(const event & evt);
+	void emit_event(const acceptor_event & evt);
 
-	virtual void add_vchannel_sink_impl(vchannel_sink * sink) = 0;
+	virtual void add_vchannel_acceptor_impl(vchannel_acceptor * sink) = 0;
 
 	virtual void finalize_impl();
 

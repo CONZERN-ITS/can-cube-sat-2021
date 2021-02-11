@@ -22,7 +22,7 @@ public:
 	input_stack_event_handler() = default;
 	virtual ~input_stack_event_handler() = default;
 
-	virtual void on_map_sdu_event(gmapid_t mapid, const map_sdu_event & event) = 0;
+	virtual void on_map_sdu_event(gmapid_t mapid, const event_accepted_map_sdu & event) = 0;
 };
 
 
@@ -58,10 +58,10 @@ private:
 
 	input_stack_event_handler * _event_handler;
 
-	std::map<gmapid_t, std::unique_ptr<map_sink>> _maps;
-	std::map<gvcid_t, std::unique_ptr<vchannel_sink>> _virtuals;
-	std::map<mcid_t, std::unique_ptr<mchannel_sink>> _masters;
-	std::unique_ptr<pchannel_sink> _pchannel;
+	std::map<gmapid_t, std::unique_ptr<map_acceptor>> _maps;
+	std::map<gvcid_t, std::unique_ptr<vchannel_acceptor>> _virtuals;
+	std::map<mcid_t, std::unique_ptr<mchannel_acceptor>> _masters;
+	std::unique_ptr<pchannel_acceptor> _pchannel;
 };
 
 
@@ -92,7 +92,7 @@ T * input_stack::create_map(gmapid_t mapid, ARGS && ...args)
 	));
 
 	auto * retval = map.get();
-	itt->second->add_map_sink(retval);
+	itt->second->add_map_accceptor(retval);
 	_maps.emplace(mapid, std::move(map));
 	_register_events(retval);
 	return retval;
@@ -115,7 +115,7 @@ T * input_stack::create_vchannel(gvcid_t gvcid, ARGS && ...args)
 	));
 
 	auto * retval = vchannel.get();
-	itt->second->add_vchannel_sink(retval);
+	itt->second->add_vchannel_acceptor(retval);
 	_virtuals.emplace(gvcid, std::move(vchannel));
 	_register_events(retval);
 	return retval;
@@ -133,7 +133,7 @@ T * input_stack::create_mchannel(mcid_t mcid, ARGS && ...args)
 	));
 
 	auto * retval = mchannel.get();
-	_pchannel->add_mchannel_sink(retval);
+	_pchannel->add_mchannel_acceptor(retval);
 	_masters.emplace(mcid, std::move(mchannel));
 	_register_events(retval);
 	return retval;

@@ -10,13 +10,13 @@ namespace ccsds { namespace uslp {
 
 
 mchannel_rr_muxer::mchannel_rr_muxer(std::string name_)
-	: pchannel_source(std::move(name_))
+	: pchannel_emitter(std::move(name_))
 {
 
 }
 
 
-void mchannel_rr_muxer::add_mchannel_source_impl(mchannel_source * source)
+void mchannel_rr_muxer::add_mchannel_source_impl(mchannel_emitter * source)
 {
 	_muxer.add_source(source);
 }
@@ -24,7 +24,7 @@ void mchannel_rr_muxer::add_mchannel_source_impl(mchannel_source * source)
 
 void mchannel_rr_muxer::finalize_impl()
 {
-	pchannel_source::finalize_impl();
+	pchannel_emitter::finalize_impl();
 	auto upper_size = _frame_du_size();
 
 	// Сначала выставляем настройки а потом финализируем
@@ -68,6 +68,7 @@ bool mchannel_rr_muxer::peek_impl(pchannel_frame_params_t & frame_params)
 	frame_params.frame_class = mchannel_params.frame_class;
 	frame_params.ocf_present = mchannel_params.ocf_present;
 	frame_params.frame_seq_no = mchannel_params.frame_seq_no;
+	frame_params.payload_cookies = std::move(mchannel_params.payload_cookies);
 
 	return true;
 }
@@ -129,11 +130,11 @@ void mchannel_rr_muxer::pop_impl(uint8_t * frame_buffer)
 
 uint16_t mchannel_rr_muxer::_frame_du_size() const
 {
-	const auto frame_size = pchannel_source::frame_size();
+	const auto frame_size = pchannel_emitter::frame_size();
 	std::decay<decltype(frame_size)>::type retval = frame_size;
 
 	// смотрим сколько байт мы отъедим на контрольную сумму
-	switch (pchannel_source::error_control_len())
+	switch (pchannel_emitter::error_control_len())
 	{
 	case error_control_len_t::ZERO: retval -= 0; break;
 	case error_control_len_t::TWO_OCTETS: retval -= 2; break;

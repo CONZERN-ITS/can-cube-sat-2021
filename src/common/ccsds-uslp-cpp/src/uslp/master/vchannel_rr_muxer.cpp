@@ -6,13 +6,13 @@ namespace ccsds { namespace uslp {
 
 
 vchannel_rr_muxer::vchannel_rr_muxer(mcid_t mcid_)
-		: mchannel_source(mcid_)
+		: mchannel_emitter(mcid_)
 {
 
 }
 
 
-void vchannel_rr_muxer::add_vchannel_source_impl(vchannel_source * source)
+void vchannel_rr_muxer::add_vchannel_source_impl(vchannel_emitter * source)
 {
 	_muxer.add_source(source);
 }
@@ -20,7 +20,7 @@ void vchannel_rr_muxer::add_vchannel_source_impl(vchannel_source * source)
 
 void vchannel_rr_muxer::finalize_impl()
 {
-	mchannel_source::finalize_impl();
+	mchannel_emitter::finalize_impl();
 
 	const auto upper_size = this->tfdf_size();
 
@@ -63,6 +63,7 @@ bool vchannel_rr_muxer::peek_frame_du_impl(mchannel_frame_params_t & frame_param
 	frame_params.frame_class = vparams.frame_class;
 	frame_params.ocf_present = _ocf_source != nullptr;
 	frame_params.frame_seq_no = vparams.frame_seq_no;
+	frame_params.payload_cookies = std::move(vparams.payload_cookies);
 
 	return true;
 }

@@ -3,21 +3,21 @@
 namespace ccsds { namespace uslp {
 
 map_demuxer::map_demuxer(gvcid_t gvcid_)
-	: vchannel_sink(gvcid_)
+	: vchannel_acceptor(gvcid_)
 {
 
 }
 
 
-void map_demuxer::add_map_sink_impl(map_sink * sink)
+void map_demuxer::add_map_acceptor_impl(map_acceptor * acceptor)
 {
-	_container.insert(std::make_pair(sink->channel_id, sink));
+	_container.insert(std::make_pair(acceptor->channel_id, acceptor));
 }
 
 
 void map_demuxer::finalize_impl()
 {
-	vchannel_sink::finalize_impl();
+	vchannel_acceptor::finalize_impl();
 
 	for (auto & pair: _container)
 		pair.second->finalize();

@@ -4,13 +4,13 @@ namespace ccsds { namespace uslp {
 
 
 vchannel_demuxer::vchannel_demuxer(mcid_t mcid_)
-	: mchannel_sink(mcid_)
+	: mchannel_acceptor(mcid_)
 {
 
 }
 
 
-void vchannel_demuxer::add_vchannel_sink_impl(vchannel_sink * sink)
+void vchannel_demuxer::add_vchannel_acceptor_impl(vchannel_acceptor * sink)
 {
 	_container.insert(std::make_pair(sink->channel_id, sink));
 }
@@ -18,7 +18,7 @@ void vchannel_demuxer::add_vchannel_sink_impl(vchannel_sink * sink)
 
 void vchannel_demuxer::finalize_impl()
 {
-	mchannel_sink::finalize_impl();
+	mchannel_acceptor::finalize_impl();
 
 	for (auto & pair: _container)
 		pair.second->finalize();

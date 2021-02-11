@@ -17,14 +17,14 @@ static void _default_event_callback(const event &)
 }
 
 
-vchannel_source::vchannel_source(gvcid_t gvcid_)
+vchannel_emitter::vchannel_emitter(gvcid_t gvcid_)
 	: channel_id(gvcid_)
 {
 	set_event_callback(_default_event_callback);
 }
 
 
-void vchannel_source::tfdf_size(uint16_t value)
+void vchannel_emitter::tfdf_size(uint16_t value)
 {
 	if (_finalized)
 	{
@@ -37,7 +37,7 @@ void vchannel_source::tfdf_size(uint16_t value)
 }
 
 
-void vchannel_source::frame_seq_no_len(uint8_t len)
+void vchannel_emitter::frame_seq_no_len(uint8_t len)
 {
 	if (_finalized)
 	{
@@ -50,7 +50,7 @@ void vchannel_source::frame_seq_no_len(uint8_t len)
 }
 
 
-void vchannel_source::set_event_callback(event_callback_t callback)
+void vchannel_emitter::set_event_callback(event_callback_t callback)
 {
 	if (_finalized)
 	{
@@ -63,7 +63,7 @@ void vchannel_source::set_event_callback(event_callback_t callback)
 }
 
 
-void vchannel_source::add_map_source(map_source * source)
+void vchannel_emitter::add_map_source(map_emitter * source)
 {
 	if (_finalized)
 	{
@@ -87,11 +87,11 @@ void vchannel_source::add_map_source(map_source * source)
 		throw einval_exception(error.str());
 	}
 
-	add_map_source_impl(source);
+	add_map_emitter_impl(source);
 }
 
 
-void vchannel_source::finalize()
+void vchannel_emitter::finalize()
 {
 	if (_finalized)
 		return;
@@ -101,7 +101,7 @@ void vchannel_source::finalize()
 }
 
 
-bool vchannel_source::peek()
+bool vchannel_emitter::peek()
 {
 	if (!_finalized)
 	{
@@ -114,7 +114,7 @@ bool vchannel_source::peek()
 }
 
 
-bool vchannel_source::peek(vchannel_frame_params & params)
+bool vchannel_emitter::peek(vchannel_frame_params & params)
 {
 	if (!_finalized)
 	{
@@ -127,7 +127,7 @@ bool vchannel_source::peek(vchannel_frame_params & params)
 }
 
 
-void vchannel_source::pop(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
+void vchannel_emitter::pop(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
 {
 	if (!_finalized)
 	{
@@ -141,25 +141,25 @@ void vchannel_source::pop(uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size)
 }
 
 
-void vchannel_source::set_frame_seq_no(uint64_t value)
+void vchannel_emitter::set_frame_seq_no(uint64_t value)
 {
 	_frame_seq_no.value(value, _frame_seq_no.value_size());
 }
 
 
-frame_seq_no_t vchannel_source::get_frame_seq_no() const
+frame_seq_no_t vchannel_emitter::get_frame_seq_no() const
 {
 	return _frame_seq_no;
 }
 
 
-void vchannel_source::increase_frame_seq_no()
+void vchannel_emitter::increase_frame_seq_no()
 {
 	_frame_seq_no++;
 }
 
 
-uint16_t vchannel_source::frame_size_overhead() const
+uint16_t vchannel_emitter::frame_size_overhead() const
 {
 	uint16_t retval = 0;
 	retval += detail::tf_header_t::extended_size_forecast(frame_seq_no_len());
@@ -168,13 +168,13 @@ uint16_t vchannel_source::frame_size_overhead() const
 }
 
 
-void vchannel_source::emit_event(const event & evt)
+void vchannel_emitter::emit_event(const emitter_event & evt)
 {
 	_event_callback(evt);
 }
 
 
-void vchannel_source::finalize_impl()
+void vchannel_emitter::finalize_impl()
 {
 	const auto min_frame_size = frame_size_overhead();
 	if (tfdf_size() < min_frame_size)
@@ -191,14 +191,14 @@ void vchannel_source::finalize_impl()
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-vchannel_sink::vchannel_sink(gvcid_t gvcid_)
+vchannel_acceptor::vchannel_acceptor(gvcid_t gvcid_)
 	: channel_id(gvcid_)
 {
 	set_event_callback(&_default_event_callback);
 }
 
 
-void vchannel_sink::set_event_callback(event_callback_t event_callback)
+void vchannel_acceptor::set_event_callback(event_callback_t event_callback)
 {
 	if (_finalized)
 	{
@@ -211,7 +211,7 @@ void vchannel_sink::set_event_callback(event_callback_t event_callback)
 }
 
 
-void vchannel_sink::add_map_sink(map_sink * sink)
+void vchannel_acceptor::add_map_accceptor(map_acceptor * sink)
 {
 	if (_finalized)
 	{
@@ -236,11 +236,11 @@ void vchannel_sink::add_map_sink(map_sink * sink)
 	}
 
 
-	add_map_sink_impl(sink);
+	add_map_acceptor_impl(sink);
 }
 
 
-void vchannel_sink::finalize()
+void vchannel_acceptor::finalize()
 {
 	if (_finalized)
 		return;
@@ -250,13 +250,13 @@ void vchannel_sink::finalize()
 }
 
 
-void vchannel_sink::finalize_impl()
+void vchannel_acceptor::finalize_impl()
 {
 	// Ничего пока не делаем. Чую тут будут танцы с фармом
 }
 
 
-void vchannel_sink::push(
+void vchannel_acceptor::push(
 		const vchannel_frame_params & frame_params,
 		const uint8_t * tfdf_buffer, uint16_t tfdf_buffer_size
 )
@@ -272,7 +272,7 @@ void vchannel_sink::push(
 }
 
 
-void vchannel_sink::emit_event(const event & evt)
+void vchannel_acceptor::emit_event(const acceptor_event & evt)
 {
 	_event_callback(evt);
 }

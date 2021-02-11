@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 #include <ccsds/uslp/events.hpp>
 #include <ccsds/uslp/common/defs.hpp>
@@ -15,27 +16,34 @@
 namespace ccsds { namespace uslp {
 
 
-class mchannel_source;
-class mchannel_sink;
+class mchannel_emitter;
+class mchannel_acceptor;
 
 
 struct pchannel_frame_params_t
 {
+	//! Идентифкатор канала
 	gmapid_t channel_id;
+	//! Значение флага id_is_destination
 	bool id_is_destination;
+	//! Класс фрейма
 	frame_class_t frame_class;
+	//! Есть ли в этом фрейме OCF
 	bool ocf_present;
+	//! Номер фрейма
 	std::optional<frame_seq_no_t> frame_seq_no;
+	//! Список кукисов юнитов полезной нагрузки, которые едут в этом фрейме
+	std::vector<payload_cookie_t> payload_cookies;
 };
 
 
-class pchannel_source
+class pchannel_emitter
 {
 public:
-	typedef std::function<void(const event &)> event_callback_t;
+	typedef std::function<void(const emitter_event &)> event_callback_t;
 
-	pchannel_source(std::string name_);
-	virtual ~pchannel_source() = default;
+	pchannel_emitter(std::string name_);
+	virtual ~pchannel_emitter() = default;
 
 	void frame_version_no(uint8_t value);
 	uint8_t frame_version_no() const noexcept { return _frame_version_no; }
@@ -48,7 +56,7 @@ public:
 
 	void set_event_callback(event_callback_t event_callback);
 
-	void add_mchannel_source(mchannel_source * source);
+	void add_mchannel_source(mchannel_emitter * source);
 
 	void finalize();
 
@@ -60,9 +68,9 @@ public:
 
 protected:
 	uint16_t frame_size_overhead() const;
-	void emit_event(const event & evt);
+	void emit_event(const emitter_event  & evt);
 
-	virtual void add_mchannel_source_impl(mchannel_source * source) = 0;
+	virtual void add_mchannel_source_impl(mchannel_emitter * source) = 0;
 
 	virtual void finalize_impl();
 
@@ -79,13 +87,13 @@ private:
 };
 
 
-class pchannel_sink
+class pchannel_acceptor
 {
 public:
-	typedef std::function<void(const event &)> event_callback_t;
+	typedef std::function<void(const acceptor_event &)> event_callback_t;
 
-	pchannel_sink(std::string name_);
-	virtual ~pchannel_sink() = default;
+	pchannel_acceptor(std::string name_);
+	virtual ~pchannel_acceptor() = default;
 
 	void insert_zone_size(uint16_t value);
 	uint16_t insert_zone_size() const noexcept { return _insert_zone_size; }
@@ -95,7 +103,7 @@ public:
 
 	void set_event_callback(event_callback_t event_callback);
 
-	void add_mchannel_sink(mchannel_sink * sink);
+	void add_mchannel_acceptor(mchannel_acceptor * sink);
 
 	void finalize();
 
@@ -104,10 +112,10 @@ public:
 	const std::string channel_id;
 
 protected:
-	void emit_event(const event & evt);
+	void emit_event(const acceptor_event & evt);
 
 	virtual void finalize_impl();
-	virtual void add_mchannel_sink_impl(mchannel_sink * sink) = 0;
+	virtual void add_mchannel_acceptor_impl(mchannel_acceptor * sink) = 0;
 	virtual void push_frame_impl(const uint8_t * frame_buffer, size_t frame_buffer_size) = 0;
 
 private:

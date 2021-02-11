@@ -9,13 +9,13 @@
 namespace ccsds { namespace uslp {
 
 
-class map_rr_muxer: public vchannel_source
+class map_rr_muxer: public vchannel_emitter
 {
 public:
 	map_rr_muxer(gvcid_t gvcid_);
 
 protected:
-	virtual void add_map_source_impl(map_source * source) override;
+	virtual void add_map_emitter_impl(map_emitter * emitter) override;
 
 	virtual void finalize_impl() override;
 
@@ -26,13 +26,13 @@ protected:
 private:
 	struct map_status_checker_t
 	{
-		const bool operator()(map_source * source) const {return source->peek_tfdf(); }
+		const bool operator()(map_emitter * source) const {return source->peek_tfdf(); }
 	};
 
-	typedef rr_muxer<map_source*, map_status_checker_t> muxer_t;
+	typedef rr_muxer<map_emitter*, map_status_checker_t> muxer_t;
 
 	muxer_t _muxer;
-	map_source * _selected_channel = nullptr;
+	map_emitter * _selected_channel = nullptr;
 };
 
 }}

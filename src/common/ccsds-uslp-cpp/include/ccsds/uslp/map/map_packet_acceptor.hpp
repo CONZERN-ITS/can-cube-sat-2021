@@ -11,7 +11,7 @@
 
 namespace ccsds { namespace uslp {
 
-class map_packet_sink: public map_sink
+class map_packet_sink: public map_acceptor
 {
 public:
 	map_packet_sink(gmapid_t channel_id);

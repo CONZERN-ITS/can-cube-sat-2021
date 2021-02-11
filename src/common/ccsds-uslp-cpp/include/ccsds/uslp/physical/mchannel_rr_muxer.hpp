@@ -10,14 +10,14 @@
 namespace ccsds { namespace uslp {
 
 
-class mchannel_rr_muxer: public pchannel_source
+class mchannel_rr_muxer: public pchannel_emitter
 {
 public:
 	mchannel_rr_muxer(std::string name);
 	virtual ~mchannel_rr_muxer() = default;
 
 protected:
-	virtual void add_mchannel_source_impl(mchannel_source * mchannel) override;
+	virtual void add_mchannel_source_impl(mchannel_emitter * mchannel) override;
 
 	virtual void finalize_impl() override;
 
@@ -28,15 +28,15 @@ protected:
 private:
 	struct mchannel_status_checker_t
 	{
-		const bool operator()(mchannel_source * source) const { return source->peek_frame_du(); }
+		const bool operator()(mchannel_emitter * source) const { return source->peek_frame_du(); }
 	};
 
-	typedef rr_muxer<mchannel_source*, mchannel_status_checker_t> muxer_t;
+	typedef rr_muxer<mchannel_emitter*, mchannel_status_checker_t> muxer_t;
 
 	uint16_t _frame_du_size() const;
 
 	muxer_t _muxer;
-	mchannel_source * _selected_mchannel = nullptr;
+	mchannel_emitter * _selected_mchannel = nullptr;
 };
 
 

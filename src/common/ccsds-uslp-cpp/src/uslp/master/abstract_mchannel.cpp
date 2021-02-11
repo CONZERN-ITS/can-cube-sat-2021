@@ -19,14 +19,14 @@ static void _default_event_callback(const event &)
 }
 
 
-mchannel_source::mchannel_source(mcid_t mcid_)
+mchannel_emitter::mchannel_emitter(mcid_t mcid_)
 	: channel_id(mcid_)
 {
 	set_event_callback(_default_event_callback);
 }
 
 
-void mchannel_source::frame_du_size_l1(uint16_t value)
+void mchannel_emitter::frame_du_size_l1(uint16_t value)
 {
 	if (_finalized)
 	{
@@ -39,7 +39,7 @@ void mchannel_source::frame_du_size_l1(uint16_t value)
 }
 
 
-void mchannel_source::id_is_destination(bool value)
+void mchannel_emitter::id_is_destination(bool value)
 {
 	if (_finalized)
 	{
@@ -52,7 +52,7 @@ void mchannel_source::id_is_destination(bool value)
 }
 
 
-void mchannel_source::set_event_callback(event_callback_t event_callback)
+void mchannel_emitter::set_event_callback(event_callback_t event_callback)
 {
 	if (_finalized)
 	{
@@ -65,7 +65,7 @@ void mchannel_source::set_event_callback(event_callback_t event_callback)
 }
 
 
-void mchannel_source::add_vchannel_source(vchannel_source * source)
+void mchannel_emitter::add_vchannel_source(vchannel_emitter * source)
 {
 	if (_finalized)
 	{
@@ -91,7 +91,7 @@ void mchannel_source::add_vchannel_source(vchannel_source * source)
 }
 
 
-void mchannel_source::set_ocf_source(ocf_source * source)
+void mchannel_emitter::set_ocf_source(ocf_source * source)
 {
 	if (_finalized)
 	{
@@ -104,7 +104,7 @@ void mchannel_source::set_ocf_source(ocf_source * source)
 }
 
 
-void mchannel_source::finalize()
+void mchannel_emitter::finalize()
 {
 	if (_finalized)
 		return;
@@ -114,7 +114,7 @@ void mchannel_source::finalize()
 }
 
 
-bool mchannel_source::peek_frame_du()
+bool mchannel_emitter::peek_frame_du()
 {
 	if (!_finalized)
 	{
@@ -127,7 +127,7 @@ bool mchannel_source::peek_frame_du()
 }
 
 
-bool mchannel_source::peek_frame_du(mchannel_frame_params_t & frame_params)
+bool mchannel_emitter::peek_frame_du(mchannel_frame_params_t & frame_params)
 {
 	if (!_finalized)
 	{
@@ -140,7 +140,7 @@ bool mchannel_source::peek_frame_du(mchannel_frame_params_t & frame_params)
 }
 
 
-void mchannel_source::pop_frame_du(uint8_t * frame_data_unit_buffer, uint16_t frame_data_unit_size)
+void mchannel_emitter::pop_frame_du(uint8_t * frame_data_unit_buffer, uint16_t frame_data_unit_size)
 {
 	if (!_finalized)
 	{
@@ -178,7 +178,7 @@ void mchannel_source::pop_frame_du(uint8_t * frame_data_unit_buffer, uint16_t fr
 }
 
 
-uint16_t mchannel_source::frame_size_overhead() const
+uint16_t mchannel_emitter::frame_size_overhead() const
 {
 	// Если у нас есть OCF поле - то его мы должны уметь вытаскивать
 	uint16_t retval = 0;
@@ -189,13 +189,13 @@ uint16_t mchannel_source::frame_size_overhead() const
 }
 
 
-void mchannel_source::emit_event(const event & evt)
+void mchannel_emitter::emit_event(const emitter_event & evt)
 {
 	_event_callback(evt);
 }
 
 
-void mchannel_source::finalize_impl()
+void mchannel_emitter::finalize_impl()
 {
 	// Единственное что мы тут можем проверить - размер фрейма. Что он не меньше чем должен быть
 	// Минимальный размер - чтобы влезал заголовок
@@ -215,14 +215,14 @@ void mchannel_source::finalize_impl()
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-mchannel_sink::mchannel_sink(mcid_t mcid_)
+mchannel_acceptor::mchannel_acceptor(mcid_t mcid_)
 	: channel_id(mcid_)
 {
 	set_event_callback(&_default_event_callback);
 }
 
 
-void mchannel_sink::add_vchannel_sink(vchannel_sink * sink)
+void mchannel_acceptor::add_vchannel_acceptor(vchannel_acceptor * sink)
 {
 	if (_finalized)
 	{
@@ -244,11 +244,11 @@ void mchannel_sink::add_vchannel_sink(vchannel_sink * sink)
 		throw einval_exception(error.str());
 	}
 
-	add_vchannel_sink_impl(sink);
+	add_vchannel_acceptor_impl(sink);
 }
 
 
-void mchannel_sink::set_event_callback(event_callback_t event_callback)
+void mchannel_acceptor::set_event_callback(event_callback_t event_callback)
 {
 	if (_finalized)
 	{
@@ -261,7 +261,7 @@ void mchannel_sink::set_event_callback(event_callback_t event_callback)
 }
 
 
-void mchannel_sink::set_ocf_sink(ocf_sink * sink)
+void mchannel_acceptor::set_ocf_sink(ocf_sink * sink)
 {
 	if (_finalized)
 	{
@@ -274,7 +274,7 @@ void mchannel_sink::set_ocf_sink(ocf_sink * sink)
 }
 
 
-void mchannel_sink::finalize()
+void mchannel_acceptor::finalize()
 {
 	if (_finalized)
 		return;
@@ -284,7 +284,7 @@ void mchannel_sink::finalize()
 }
 
 
-void mchannel_sink::push(
+void mchannel_acceptor::push(
 		const mchannel_frame_params_t & frame_params,
 		const uint8_t * frame_data_unit, uint16_t frame_data_unit_size
 )
@@ -310,13 +310,13 @@ void mchannel_sink::push(
 }
 
 
-void mchannel_sink::emit_event(const event & evt)
+void mchannel_acceptor::emit_event(const acceptor_event & evt)
 {
 	_event_callback(evt);
 }
 
 
-void mchannel_sink::finalize_impl()
+void mchannel_acceptor::finalize_impl()
 {
 	// Ничего не делаем!
 }

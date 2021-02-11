@@ -12,11 +12,11 @@
 namespace ccsds { namespace uslp {
 
 
-class map_access_source: public map_source
+class map_access_emitter: public map_emitter
 {
 public:
-	map_access_source(gmapid_t map_id_);
-	virtual ~map_access_source() = default;
+	map_access_emitter(gmapid_t map_id_);
+	virtual ~map_access_emitter() = default;
 
 	void add_sdu(const uint8_t * data, size_t data_size, qos_t qos);
 
@@ -37,6 +37,8 @@ protected:
 		size_t data_original_size;
 		//! Каким типом передачи будем гнать этот блок данных
 		qos_t qos;
+		//! Идентификатор данных
+		payload_cookie_t cookie;
 	};
 
 	//! Размер зоны именно для полезной нагрузки (без заголовка)

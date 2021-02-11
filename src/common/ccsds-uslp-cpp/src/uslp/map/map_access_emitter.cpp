@@ -1,4 +1,4 @@
-#include <ccsds/uslp/map/map_access_source.hpp>
+#include <ccsds/uslp/map/map_access_emitter.hpp>
 
 #include <sstream>
 
@@ -10,14 +10,14 @@
 namespace ccsds { namespace uslp {
 
 
-map_access_source::map_access_source(gmapid_t map_id_)
-	: map_source(map_id_)
+map_access_emitter::map_access_emitter(gmapid_t map_id_)
+	: map_emitter(map_id_)
 {
 
 }
 
 
-void map_access_source::add_sdu(const uint8_t * data, size_t data_size, qos_t qos)
+void map_access_emitter::add_sdu(const uint8_t * data, size_t data_size, qos_t qos)
 {
 	data_unit_t du;
 	std::copy(data, data + data_size, std::back_inserter(du.data));
@@ -28,7 +28,7 @@ void map_access_source::add_sdu(const uint8_t * data, size_t data_size, qos_t qo
 }
 
 
-void map_access_source::finalize_impl()
+void map_access_emitter::finalize_impl()
 {
 	// Убеждаемся что в tfdf влезает заголовок и хотябы один байтик информации
 	if (detail::tfdf_header_t::full_size >= tfdf_size())
@@ -40,32 +40,42 @@ void map_access_source::finalize_impl()
 }
 
 
-bool map_access_source::peek_tfdf_impl()
+bool map_access_emitter::peek_tfdf_impl()
 {
 	return !_data_queue.empty();
 }
 
 
-bool map_access_source::peek_tfdf_impl(output_map_frame_params & params)
+bool map_access_emitter::peek_tfdf_impl(output_map_frame_params & params)
 {
 	// Если в очереди нет ничего готового на отправку - то и забьем
 	if (_data_queue.empty())
 		return false;
 
+	params.payload_cookies.clear();
+
 	const auto & front_elem = _data_queue.front();
 	params.qos = front_elem.qos;
 
-	// Если то, что есть в очереди мы не сможем отправить одним фреймом
-	// Придется чуток занять канал
-	const size_t payload_max_size = map_source::tfdf_size() - detail::tfdf_header_t::full_size;
+	const size_t payload_max_size = _tfdz_size();
 	const size_t available_size = _data_queue.front().data.size();
-	params.channel_lock = available_size > payload_max_size;
-
+	if (available_size > payload_max_size)
+	{
+		// Если то, что есть в очереди мы не сможем отправить одним фреймом
+		// Придется чуток занять канал
+		params.channel_lock = available_size > payload_max_size;
+	}
+	else
+	{
+		// Если следующий фрейм вмещает последние байты нашего SDU
+		// Покрасим этот SDU кукисом, чтобы получить о нем отчеты дальше по стеку
+		params.payload_cookies.push_back(front_elem.cookie);
+	}
 	return true;
 }
 
 
-void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
+void map_access_emitter::pop_tfdf_impl(uint8_t * tfdf_buffer)
 {
 	if (_data_queue.empty())
 		return;
@@ -75,7 +85,7 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 
 	// Отступаем под заголовок
 	uint8_t * const tfdz_buffer = tfdf_buffer + detail::tfdf_header_t::full_size;
-	const uint16_t tfdz_buffer_size = map_source::tfdf_size() - detail::tfdf_header_t::full_size;
+	const uint16_t tfdz_buffer_size = map_emitter::tfdf_size() - detail::tfdf_header_t::full_size;
 	// Сохраняем начало буфера - потом по этому началу мы посчитаем оффсет для заголовка
 
 	// Вываливаем пейлоад
@@ -138,7 +148,7 @@ void map_access_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 }
 
 
-uint16_t map_access_source::_tfdz_size() const
+uint16_t map_access_emitter::_tfdz_size() const
 {
 	// У нас всегда полнознамерные заголовки
 	return tfdf_size() - detail::tfdf_header_t::full_size;

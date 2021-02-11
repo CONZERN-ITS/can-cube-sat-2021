@@ -42,6 +42,13 @@ namespace ccsds { namespace uslp {
 	{
 	public:
 		gvcid_t() = default;
+
+		gvcid_t(const mcid_t & mcid, uint8_t vchannel_id_)
+			: mcid_t(mcid)
+		{
+			vchannel_id(vchannel_id_);
+		}
+
 		gvcid_t(uint16_t sc_id_, uint8_t vchannel_id_)
 			: mcid_t(sc_id_)
 		{
@@ -80,6 +87,13 @@ namespace ccsds { namespace uslp {
 	{
 	public:
 		gmapid_t() = default;
+
+		gmapid_t(const gvcid_t & gvcid, uint8_t map_id_)
+			: gvcid_t(gvcid)
+		{
+			map_id(map_id_);
+		}
+
 		gmapid_t(uint16_t sc_id_, uint8_t vchannel_id_, uint8_t map_id_)
 			: gvcid_t(sc_id_, vchannel_id_)
 		{

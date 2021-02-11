@@ -1,4 +1,4 @@
-#include <ccsds/uslp/map/map_packet_source.hpp>
+#include <ccsds/uslp/map/map_packet_emitter.hpp>
 
 #include <cassert>
 #include <cstring>
@@ -14,18 +14,21 @@ namespace ccsds { namespace uslp {
 
 
 map_packet_source::map_packet_source(gmapid_t map_id_)
-	: map_source(map_id_)
+	: map_emitter(map_id_)
 {
 
 }
 
 
-void map_packet_source::add_packet(const uint8_t * packet, size_t packet_size, qos_t qos)
+void map_packet_source::add_packet(
+		payload_cookie_t cookie, const uint8_t * packet, size_t packet_size, qos_t qos
+)
 {
 	data_unit_t du;
 
 	du.original_packet_size = packet_size;
 	du.qos = qos;
+	du.cookie = cookie;
 
 	du.packet.resize(packet_size);
 	std::copy(packet, packet + packet_size, du.packet.begin());
@@ -35,7 +38,7 @@ void map_packet_source::add_packet(const uint8_t * packet, size_t packet_size, q
 
 
 void map_packet_source::add_encapsulate_data(
-		const uint8_t * data, size_t data_size,
+		payload_cookie_t cookie, const uint8_t * data, size_t data_size,
 		qos_t qos, epp::protocol_id_t proto_id
 )
 {
@@ -46,6 +49,7 @@ void map_packet_source::add_encapsulate_data(
 	data_unit_t du;
 	du.original_packet_size = packet_size;
 	du.qos = qos;
+	du.cookie = cookie;
 
 	du.packet.resize(packet_size);
 	auto header_end_itt = std::next(du.packet.begin(), header.size());
@@ -60,7 +64,7 @@ void map_packet_source::add_encapsulate_data(
 
 void map_packet_source::finalize_impl()
 {
-	map_source::finalize_impl();
+	map_emitter::finalize_impl();
 
 	// Убеждаемся что в tfdf влезает заголовок и хотябы один байтик информации
 	if (detail::tfdf_header_t::full_size >= tfdf_size())
@@ -84,6 +88,8 @@ bool map_packet_source::peek_tfdf_impl(output_map_frame_params & params)
 	// У нас вообще что-нибудь есть там?
 	if (_data_queue.empty())
 		return false;
+
+	params.payload_cookies.clear();
 
 	// Окей, хоть один пакет у нас есть, значит собственно с qos следующего фрейма все понятно
 	params.qos = _data_queue.front().qos;
@@ -112,6 +118,9 @@ bool map_packet_source::peek_tfdf_impl(output_map_frame_params & params)
 
 		// Окей, считаем этот пакет на отправку и продолжаем
 		continous_stream_size += itt->packet.size();
+		// Так же, если этот пакет целиком (или концом, что не суть важно) пойдет на отправку
+		// - красим фрейм его кукой
+		params.payload_cookies.push_back(itt->cookie);
 	}
 
 	// Мы посчитали сколько байт мы будем отправлять неразрывно
@@ -193,7 +202,7 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 
 uint16_t map_packet_source::_tfdz_size() const
 {
-	return map_source::tfdf_size() - detail::tfdf_header_t::full_size; // У нас всегда полный заголовок
+	return map_emitter::tfdf_size() - detail::tfdf_header_t::full_size; // У нас всегда полный заголовок
 }
 
 
