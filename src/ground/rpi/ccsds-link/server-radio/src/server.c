@@ -156,40 +156,6 @@ static void _zmq_send_tx_state(server_t * server)
 }
 
 
-static void _zmq_send_rx_data(server_t * server)
-{
-	int rc;
-
-	if (0 == server->rx_buffer_size)
-		return;
-
-	log_info("sending rx data");
-
-	// Шлем топик
-	const char topic[] = "radio.downlink_data";
-	rc = zmq_send(server->telemetry_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
-	if (rc < 0)
-	{
-		log_error("unable to send rx data topic: %d", errno);
-		goto end;
-	}
-
-	// Теперь сами данные
-	rc = zmq_send(server->telemetry_socket, server->rx_buffer, server->rx_buffer_size, ZMQ_DONTWAIT);
-	if (rc < 0)
-	{
-		log_error("unable to send rx data: %d", errno);
-		goto end;
-	}
-
-	//В догонку кидаем rssi пакета
-	_zmq_send_packet_rssi(server);
-
-end:
-	server->rx_buffer_size = 0;
-}
-
-
 static void _zmq_send_packet_rssi(server_t * server)
 {
 	int rc;
@@ -259,6 +225,39 @@ static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 	}
 }
 
+
+static void _zmq_send_rx_data(server_t * server)
+{
+	int rc;
+
+	if (0 == server->rx_buffer_size)
+		return;
+
+	log_info("sending rx data");
+
+	// Шлем топик
+	const char topic[] = "radio.downlink_data";
+	rc = zmq_send(server->telemetry_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+	if (rc < 0)
+	{
+		log_error("unable to send rx data topic: %d", errno);
+		goto end;
+	}
+
+	// Теперь сами данные
+	rc = zmq_send(server->telemetry_socket, server->rx_buffer, server->rx_buffer_size, ZMQ_DONTWAIT);
+	if (rc < 0)
+	{
+		log_error("unable to send rx data: %d", errno);
+		goto end;
+	}
+
+	//В догонку кидаем rssi пакета
+	_zmq_send_packet_rssi(server);
+
+end:
+	server->rx_buffer_size = 0;
+}
 
 
 static void _zmq_recv_tx_packet(server_t * server)
