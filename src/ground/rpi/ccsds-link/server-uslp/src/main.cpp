@@ -57,11 +57,6 @@ private:
 
 };
 
-void ccsds_init_ostack(ccsds::uslp::output_stack & stack)
-{
-
-}
-
 
 int main()
 {
