@@ -58,7 +58,7 @@ void map_packet_sink::push_impl(
 	if (detail::tfdf_header_t::full_size >= tfdf_buffer_size)
 	{
 		// Этот фрейм не может быть валидным, так как в него ничего не влезает
-		_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+		_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 		return;
 	}
 
@@ -90,21 +90,21 @@ void map_packet_sink::push_impl(
 		if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
 		{
 			// Ой, так быть не должно
-			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 			return;
 		}
 
 		if (_prev_frame_seq_no.value() + 1 != params.frame_seq_no.value())
 		{
 			// Ой. Так тоже быть не должно
-			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 			return;
 		}
 
 		if (_prev_frame_qos != params.qos)
 		{
 			// Ну и так тоже не должно быть
-			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -145,7 +145,7 @@ again:
 		if (0 == header_size)
 		{
 			// Значит это не заголовок... Сбрасывем все
-			_flush_accum(event_accepted_map_sdu::CORRUPTED);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -163,7 +163,7 @@ again:
 		{
 			// К сожалению - весь наш буфер уходит в труху, потому что мы не можем найти
 			// границы никакого пакета
-			_flush_accum(event_accepted_map_sdu::CORRUPTED);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -197,9 +197,10 @@ void map_packet_sink::_flush_accum(int event_flags)
 
 void map_packet_sink::_flush_accum(accum_t::const_iterator flush_zone_end, int event_flags)
 {
-	event_accepted_map_sdu event;
+	acceptor_event_map_sdu event;
+	event.channel_id = this->channel_id;
 	event.qos = _prev_frame_qos;
-	event.flags = event_flags | event_accepted_map_sdu::MAPP;
+	event.flags = event_flags | acceptor_event_map_sdu::MAPP;
 
 	event.data.reserve(std::distance(_accumulator.cbegin(), flush_zone_end));
 	std::copy(_accumulator.cbegin(), flush_zone_end, std::back_inserter(event.data));

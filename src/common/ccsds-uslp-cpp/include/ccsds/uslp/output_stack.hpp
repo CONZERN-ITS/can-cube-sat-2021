@@ -17,6 +17,16 @@
 namespace ccsds { namespace uslp {
 
 
+class output_stack_event_handler
+{
+public:
+	output_stack_event_handler() = default;
+	virtual ~output_stack_event_handler() = default;
+
+	virtual void on_frame_emitted(const emitter_event_sdu_emitted & evt) {}
+};
+
+
 class output_stack
 {
 public:
@@ -25,6 +35,8 @@ public:
 	bool peek_frame();
 	bool peek_frame(pchannel_frame_params_t & frame_params);
 	void pop_frame(uint8_t * frame_buffer, size_t frame_buffer_size);
+
+	void set_event_handler(output_stack_event_handler * handler) { _event_handler = handler; }
 
 	template<typename T, typename... ARGS>
 	T * create_map(gmapid_t mapid, ARGS && ...args);
@@ -39,6 +51,13 @@ public:
 	T * create_pchannel(std::string name, ARGS && ...args);
 
 private:
+	template <typename T>
+	void _register_callbacks(T * sink);
+
+	void _event_callback(const emitter_event & evt);
+
+	output_stack_event_handler * _event_handler;
+
 	std::map<gmapid_t, std::unique_ptr<map_emitter>> _maps;
 	std::map<gvcid_t, std::unique_ptr<vchannel_emitter>> _virtuals;
 	std::map<mcid_t, std::unique_ptr<mchannel_emitter>> _masters;
@@ -62,6 +81,7 @@ T * output_stack::create_map(gmapid_t mapid, ARGS && ...args)
 	));
 
 	auto * retval = map.get();
+	_register_callbacks(retval);
 	itt->second->add_map_source(retval);
 	_maps.emplace(mapid, std::move(map));
 	return retval;
@@ -84,6 +104,7 @@ T * output_stack::create_vchannel(gvcid_t gvcid, ARGS && ...args)
 	));
 
 	auto * retval = vchannel.get();
+	_register_callbacks(retval);
 	itt->second->add_vchannel_source(retval);
 	_virtuals.emplace(gvcid, std::move(vchannel));
 	return retval;
@@ -101,6 +122,7 @@ T * output_stack::create_mchannel(mcid_t mcid, ARGS && ...args)
 	));
 
 	auto * retval = mchannel.get();
+	_register_callbacks(retval);
 	_pchannel->add_mchannel_source(retval);
 	_masters.emplace(mcid, std::move(mchannel));
 	return retval;
@@ -114,8 +136,17 @@ T * output_stack::create_pchannel(std::string name, ARGS && ...args)
 		throw std::logic_error("unable to create second pchannel in output stack");
 
 	auto * retval = new T(std::move(name), std::forward<ARGS>(args)...);
+	_register_callbacks(retval);
 	_pchannel.reset(retval);
 	return retval;
+}
+
+
+template <typename T>
+void output_stack::_register_callbacks(T * sink)
+{
+	auto callback = [this](const emitter_event & evt){ this->_event_callback(evt); };
+	sink->set_event_callback(std::move(callback));
 }
 
 

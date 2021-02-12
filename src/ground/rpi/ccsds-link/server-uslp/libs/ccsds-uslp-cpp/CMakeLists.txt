@@ -60,3 +60,5 @@ add_library(ccsds-uslp-cpp STATIC
 )
 
 target_include_directories(ccsds-uslp-cpp PUBLIC ${_remote_src_dir}/include)
+target_compile_features(ccsds-uslp-cpp PUBLIC cxx_std_17)
+

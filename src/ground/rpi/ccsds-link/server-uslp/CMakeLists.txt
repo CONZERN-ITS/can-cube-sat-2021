@@ -6,9 +6,6 @@ LANGUAGES
 	CXX
 )
 
-
-set(CMAKE_CXX_STANDARD 17)
-
 add_subdirectory(libs/ccsds-uslp-cpp)
 
 
@@ -19,6 +16,11 @@ add_executable(server-uslp
 	${_src_dir}/json.hpp
 )
 
+set_target_properties(server-uslp
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+)
 
 target_link_libraries(server-uslp
 PRIVATE

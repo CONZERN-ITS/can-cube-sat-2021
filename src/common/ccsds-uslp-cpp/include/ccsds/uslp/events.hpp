@@ -6,53 +6,53 @@
 #include <vector>
 
 #include <ccsds/uslp/common/defs.hpp>
+#include <ccsds/uslp/common/ids.hpp>
 
 
 namespace ccsds { namespace uslp {
 
 
-struct event
+
+struct emitter_event
 {
 	enum class kind_t
 	{
-		EMITTED_FRAME,
-		ACCEPTED_MAP_SDU,
+		SDU_EMITTED,
 	};
 
-protected:
-	event(kind_t kind_): kind(kind_) {}
-
-public:
-	virtual ~event() = default;
+	emitter_event(kind_t kind_): kind(kind_) {}
+	virtual ~emitter_event() = default;
 
 	const kind_t kind;
 };
 
 
-struct emitter_event: public event
+struct emitter_event_sdu_emitted: public emitter_event
 {
-protected:
-	emitter_event(kind_t kind_): event(kind_) {}
-};
+	emitter_event_sdu_emitted(): emitter_event(kind_t::SDU_EMITTED) {}
+	virtual ~emitter_event_sdu_emitted() = default;
 
-
-struct event_emitted_frame: public event
-{
-	event_emitted_frame(): event(kind_t::EMITTED_FRAME) {}  // @suppress("Class members should be properly initialized")
-
-	payload_cookie_t payload_cookie;
+	payload_cookie_t payload_cookie = 0;
 };
 
 
 
-struct acceptor_event: public event
+struct acceptor_event
 {
-protected:
-	acceptor_event(kind_t kind_): event(kind_) {}
+	enum class kind_t
+	{
+		MAP_SDU,
+	};
+
+
+	acceptor_event(kind_t kind_): kind(kind_) {}
+	virtual ~acceptor_event() = default;
+
+	const kind_t kind;
 };
 
 
-struct event_accepted_map_sdu: public acceptor_event
+struct acceptor_event_map_sdu: public acceptor_event
 {
 	enum data_flags_t
 	{
@@ -63,10 +63,11 @@ struct event_accepted_map_sdu: public acceptor_event
 		MAPP			= 0x0010
 	};
 
-	event_accepted_map_sdu(): acceptor_event(kind_t::ACCEPTED_MAP_SDU) {} // @suppress("Class members should be properly initialized")
+	acceptor_event_map_sdu(): acceptor_event(kind_t::MAP_SDU) {}
 
+	gmapid_t channel_id;
 	std::vector<uint8_t> data;
-	qos_t qos;
+	qos_t qos = qos_t::EXPIDITED;
 	uint64_t flags = 0;
 };
 

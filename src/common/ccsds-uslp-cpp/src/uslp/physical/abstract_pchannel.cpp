@@ -10,7 +10,8 @@
 namespace ccsds { namespace uslp {
 
 
-static void _default_event_callback(const event &)
+template<typename T>
+static void _default_event_callback(const T &)
 {
 
 }
@@ -20,7 +21,7 @@ static void _default_event_callback(const event &)
 pchannel_emitter::pchannel_emitter(std::string name_)
 		: channel_id(name_), _frame_version_no(detail::tf_header_t::default_frame_version_no)
 {
-	set_event_callback(_default_event_callback);
+	set_event_callback(_default_event_callback<emitter_event>);
 }
 
 
@@ -144,8 +145,18 @@ void pchannel_emitter::pop(uint8_t * frame_buffer, size_t frame_buffer_size)
 		throw object_is_finalized(error.str());
 	}
 
+	pchannel_frame_params_t frame_params;
+	peek(frame_params);
+
 	assert(frame_size() <= frame_buffer_size);
 	pop_impl(frame_buffer);
+
+	for (const auto & cookie: frame_params.payload_cookies)
+	{
+		emitter_event_sdu_emitted event;
+		event.payload_cookie = cookie;
+		emit_event(event);
+	}
 }
 
 
@@ -210,7 +221,7 @@ void pchannel_emitter::finalize_impl()
 pchannel_acceptor::pchannel_acceptor(std::string name_)
 	: channel_id(std::move(name_))
 {
-	set_event_callback(_default_event_callback);
+	set_event_callback(_default_event_callback<acceptor_event>);
 }
 
 

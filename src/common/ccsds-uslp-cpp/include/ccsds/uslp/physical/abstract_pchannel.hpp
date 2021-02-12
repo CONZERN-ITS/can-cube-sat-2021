@@ -7,10 +7,11 @@
 #include <string>
 #include <vector>
 
-#include <ccsds/uslp/events.hpp>
 #include <ccsds/uslp/common/defs.hpp>
 #include <ccsds/uslp/common/ids.hpp>
 #include <ccsds/uslp/common/frame_seq_no.hpp>
+
+#include <ccsds/uslp/events.hpp>
 
 
 namespace ccsds { namespace uslp {

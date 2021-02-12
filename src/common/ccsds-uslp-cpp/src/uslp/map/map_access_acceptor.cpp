@@ -35,7 +35,7 @@ void map_access_acceptor::push_impl(
 	{
 		// Этот фрейм не может быть валидным, так как в него максимум что влезает
 		// это заголовок tfdf.
-		_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+		_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 	}
 
 	// Смотрим что там в tfdf заголовке
@@ -48,7 +48,7 @@ void map_access_acceptor::push_impl(
 	if (detail::tfdz_construction_rule_t::MAP_SDU_START == header.ctr_rule)
 	{
 		if (!_accumulator.empty())
-			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 
 		// Забираем пакет
 		_consume_frame(params, header, tfdz_start, tfdz_size);
@@ -62,7 +62,7 @@ void map_access_acceptor::push_impl(
 		if (_prev_frame_seq_no.has_value() != params.frame_seq_no.has_value())
 		{
 			// Оп, это какая-то петрушка
-			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -71,7 +71,7 @@ void map_access_acceptor::push_impl(
 		{
 			// Значит что-то где-то потерялось
 			// Выкидываем и сбрасываем состояние
-			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -79,7 +79,7 @@ void map_access_acceptor::push_impl(
 		if (_prev_frame_qos != params.qos)
 		{
 			// Выкидываем и сбрасываем состояние
-			_flush_accum(event_accepted_map_sdu::INCOMPLETE);
+			_flush_accum(acceptor_event_map_sdu::INCOMPLETE);
 			return;
 		}
 
@@ -132,7 +132,7 @@ void map_access_acceptor::_consume_frame(
 	// Если случилось переполнение или просто мы получили весь SDU
 	// Сообщаем пользователю об этом событием
 	if (overflow || sdu_complete)
-		_flush_accum(overflow ? event_accepted_map_sdu::INCOMPLETE : 0);
+		_flush_accum(overflow ? acceptor_event_map_sdu::INCOMPLETE : 0);
 }
 
 
@@ -144,10 +144,11 @@ void map_access_acceptor::_flush_accum(int event_flags)
 	// Сбрасываем номер предыдущего пакета
 	_prev_frame_seq_no.reset();
 
-	event_accepted_map_sdu event;
+	acceptor_event_map_sdu event;
+	event.channel_id = this->channel_id;
 	event.data = std::move(_accumulator);
 	event.qos = _prev_frame_qos;
-	event.flags = event_flags | event_accepted_map_sdu::MAPA;
+	event.flags = event_flags | acceptor_event_map_sdu::MAPA;
 	emit_event(event);
 }
 

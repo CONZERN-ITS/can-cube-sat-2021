@@ -22,7 +22,7 @@ public:
 	input_stack_event_handler() = default;
 	virtual ~input_stack_event_handler() = default;
 
-	virtual void on_map_sdu_event(gmapid_t mapid, const event_accepted_map_sdu & event) = 0;
+	virtual void on_map_sdu_event(const acceptor_event_map_sdu & event) {}
 };
 
 
@@ -51,10 +51,7 @@ private:
 	template<typename T>
 	void _register_events(T * sink);
 
-	void _event_callback(const gmapid_t & mapid, const event & evt);
-	void _event_callback(const gvcid_t & gvcid, const event & evt);
-	void _event_callback(const mcid_t & mcid, const event & evt);
-	void _event_callback(const std::string & pchannel_id, const event & evt);
+	void _event_callback(const acceptor_event & evt);
 
 	input_stack_event_handler * _event_handler;
 
@@ -70,8 +67,7 @@ template<typename T>
 // Просто чертова шаблонная магия. Удалось обойтись без enable_if!
 void input_stack::_register_events(T * sink)
 {
-	auto channel_id = sink->channel_id;
-	auto callback = [channel_id, this](const event & evt) { this->_event_callback(channel_id, evt); };
+	auto callback = [this](const acceptor_event & evt) { this->_event_callback(evt); };
 	sink->set_event_callback(std::move(callback));
 }
 

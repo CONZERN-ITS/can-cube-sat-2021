@@ -3,6 +3,8 @@
 #include <ccsds/uslp/output_stack.hpp>
 #include <ccsds/uslp/input_stack.hpp>
 
+#include <ccsds/uslp/common/defs.hpp>
+
 #include <ccsds/uslp/physical/mchannel_rr_muxer.hpp>
 #include <ccsds/uslp/master/vchannel_rr_muxer.hpp>
 #include <ccsds/uslp/virtual/map_rr_muxer.hpp>
@@ -32,18 +34,25 @@ public:
 		auto master = _stack.create_mchannel<vchannel_rr_muxer>(mcid_t(0x42));
 		master->id_is_destination(true);
 
-		auto virt = _stack.create_vchannel<map_rr_muxer>(gvcid_t(master->channel_id, 0x01));
+		auto virt = _stack.create_vchannel<map_rr_muxer>(gvcid_t(master->channel_id, 0x00));
 		virt->frame_seq_no_len(2);
 
-		_map1 = _stack.create_map<map_packet_source>(gmapid_t(virt->channel_id, 0x00));
-		_map2 = _stack.create_map<map_access_emitter>(gmapid_t(virt->channel_id, 0x01));
+		_command_channel = _stack.create_map<map_access_emitter>(gmapid_t(virt->channel_id, 0x00));
+		_ip_channel = _stack.create_map<map_packet_emitter>(gmapid_t(virt->channel_id, 0x01));
 	}
 
-	void send_command();
+
+	void send_command(ccsds::uslp::payload_cookie_t cookie, const uint8_t * data, size_t data_size)
+	{
+		using namespace ccsds;
+		using namespace ccsds::uslp;
+
+		_command_channel->add_sdu(cookie, data, data_size, qos_t::SEQUENCE_CONTROLLED);
+	}
 
 private:
-	ccsds::uslp::map_packet_source * _map1;
-	ccsds::uslp::map_access_emitter * _map2;
+	ccsds::uslp::map_packet_emitter * _ip_channel;
+	ccsds::uslp::map_access_emitter * _command_channel;
 	ccsds::uslp::output_stack _stack;
 
 };

@@ -9,7 +9,8 @@
 namespace ccsds { namespace uslp {
 
 
-static void _default_event_callback(const event &)
+template<typename T>
+static void _default_event_callback(const T &)
 {
 
 }
@@ -18,7 +19,7 @@ static void _default_event_callback(const event &)
 map_emitter::map_emitter(gmapid_t map_id_)
 	: channel_id(map_id_)
 {
-	set_event_callback(_default_event_callback);
+	set_event_callback(_default_event_callback<emitter_event>);
 }
 
 
@@ -118,7 +119,7 @@ void map_emitter::emit_event(const emitter_event & event)
 map_acceptor::map_acceptor(gmapid_t map_id_)
 	: channel_id(map_id_)
 {
-	set_event_callback(_default_event_callback);
+	set_event_callback(_default_event_callback<acceptor_event>);
 }
 
 

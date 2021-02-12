@@ -1,6 +1,7 @@
 #ifndef INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SOURCE_HPP_
 #define INCLUDE_CCSDS_USLP_MAP_MAP_ACCESS_SOURCE_HPP_
 
+
 #include <deque>
 #include <memory>
 
@@ -18,7 +19,7 @@ public:
 	map_access_emitter(gmapid_t map_id_);
 	virtual ~map_access_emitter() = default;
 
-	void add_sdu(const uint8_t * data, size_t data_size, qos_t qos);
+	void add_sdu(payload_cookie_t cookie, const uint8_t * data, size_t data_size, qos_t qos);
 
 protected:
 	virtual void finalize_impl() override;

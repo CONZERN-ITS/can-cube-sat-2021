@@ -15,11 +15,11 @@
 namespace ccsds { namespace uslp {
 
 
-class map_packet_source: public map_emitter
+class map_packet_emitter: public map_emitter
 {
 public:
-	map_packet_source(gmapid_t map_id_);
-	virtual ~map_packet_source() = default;
+	map_packet_emitter(gmapid_t map_id_);
+	virtual ~map_packet_emitter() = default;
 
 	void add_packet(
 			payload_cookie_t cookie,
@@ -68,11 +68,7 @@ private:
 };
 
 
-
-
 }}
-
-
 
 
 #endif /* INCLUDE_CCSDS_USLP_MAP_MAP_PACKET_SOURCE_HPP_ */

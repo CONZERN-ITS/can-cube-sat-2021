@@ -13,14 +13,14 @@
 namespace ccsds { namespace uslp {
 
 
-map_packet_source::map_packet_source(gmapid_t map_id_)
+map_packet_emitter::map_packet_emitter(gmapid_t map_id_)
 	: map_emitter(map_id_)
 {
 
 }
 
 
-void map_packet_source::add_packet(
+void map_packet_emitter::add_packet(
 		payload_cookie_t cookie, const uint8_t * packet, size_t packet_size, qos_t qos
 )
 {
@@ -37,7 +37,7 @@ void map_packet_source::add_packet(
 }
 
 
-void map_packet_source::add_encapsulate_data(
+void map_packet_emitter::add_encapsulate_data(
 		payload_cookie_t cookie, const uint8_t * data, size_t data_size,
 		qos_t qos, epp::protocol_id_t proto_id
 )
@@ -62,7 +62,7 @@ void map_packet_source::add_encapsulate_data(
 }
 
 
-void map_packet_source::finalize_impl()
+void map_packet_emitter::finalize_impl()
 {
 	map_emitter::finalize_impl();
 
@@ -76,14 +76,14 @@ void map_packet_source::finalize_impl()
 }
 
 
-bool map_packet_source::peek_tfdf_impl()
+bool map_packet_emitter::peek_tfdf_impl()
 {
 	// Тут оптимизации не будет :c
 	return !_data_queue.empty();
 }
 
 
-bool map_packet_source::peek_tfdf_impl(output_map_frame_params & params)
+bool map_packet_emitter::peek_tfdf_impl(output_map_frame_params & params)
 {
 	// У нас вообще что-нибудь есть там?
 	if (_data_queue.empty())
@@ -130,7 +130,7 @@ bool map_packet_source::peek_tfdf_impl(output_map_frame_params & params)
 }
 
 
-void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
+void map_packet_emitter::pop_tfdf_impl(uint8_t * tfdf_buffer)
 {
 	// Если ничего нет - ничего и не дадим. Хотя по чесноку - этот метод не должны вызывать
 	// если ничего нет
@@ -200,13 +200,13 @@ void map_packet_source::pop_tfdf_impl(uint8_t * tfdf_buffer)
 }
 
 
-uint16_t map_packet_source::_tfdz_size() const
+uint16_t map_packet_emitter::_tfdz_size() const
 {
 	return map_emitter::tfdf_size() - detail::tfdf_header_t::full_size; // У нас всегда полный заголовок
 }
 
 
-void map_packet_source::_write_idle_packet(uint8_t * buffer, uint16_t buffer_size) const
+void map_packet_emitter::_write_idle_packet(uint8_t * buffer, uint16_t buffer_size) const
 {
 	if (0 == buffer_size)
 		return;

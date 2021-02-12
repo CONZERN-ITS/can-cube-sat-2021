@@ -1,14 +1,19 @@
 #include <ccsds/uslp/output_stack.hpp>
 
+#include <cassert>
+
 #include <ccsds/uslp/exceptions.hpp>
 
 
 namespace ccsds { namespace uslp {
 
 
+static output_stack_event_handler _default_event_handler;
+
+
 output_stack::output_stack()
 {
-
+	set_event_handler(&_default_event_handler);
 }
 
 
@@ -38,5 +43,18 @@ void output_stack::pop_frame(uint8_t * frame_buffer, size_t frame_buffer_size)
 	_pchannel->pop(frame_buffer, frame_buffer_size);
 }
 
+
+void output_stack::_event_callback(const emitter_event & evt)
+{
+	switch(evt.kind)
+	{
+	case emitter_event::kind_t::SDU_EMITTED:
+		_event_handler->on_frame_emitted(dynamic_cast<const emitter_event_sdu_emitted&>(evt));
+		break;
+
+	default:
+		assert(false);
+	}
+}
 
 }}

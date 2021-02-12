@@ -11,7 +11,8 @@
 namespace ccsds { namespace uslp {
 
 
-static void _default_event_callback(const event &)
+template<typename T>
+static void _default_event_callback(const T &)
 {
 
 }
@@ -20,7 +21,7 @@ static void _default_event_callback(const event &)
 vchannel_emitter::vchannel_emitter(gvcid_t gvcid_)
 	: channel_id(gvcid_)
 {
-	set_event_callback(_default_event_callback);
+	set_event_callback(_default_event_callback<emitter_event>);
 }
 
 
@@ -194,7 +195,7 @@ void vchannel_emitter::finalize_impl()
 vchannel_acceptor::vchannel_acceptor(gvcid_t gvcid_)
 	: channel_id(gvcid_)
 {
-	set_event_callback(&_default_event_callback);
+	set_event_callback(&_default_event_callback<acceptor_event>);
 }
 
 

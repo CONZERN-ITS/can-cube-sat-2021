@@ -1,15 +1,16 @@
-#ifndef INCLUDE_CCSDS_USLP_VIRTUAL_ABSTRACT_HPP_
-#define INCLUDE_CCSDS_USLP_VIRTUAL_ABSTRACT_HPP_
+#ifndef INCLUDE_CCSDS_USLP_ABSTRACT_VCHANNEL_HPP_
+#define INCLUDE_CCSDS_USLP_ABSTRACT_VCHANNEL_HPP_
 
 #include <functional>
 #include <cstdint>
 #include <optional>
 #include <vector>
 
-#include <ccsds/uslp/events.hpp>
 #include <ccsds/uslp/common/ids.hpp>
 #include <ccsds/uslp/common/defs.hpp>
 #include <ccsds/uslp/common/frame_seq_no.hpp>
+
+#include <ccsds/uslp/events.hpp>
 
 
 namespace ccsds { namespace uslp {
@@ -120,4 +121,4 @@ private:
 
 }}
 
-#endif /* INCLUDE_CCSDS_USLP_VIRTUAL_ABSTRACT_HPP_ */
+#endif /* INCLUDE_CCSDS_USLP_ABSTRACT_VCHANNEL_HPP_ */
