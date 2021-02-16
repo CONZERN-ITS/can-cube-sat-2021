@@ -1,5 +1,4 @@
 #include <ccsds/sdl/usdl/pc_generate.h>
-#include <ccsds/sdl/usdl/mc_multiplex.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <ccsds/ccscds_endian.h>
 #include <ccsds/sdl/usdl/usdl_debug.h>
@@ -157,14 +156,26 @@ int pc_parse(pc_t *pc, uint8_t *data, size_t size) {
 
 	pl_size = (m - k) / 8;
 
-
-	mc_mx_demultiplex(pc->mc_mx, payload, pl_size, &map_params, &vc_params, &mc_params, ocf_pointer);
+	if (pc->mc_arr[mc_params.mc_id]) {
+		mc_parse(pc->mc_arr[mc_params.mc_id], data, size, &map_params, &vc_params, &mc_params, ocf_pointer);
+	}
 	return 1;
+}
+
+int pc_push(pc_t *pc, const uint8_t *data, size_t size,
+		const map_params_t *map_params, const vc_params_t *vc_params, const mc_params_t *mc_params) {
+	mc_t **mc_arr = pc->mc_arr;
+	if (pc->mc_mx->push(pc->mc_mx, mc_arr[mc_params->mc_id], mc_arr,
+			sizeof(mc_arr) / sizeof(mc_arr[0]))) {
+		return pc_generate(pc, data, size, map_params, vc_params, mc_params);
+	} else {
+		return 0;
+	}
 }
 
 int pc_request_from_down(pc_t *pc) {
 	usdl_print_debug();
-	return mc_mx_request_from_down(pc->mc_mx);
+	return pc->mc_mx->pull(pc->mc_mx, (usdl_node_t **)pc->mc_arr, sizeof(pc->mc_arr) / sizeof(pc->mc_arr[0]));
 }
 
 uint32_t _pc_generate_mcf_length(pc_t *pc) {

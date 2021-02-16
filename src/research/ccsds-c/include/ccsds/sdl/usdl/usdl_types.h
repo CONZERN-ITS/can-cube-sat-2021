@@ -14,6 +14,7 @@
 
 #include "usdl_defines.h"
 #include "usdl_basic_types.h"
+#include "multiplexer.h"
 
 typedef struct {
 	uint8_t *data;
@@ -62,12 +63,13 @@ typedef struct mapr_t {
 } mapr_t;
 
 typedef struct map_t {
+	usdl_node_t base;
 	void (*map_parse)(map_t *map, uint8_t *data, size_t size, map_params_t *map_params);
 	int (*map_request_from_down)(map_t *map);
 
 	mapr_t mapr;
 	map_id_t map_id;
-	map_mx_t *map_mx;
+	vc_t *vc;
 	bool size_fixed;
 	bool split_allowed;
 	quality_of_service_t qos;
@@ -77,15 +79,6 @@ typedef struct map_t {
 	map_buffer_t buf_packet;
 	quality_of_service_t packet_qos;
 } map_t;
-
-
-
-typedef struct map_mx_t {
-	map_id_t map_active;
-	enum map_mx_state_t state;
-	map_t *map_arr[MAP_COUNT];
-	vc_t *vc;
-} map_mx_t;
 
 
 #define FOP_DATA_SIZE 200
@@ -152,25 +145,22 @@ typedef struct {
 } vc_parameters_t;
 
 typedef struct vc_t {
+	usdl_node_t base;
 	transfer_frame_t transfer_frame_type;
 	vc_id_t vc_id;
 	vcf_count_t frame_count_expedited;
 	vcf_count_t frame_count_seq_control;
 	vc_parameters_t vc_parameters;
 	fop_t fop;
-	vc_mx_t *vc_mx;
-	map_mx_t *map_mx;
+	mc_t *mc;
+	struct multiplexer_abstract *map_mx;
+	map_t *map_arr[MAP_COUNT];
+
 	uint32_t mapcf_length_ex;
 	uint32_t mapcf_length_sc;
 } vc_t;
 
 
-
-typedef struct vc_mx_t {
-	vc_t *vc_arr[VC_COUNT];
-	vc_id_t vc_active;
-	mc_t *mc;
-} vc_mx_t;
 
 typedef enum {
 	MC_OCF_PROHIBTED,
@@ -187,20 +177,15 @@ typedef struct {
 
 
 typedef struct mc_t {
-	vc_mx_t *vc_mx;
+	usdl_node_t base;
 	mc_id_t mc_id;
-	mc_mx_t *mc_mx;
+	pc_t *pc;
+	vc_t *vc_arr[VC_COUNT];
+	struct multiplexer_abstract *vc_mx;
 	mc_paramaters_t mc_parameters;
 	uint8_t ocf[4];
 	uint32_t vcf_length;
 } mc_t;
-
-
-typedef struct mc_mx_t {
-	mc_t *mc_arr[MC_COUNT];
-	mc_id_t mc_active;
-	pc_t *pc;
-} mc_mx_t;
 
 typedef struct {
 	transfer_frame_t tft;
@@ -213,10 +198,13 @@ typedef struct {
 } pc_paramaters_t;
 
 typedef struct pc_t {
+	usdl_node_t base;
 	uint8_t *data;
 	uint8_t size;
 	int is_valid;
-	mc_mx_t *mc_mx;
+
+	mc_t *mc_arr[MC_COUNT];
+	struct multiplexer_abstract *mc_mx;
 	pc_paramaters_t pc_parameters;
 	uint8_t *insert_data;
 	size_t insert_size;

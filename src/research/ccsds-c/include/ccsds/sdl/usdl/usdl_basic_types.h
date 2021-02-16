@@ -8,6 +8,8 @@
 #ifndef SDL_USDL_USDL_BASIC_TYPES_H_
 #define SDL_USDL_USDL_BASIC_TYPES_H_
 
+#include <inttypes.h>
+
 typedef uint16_t fhd_t;
 typedef uint16_t lvo_t;
 
@@ -154,6 +156,9 @@ typedef struct mc_params_t {
 	uint16_t scid; //Переместить в pc_params
 } mc_params_t;
 
+typedef struct usdl_node_t {
+	int (*request_from_down)(struct usdl_node_t *node);
+} usdl_node_t;
 
 
 

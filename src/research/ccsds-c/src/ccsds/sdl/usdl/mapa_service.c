@@ -1,4 +1,3 @@
-#include <ccsds/sdl/usdl/map_multiplexer.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <ccsds/sdl/usdl/usdl_debug.h>
 #include <string.h>
@@ -14,17 +13,17 @@ static int mapa_request_from_down(map_t *map);
 
 static uint32_t _mapa_generate_tfdz_length(map_t *map, quality_of_service_t qos);
 
-int mapa_init(map_t *map, map_mx_t *mx, map_id_t map_id) {
+int mapa_init(map_t *map, vc_t *vc, map_id_t map_id) {
 	usdl_print_debug();
 	map->map_parse = mapa_parse;
 	map->map_request_from_down = mapa_request_from_down;
 
-	map->map_mx = mx;
+	map->vc = vc;
 	map->map_id = map_id;
-	map->map_mx->map_arr[map->map_id] = map;
+	map->vc->map_arr[map->map_id] = map;
 	map->mapr.state = MAPR_STATE_BEGIN;
 
-	map->packet_qos = map->map_mx->vc->vc_parameters.cop_in_effect == COP_NONE ? QOS_EXPEDITED : QOS_SEQ_CONTROL;
+	map->packet_qos = map->vc->vc_parameters.cop_in_effect == COP_NONE ? QOS_EXPEDITED : QOS_SEQ_CONTROL;
 	map->size_fixed = 1;
 	map->split_allowed = 1;
 	map->buf_ex.size = _mapa_generate_tfdz_length(map, QOS_EXPEDITED);
@@ -58,7 +57,7 @@ int mapa_send(map_t *map, uint8_t *data, size_t size, quality_of_service_t qos) 
 
 	while (1) {
 		if (buf->index != 0) {
-			if (map_mx_multiplex(map->map_mx, &params, buf->data, buf->size)) {
+			if (vc_push(map->vc, &params, buf->data, buf->size)) {
 
 				if (buf->lvo == (lvo_t)~0) {
 					params.rules = buf->rules = TFDZCR_SDU_CONT;
@@ -119,7 +118,7 @@ static int mapa_request_from_down(map_t *map) {
 	params.upid = UPID_MAPA_SDU;
 	params.lvo = buf->lvo;
 
-	int ret = map_mx_multiplex(map->map_mx, &params, buf->data, buf->size);
+	int ret = vc_push(map->vc, &params, buf->data, buf->size);
 	if (ret) {
 		buf->lvo = (lvo_t)~0;
 		buf->index = 0;
@@ -131,9 +130,9 @@ static int mapa_request_from_down(map_t *map) {
 static uint32_t _mapa_generate_tfdz_length(map_t *map, quality_of_service_t qos) {
 	uint32_t size = 0;
 	if (qos == QOS_EXPEDITED) {
-		size = map->map_mx->vc->mapcf_length_ex;
+		size = map->vc->mapcf_length_ex;
 	} else {
-		size = map->map_mx->vc->mapcf_length_sc;
+		size = map->vc->mapcf_length_sc;
 	}
 	return size - 3;
 }

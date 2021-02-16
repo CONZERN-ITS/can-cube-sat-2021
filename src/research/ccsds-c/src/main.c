@@ -38,13 +38,11 @@ typedef enum {
 
 typedef struct uslp_t {
 	pc_t pc;
-	mc_mx_t mc_mx;
 	mc_t mc;
-	vc_mx_t vc_mx;
 	vc_t vc;
-	map_mx_t map_mx;
 	map_t map;
 } uslp_t;
+/*
 void main_uslp_init(uslp_t *uslp, size_t tf_length, uslp_service_t service, size_t max_packet_size) {
 	pc_paramaters_t pc_p = {0};
 	pc_p.can_generate_oid = 0;
@@ -311,9 +309,11 @@ int main() {
 	endian_stream_set(arr1, sizeof(arr1) * 8, 6, ENDIAN_LSBIT_LSBYTE,
 					  arr0, 13, 1, ENDIAN_MSBIT_LSBYTE);
 	print_bit_arr(arr1, sizeof(arr1));
-*/
+
+	return 0;
+}*/
+
+
+int main() {
 	return 0;
 }
-
-
-
