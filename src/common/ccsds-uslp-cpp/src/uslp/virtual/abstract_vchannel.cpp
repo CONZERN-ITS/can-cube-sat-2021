@@ -195,7 +195,7 @@ void vchannel_emitter::finalize_impl()
 vchannel_acceptor::vchannel_acceptor(gvcid_t gvcid_)
 	: channel_id(gvcid_)
 {
-	set_event_callback(&_default_event_callback<acceptor_event>);
+	set_event_callback(_default_event_callback<acceptor_event>);
 }
 
 
