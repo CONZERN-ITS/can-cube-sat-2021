@@ -31,8 +31,7 @@
 	"properties": {
 		"cookie": {
 			"type": "integer",
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"minimum": 1
 		}
 	}
 }
@@ -78,24 +77,20 @@
 	"type": "object",
 	"properties": {
 		"cookie_in_wait": {
-			"type": ["integer", "null"],
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"type": "integer",
+			"minimum": 1
 		},
 		"cookie_in_progress": {
-			"type": ["integer", "null"],
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"type": "integer",
+			"minimum": 1
 		},
 		"cookie_sent": {
-			"type": ["integer", "null"],
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"type": "integer",
+			"minimum": 1
 		},
 		"cookie_dropped": {
-			"type": ["integer", "null"],
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"type": "integer",
+			"minimum": 1
 		}
 	}
 }
@@ -106,7 +101,7 @@
 
 ```json
 {
-	"cookie_in_wait": null,
+	"cookie_in_wait": 0,
 	"cookie_in_progress": 3,
 	"cookie_sent": 1,
 	"cookie_dropped": 2
@@ -142,8 +137,7 @@
 		},
 		"cookie": {
 			"type": "integer",
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"minimum": 1
 		}
 	}
 }
@@ -182,8 +176,7 @@ RSSI значение передается JSON объектом, содержа
 	"type": "object",
 	"properties": {
 		"rssi": {
-			"type": "integer",
-			"maximum": 0
+			"type": "integer"
 		}
 	}
 }
@@ -221,8 +214,7 @@ RSSI значение передается JSON объектом, содержа
 	"properties": {
 		"cookie": {
 			"type": "integer",
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"minimum": 1
 		},
 		"rssi_pkt": {
 			"type": "integer"
@@ -275,8 +267,7 @@ IP пакеты сервером стека извлекаются из керн
 	"properties": {
 		"cookie": {
 			"type": "integer",
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"minimum": 1
 		}
 	}
 }
@@ -321,8 +312,7 @@ IP пакеты сервером стека извлекаются из керн
 	"properties": {
 		"cookie": {
 			"type": "integer",
-			"minimum": 1,
-			"maximum": 18446744073709551616
+			"minimum": 1
 		},
 		"event": {
 			"type": "string",

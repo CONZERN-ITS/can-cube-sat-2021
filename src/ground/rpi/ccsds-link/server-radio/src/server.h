@@ -2,6 +2,8 @@
 #define SERVER_RADIO_SRC_RADIO_CONFIG_H_
 
 #include <time.h>
+#include <stdbool.h>
+#include <inttypes.h>
 
 #include "sx126x_drv.h"
 
@@ -14,10 +16,8 @@
 #define SERVER_TX_STATE_PERIOD_MS (500)
 #define SERVER_POLL_TIMEOUT_MS (1000)
 
-#define SERVER_UPLINK_SOCKET_EP "tcp://0.0.0.0:5050"
-#define SERVER_TELEMETRY_SOCKET_EP "tcp://0.0.0.0:5051"
-
-typedef uint16_t msg_cookie_t;
+typedef uint64_t msg_cookie_t;
+#define MSG_COOKIE_T_PLSHOLDER PRIu64
 
 
 typedef struct server_t
@@ -27,6 +27,8 @@ typedef struct server_t
 	uint8_t rx_buffer[255];
 	size_t rx_buffer_capacity;
 	size_t rx_buffer_size;
+	msg_cookie_t rx_buffer_cookie;
+	bool rx_crc_valid;
 	int8_t rx_rssi_pkt;
 	int8_t rx_snr_pkt;
 	int8_t rx_signal_rssi_pkt;
@@ -51,8 +53,8 @@ typedef struct server_t
 	struct timespec tx_state_report_block_deadline;
 
 	void * zmq;
-	void * uplink_socket;
-	void * telemetry_socket;
+	void * sub_socket;
+	void * pub_socket;
 } server_t;
 
 

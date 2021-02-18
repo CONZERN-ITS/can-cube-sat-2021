@@ -4,11 +4,23 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include <zmq.h>
 #include <log.h>
 
 #include <sx126x_board_rpi.h>
+
+
+#define ITS_GBUS_PUB_ENDPOINT_KEY "ITS_GBUS_PUB_ENDPOINT"
+#define ITS_GBUS_SUB_ENDPOINT_KEY "ITS_GBUS_SUB_ENDPOINT"
+
+#define ITS_GBUS_TOPIC_UPLINK_FRAME "radio.uplink_frame"
+#define ITS_GBUS_TOPIC_DOWNLINK_FRAME "radio.downlink_frame"
+#define ITS_GBUS_TOPIC_UPLINK_STATE "radio.uplink_state"
+#define ITS_GBUS_TOPIC_RSSI_INSTANT "radio.rssi_instant"
+#define ITS_GBUS_TOPIC_RSSI_PACKET "radio.rssi_packet"
+
 
 
 static int64_t _timespec_diff_ms(const struct timespec * left, const struct timespec * right)
@@ -19,16 +31,16 @@ static int64_t _timespec_diff_ms(const struct timespec * left, const struct time
 
 static void _zmq_deinit(server_t * server)
 {
-	if (server->uplink_socket)
+	if (server->sub_socket)
 	{
-		zmq_close(server->uplink_socket);
-		server->uplink_socket = NULL;
+		zmq_close(server->sub_socket);
+		server->sub_socket = NULL;
 	}
 
-	if (server->telemetry_socket)
+	if (server->pub_socket)
 	{
-		zmq_close(server->telemetry_socket);
-		server->telemetry_socket = NULL;
+		zmq_close(server->pub_socket);
+		server->pub_socket = NULL;
 	}
 
 	if (server->zmq)
@@ -57,20 +69,42 @@ static int _zmq_init(server_t * server)
 {
 	int rc;
 
+	const char * pub_ep = getenv(ITS_GBUS_PUB_ENDPOINT_KEY);
+	if (!pub_ep)
+	{
+		log_error("unable to get value of pub endpoint from "
+				ITS_GBUS_PUB_ENDPOINT_KEY
+				" envvar: %d",
+				errno
+		);
+		return -1;
+	}
+
+	const char * sub_ep = getenv(ITS_GBUS_SUB_ENDPOINT_KEY);
+	if (!sub_ep)
+	{
+		log_error("unable to get value of sub endpoint from "
+				ITS_GBUS_PUB_ENDPOINT_KEY
+				" envvar: %d",
+				errno
+		);
+		return -1;
+	}
+
 
 	server->zmq = zmq_ctx_new();
 	if (!server->zmq)
 		goto bad_exit;
 
 
-	server->uplink_socket = zmq_socket(server->zmq, ZMQ_SUB);
-	if (!server->uplink_socket)
+	server->sub_socket = zmq_socket(server->zmq, ZMQ_SUB);
+	if (!server->sub_socket)
 	{
 		log_error("unable to allocate server data socket: %d", errno);
 		goto bad_exit;
 	}
 
-	rc = zmq_bind(server->uplink_socket, SERVER_UPLINK_SOCKET_EP);
+	rc = zmq_connect(server->sub_socket, sub_ep);
 	if (rc < 0)
 	{
 		log_error("unable to bind server data socket: %d", errno);
@@ -78,24 +112,24 @@ static int _zmq_init(server_t * server)
 	}
 
 	const char topic[] = "radio.uplink_data";
-	rc = zmq_setsockopt(server->uplink_socket, ZMQ_SUBSCRIBE, topic, sizeof(topic)-1);
+	rc = zmq_setsockopt(server->sub_socket, ZMQ_SUBSCRIBE, topic, sizeof(topic)-1);
 	if (rc < 0)
 	{
-		log_error("unable to subscribe uplink socket: %d", errno);
+		log_error("unable to subscribe pub socket: %d", errno);
 		goto bad_exit;
 	}
 
-	server->telemetry_socket = zmq_socket(server->zmq, ZMQ_PUB);
-	if (!server->telemetry_socket)
+	server->pub_socket = zmq_socket(server->zmq, ZMQ_PUB);
+	if (!server->pub_socket)
 	{
-		log_error("unable to allocate server telemetry socket: %d", errno);
+		log_error("unable to allocate server pub socket: %d", errno);
 		goto bad_exit;
 	}
 
-	rc = zmq_bind(server->telemetry_socket, SERVER_TELEMETRY_SOCKET_EP);
+	rc = zmq_connect(server->pub_socket, pub_ep);
 	if (rc < 0)
 	{
-		log_error("unable to bind server telemetry socket: %d", errno);
+		log_error("unable to bind server pub socket: %d", errno);
 		goto bad_exit;
 	}
 
@@ -121,23 +155,58 @@ static void _zmq_send_tx_state(server_t * server)
 	);
 
 	// Формируем пакет
-	char json_buffer[1024] = {0}; // Ну килобайта то нам хватит ведь правда
-	rc = sprintf(json_buffer, "{ wait: %d, in_progress: %d, sent: %d, dropped: %d }",
-			server->tx_cookie_wait,
-			server->tx_cookie_in_progress,
-			server->tx_cookie_sent,
-			server->tx_cookie_dropped
+	// Протокол требует от нас писать null там где нули
+	// Поэтому... придется сперва перекинуть в текст те числа, которые не null
+	const char json_null[5] = "null";
+	char cookie_str_buffers[4][21] = {0}; // 2**64-1 имеет длину 20 симоволов
+	msg_cookie_t * cookies[] = {
+			&server->tx_cookie_wait, &server->tx_cookie_in_progress,
+			&server->tx_cookie_sent, &server->tx_cookie_dropped
+	};
+	for (size_t i = 0; i < sizeof(cookies)/sizeof(*cookies); i++)
+	{
+		if (0 == *cookies[i])
+			strcpy(cookie_str_buffers[i], json_null);
+		else
+		{
+			rc = snprintf(
+					cookie_str_buffers[i], sizeof(cookie_str_buffers[i]),
+					"%"MSG_COOKIE_T_PLSHOLDER, *cookies[i]
+			);
+			if (rc < 0 || rc >= sizeof(cookie_str_buffers[i]))
+			{
+				log_error("sprintf for cookie no %d failed: %d, %d", i, rc, errno);
+				return;
+			}
+		}
+	}
+
+	// Теперь наконец-то sprintf самого json-а
+	char json_buffer[1024] = {0}; // Вот так круто берем килобайт
+	rc = snprintf(
+			json_buffer, sizeof(json_buffer),
+			"{"
+				"cookie_in_wait: %s, "
+				"cookie_in_progress: %s, "
+				"cookie_sent: %s, "
+				"cookie_dropped: %s"
+			"}",
+			cookie_str_buffers[0],
+			cookie_str_buffers[1],
+			cookie_str_buffers[2],
+			cookie_str_buffers[3]
 	);
 
-	if (rc < 0)
+	if (rc < 0 || rc >= sizeof(json_buffer))
 	{
-		log_error("sprintf tx status json failed: %d, %d", rc, errno);
+		log_error("sprintf for tx_state json failed: %d, %d", rc, errno);
 		return;
 	}
 
+
 	// Шлем топик
-	const char topic[] = "radio.upink_status";
-	rc = zmq_send(server->telemetry_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+	const char topic[] = ITS_GBUS_TOPIC_UPLINK_STATE;
+	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
 		log_error("unable to send tx status topic: %d", errno);
@@ -145,7 +214,7 @@ static void _zmq_send_tx_state(server_t * server)
 	}
 
 	// Шлем данные
-	rc = zmq_send(server->telemetry_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
+	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
 		log_error("unable to send tx status message: %d", errno);
@@ -160,37 +229,49 @@ static void _zmq_send_packet_rssi(server_t * server)
 {
 	int rc;
 
+	// Готовим сообщение
 	char json_buffer[1024] = {0};
-	rc = sprintf(json_buffer, "{ rssi_pkt: %d, snr_pkt: %d, rssi_signal: %d }",
+	rc = snprintf(
+			json_buffer, sizeof(json_buffer),
+			"{"
+				"cookie: %"MSG_COOKIE_T_PLSHOLDER", "
+				"rssi_pkt: %d, "
+				"snr_pkt: %d, "
+				"rssi_signal: %d"
+			"}",
+			server->rx_buffer_cookie,
 			(int)server->rx_rssi_pkt,
 			(int)server->rx_snr_pkt,
 			(int)server->rx_signal_rssi_pkt
 	);
+	if (rc < 0 || rc >= sizeof(json_buffer))
+	{
+		log_error("unable to sprintf packet rssi value: %d, %d", rc, errno);
+		return;
+	}
+
 
 	// Топик
-	const char topic[] = "radio.downlink_data";
-	rc = zmq_send(server->telemetry_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+	const char topic[] = ITS_GBUS_TOPIC_RSSI_PACKET;
+	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
 		log_error("unable to send rx data topic: %d", errno);
-		goto end;
+		return;
 	}
 
 	if (rc < 0)
 	{
 		log_error("sprintf rx rssi json failed: %d, %d", rc, errno);
-		goto end;
+		return;
 	}
 
-	rc = zmq_send(server->telemetry_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
+	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
 		log_error("unable to send rx rssi data: %d", errno);
-		goto end;
+		return;
 	}
-
-end:
-	return;
 }
 
 
@@ -199,9 +280,19 @@ static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 	int rc;
 	log_trace("sending rssi %d", (int)rssi);
 
+	// Готовим сообщение
+	char json_buffer[1024] = {0};
+	rc = snprintf(json_buffer, sizeof(json_buffer), "{rssi: %d}", (int)rssi);
+	if (rc < 0)
+	{
+		log_error("sprintf rssi failed: %d, %d", rc, errno);
+		return;
+	}
+
+
 	// Топик
-	const char topic[] = "radio.instant_rssi";
-	rc = zmq_send(server->telemetry_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+	const char topic[] = ITS_GBUS_TOPIC_RSSI_INSTANT;
+	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
 		log_error("unable to send rssi topic: %d", errno);
@@ -209,15 +300,7 @@ static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 	}
 
 	// Само значение
-	char json_buffer[1024] = {0};
-	rc = sprintf(json_buffer, "{ rssi: %d }", rssi);
-	if (rc < 0)
-	{
-		log_error("sprintf rssi failed: %d, %d", rc, errno);
-		return;
-	}
-
-	rc = zmq_send(server->telemetry_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
+	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
 		log_error("unable to send rssi data: %d", errno);
@@ -233,19 +316,45 @@ static void _zmq_send_rx_data(server_t * server)
 	if (0 == server->rx_buffer_size)
 		return;
 
-	log_info("sending rx data");
+	log_debug("sending rx data");
+
+	// Готовим метаданные
+	char json_buffer[1024] = {0};
+	rc = snprintf(
+			json_buffer, sizeof(json_buffer),
+			"{"
+				"checksum_valid: %s,"
+				"cookie: %"MSG_COOKIE_T_PLSHOLDER""
+			"}",
+			server->rx_crc_valid ? "true" : "false",
+			server->rx_buffer_cookie
+	);
+	if (rc < 0 || rc >= sizeof(json_buffer))
+	{
+		log_error("unable to sprintf rx data meta json: %d, %d", rc, errno);
+		goto end;
+	}
+
 
 	// Шлем топик
-	const char topic[] = "radio.downlink_data";
-	rc = zmq_send(server->telemetry_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+	const char topic[] = ITS_GBUS_TOPIC_DOWNLINK_FRAME;
+	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
 		log_error("unable to send rx data topic: %d", errno);
 		goto end;
 	}
 
-	// Теперь сами данные
-	rc = zmq_send(server->telemetry_socket, server->rx_buffer, server->rx_buffer_size, ZMQ_DONTWAIT);
+	// метаданные
+	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_SNDMORE | ZMQ_DONTWAIT);
+	if (rc < 0)
+	{
+		log_error("unable to send rx metadata: %d, %d", rc, errno);
+		goto end;
+	}
+
+	// Теперь данные самого фрейма
+	rc = zmq_send(server->pub_socket, server->rx_buffer, server->rx_buffer_size, ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
 		log_error("unable to send rx data: %d", errno);
@@ -271,7 +380,7 @@ static void _zmq_recv_tx_packet(server_t * server)
 	while(1)
 	{
 		zmq_msg_init(&msg);
-		rc = zmq_msg_recv(&msg, server->uplink_socket, ZMQ_DONTWAIT);
+		rc = zmq_msg_recv(&msg, server->sub_socket, ZMQ_DONTWAIT);
 		if (rc < 0)
 		{
 			log_error("unable to get message from data socket %d", errno);
@@ -484,7 +593,7 @@ static void _radio_go_rx(server_t * server)
 }
 
 
-static void _radio_fetch_rx(server_t * server)
+static void _radio_fetch_rx(server_t * server, bool crc_valid)
 {
 	int rc;
 
@@ -495,7 +604,11 @@ static void _radio_fetch_rx(server_t * server)
 		return;
 	}
 
-	server->rx_buffer_size = server->rx_buffer_capacity;
+	server->rx_crc_valid = crc_valid;
+	server->rx_buffer_cookie++;
+	if (0 == server->rx_buffer_cookie) server->rx_buffer_cookie = 1;
+ 	server->rx_buffer_size = server->rx_buffer_capacity;
+
 	log_trace("fetched rx frame from radio");
 }
 
@@ -532,7 +645,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 			log_trace("rx done");
 			// Мы получили пакет!
 			// Выгружаем его с радио
-			_radio_fetch_rx(server);
+			_radio_fetch_rx(server, arg->rx_done.crc_valid);
 			// Тут же пойдем в TX, если нам есть чем
 			went_tx = _radio_go_tx_if_any(server);
 		}
@@ -656,7 +769,7 @@ void server_run(server_t * server)
 	pollitems[0].fd = radio_fd;
 	pollitems[0].events = ZMQ_POLLIN | ZMQ_POLLPRI;
 
-	pollitems[1].socket = server->uplink_socket;
+	pollitems[1].socket = server->sub_socket;
 	pollitems[1].events = ZMQ_POLLIN;
 
 	while (1)
