@@ -9,7 +9,7 @@
 
 uint32_t _vc_generate_mapcf_length(vc_t *vc, quality_of_service_t qos);
 
-int vc_init(vc_t *vc, mc_t *mc, vc_parameters_t *params, vc_id_t vc_id) {
+int vc_init(vc_t *vc, mc_t *mc, const vc_parameters_t *params, vc_id_t vc_id) {
 	usdl_print_debug();
 	vc->mc = mc;
 	vc->vc_id = vc_id;

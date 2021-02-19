@@ -11,7 +11,7 @@
 #include "usdl_types.h"
 
 
-int mc_init(mc_t *mc, pc_t *pc, mc_paramaters_t *params, mc_id_t mc_id);
+int mc_init(mc_t *mc, pc_t *pc, const mc_paramaters_t *params, mc_id_t mc_id);
 
 int mc_generate(mc_t *mc, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params);

@@ -22,7 +22,7 @@ void print_bit(uint8_t num) {
 
 
 void print_bit_arr(uint8_t *arr, size_t size) {
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		print_bit(arr[i]);
 		printf(" ");
 	}

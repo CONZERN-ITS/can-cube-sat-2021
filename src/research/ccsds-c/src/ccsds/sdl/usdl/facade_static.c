@@ -79,14 +79,14 @@ void usdl_vc_init(usdl_t *usdl, const vc_parameters_t *params, mc_id_t mc_id, vc
 	assert(index >= 0);
 	assert(mc);
 
-	vc_init(&usdl->vc_pool[index], &mc, params, vc_id);
+	vc_init(&usdl->vc_pool[index], mc, params, vc_id);
 }
 void usdl_mc_init(usdl_t *usdl, const mc_paramaters_t *params, mc_id_t mc_id) {
 	int index = _take_free(usdl, LAYER_MC);
 	assert(index >= 0);
 	assert(usdl->pc);
 
-	mc_init(&usdl->vc_pool[index], usdl->pc, params, mc_id);
+	mc_init(&usdl->mc_pool[index], usdl->pc, params, mc_id);
 }
 void usdl_pc_init(usdl_t *usdl, const pc_paramaters_t *params) {
 	pc_init(usdl->pc, params, usdl->packet_buf_pool + (usdl->packet_size * usdl->vc_pool_size), usdl->packet_size);
@@ -117,20 +117,20 @@ void usdl_mapa_init(usdl_t *usdl, mc_id_t mc_id, vc_id_t vc_id, map_id_t map_id)
 	map->mapr.packet.data = usdl->packet_buf_pool + index * usdl->packet_size;
 	map->mapr.packet.max_size = usdl->packet_size;
 }
-
+/*
 void usdl_init() {
 	USDL_STATIC_ALLOCATE(10, 4, 1, 1000, 100) usdl_static;
 	usdl_t usdl = {0};
 	USDL_STATIC_INIT(usdl_static, usdl);
-}
+}*/
 sap_t usdl_get_map_sap(usdl_t *usdl, mc_id_t mc_id, vc_id_t vc_id, map_id_t map_id) {
-	return _find_map(usdl->pc, mc_id, vc_id, map_id);
+	return _find_map(usdl, mc_id, vc_id, map_id);
 }
 sap_t usdl_get_vc_sap(usdl_t *usdl, mc_id_t mc_id, vc_id_t vc_id) {
-	return _find_vc(usdl->pc, mc_id, vc_id);
+	return _find_vc(usdl, mc_id, vc_id);
 }
 sap_t usdl_get_mc_sap(usdl_t *usdl, mc_id_t mc_id) {
-	return _find_mc(usdl->pc, mc_id);
+	return _find_mc(usdl, mc_id);
 }
 int usdl_mapp_push(sap_t sap, const uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos) {
 	return mapp_send(sap, data, size, pvn, qos);

@@ -36,7 +36,7 @@ int mapa_init(map_t *map, vc_t *vc, map_id_t map_id) {
 
 
 
-int mapa_send(map_t *map, uint8_t *data, size_t size, quality_of_service_t qos) {
+int mapa_send(map_t *map, const uint8_t *data, size_t size, quality_of_service_t qos) {
 	usdl_print_debug();
 #if MAP_BUFFER_SIZE == 0
 	return 0;
@@ -158,7 +158,7 @@ static int _map_push_from_down(mapr_t *map) {
 	}
 
 	if (map->state == MAPR_STATE_SIZE_UNKNOWN) {
-		int count_to_send = map->tfdz.size;
+		size_t count_to_send = map->tfdz.size;
 		if (map->tfdz.lvo != (lvo_t)~0) {
 			count_to_send = map->tfdz.lvo + 1;
 		}

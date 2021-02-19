@@ -7,7 +7,7 @@
 
 uint32_t _mc_generate_vcf_length(mc_t *mc);
 
-int mc_init(mc_t *mc, pc_t *pc, mc_paramaters_t *params, mc_id_t mc_id) {
+int mc_init(mc_t *mc, pc_t *pc, const mc_paramaters_t *params, mc_id_t mc_id) {
 	usdl_print_debug();
 	mc->pc = pc;
 	mc->mc_id = mc_id;

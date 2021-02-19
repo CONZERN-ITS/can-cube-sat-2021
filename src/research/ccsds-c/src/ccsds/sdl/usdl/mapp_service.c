@@ -32,7 +32,7 @@ int mapp_init(map_t *map, vc_t *vc, map_id_t map_id) {
 
 
 
-int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos) {
+int mapp_send(map_t *map, const uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos) {
 	usdl_print_debug();
 #if MAP_BUFFER_SIZE == 0
 	return 0;
@@ -180,11 +180,11 @@ static int _map_push_from_down(mapr_t *map) {
 			map->packet.data[map->packet.index++] = map->tfdz.data[map->tfdz.index++];
 			int ret = _map_try_calc_size(map->packet.data, map->packet.index);
 
-			if (ret > 0 && ret <= map->packet.max_size) {
+			if (ret > 0 && (size_t)ret <= map->packet.max_size) {
 				map->packet.size = ret;
 				map->state = MAPR_STATE_SIZE_KNOWN;
 				break;
-			} else if (ret < 0 || ret > map->packet.max_size) {
+			} else if (ret < 0 || (size_t)ret > map->packet.max_size) {
 				map->tfdz.index = map->tfdz.size;
 				map->packet.index = 0;
 				map->state = MAPR_STATE_BEGIN;

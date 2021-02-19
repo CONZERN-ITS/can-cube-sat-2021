@@ -10,7 +10,7 @@
 
 int mapp_init(map_t *map, vc_t *vc, map_id_t map_id);
 
-int mapp_send(map_t *map, uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos);
+int mapp_send(map_t *map, const uint8_t *data, size_t size, pvn_t pvn, quality_of_service_t qos);
 
 //int mapp_request_from_down(map_t *map);
 
