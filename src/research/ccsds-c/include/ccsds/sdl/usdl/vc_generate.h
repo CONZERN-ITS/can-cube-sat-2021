@@ -23,7 +23,7 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size);
 
 int vc_push(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size);
 
-int vc_request_from_down(vc_t *vc);
+int vc_request_from_down(usdl_node_t *node);
 
 uint32_t _vc_request_size(vc_t *vc, quality_of_service_t qos);
 

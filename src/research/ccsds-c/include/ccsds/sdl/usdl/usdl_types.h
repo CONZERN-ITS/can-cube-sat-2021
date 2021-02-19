@@ -56,7 +56,7 @@ typedef struct mapr_t {
 typedef struct map_t {
 	usdl_node_t base;
 	void (*map_parse)(map_t *map, uint8_t *data, size_t size, map_params_t *map_params);
-	int (*map_request_from_down)(map_t *map);
+	int (*map_request_from_down)(usdl_node_t *map);
 
 	mapr_t mapr;
 	map_id_t map_id;
@@ -191,7 +191,7 @@ typedef struct {
 typedef struct pc_t {
 	usdl_node_t base;
 	uint8_t *data;
-	uint8_t size;
+	size_t size;
 	int is_valid;
 
 	mc_t *mc_arr[MC_COUNT];

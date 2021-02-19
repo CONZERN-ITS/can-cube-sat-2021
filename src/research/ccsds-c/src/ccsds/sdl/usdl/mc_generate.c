@@ -14,6 +14,7 @@ int mc_init(mc_t *mc, pc_t *pc, const mc_paramaters_t *params, mc_id_t mc_id) {
 	mc->pc->mc_arr[mc->mc_id] = mc;
 	mc->mc_parameters = *params;
 	mc->vcf_length = _mc_generate_vcf_length(mc);
+	mc->base.request_from_down = mc_request_from_down;
 	return 0;
 }
 
@@ -38,8 +39,9 @@ int mc_push(mc_t *mc, uint8_t *data, size_t size,
 	}
 }
 
-int mc_request_from_down(mc_t *mc) {
+int mc_request_from_down(usdl_node_t *node) {
 	usdl_print_debug();
+	mc_t *mc = node;
 	return mc->vc_mx->pull(mc->vc_mx, (usdl_node_t **)mc->vc_arr, sizeof(mc->vc_arr) / sizeof(mc->vc_arr[0]));
 }
 

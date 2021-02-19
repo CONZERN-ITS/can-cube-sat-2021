@@ -10,7 +10,7 @@
 static void mapa_parse(map_t *map, uint8_t *data, size_t size,
 		map_params_t *map_params);
 
-static int mapa_request_from_down(map_t *map);
+static int mapa_request_from_down(usdl_node_t *node);
 
 static uint32_t _mapa_generate_tfdz_length(map_t *map, quality_of_service_t qos);
 
@@ -18,6 +18,7 @@ int mapa_init(map_t *map, vc_t *vc, map_id_t map_id) {
 	usdl_print_debug();
 	map->map_parse = mapa_parse;
 	map->map_request_from_down = mapa_request_from_down;
+	map->base.request_from_down = mapa_request_from_down;
 
 	map->vc = vc;
 	map->map_id = map_id;
@@ -98,8 +99,9 @@ int mapa_send(map_t *map, const uint8_t *data, size_t size, quality_of_service_t
 }
 
 
-static int mapa_request_from_down(map_t *map) {
+static int mapa_request_from_down(usdl_node_t *node) {
 	usdl_print_debug();
+	map_t *map = node;
 	map_buffer_t *buf = 0;
 
 	map_params_t params = {0};

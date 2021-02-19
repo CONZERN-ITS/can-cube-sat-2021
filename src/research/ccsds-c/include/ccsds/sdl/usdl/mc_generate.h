@@ -19,7 +19,7 @@ int mc_generate(mc_t *mc, uint8_t *data, size_t size,
 int mc_push(mc_t *mc, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params);
 
-int mc_request_from_down(mc_t *mc);
+int mc_request_from_down(usdl_node_t *node);
 
 void mc_parse(mc_t *mc, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params, mc_params_t *mc_params, uint8_t *ocf);

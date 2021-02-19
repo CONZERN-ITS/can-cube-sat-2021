@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <ccsds/sdl/usdl/facade_static.h>
 
 void print_bit(uint8_t num) {
 	for(int i = 0; i < 8; ++i) {
@@ -42,6 +43,98 @@ typedef struct uslp_t {
 	vc_t vc;
 	map_t map;
 } uslp_t;
+#define FRAME_SIZE 100
+#define PACKET_SIZE 1000
+USDL_STATIC_ALLOCATE(10, 4, 1, PACKET_SIZE, FRAME_SIZE) usdl1_static;
+usdl_t usdl1 = {0};
+USDL_STATIC_ALLOCATE(10, 4, 1, PACKET_SIZE, FRAME_SIZE) usdl2_static;
+usdl_t usdl2 = {0};
+int main() {
+	USDL_STATIC_INIT(usdl1_static, usdl1);
+	USDL_STATIC_INIT(usdl2_static, usdl2);
+
+	{
+		pc_paramaters_t pc_p = {0};
+		pc_p.can_generate_oid = 0;
+		pc_p.is_fec_presented = 0;
+		pc_p.tf_length = FRAME_SIZE;
+		pc_p.tft = TF_FIXED;
+		pc_p.tfvn = 0x0C;
+		usdl_pc_init(&usdl1, &pc_p);
+		usdl_pc_init(&usdl2, &pc_p);
+	}
+	{
+		mc_paramaters_t mc_p = {0};
+		mc_p.ocf_flag = 0;
+		mc_p.scid = 0x1234;
+		mc_p.tft = TF_FIXED;
+		usdl_mc_init(&usdl1, &mc_p, 0);
+		usdl_mc_init(&usdl2, &mc_p, 0);
+	}
+	{
+		vc_parameters_t vc_p = {0};
+		vc_p.clcw_report_rate = 0;
+		vc_p.clcw_version = 0;
+		vc_p.cop_in_effect = COP_NONE;
+		vc_p.ocf_allowed = 0;
+		vc_p.repetition_max_cop = 1;
+		vc_p.repetition_max_user = 1;
+		vc_p.transfer_frame_type = TF_FIXED;
+		vc_p.vc_id = 0;
+		vc_p.vcf_count_lenght_expedited = 1;
+		vc_p.vcf_count_lenght_seq_control = 1;
+
+		usdl_vc_init(&usdl1, &vc_p, 0, 0);
+		usdl_vc_init(&usdl2, &vc_p, 0, 0);
+	}
+
+	{
+		usdl_mapp_init(&usdl1, 0, 0, 0);
+		usdl_mapa_init(&usdl1, 0, 0, 1);
+		usdl_mapp_init(&usdl2, 0, 0, 0);
+		usdl_mapa_init(&usdl2, 0, 0, 1);
+	}
+
+	uint8_t packet[PACKET_SIZE];
+
+	uint8_t packet2[PACKET_SIZE];
+	for (int i = 0; i < PACKET_SIZE; i++) {
+		packet[i] = i % 256;
+	}
+	sap_t mapa01s = usdl_get_map_sap(&usdl1, 0, 0, 1);
+	sap_t mapa01r = usdl_get_map_sap(&usdl2, 0, 0, 1);
+
+	size_t sent = 0;
+	size_t recieved = 0;
+
+	uint8_t *pcs_data;
+	size_t *pcs_size;
+
+
+	while (sent < sizeof(packet) && recieved < sizeof(packet)) {
+		printf("\n");
+		sent += usdl_mapa_send(mapa01s, packet + sent, sizeof(packet) - sent, QOS_EXPEDITED);
+
+		if (usdl_pc_is_frame_buf_empty(&usdl1)) {
+			uint8_t frame[FRAME_SIZE];
+			usdl_pc_get_frame(&usdl1, &pcs_data, &pcs_size);
+			memcpy(frame, pcs_data, *pcs_size);
+			size_t f_size = *pcs_size;
+			usdl_pc_set_frame_buf_empty(&usdl1, 1);
+			usdl_pc_set_frame(&usdl2, frame, f_size);
+		} else {
+			printf("Buffer is empty!!\n");
+		}
+
+		quality_of_service_t qos = 0;
+		recieved += usdl_mapa_recieve(mapa01r, packet2 + recieved, sizeof(packet2) - recieved, &qos);
+		printf("Sent: %d \t Received: %d \n", (int)sent, (int)recieved);
+	}
+	for (int i = 0; i < recieved; i++) {
+		printf("%02X ", packet2[i]);
+	}
+
+}
 /*
 void main_uslp_init(uslp_t *uslp, size_t tf_length, uslp_service_t service, size_t max_packet_size) {
 	pc_paramaters_t pc_p = {0};
@@ -313,7 +406,3 @@ int main() {
 	return 0;
 }*/
 
-
-int main() {
-	return 0;
-}

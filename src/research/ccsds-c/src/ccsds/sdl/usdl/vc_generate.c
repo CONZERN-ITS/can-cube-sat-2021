@@ -17,6 +17,7 @@ int vc_init(vc_t *vc, mc_t *mc, const vc_parameters_t *params, vc_id_t vc_id) {
 	vc->vc_parameters = *params;
 	vc->mapcf_length_ex = _vc_generate_mapcf_length(vc, QOS_EXPEDITED);
 	vc->mapcf_length_sc = _vc_generate_mapcf_length(vc, QOS_SEQ_CONTROL);
+	vc->base.request_from_down = vc_request_from_down;
 	return 0;
 }
 int _vc_pop_fop(vc_t *vc) {
@@ -71,8 +72,9 @@ int vc_push(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) {
 	}
 }
 
-int vc_request_from_down(vc_t *vc) {
+int vc_request_from_down(usdl_node_t *node) {
 	usdl_print_debug();
+	vc_t *vc = (vc_t *)node;
 	if (vc->vc_parameters.cop_in_effect == COP_1) {
 		int ret = _vc_pop_fop(vc);
 		if (ret) {

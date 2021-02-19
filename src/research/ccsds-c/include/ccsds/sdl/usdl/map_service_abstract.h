@@ -8,8 +8,8 @@ static inline void map_parse(map_t *map, uint8_t *data, size_t size,
 	map->map_parse(map, data, size, map_params);
 }
 
-static inline int map_request_from_down(map_t *map) {
-	return map->map_request_from_down(map);
+static inline int map_request_from_down(usdl_node_t *node) {
+	return ((map_t *)node)->map_request_from_down(node);
 }
 
 #endif /* INCLUDE_CCSDS_SDL_USDL_MAP_SERVICE_ABSTRACT_H_ */

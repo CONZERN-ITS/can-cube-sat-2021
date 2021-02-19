@@ -9,7 +9,7 @@
 static void mapp_parse(map_t *map, uint8_t *data, size_t size,
 		map_params_t *map_params);
 
-int mapp_request_from_down(map_t *map);
+int mapp_request_from_down(usdl_node_t *node);
 
 static uint32_t _mapp_generate_tfdz_length(map_t *map, quality_of_service_t qos);
 
@@ -17,6 +17,7 @@ int mapp_init(map_t *map, vc_t *vc, map_id_t map_id) {
 	usdl_print_debug();
 	map->map_parse = mapp_parse;
 	map->map_request_from_down = mapp_request_from_down;
+	map->base.request_from_down = mapp_request_from_down;
 
 	map->vc = vc;
 	map->map_id = map_id;
@@ -89,8 +90,9 @@ int mapp_send(map_t *map, const uint8_t *data, size_t size, pvn_t pvn, quality_o
 #endif
 }
 
-int mapp_request_from_down(map_t *map) {
+int mapp_request_from_down(usdl_node_t *node) {
 	usdl_print_debug();
+	map_t *map = (map_t *)node;
 	map_buffer_t *buf = 0;
 
 	map_params_t params = {0};
