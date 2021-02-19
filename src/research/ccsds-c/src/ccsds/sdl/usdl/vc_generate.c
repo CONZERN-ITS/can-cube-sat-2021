@@ -1,4 +1,5 @@
 #include <ccsds/sdl/usdl/vc_generate.h>
+#include <ccsds/sdl/usdl/mc_generate.h>
 #include <ccsds/sdl/usdl/map_service_abstract.h>
 #include <ccsds/sdl/usdl/fop.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
@@ -62,7 +63,7 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 
 int vc_push(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) {
 	map_t **maps = vc->map_arr;
-	if (vc->map_mx->push(vc->map_mx, maps[map_params->map_id], (void **)maps,
+	if (vc->map_mx->push(vc->map_mx, (usdl_node_t *)maps[map_params->map_id], (usdl_node_t **)maps,
 			sizeof(maps) / sizeof(maps[0]))) {
 		return vc_generate(vc, map_params, data, size);
 	} else {

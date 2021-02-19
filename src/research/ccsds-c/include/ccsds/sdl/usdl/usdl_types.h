@@ -30,21 +30,12 @@ typedef struct {
 
 
 
-typedef struct {
-	map_id_t map_id;
-	vc_id_t vc_id;
-	mc_id_t mc_id;
-	sc_id_t sc_id;
-} gvcid_t;
 
 
 
-typedef struct map_mx_t map_mx_t;
 typedef struct map_t map_t;
 typedef struct vc_t vc_t;
-typedef struct vc_mx_t vc_mx_t;
 typedef struct mc_t mc_t;
-typedef struct mc_mx_t mc_mx_t;
 typedef struct pc_t pc_t;
 
 typedef enum {

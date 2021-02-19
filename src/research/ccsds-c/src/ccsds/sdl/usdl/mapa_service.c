@@ -1,5 +1,6 @@
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <ccsds/sdl/usdl/usdl_debug.h>
+#include <ccsds/sdl/usdl/vc_generate.h>
 #include <string.h>
 #include <assert.h>
 #include <ccsds/nl/epp/epp.h>

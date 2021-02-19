@@ -12,7 +12,7 @@
 #include <ccsds/sdl/usdl/usdl_basic_types.h>
 
 struct multiplexer_abstract {
-	int (*push)(struct multiplexer_abstract *, void *p, void **arr, int size);
+	int (*push)(struct multiplexer_abstract *, usdl_node_t *p, usdl_node_t **arr, int size);
 	int (*pull)(struct multiplexer_abstract *, usdl_node_t **arr, int size);
 };
 

@@ -1,4 +1,5 @@
 #include <ccsds/sdl/usdl/pc_generate.h>
+#include <ccsds/sdl/usdl/mc_generate.h>
 #include <ccsds/sdl/usdl/usdl_types.h>
 #include <ccsds/ccscds_endian.h>
 #include <ccsds/sdl/usdl/usdl_debug.h>
@@ -165,7 +166,7 @@ int pc_parse(pc_t *pc, uint8_t *data, size_t size) {
 int pc_push(pc_t *pc, const uint8_t *data, size_t size,
 		const map_params_t *map_params, const vc_params_t *vc_params, const mc_params_t *mc_params) {
 	mc_t **mc_arr = pc->mc_arr;
-	if (pc->mc_mx->push(pc->mc_mx, mc_arr[mc_params->mc_id], mc_arr,
+	if (pc->mc_mx->push(pc->mc_mx, (usdl_node_t *)mc_arr[mc_params->mc_id], (usdl_node_t **)mc_arr,
 			sizeof(mc_arr) / sizeof(mc_arr[0]))) {
 		return pc_generate(pc, data, size, map_params, vc_params, mc_params);
 	} else {
