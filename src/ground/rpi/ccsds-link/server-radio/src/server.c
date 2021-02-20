@@ -35,6 +35,8 @@ static int _parse_tx_frame_metadata(
 )
 {
 	jsmn_parser parser;
+	jsmn_init(&parser);
+
 	jsmntok_t t[3];
 	int parsed_tokens = jsmn_parse(&parser, json_buffer, buffer_size, t, sizeof(t)/sizeof(*t));
 	if (parsed_tokens != 3)
@@ -132,8 +134,8 @@ static int _zmq_init(server_t * server)
 	{
 		log_error("unable to get value of pub endpoint from "
 				ITS_GBUS_PUB_ENDPOINT_KEY
-				" envvar: %d",
-				errno
+				" envvar: %d: %s",
+				errno, strerror(errno)
 		);
 		return -1;
 	}
@@ -143,8 +145,8 @@ static int _zmq_init(server_t * server)
 	{
 		log_error("unable to get value of sub endpoint from "
 				ITS_GBUS_PUB_ENDPOINT_KEY
-				" envvar: %d",
-				errno
+				" envvar: %d: %s",
+				errno, strerror(errno)
 		);
 		return -1;
 	}
@@ -158,36 +160,38 @@ static int _zmq_init(server_t * server)
 	server->sub_socket = zmq_socket(server->zmq, ZMQ_SUB);
 	if (!server->sub_socket)
 	{
-		log_error("unable to allocate server data socket: %d", errno);
+		log_error("unable to allocate server sub socket: %d, %d: %s", rc, errno, strerror(errno));
 		goto bad_exit;
 	}
 
-	rc = zmq_connect(server->sub_socket, sub_ep);
+	log_info("connecting sub socket to \"%s\"", pub_ep);
+	rc = zmq_connect(server->sub_socket, pub_ep);
 	if (rc < 0)
 	{
-		log_error("unable to bind server data socket: %d", errno);
+		log_error("unable to connect server sub socket: %d, %d: %s", rc, errno, strerror(errno));
 		goto bad_exit;
 	}
 
-	const char topic[] = "radio.uplink_data";
+	const char topic[] = ITS_GBUS_TOPIC_UPLINK_FRAME;
 	rc = zmq_setsockopt(server->sub_socket, ZMQ_SUBSCRIBE, topic, sizeof(topic)-1);
 	if (rc < 0)
 	{
-		log_error("unable to subscribe pub socket: %d", errno);
+		log_error("unable to subscribe pub socket: %d, %d: %s", rc, errno, strerror(errno));
 		goto bad_exit;
 	}
 
 	server->pub_socket = zmq_socket(server->zmq, ZMQ_PUB);
 	if (!server->pub_socket)
 	{
-		log_error("unable to allocate server pub socket: %d", errno);
+		log_error("unable to allocate server pub socket: %d, %d: %s", rc, errno, strerror(errno));
 		goto bad_exit;
 	}
 
-	rc = zmq_connect(server->pub_socket, pub_ep);
+	log_info("connecting pub socket to \"%s\"", sub_ep);
+	rc = zmq_connect(server->pub_socket, sub_ep);
 	if (rc < 0)
 	{
-		log_error("unable to bind server pub socket: %d", errno);
+		log_error("unable to connect server pub socket: %d, %d: %s", rc, errno, strerror(errno));
 		goto bad_exit;
 	}
 
@@ -205,7 +209,11 @@ static void _zmq_send_tx_state(server_t * server)
 
 	// Отпрвляем куки TX фреймов, чтобы показать хосту как они раскиданы у нас в буферах
 	log_debug(
-			"sending tx status. Cookies: %d %d %d %d",
+			"sending tx status. Cookies: "
+			"%"MSG_COOKIE_T_PLSHOLDER" "
+			"%"MSG_COOKIE_T_PLSHOLDER" "
+			"%"MSG_COOKIE_T_PLSHOLDER" "
+			"%"MSG_COOKIE_T_PLSHOLDER,
 			server->tx_cookie_wait,
 			server->tx_cookie_in_progress,
 			server->tx_cookie_sent,
@@ -233,7 +241,7 @@ static void _zmq_send_tx_state(server_t * server)
 			);
 			if (rc < 0 || rc >= sizeof(cookie_str_buffers[i]))
 			{
-				log_error("sprintf for cookie no %d failed: %d, %d", i, rc, errno);
+				log_error("sprintf for cookie no %d failed: %d, %d: %s", i, rc, errno, strerror(errno));
 				return;
 			}
 		}
@@ -257,7 +265,7 @@ static void _zmq_send_tx_state(server_t * server)
 
 	if (rc < 0 || rc >= sizeof(json_buffer))
 	{
-		log_error("sprintf for tx_state json failed: %d, %d", rc, errno);
+		log_error("sprintf for tx_state json failed: %d, %d: %s", rc, errno, strerror(errno));
 		return;
 	}
 
@@ -267,7 +275,7 @@ static void _zmq_send_tx_state(server_t * server)
 	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send tx status topic: %d", errno);
+		log_error("unable to send tx status topic: %d: %s", errno, strerror(errno));
 		return;
 	}
 
@@ -275,7 +283,7 @@ static void _zmq_send_tx_state(server_t * server)
 	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send tx status message: %d", errno);
+		log_error("unable to send tx status message: %d: %s", errno, strerror(errno));
 		return;
 	}
 
@@ -304,7 +312,7 @@ static void _zmq_send_packet_rssi(server_t * server)
 	);
 	if (rc < 0 || rc >= sizeof(json_buffer))
 	{
-		log_error("unable to sprintf packet rssi value: %d, %d", rc, errno);
+		log_error("unable to sprintf packet rssi value: %d, %d: %s", rc, errno, strerror(errno));
 		return;
 	}
 
@@ -314,20 +322,20 @@ static void _zmq_send_packet_rssi(server_t * server)
 	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send rx data topic: %d", errno);
+		log_error("unable to send rx data topic: %d: %s", errno, strerror(errno));
 		return;
 	}
 
 	if (rc < 0)
 	{
-		log_error("sprintf rx rssi json failed: %d, %d", rc, errno);
+		log_error("sprintf rx rssi json failed: %d, %d: %s", rc, errno, strerror(errno));
 		return;
 	}
 
 	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send rx rssi data: %d", errno);
+		log_error("unable to send rx rssi data: %d: %s", errno, strerror(errno));
 		return;
 	}
 }
@@ -343,7 +351,7 @@ static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 	rc = snprintf(json_buffer, sizeof(json_buffer), "{rssi: %d}", (int)rssi);
 	if (rc < 0)
 	{
-		log_error("sprintf rssi failed: %d, %d", rc, errno);
+		log_error("sprintf rssi failed: %d, %d: %s", rc, errno, strerror(errno));
 		return;
 	}
 
@@ -353,7 +361,7 @@ static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send rssi topic: %d", errno);
+		log_error("unable to send rssi topic: %d: %s", errno, strerror(errno));
 		return;
 	}
 
@@ -361,7 +369,7 @@ static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send rssi data: %d", errno);
+		log_error("unable to send rssi data: %d: %s", errno, strerror(errno));
 		return;
 	}
 }
@@ -389,7 +397,7 @@ static void _zmq_send_rx_data(server_t * server)
 	);
 	if (rc < 0 || rc >= sizeof(json_buffer))
 	{
-		log_error("unable to sprintf rx data meta json: %d, %d", rc, errno);
+		log_error("unable to sprintf rx data meta json: %d, %d: %s", rc, errno, strerror(errno));
 		goto end;
 	}
 
@@ -399,7 +407,7 @@ static void _zmq_send_rx_data(server_t * server)
 	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send rx data topic: %d", errno);
+		log_error("unable to send rx data topic: %d: %s", errno, strerror(errno));
 		goto end;
 	}
 
@@ -407,7 +415,7 @@ static void _zmq_send_rx_data(server_t * server)
 	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send rx metadata: %d, %d", rc, errno);
+		log_error("unable to send rx metadata: %d, %d: %s", rc, errno, strerror(errno));
 		goto end;
 	}
 
@@ -415,7 +423,7 @@ static void _zmq_send_rx_data(server_t * server)
 	rc = zmq_send(server->pub_socket, server->rx_buffer, server->rx_buffer_size, ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send rx data: %d", errno);
+		log_error("unable to send rx data: %d: %s", errno, errno);
 		goto end;
 	}
 
@@ -430,8 +438,8 @@ end:
 static void _zmq_recv_tx_packet(server_t * server)
 {
 	int rc;
-	enum state_t { STATE_COOKIE, STATE_FRAME, STATE_FLUSH };
-	enum state_t state = STATE_COOKIE;
+	enum state_t { STATE_TOPIC, STATE_COOKIE, STATE_FRAME, STATE_FLUSH };
+	enum state_t state = STATE_TOPIC;
 
 	msg_cookie_t cookie;
 	zmq_msg_t msg;
@@ -441,13 +449,43 @@ static void _zmq_recv_tx_packet(server_t * server)
 		rc = zmq_msg_recv(&msg, server->sub_socket, ZMQ_DONTWAIT);
 		if (rc < 0)
 		{
-			log_error("unable to get message from data socket %d", errno);
+			log_error("unable to get message from data socket %d: %s", errno, strerror(errno));
 			zmq_msg_close(&msg);
 			break;
 		}
 
 		switch (state)
 		{
+		case STATE_TOPIC: {
+			char topic_buffer[1024] = {0};
+			const size_t msg_size = zmq_msg_size(&msg);
+			if (msg_size > sizeof(topic_buffer))
+			{
+				log_error("unable to read input message topic. It is too large");
+				state = STATE_FLUSH;
+				break;
+			}
+			const char expected_topic[] = ITS_GBUS_TOPIC_UPLINK_FRAME;
+			const size_t expected_topic_size = sizeof(expected_topic) - 1;
+			if (expected_topic_size != msg_size)
+			{
+				// Просто молча уйдем. Не тот топик - это еще не катастрофа
+				log_debug("skipping input bus message with invalid topic size");
+				state = STATE_FLUSH;
+				break;
+			}
+			memcpy(topic_buffer, zmq_msg_data(&msg), msg_size);
+			if (0 != strncmp(topic_buffer, expected_topic, msg_size))
+			{
+				log_debug("skipping input bus message with invalid topic value");
+				state = STATE_FLUSH;
+				break;
+			}
+
+			// Все ок, работаем дальше
+			state = STATE_COOKIE;
+		} break;
+
 		case STATE_COOKIE: {
 			// Мы сейчас копируем куку сообщения
 			char json_buffer[1024] = {0};
@@ -754,7 +792,7 @@ void _server_sync_rssi(server_t * server)
 {
 	struct timespec now;
 	int rc = clock_gettime(CLOCK_MONOTONIC, &now);
-	assert(rc);
+	assert(0 == rc);
 
 	if (sx126x_drv_state(&server->dev) != SX126X_DRVSTATE_RX)
 		return;
@@ -778,7 +816,7 @@ void _server_sync_tx_state(server_t * server)
 {
 	struct timespec now;
 	int rc = clock_gettime(CLOCK_MONOTONIC, &now);
-	assert(rc);
+	assert(0 == rc);
 
 	const int64_t time_since_last_report = _timespec_diff_ms(&now, &server->tx_state_report_block_deadline);
 	if (!server->tx_cookies_updated && time_since_last_report < server->tx_state_report_period_ms)
