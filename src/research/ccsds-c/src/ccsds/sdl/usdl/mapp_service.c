@@ -81,6 +81,9 @@ int mapp_send(map_t *map, const uint8_t *data, size_t size, pvn_t pvn, quality_o
 				vc_push(map->vc, &params, buf->data, count_to_send)) {
 			buf->index = 0;
 			params.fhd = buf->fhd = (fhd_t)~0;
+			if (data_index == size) {
+				vc_push(map->vc, 0, 0, 0);
+			}
 		} else {
 			break;
 		}

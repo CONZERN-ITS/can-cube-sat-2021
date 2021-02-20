@@ -55,6 +55,12 @@ int usdl_mapa_recieve(sap_t sap, uint8_t *data, size_t size, quality_of_service_
 		uint8_t frame_buf_pool[(map_count) * (frame_size)]; \
 		uint8_t packet_buf_pool[(map_count) * (packet_size)]; \
 	}
+
+/**
+ * TODO: Привязать packet_buf_pool к VC. Осторожно с packet_size
+ * Однажды приязать и map_frame к VC.
+ *
+ */
 #define USDL_STATIC_INIT(usdl_static, usdl) do { \
 		usdl.pc = &usdl_static.pc; \
 		usdl.mc_pool = usdl_static.mc_pool; \

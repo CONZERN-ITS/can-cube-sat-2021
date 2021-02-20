@@ -18,6 +18,8 @@ int vc_init(vc_t *vc, mc_t *mc, const vc_parameters_t *params, vc_id_t vc_id) {
 	vc->mapcf_length_ex = _vc_generate_mapcf_length(vc, QOS_EXPEDITED);
 	vc->mapcf_length_sc = _vc_generate_mapcf_length(vc, QOS_SEQ_CONTROL);
 	vc->base.request_from_down = vc_request_from_down;
+	vc->map_fixed = 0;
+	vc->is_map_fixed = 0;
 	return 0;
 }
 int _vc_pop_fop(vc_t *vc) {
@@ -62,13 +64,37 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 	}
 }
 
+
+
 int vc_push(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) {
+	if (data == 0) {
+		vc->is_map_fixed = 0;
+		return 0;
+	}
 	map_t **maps = vc->map_arr;
-	if (vc->map_mx->push(vc->map_mx, (usdl_node_t *)maps[map_params->map_id], (usdl_node_t **)maps,
-			sizeof(vc->map_arr) / sizeof(vc->map_arr[0]))) {
+	int ret = 0;
+	if (!vc->is_map_fixed) {
+		ret = vc->map_mx->push(vc->map_mx, (usdl_node_t *)maps[map_params->map_id], (usdl_node_t **)maps,
+				sizeof(vc->map_arr) / sizeof(vc->map_arr[0]));
+		if (ret) {
+			vc->is_map_fixed = 1;
+			vc->map_fixed = map_params->map_id;
+		}
+	} else if (map_params->map_id == vc->map_fixed) {
+		ret = 1;
+	}
+	if (ret) {
 		return vc_generate(vc, map_params, data, size);
 	} else {
 		return 0;
+	}
+}
+
+static int _vc_pull(vc_t *vc) {
+	if (vc->is_map_fixed) {
+		return vc->map_arr[vc->map_fixed]->map_request_from_down((usdl_node_t *)vc->map_arr[vc->map_fixed]);
+	} else {
+		return vc->map_mx->pull(vc->map_mx, (usdl_node_t **)vc->map_arr, sizeof(vc->map_arr) / sizeof(vc->map_arr[0]));
 	}
 }
 
@@ -80,7 +106,7 @@ int vc_request_from_down(usdl_node_t *node) {
 		if (ret) {
 			return ret;
 		} else {
-			int ret = vc->map_mx->pull(vc->map_mx, (usdl_node_t **)vc->map_arr, sizeof(vc->map_arr) / sizeof(vc->map_arr[0]));
+			int ret = _vc_pull(vc);
 			if (ret) {
 				return _vc_pop_fop(vc);
 			} else {
@@ -88,7 +114,7 @@ int vc_request_from_down(usdl_node_t *node) {
 			}
 		}
 	} else if (vc->vc_parameters.cop_in_effect == COP_NONE) {
-		return vc->map_mx->pull(vc->map_mx, (usdl_node_t **)vc->map_arr, sizeof(vc->map_arr) / sizeof(vc->map_arr[0]));
+		return _vc_pull(vc);
 	} else {
 		return 0;
 	}

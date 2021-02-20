@@ -145,6 +145,9 @@ typedef struct vc_t {
 	fop_t fop;
 	mc_t *mc;
 	struct multiplexer_abstract *map_mx;
+	bool is_map_fixed;
+	map_id_t map_fixed;
+
 	map_t *map_arr[MAP_COUNT];
 
 	uint32_t mapcf_length_ex;

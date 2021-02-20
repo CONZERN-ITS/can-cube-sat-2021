@@ -65,6 +65,7 @@ int mapa_send(map_t *map, const uint8_t *data, size_t size, quality_of_service_t
 					params.rules = buf->rules = TFDZCR_SDU_CONT;
 				} else {
 					params.rules = buf->rules = TFDZCR_SDU_START;
+					vc_push(map->vc, 0, 0, 0);
 				}
 
 				buf->index = 0;
@@ -206,7 +207,6 @@ static int map_recieve_from_down(mapr_t *map,  const uint8_t *data, size_t size,
 
 int mapa_recieve(mapr_t *map, uint8_t *data, size_t size, quality_of_service_t *qos) {
 	usdl_print_debug();
-	printf("@ %d \n", map->packet.index);
 	if (map->state != MAPR_STATE_FINISH || size < map->packet.size) {
 		return 0;
 	}
