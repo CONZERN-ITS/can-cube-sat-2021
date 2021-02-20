@@ -71,6 +71,8 @@ int usdl_mapa_recieve(sap_t sap, uint8_t *data, size_t size, quality_of_service_
 		usdl.vc_pool_size = sizeof(usdl_static.vc_pool) / sizeof(usdl_static.vc_pool[0]); \
 		usdl.map_pool_size = sizeof(usdl_static.map_pool) / sizeof(usdl_static.map_pool[0]); \
 		usdl.mx_pool_size = sizeof(usdl_static.mx_pool) / sizeof(usdl_static.mx_pool[0]); \
+		usdl.frame_size = sizeof(usdl_static.frame_buf_pc); \
+		usdl.packet_size = sizeof(usdl_static.packet_buf_pool) / usdl.map_pool_size; \
 		\
 		for (size_t i = 0; i < usdl.mx_pool_size; i++) {\
 			usdl.mx_pool[i] = (struct multiplexer_abstract *)&usdl_static.mx_pool_im[i]; \

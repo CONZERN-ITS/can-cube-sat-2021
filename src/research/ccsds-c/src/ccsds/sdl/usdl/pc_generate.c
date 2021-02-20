@@ -26,6 +26,7 @@ int pc_generate(pc_t *pc, const uint8_t *data, size_t size,
 	if (pc->is_valid) {
 		return 0;
 	}
+	pc->size = pc->pc_parameters.tf_length;
 	// Заголовок
 	ccsds_endian_insert(pc->data, pc->size * 8, 0, &pc->pc_parameters.tfvn, 4);
 	ccsds_endian_insert(pc->data, pc->size * 8, 4, &mc_params->scid, 16);
@@ -158,7 +159,7 @@ int pc_parse(pc_t *pc, uint8_t *data, size_t size) {
 	pl_size = (m - k) / 8;
 
 	if (pc->mc_arr[mc_params.mc_id]) {
-		mc_parse(pc->mc_arr[mc_params.mc_id], data, size, &map_params, &vc_params, &mc_params, ocf_pointer);
+		mc_parse(pc->mc_arr[mc_params.mc_id], payload, pl_size, &map_params, &vc_params, &mc_params, ocf_pointer);
 	}
 	return 1;
 }
@@ -167,7 +168,7 @@ int pc_push(pc_t *pc, const uint8_t *data, size_t size,
 		const map_params_t *map_params, const vc_params_t *vc_params, const mc_params_t *mc_params) {
 	mc_t **mc_arr = pc->mc_arr;
 	if (pc->mc_mx->push(pc->mc_mx, (usdl_node_t *)mc_arr[mc_params->mc_id], (usdl_node_t **)mc_arr,
-			sizeof(mc_arr) / sizeof(mc_arr[0]))) {
+			sizeof(pc->mc_arr) / sizeof(pc->mc_arr[0]))) {
 		return pc_generate(pc, data, size, map_params, vc_params, mc_params);
 	} else {
 		return 0;

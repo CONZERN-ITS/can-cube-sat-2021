@@ -107,23 +107,21 @@ int main() {
 	size_t sent = 0;
 	size_t recieved = 0;
 
-	uint8_t *pcs_data;
+	uint8_t *pcs_data = 0;
 	size_t *pcs_size;
 
 
-	while (sent < sizeof(packet) && recieved < sizeof(packet)) {
+	while (sent < sizeof(packet) || recieved < sizeof(packet)) {
 		printf("\n");
 		sent += usdl_mapa_send(mapa01s, packet + sent, sizeof(packet) - sent, QOS_EXPEDITED);
 
-		if (usdl_pc_is_frame_buf_empty(&usdl1)) {
-			uint8_t frame[FRAME_SIZE];
-			usdl_pc_get_frame(&usdl1, &pcs_data, &pcs_size);
+		uint8_t frame[FRAME_SIZE];
+		usdl_pc_get_frame(&usdl1, &pcs_data, &pcs_size);
+		if (usdl_pc_is_frame_buf_empty(&usdl2)) {
 			memcpy(frame, pcs_data, *pcs_size);
 			size_t f_size = *pcs_size;
 			usdl_pc_set_frame_buf_empty(&usdl1, 1);
 			usdl_pc_set_frame(&usdl2, frame, f_size);
-		} else {
-			printf("Buffer is empty!!\n");
 		}
 
 		quality_of_service_t qos = 0;

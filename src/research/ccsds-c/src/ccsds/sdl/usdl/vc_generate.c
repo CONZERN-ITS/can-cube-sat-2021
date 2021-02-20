@@ -65,7 +65,7 @@ int vc_generate(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) 
 int vc_push(vc_t *vc, map_params_t *map_params, uint8_t *data, size_t size) {
 	map_t **maps = vc->map_arr;
 	if (vc->map_mx->push(vc->map_mx, (usdl_node_t *)maps[map_params->map_id], (usdl_node_t **)maps,
-			sizeof(maps) / sizeof(maps[0]))) {
+			sizeof(vc->map_arr) / sizeof(vc->map_arr[0]))) {
 		return vc_generate(vc, map_params, data, size);
 	} else {
 		return 0;

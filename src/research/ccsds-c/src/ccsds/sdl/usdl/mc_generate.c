@@ -32,7 +32,7 @@ int mc_push(mc_t *mc, uint8_t *data, size_t size,
 		map_params_t *map_params, vc_params_t *vc_params) {
 	vc_t **vc_arr = mc->vc_arr;
 	if (mc->vc_mx->push(mc->vc_mx, (usdl_node_t *)vc_arr[vc_params->vc_id], (usdl_node_t **)vc_arr,
-			sizeof(vc_arr) / sizeof(vc_arr[0]))) {
+			sizeof(mc->vc_arr) / sizeof(mc->vc_arr[0]))) {
 		return mc_generate(mc, data, size, map_params, vc_params);
 	} else {
 		return 0;

@@ -197,6 +197,7 @@ static int _map_save_from_down(mapr_t *map,  const uint8_t *data, size_t size, c
 
 
 static int map_recieve_from_down(mapr_t *map,  const uint8_t *data, size_t size, const map_params_t *params)  {
+	usdl_print_debug();
 	_map_push_from_down(map);
 	int ret = _map_save_from_down(map, data, size, params);
 	_map_push_from_down(map);
@@ -205,6 +206,7 @@ static int map_recieve_from_down(mapr_t *map,  const uint8_t *data, size_t size,
 
 int mapa_recieve(mapr_t *map, uint8_t *data, size_t size, quality_of_service_t *qos) {
 	usdl_print_debug();
+	printf("@ %d \n", map->packet.index);
 	if (map->state != MAPR_STATE_FINISH || size < map->packet.size) {
 		return 0;
 	}

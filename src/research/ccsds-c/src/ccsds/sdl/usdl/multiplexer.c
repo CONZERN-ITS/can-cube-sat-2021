@@ -29,16 +29,18 @@ int mx_push(struct multiplexer_abstract *mx_a, usdl_node_t *p, usdl_node_t **arr
 int mx_pull(struct multiplexer_abstract *mx_a, usdl_node_t **arr, int size) {
 	struct multiplexer_rr *mx = (struct multiplexer_rr *)mx_a;
 	int now = mx->prev;
+	int old = mx->prev;
 	do {
 		now = NEXT(now, size);
 		if (arr[now] != 0) {
+			mx->prev = PREV(now, size);
 			int ret = arr[now]->request_from_down(arr[now]);
 			if (ret) {
-				mx->prev = now;
+				mx->prev = PREV(now, size);
 				return ret;
 			}
 		}
-	} while (now != mx->prev);
+	} while (now != old);
 	return 0;
 }
 

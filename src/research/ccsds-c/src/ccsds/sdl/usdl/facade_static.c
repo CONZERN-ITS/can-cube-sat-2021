@@ -127,6 +127,8 @@ void usdl_mapa_init(usdl_t *usdl, mc_id_t mc_id, vc_id_t vc_id, map_id_t map_id)
 	map->buf_ex.max_size = usdl->frame_size;
 	map->mapr.packet.data = usdl->packet_buf_pool + index * usdl->packet_size;
 	map->mapr.packet.max_size = usdl->packet_size;
+	map->mapr.tfdz.data = map->buf_ex.data;
+	map->mapr.tfdz.max_size = map->buf_ex.max_size;
 }
 sap_t usdl_get_map_sap(usdl_t *usdl, mc_id_t mc_id, vc_id_t vc_id, map_id_t map_id) {
 	return _find_map(usdl, mc_id, vc_id, map_id);
