@@ -18,11 +18,13 @@ add_executable(server-radio
 
 add_subdirectory(libs/sx126x)
 add_subdirectory(libs/log.c)
+add_subdirectory(libs/jsmin)
 
 target_link_libraries(server-radio
 PRIVATE
 	sx126x
 	logc
+	jsmin
 	gpiod
 	zmq
 )

@@ -8,6 +8,7 @@
 
 #include <zmq.h>
 #include <log.h>
+#include <jsmin.h>
 
 #include <sx126x_board_rpi.h>
 
@@ -26,6 +27,63 @@
 static int64_t _timespec_diff_ms(const struct timespec * left, const struct timespec * right)
 {
 	return (left->tv_sec - right->tv_sec) * 1000 - (left->tv_nsec - right->tv_nsec) / (1000 * 1000);
+}
+
+
+static int _parse_tx_frame_metadata(
+		const char * json_buffer, size_t buffer_size, msg_cookie_t * msg_cookie
+)
+{
+	jsmn_parser parser;
+	jsmntok_t t[3];
+	int parsed_tokens = jsmn_parse(&parser, json_buffer, buffer_size, t, sizeof(t)/sizeof(*t));
+	if (parsed_tokens != 3)
+	{
+		log_error(
+				"invalid tx meta json \"%s\", expected json in form \"{ cookie: <number> }\": %d",
+				parsed_tokens
+		);
+		return -1;
+	}
+
+	if (t[0].type != JSMN_OBJECT || t[1].type != JSMN_STRING || t[2].type != JSMN_PRIMITIVE)
+	{
+		log_error(
+				"invalid tx meta json token types: %d, %d, %d",
+				(int)t[0].type, (int)t[1].type, (int)t[2].type
+		);
+		return -1;
+	}
+
+	const jsmntok_t * key_tok = &t[1];
+	const char expected_key[] = "cookie";
+	const size_t expected_key_size = sizeof(expected_key) - 1;
+	if (expected_key_size != key_tok->end - key_tok->start)
+	{
+		log_error("tx meta json: cookie tooken len mismatch");
+		return -1;
+	}
+
+	if (0 != strncmp(json_buffer + key_tok->start, expected_key, expected_key_size))
+	{
+		log_error("invalid tx metadata cookie key");
+		return -1;
+	}
+
+
+	const jsmntok_t * value_tok = &t[2];
+	const char * const value_str_begin_ptr = json_buffer + value_tok->start;
+	char * value_str_end_ptr;
+
+	msg_cookie_t value = strtoull(value_str_begin_ptr, &value_str_end_ptr, 0);
+	if (value_str_end_ptr != json_buffer + value_tok->end)
+	{
+		log_error("unable to parse tx message cookie from json metadata");
+		return -1;
+	}
+
+	*msg_cookie = value;
+	return 0;
 }
 
 
@@ -375,7 +433,7 @@ static void _zmq_recv_tx_packet(server_t * server)
 	enum state_t { STATE_COOKIE, STATE_FRAME, STATE_FLUSH };
 	enum state_t state = STATE_COOKIE;
 
-	uint16_t cookie;
+	msg_cookie_t cookie;
 	zmq_msg_t msg;
 	while(1)
 	{
@@ -392,15 +450,25 @@ static void _zmq_recv_tx_packet(server_t * server)
 		{
 		case STATE_COOKIE: {
 			// Мы сейчас копируем куку сообщения
+			char json_buffer[1024] = {0};
 			const size_t msg_size = zmq_msg_size(&msg);
-			if (sizeof(cookie) > msg_size)
+			if (msg_size > sizeof(json_buffer))
 			{
-				log_error("unable to load tx frame cookie. Message is too small (%d)", msg_size);
+				log_error("unable to receive tx message metadata. message is too big");
 				state = STATE_FLUSH;
 				break;
 			}
 
-			memcpy(&cookie, zmq_msg_data(&msg), sizeof(cookie));
+			memcpy(json_buffer, zmq_msg_data(&msg), msg_size);
+			rc = _parse_tx_frame_metadata(json_buffer, msg_size, &cookie);
+			if (rc < 0)
+			{
+				// Сообщение об ошибке уже написали
+				state = STATE_FLUSH;
+				break;
+			}
+
+			// Все ок, разобралось. Будем получать фрейм
 			state = STATE_FRAME;
 			} break;
 
