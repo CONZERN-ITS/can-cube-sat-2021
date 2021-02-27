@@ -3,13 +3,22 @@
 #include "matrix.h"
 
 #include "Light_direction_determinant.h"
+#include "lds.h"
+
+float f(float x) {
+	return x;
+}
+float g(float x) {
+	return 1;
+}
+
 void test()
 {
 	LDR_init();
 
 	Matrixf A = {4, 3, malloc(sizeof(float) * 3 * 3)};
 	Matrixf b = {4, 1, malloc(sizeof(float) * 3 * 1)};
-	Matrixf x = {3, 1, malloc(sizeof(float) * 3 * 1)};
+	Matrixf x = {3, 1, malloc(sizeof(float) * 4 * 1)};
 	*matrix_at(&A, 0, 0) = 1;
 	*matrix_at(&A, 0, 1) = 1;
 	*matrix_at(&A, 0, 2) = 1;
@@ -29,6 +38,10 @@ void test()
 	*matrix_at(&b, 3, 0) = 4;
 
 	LDR_findSolution(&A, &b, &x);
+	matrix_print(&x);
+
+	x.height = 4;
+	lds_find_dir(100, &A, &b, &x, 0.05, f, g);
 
 	matrix_print(&x);
 }
@@ -49,6 +62,8 @@ void swapi(int *a,int *b)
 
 int main()
 {
+	test();
+	/*
 	Matrixf a = matrix_create(4, 1);
 	*matrix_at(&a, 0, 0) = 1;
 	*matrix_at(&a, 1, 0) = 2;
@@ -59,6 +74,6 @@ int main()
 	//AHRS_quatToMatrix4_4(&a);
 	matrix_print(&a);
 
-	matrix_delete(&a);
+	matrix_delete(&a);*/
 	return 0;
 }

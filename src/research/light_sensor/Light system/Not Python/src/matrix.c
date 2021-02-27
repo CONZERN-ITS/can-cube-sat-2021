@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "matrix.h"
 #include <errno.h>
+#include <assert.h>
 
 #define EPS 1 / (1 << 20)
 #define BAD_SIZES 0x10
@@ -46,12 +47,12 @@ void matrix_resize(Matrixf *matrix, int height, int width)
 	matrix->width = width;
 }
 
-int matrix_isInRange(Matrixf *matrix, int row, int column)
+int matrix_isInRange(const Matrixf *matrix, int row, int column)
 {
 	return !(row >= matrix->height || column >= matrix->width || row < 0 || column < 0);
 }
 
-float *matrix_at(Matrixf *matrix, int row, int column)
+float *matrix_at(const Matrixf *matrix, int row, int column)
 {
 	if(!matrix_isInRange(matrix, row, column))
 	{
@@ -68,49 +69,49 @@ void matrix_foreach(Matrixf *matrix, void (*fun)(Matrixf*, int, int))
 			fun(matrix, i, j);
 }
 
-static void _matrix_print(Matrixf *x, int a, int b)
+static void _matrix_print(const Matrixf *x, int a, int b)
 {
 	printf("%f ", *matrix_at(x, a, b));
 	if (b == x->width - 1)
 		printf("\n");
 
 }
-void matrix_print(Matrixf *matrix)
+void matrix_print(const Matrixf *matrix)
 {
-	matrix_foreach(matrix, _matrix_print);
+	matrix_foreach((Matrixf *)matrix, (void (*)(Matrixf*, int, int)) _matrix_print);
 	printf("\n");
 }
 
 
-int matrix_add(Matrixf *left, Matrixf *right)
+int matrix_add(Matrixf *dest, const Matrixf *src)
 {
-	if(left->height != right->height || left->width != right->width)
+	if(dest->height != src->height || dest->width != src->width)
 	{
 		fprintf(stderr, "Matrix sizes do not appropriate\n");
 		return BAD_SIZES;
 	}
-	for(int i = 0; i < left->height; i++)
+	for(int i = 0; i < dest->height; i++)
 	{
-		for(int j = 0; j < left->width; j++)
+		for(int j = 0; j < dest->width; j++)
 		{
-			*matrix_at(left, i, j) += *matrix_at(right, i, j);
+			*matrix_at(dest, i, j) += *matrix_at(src, i, j);
 		}
 	}
 	return 0;
 }
 
-int matrix_sub(Matrixf *left, Matrixf *right)
+int matrix_sub(Matrixf *dest, const Matrixf *src)
 {
-	if(left->height != right->height || left->width != right->width)
+	if(dest->height != src->height || dest->width != src->width)
 	{
 		fprintf(stderr, "Matrix sizes do not appropriate\n");
 		return BAD_SIZES;
 	}
-	for(int i = 0; i < left->height; i++)
+	for(int i = 0; i < dest->height; i++)
 	{
-		for(int j = 0; j < left->width; j++)
+		for(int j = 0; j < dest->width; j++)
 		{
-			*matrix_at(left, i, j) -= *matrix_at(right, i, j);
+			*matrix_at(dest, i, j) -= *matrix_at(src, i, j);
 		}
 	}
 	return 0;
@@ -136,7 +137,7 @@ void matrix_make_zero(Matrixf *matrix)
 }
 
 
-int matrix_multiplicate(Matrixf *left, Matrixf *right, Matrixf* result)
+int matrix_multiplicate(const Matrixf *left, const Matrixf *right, Matrixf* result)
 {
 	if (left->width != right->height || right->width != result->width
 			|| left->height != result->height)
@@ -278,7 +279,7 @@ int matrix_inverse(Matrixf *matrix)
 }
 
 //isForced != 0 => copy size too
-int matrix_copy(Matrixf *source, Matrixf *destination, int isForced)
+int matrix_copy(const Matrixf *source, Matrixf *destination, int isForced)
 {
 	if(isForced)
 	{
@@ -303,7 +304,18 @@ void matrix_setSize(Matrixf *matrix, int height, int width)
 	matrix->width = width;
 }
 
-float matrix_norm(Matrixf *matrix)
+float matrix_dot(const Matrixf *a, const Matrixf *b) {
+	assert(matrix_checkSizeM(a, b));
+
+	float res = 0;
+	int s = a->width * a->height;
+	for (int i = 0; i < s; i++) {
+		res += a->arr[i] * b->arr[i];
+	}
+	return res;
+}
+
+float matrix_norm(const Matrixf *matrix)
 {
 	float result = 0;
 	for (int i = 0; i < matrix->height; i++)
@@ -337,9 +349,13 @@ void matrix_mulNumber(Matrixf *matrix, float koef)
 			*matrix_at(matrix, i, j) *= koef;
 }
 
-int matrix_isThatSize(Matrixf *matrix, int height, int width)
+int matrix_checkSize(const Matrixf *matrix, int height, int width)
 {
 	return matrix->height == height && matrix->width == width;
+}
+int matrix_checkSizeM(const Matrixf *a, const Matrixf *b)
+{
+	return a->height == b->height && a->width == b->width;
 }
 /*
  float matrix_det1(Matrixf a)
