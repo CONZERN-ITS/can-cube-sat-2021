@@ -17574,7 +17574,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="353.06" y="86.36" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="INT" class="0">
+<net name="PL5" class="0">
 <segment>
 <pinref part="JP1" gate="A" pin="16"/>
 <wire x1="121.92" y1="276.86" x2="137.16" y2="276.86" width="0.1524" layer="91"/>

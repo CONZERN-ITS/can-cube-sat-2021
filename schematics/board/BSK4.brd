@@ -168,7 +168,6 @@
 <wire x1="82" y1="91.5" x2="82" y2="8.5" width="0.1524" layer="20"/>
 <wire x1="82" y1="8.5" x2="75" y2="8.5" width="0.1524" layer="20"/>
 <wire x1="75" y1="8.5" x2="75" y2="0" width="0.1524" layer="20"/>
-<wire x1="75" y1="0" x2="7" y2="0" width="0.1524" layer="20"/>
 <wire x1="7" y1="0" x2="7" y2="8.5" width="0.1524" layer="20"/>
 <wire x1="7" y1="8.5" x2="0" y2="8.5" width="0.1524" layer="20"/>
 <hole x="11" y="4" drill="6"/>
@@ -213,6 +212,13 @@
 "Концерн ИТС"</text>
 <text x="31.6" y="96.1" size="2" layer="26" rot="MR0" align="top-right">to BKU</text>
 <text x="5.4" y="45.6" size="1.778" layer="21" rot="R90" align="bottom-center">HEATER</text>
+<wire x1="62.96" y1="0" x2="61.67" y2="3.53" width="0.1524" layer="20"/>
+<wire x1="61.67" y1="3.53" x2="61" y2="4" width="0.1524" layer="20" curve="69.947894"/>
+<wire x1="61" y1="4" x2="51" y2="4" width="0.1524" layer="20"/>
+<wire x1="51" y1="4" x2="50.33" y2="3.53" width="0.1524" layer="20" curve="69.947894"/>
+<wire x1="50.33" y1="3.53" x2="49.04" y2="0" width="0.1524" layer="20"/>
+<wire x1="7" y1="0" x2="49.04" y2="0" width="0.1524" layer="20"/>
+<wire x1="75" y1="0" x2="62.96" y2="0" width="0.1524" layer="20"/>
 </plain>
 <libraries>
 <library name="resistor" urn="urn:adsk.eagle:library:348">
