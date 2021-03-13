@@ -98,3 +98,11 @@ int lds_find_dir(int step_count, const Matrixf *sensor_array, const Matrixf *sen
 
 	return 0;
 }
+void _lds_step_v2(const Matrixf *sensor_array, const Matrixf *sensor_values,
+		const Matrixf *x0, Matrixf *x_next, float koef, float (*f)(float x), float (*g)(float x)) {
+	const int dim = 3;
+	Matrixf T = matrix_create(dim, 1);
+	for (int k = 0; k < dim; k++) {
+
+	}
+}
