@@ -114,8 +114,7 @@ class MAVDataSource():
         
         if data is None:
             raise TypeError("Message type not supported")
-            
-        print(data)
+
         return data
 
     def get_data(self, msg):

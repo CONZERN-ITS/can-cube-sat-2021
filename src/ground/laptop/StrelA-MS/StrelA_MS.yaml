@@ -485,6 +485,35 @@ CentralWidget:
     - 1
     - 1
     - 1
+  EventWidget:
+    Event:
+      SINS_UNDERTEMP_H:
+        name: cube 1 SINS overcooling threat
+        packet_name: 11_0_OWN_TEMPERATURE
+        identifier: UnderRange
+        trigger_value: 35
+        index: 1
+        time_limit: 2
+        event_type: 'Error'
+        priority: 3
+        audio: 'D:\My_Programs\smartgit-portable-18_2_9\git\can-cube-sat-2021\src\ground\laptop\StrelA-MS\source\images\alarm2.mp3'
+      SINS_UNDERTEMP_L:
+        name: cube 1 SINS overcooling
+        packet_name: 11_0_OWN_TEMPERATURE
+        identifier: UnderRange
+        trigger_value: 40
+        index: 1
+        time_limit: 2
+        event_type: 'Warning'
+        priority: 2
+    background_color: '#888888'
+    attention_color: '#0000FF'
+    is_on: true
+    position:
+    - 0
+    - 3
+    - 2
+    - 1
 CurrentValues:
   time_shift: 1601731871.944
 DefaultValues:
@@ -494,7 +523,7 @@ MainWindow:
     Log:
       path: ./log/its_packet_log__20201002T202411.mav
       real_time: false
-      time_delay: 0.05
+      time_delay: 0.0005
       type: MAV
     MAVLink:
       connection: udpin:0.0.0.0:14540

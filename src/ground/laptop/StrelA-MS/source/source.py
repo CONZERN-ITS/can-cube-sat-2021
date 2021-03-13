@@ -9,6 +9,7 @@ from source import map_widget
 from source import graph_widget
 from source import model_widget
 from source import data_widget
+from source import event_widget
 from source.data_control import *
 from source import LOG_FOLDER_PATH
 
@@ -34,6 +35,8 @@ class CentralWidget(QtWidgets.QWidget):
             self.widgets_dict.update([("ModelWidget", model_widget.ModelWidget())])
         if int(self.settings.value("DataWidget/is_on")):
             self.widgets_dict.update([("DataWidget", data_widget.DataWidget())])
+        if int(self.settings.value("EventWidget/is_on")):
+            self.widgets_dict.update([("EventWidget", event_widget.EventWidget())])
 
         for key in self.widgets_dict.keys():
             self.settings.beginGroup(key)
