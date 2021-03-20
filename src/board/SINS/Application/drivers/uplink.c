@@ -8,7 +8,6 @@
 #include "uplink.h"
 
 #include <stm32f4xx_hal.h>
-#include <diag/Trace.h>
 
 #include "common.h"
 
@@ -36,7 +35,7 @@ int uplink_init(void)
 	if (hal_error != HAL_OK)
 	{
 		int error = sins_hal_status_to_errno(hal_error);
-		trace_printf("Transfer UART init error: %d\n", error);
+//		trace_printf("Transfer UART init error: %d\n", error);
 		return error;
 	}
 

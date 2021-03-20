@@ -22,7 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 /* USER CODE BEGIN Includes */
-
+#include "sins_config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,28 +191,6 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
 }
 
 /**
-* @brief RTC MSP Initialization
-* This function configures the hardware resources used in this example
-* @param hrtc: RTC handle pointer
-* @retval None
-*/
-void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
-{
-  if(hrtc->Instance==RTC)
-  {
-  /* USER CODE BEGIN RTC_MspInit 0 */
-
-  /* USER CODE END RTC_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_RTC_ENABLE();
-  /* USER CODE BEGIN RTC_MspInit 1 */
-
-  /* USER CODE END RTC_MspInit 1 */
-  }
-
-}
-
-/**
 * @brief RTC MSP De-Initialization
 * This function freeze the hardware resources used in this example
 * @param hrtc: RTC handle pointer
@@ -344,6 +322,213 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 }
 
 /* USER CODE BEGIN 1 */
+
+
+/**
+* @brief TIM_Base MSP Initialization
+* This function configures the hardware resources used in this example
+* @param htim_base: TIM_Base handle pointer
+* @retval None
+*/
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+	if(htim_base->Instance==TIM2)
+	{
+		__HAL_RCC_TIM2_CLK_ENABLE();
+
+		HAL_NVIC_SetPriority(TIM2_IRQn, ITS_SINS_TIME_SVC_TOW_OVF_PRIOIRITY, 0);
+		HAL_NVIC_EnableIRQ(TIM2_IRQn);
+	}
+	else if(htim_base->Instance==TIM3)
+	{
+		/* Peripheral clock enable */
+		__HAL_RCC_TIM3_CLK_ENABLE();
+
+		__HAL_RCC_GPIOA_CLK_ENABLE();
+		__HAL_RCC_GPIOD_CLK_ENABLE();
+		/**TIM3 GPIO Configuration
+ 		PA7     ------> TIM3_CH2 для TRGI на сброс по PPS сигналу
+		PD2     ------> TIM3_ETR для входной частоты от TIM4
+		*/
+		GPIO_InitStruct.Pin = GPIO_PIN_7;
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+		GPIO_InitStruct.Pin = GPIO_PIN_2;
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+		HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	}
+	else if(htim_base->Instance==TIM4)
+	{
+		/* Peripheral clock enable */
+		__HAL_RCC_TIM4_CLK_ENABLE();
+
+		__HAL_RCC_GPIOB_CLK_ENABLE();
+		/**TIM4 GPIO Configuration
+		PB7     ------> TIM4_CH2 для TRGI на сброс по PPS сигналу
+		*/
+		GPIO_InitStruct.Pin = GPIO_PIN_7;
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;
+		HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	}
+	else if(htim_base->Instance==TIM6)
+	{
+		/* Peripheral clock enable */
+		__HAL_RCC_TIM6_CLK_ENABLE();
+
+		/* TIM6 interrupt Init */
+		HAL_NVIC_SetPriority(TIM6_DAC_IRQn, ITS_SINS_TIME_SVC_STEADY_OVF_PRIORITY, 0);
+		HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
+	}
+	else if(htim_base->Instance == TIM1)
+	{
+	    __HAL_RCC_TIM1_CLK_ENABLE();
+	}
+}
+
+
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	if(htim->Instance==TIM3)
+	{
+		__HAL_RCC_GPIOA_CLK_ENABLE();
+		/**TIM3 GPIO Configuration
+		PA6     ------> TIM3_CH1 для передачи псвердо PPS импульсов для остальных вычислителей системы
+		*/
+		GPIO_InitStruct.Pin = GPIO_PIN_6;
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	}
+	else if(htim->Instance==TIM4)
+	{
+		__HAL_RCC_GPIOB_CLK_ENABLE();
+		/**TIM4 GPIO Configuration
+		PB6     ------> TIM4_CH1 // для питания TIM3 опорной частотой
+		*/
+		GPIO_InitStruct.Pin = GPIO_PIN_6;
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;
+		HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	}
+}
+
+
+/**
+* @brief TIM_Base MSP De-Initialization
+* This function freeze the hardware resources used in this example
+* @param htim_base: TIM_Base handle pointer
+* @retval None
+*/
+void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
+{
+	if(htim_base->Instance==TIM2)
+	{
+		/* Peripheral clock disable */
+		__HAL_RCC_TIM2_CLK_DISABLE();
+	}
+	else if(htim_base->Instance==TIM3)
+	{
+		/* Peripheral clock disable */
+		__HAL_RCC_TIM3_CLK_DISABLE();
+
+		/**TIM3 GPIO Configuration
+		PA6     ------> TIM3_CH1
+		PA7     ------> TIM3_CH2
+		PD2     ------> TIM3_ETR
+		*/
+		HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6|GPIO_PIN_7);
+
+		HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
+	}
+	else if(htim_base->Instance==TIM4)
+	{
+		/* Peripheral clock disable */
+		__HAL_RCC_TIM4_CLK_DISABLE();
+
+		/**TIM4 GPIO Configuration
+		PB6     ------> TIM4_CH1
+		PB7     ------> TIM4_CH2
+		*/
+		HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6|GPIO_PIN_7);
+	}
+}
+
+
+/**
+* @brief RTC MSP Initialization
+* This function configures the hardware resources used in this example
+* @param hrtc: RTC handle pointer
+* @retval None
+*/
+void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
+{
+	if(hrtc->Instance==RTC)
+	{
+		__HAL_RCC_RTC_ENABLE();
+
+		HAL_NVIC_SetPriority(RTC_Alarm_IRQn, ITS_SINS_TIME_SVC_ALARM_IRQ_PRIORITY, 0);
+		HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
+	}
+}
+
+
+//! Не совсем халовский MSP, но пускай уж будет тут как остальные настройки нвика
+void NONHAL_PPS_MspInit(void)
+{
+	HAL_NVIC_SetPriority(EXTI0_IRQn, ITS_SINS_GPS_PPS_IRQ_PRIORITY, 0);
+	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+}
+
+void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
+{
+
+  if(adcHandle->Instance==ADC1)
+  {
+  /* USER CODE BEGIN ADC1_MspInit 0 */
+
+  /* USER CODE END ADC1_MspInit 0 */
+    /* ADC1 clock enable */
+    __HAL_RCC_ADC1_CLK_ENABLE();
+  /* USER CODE BEGIN ADC1_MspInit 1 */
+
+  /* USER CODE END ADC1_MspInit 1 */
+  }
+}
+
+void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
+{
+
+  if(adcHandle->Instance==ADC1)
+  {
+  /* USER CODE BEGIN ADC1_MspDeInit 0 */
+
+  /* USER CODE END ADC1_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_ADC1_CLK_DISABLE();
+  /* USER CODE BEGIN ADC1_MspDeInit 1 */
+
+  /* USER CODE END ADC1_MspDeInit 1 */
+  }
+}
+
+
 
 /* USER CODE END 1 */
 

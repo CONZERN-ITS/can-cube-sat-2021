@@ -8,7 +8,7 @@
 #ifndef DRIVERS_LSM6DS3_H_
 #define DRIVERS_LSM6DS3_H_
 
-#include "lsm6ds3_reg.h"
+#include "library/lsm6ds3_STdC/driver/lsm6ds3_reg.h"
 
 
 int mems_lsm6ds3_init(void);

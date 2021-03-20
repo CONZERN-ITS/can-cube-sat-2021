@@ -11,10 +11,9 @@
 #include <errno.h>
 
 #include <stm32f4xx.h>
-#include <diag/Trace.h>
 
 #include <stm32f4xx_hal.h>
-#include <lis3mdl_reg.h>
+#include "library/lis3mdl_STdC/driver/lis3mdl_reg.h"
 
 #include "../common.h"
 #include "mems.h"

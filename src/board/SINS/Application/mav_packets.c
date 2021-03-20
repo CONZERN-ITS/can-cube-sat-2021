@@ -7,7 +7,7 @@
 
 #include "mav_packet.h"
 
-#include <mavlink/its/mavlink.h>
+#include <its/mavlink.h>
 
 #include "drivers/time_svc/time_svc.h"
 #include "drivers/uplink.h"
@@ -15,7 +15,6 @@
 
 #include "drivers/temp/analog.h"
 
-#include "diag/Trace.h"
 
 #define SYSTEM_ID CUBE_1_SINS
 #define COMPONENT_ID COMP_ANY_0

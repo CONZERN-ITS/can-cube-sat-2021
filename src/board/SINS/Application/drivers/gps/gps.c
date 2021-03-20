@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stm32f4xx.h>
-#include <diag/Trace.h>
 
 #include "sins_config.h"
 #include "../common.h"

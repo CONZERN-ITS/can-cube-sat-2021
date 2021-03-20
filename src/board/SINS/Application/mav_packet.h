@@ -9,7 +9,7 @@
 #define MAV_PACKET_H_
 
 #include "state.h"
-#include <mavlink/its/mavlink.h>
+#include <its/mavlink.h>
 
 int mavlink_sins_isc(stateSINS_isc_t * state_isc);
 int mavlink_timestamp(void);

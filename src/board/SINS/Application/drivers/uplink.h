@@ -9,7 +9,7 @@
 #define DRIVERS_UPLINK_H_
 
 
-#include <mavlink/its/mavlink.h>
+#include <its/mavlink.h>
 
 int uplink_init(void);
 

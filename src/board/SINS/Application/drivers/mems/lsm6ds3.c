@@ -8,13 +8,11 @@
 #include "lsm6ds3.h"
 
 #include <stm32f4xx_hal.h>
-#include <diag/Trace.h>
 
 #include <assert.h>
 #include <errno.h>
 
 #include "../common.h"
-#include "lsm6ds3_reg.h"
 #include "mems.h"
 #include "vector.h"
 
