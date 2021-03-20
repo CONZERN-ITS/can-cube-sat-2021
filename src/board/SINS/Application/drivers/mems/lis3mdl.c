@@ -94,7 +94,7 @@ int mems_lis3mdl_init(void)
 	error = lis3mdl_block_data_update_set(&lis3mdl_dev_ctx, PROPERTY_DISABLE);
 	if (0 != error) return error;
 
-	error = lis3mdl_data_rate_set(&lis3mdl_dev_ctx, LIS3MDL_HP_40Hz);
+	error = lis3mdl_data_rate_set(&lis3mdl_dev_ctx, LIS3MDL_HP_300Hz);
 	if (0 != error) return error;
 
 	error = lis3mdl_full_scale_set(&lis3mdl_dev_ctx, LIS3MDL_16_GAUSS);

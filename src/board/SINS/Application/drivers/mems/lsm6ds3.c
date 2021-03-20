@@ -100,20 +100,14 @@ int mems_lsm6ds3_init(void)
 	error = lsm6ds3_gy_full_scale_set(&lsm6ds3_dev_ctx, LSM6DS3_1000dps);
 	if (0 != error) return error;
 
-	error = lsm6ds3_xl_data_rate_set(&lsm6ds3_dev_ctx, LSM6DS3_XL_ODR_104Hz);
+	error = lsm6ds3_xl_data_rate_set(&lsm6ds3_dev_ctx, LSM6DS3_XL_ODR_833Hz);
 	if (0 != error) return error;
 
-	error = lsm6ds3_gy_data_rate_set(&lsm6ds3_dev_ctx, LSM6DS3_GY_ODR_104Hz);
+	error = lsm6ds3_gy_data_rate_set(&lsm6ds3_dev_ctx, LSM6DS3_GY_ODR_833Hz);
 	if (0 != error) return error;
 
-	error = lsm6ds3_xl_filter_analog_set(&lsm6ds3_dev_ctx, LSM6DS3_ANTI_ALIASING_200Hz);
+	error = lsm6ds3_xl_filter_analog_set(&lsm6ds3_dev_ctx, LSM6DS3_ANTI_ALIASING_400Hz);
 	if (0 != error) return error;
-
-//	error = lsm6ds3_xl_power_mode_set(&lsm6ds3_dev_ctx, LSM6DS3_XL_HIGH_PERFORMANCE);
-//	if (0 != error) return error;
-
-//	error = lsm6ds3_gy_power_mode_set(&lsm6ds3_dev_ctx, LSM6DS3_GY_HIGH_PERFORMANCE);
-//	if (0 != error) return error;
 
 	return 0;
 }
