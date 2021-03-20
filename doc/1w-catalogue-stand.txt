@@ -1,0 +1,53 @@
+Ориентация схемы - нужно повернуть макетку так, чтобы торец с ESP смотрел на тебя
+тогда датчики окажутся на тех местах где нужно
+
+Левый ряд (сверху вниз)
+
+28-00000b4d381f : { 0x28, 0x1F, 0x38, 0x4D, 0x0B, 0x00, 0x00, 0x67 } 0x6700000b4d381f28
+28-00000b4dc7d8 : { 0x28, 0xD8, 0xC7, 0x4D, 0x0B, 0x00, 0x00, 0xB4 } 0xb400000b4dc7d828
+28-00000b4d61d8 : { 0x28, 0xD8, 0x61, 0x4D, 0x0B, 0x00, 0x00, 0x1B } 0x1b00000b4d61d828
+
+Правый ряд (сверху вниз)
+
+28-00000b4dd589 : { 0x28, 0x89, 0xD5, 0x4D, 0x0B, 0x00, 0x00, 0x52 } 0x5200000b4dd58928
+28-00000b4d1bd2 : { 0x28, 0xD2, 0x1B, 0x4D, 0x0B, 0x00, 0x00, 0x04 } 0x0400000b4d1bd228
+28-00000b4d40cd : { 0x28, 0xCD, 0x40, 0x4D, 0x0B, 0x00, 0x00, 0x9E } 0x9e00000b4d40cd28
+
+
+Скрипт на питоне, который считает эти цифры тоже оставлю в этом файле
+
+def crc8(data):
+	# type: (bytes) -> int
+	crc = 0x00
+	for byte in iter(data):
+		for i in range(8):
+			mix = (crc ^ byte) & 0x01
+			crc >>= 1
+			if mix:
+				crc ^= 0x8c
+			byte >>= 1
+	return crc
+
+
+
+def parse_line(line):
+	b = bytes.fromhex(line.replace("-", ""))
+	b = bytes([b[0], b[6], b[5], b[4], b[3], b[2], b[1]])
+
+	check = crc8(b)
+	b += bytes([check])
+	hexline = ", ".join(["0x%02X" % bb for bb in b])
+	revline = "0x" + "".join(["%02x" % bb for bb in reversed(b)])
+	print("%s : { %s } %s" % (line, hexline, revline))
+
+lines = [
+	"28-00000b4d381f",
+	"28-00000b4dc7d8",
+	"28-00000b4d61d8",
+	"28-00000b4dd589",
+	"28-00000b4d1bd2",
+	"28-00000b4d40cd"
+]
+
+for l in lines:
+	parse_line(l)
