@@ -52,7 +52,7 @@
 <layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="yes"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
-<layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
@@ -176,10 +176,10 @@
 <wire x1="6" y1="27" x2="6" y2="6" width="0.1524" layer="20"/>
 <wire x1="6" y1="6" x2="27" y2="6" width="0.1524" layer="20"/>
 <wire x1="27" y1="6" x2="27" y2="0" width="0.1524" layer="20"/>
-<hole x="10" y="10" drill="3.5"/>
-<hole x="84" y="84" drill="3.5"/>
-<hole x="10" y="84" drill="3.5"/>
-<hole x="84" y="10" drill="3.5"/>
+<hole x="10" y="10" drill="2.5"/>
+<hole x="84" y="84" drill="2.5"/>
+<hole x="10" y="84" drill="2.5"/>
+<hole x="84" y="10" drill="2.5"/>
 <text x="92.4" y="64.95" size="1.778" layer="25" rot="MR270">BKU "Концерн ИТС"</text>
 <wire x1="0" y1="67" x2="0" y2="38.5" width="0.1524" layer="20"/>
 <wire x1="0" y1="27" x2="0" y2="29.5" width="0.1524" layer="20"/>

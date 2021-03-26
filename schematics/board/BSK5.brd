@@ -177,10 +177,10 @@
 <wire x1="6" y1="21.5" x2="6" y2="6" width="0.1524" layer="20"/>
 <wire x1="6" y1="6" x2="21.5" y2="6" width="0.1524" layer="20"/>
 <wire x1="21.5" y1="6" x2="21.5" y2="0" width="0.1524" layer="20"/>
-<hole x="10" y="10" drill="6"/>
-<hole x="84" y="84" drill="6"/>
-<hole x="10" y="84" drill="6"/>
-<hole x="84" y="10" drill="6"/>
+<hole x="10" y="10" drill="2.5"/>
+<hole x="84" y="84" drill="2.5"/>
+<hole x="10" y="84" drill="2.5"/>
+<hole x="84" y="10" drill="2.5"/>
 <wire x1="25.262" y1="25.572" x2="42.262" y2="25.572" width="0.1" layer="21"/>
 <wire x1="42.262" y1="25.572" x2="42.262" y2="13.572" width="0.1" layer="21"/>
 <wire x1="42.262" y1="13.572" x2="25.262" y2="13.572" width="0.1" layer="21"/>

@@ -166,10 +166,10 @@
 <wire x1="82" y1="91.5" x2="82" y2="8.5" width="0.1524" layer="20"/>
 <wire x1="82" y1="8.5" x2="75" y2="8.5" width="0.1524" layer="20"/>
 <wire x1="7" y1="8.5" x2="0" y2="8.5" width="0.1524" layer="20"/>
-<hole x="11" y="4" drill="6"/>
-<hole x="71" y="4" drill="6"/>
-<hole x="71" y="96" drill="6"/>
-<hole x="11" y="96" drill="6"/>
+<hole x="11" y="4" drill="4.5"/>
+<hole x="71" y="4" drill="4.5"/>
+<hole x="71" y="96" drill="4.5"/>
+<hole x="11" y="96" drill="4.5"/>
 <text x="10.5" y="72.4" size="1.4224" layer="26" rot="MR45">BUS+</text>
 <text x="74.5" y="75.3" size="1.4224" layer="26" rot="MR315">BUS+</text>
 <text x="63.6" y="21.1" size="1.4224" layer="26" rot="MR225">BUS+</text>
