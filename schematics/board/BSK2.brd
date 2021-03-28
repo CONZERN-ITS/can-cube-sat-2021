@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.01" altunitdist="mm" altunit="mm"/>
+<grid distance="1" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.01" altunitdist="mm" altunit="mm"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="16" fill="1" visible="no" active="no"/>
@@ -161,8 +161,8 @@
 <wire x1="0" y1="8.5" x2="0" y2="91.5" width="0.1524" layer="20"/>
 <wire x1="0" y1="91.5" x2="7" y2="91.5" width="0.1524" layer="20"/>
 <wire x1="7" y1="91.5" x2="7" y2="100" width="0.1524" layer="20"/>
-<wire x1="7" y1="100" x2="49.04" y2="100" width="0.1524" layer="20"/>
-<wire x1="62.96" y1="100" x2="75" y2="100" width="0.1524" layer="20"/>
+<wire x1="7" y1="100" x2="49" y2="100" width="0.1524" layer="20"/>
+<wire x1="63" y1="100" x2="75" y2="100" width="0.1524" layer="20"/>
 <wire x1="75" y1="100" x2="75" y2="91.5" width="0.1524" layer="20"/>
 <wire x1="75" y1="91.5" x2="82" y2="91.5" width="0.1524" layer="20"/>
 <wire x1="82" y1="91.5" x2="82" y2="8.5" width="0.1524" layer="20"/>
@@ -191,11 +191,6 @@
 <hole x="71" y="4" drill="4.5"/>
 <hole x="71" y="96" drill="4.5"/>
 <hole x="11" y="96" drill="4.5"/>
-<wire x1="49.04" y1="100" x2="50.33" y2="96.47" width="0.1524" layer="20"/>
-<wire x1="50.33" y1="96.47" x2="51" y2="96" width="0.1524" layer="20" curve="69.947894"/>
-<wire x1="51" y1="96" x2="61" y2="96" width="0.1524" layer="20"/>
-<wire x1="61" y1="96" x2="61.67" y2="96.47" width="0.1524" layer="20" curve="69.947894"/>
-<wire x1="61.67" y1="96.47" x2="62.96" y2="100" width="0.1524" layer="20"/>
 <wire x1="6.328" y1="37.462" x2="6.328" y2="54.462" width="0.1" layer="21"/>
 <wire x1="6.328" y1="54.462" x2="18.328" y2="54.462" width="0.1" layer="21"/>
 <wire x1="18.328" y1="54.462" x2="18.328" y2="37.462" width="0.1" layer="21"/>
@@ -213,6 +208,7 @@
 "Концерн ИТС"</text>
 <text x="31.6" y="96.1" size="2" layer="26" rot="MR0" align="top-right">to BKU</text>
 <text x="5.4" y="45.6" size="1.778" layer="21" rot="R90" align="bottom-center">HEATER</text>
+<wire x1="49" y1="100" x2="63" y2="100" width="0.1524" layer="20"/>
 </plain>
 <libraries>
 <library name="resistor" urn="urn:adsk.eagle:library:348">
@@ -4152,25 +4148,7 @@ design rules under a new name.</description>
 <vertex x="0" y="91.5"/>
 <vertex x="14.9" y="91.5"/>
 <vertex x="14.9" y="100"/>
-<vertex x="49.1" y="100"/>
-<vertex x="49.1" y="99.5"/>
-<vertex x="49.5" y="99.1"/>
-<vertex x="49.5" y="98.4"/>
-<vertex x="49.8" y="98.1"/>
-<vertex x="49.8" y="97.5"/>
-<vertex x="50.2" y="97.1"/>
-<vertex x="50.2" y="96.6"/>
-<vertex x="50.8" y="96"/>
-<vertex x="61.2" y="96"/>
-<vertex x="61.8" y="96.6"/>
-<vertex x="61.8" y="97.1"/>
-<vertex x="62.1" y="97.4"/>
-<vertex x="62.1" y="97.9"/>
-<vertex x="62.4" y="98.2"/>
-<vertex x="62.4" y="98.7"/>
-<vertex x="62.7" y="99"/>
-<vertex x="62.7" y="99.5"/>
-<vertex x="62.9" y="99.7"/>
+<vertex x="49.3665875" y="100"/>
 <vertex x="62.9" y="100"/>
 <vertex x="67.1" y="100"/>
 <vertex x="67.1" y="91.5"/>

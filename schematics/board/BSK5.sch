@@ -160,52 +160,6 @@
 <libraries>
 <library name="CanCubeSat">
 <packages>
-<package name="USB-C">
-<wire x1="5.3" y1="2.75" x2="5.3" y2="1.65" width="0.01" layer="20"/>
-<wire x1="5.9" y1="2.75" x2="5.9" y2="1.65" width="0.01" layer="20"/>
-<wire x1="5.3" y1="2.75" x2="5.9" y2="2.75" width="0.01" layer="20" curve="-180"/>
-<wire x1="5.9" y1="1.65" x2="5.3" y2="1.65" width="0.01" layer="20" curve="-180"/>
-<wire x1="-5.9" y1="2.75" x2="-5.9" y2="1.65" width="0.01" layer="20"/>
-<wire x1="-5.3" y1="2.75" x2="-5.3" y2="1.65" width="0.01" layer="20"/>
-<wire x1="-5.9" y1="2.75" x2="-5.3" y2="2.75" width="0.01" layer="20" curve="-180"/>
-<wire x1="-5.3" y1="1.65" x2="-5.9" y2="1.65" width="0.01" layer="20" curve="-180"/>
-<smd name="RX0" x="-1.75" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="NRST/EN" x="-1.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="NC/3V3" x="-0.75" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="SWD/RXD" x="-0.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="SWC/TXD" x="0.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="NC/M1" x="0.75" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="NC/GPIO" x="1.25" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="TX0" x="1.75" y="7.1" dx="1.4" dy="0.3" layer="1" rot="R90"/>
-<smd name="GND0" x="-3.2" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
-<smd name="3V3/BUS0" x="-2.4" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
-<smd name="3V3/BUS1" x="2.4" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
-<smd name="GND1" x="3.2" y="7.1" dx="1.4" dy="0.6" layer="1" rot="R90"/>
-<wire x1="4.5" y1="0" x2="4.5" y2="6.6" width="0.127" layer="20"/>
-<wire x1="4.5" y1="6.6" x2="4.4" y2="6.7" width="0.127" layer="20" curve="90"/>
-<wire x1="4.4" y1="6.7" x2="4.2" y2="6.7" width="0.127" layer="20"/>
-<wire x1="-4.2" y1="6.7" x2="-4.4" y2="6.7" width="0.127" layer="20"/>
-<wire x1="-4.4" y1="6.7" x2="-4.5" y2="6.6" width="0.127" layer="20" curve="90"/>
-<wire x1="-4.5" y1="6.6" x2="-4.5" y2="0" width="0.127" layer="20"/>
-<wire x1="-4.2" y1="6.7" x2="-4.1" y2="6.6" width="0.127" layer="20" curve="-90"/>
-<wire x1="-4.1" y1="6.6" x2="-3.9" y2="6.4" width="0.127" layer="20" curve="90"/>
-<wire x1="4.2" y1="6.7" x2="4.1" y2="6.6" width="0.127" layer="20" curve="90"/>
-<wire x1="4.1" y1="6.6" x2="3.9" y2="6.4" width="0.127" layer="20" curve="-90"/>
-<wire x1="3.9" y1="6.4" x2="-3.9" y2="6.4" width="0.127" layer="20"/>
-<text x="-2.562" y="8.455" size="1" layer="25">&gt;NAME</text>
-<pad name="P$13" x="-5.6" y="6.5" drill="0.6" diameter="1.1" shape="offset" rot="R270"/>
-<pad name="P$14" x="-5.6" y="2.75" drill="0.6" diameter="1.1" shape="offset" rot="R270"/>
-<pad name="P$15" x="5.6" y="6.5" drill="0.6" diameter="1.1" shape="offset" rot="R270"/>
-<wire x1="-5.9" y1="6.5" x2="-5.9" y2="5.4" width="0.01" layer="20"/>
-<wire x1="-5.3" y1="6.5" x2="-5.3" y2="5.4" width="0.01" layer="20"/>
-<wire x1="-5.9" y1="6.5" x2="-5.3" y2="6.5" width="0.01" layer="20" curve="-180"/>
-<wire x1="-5.3" y1="5.4" x2="-5.9" y2="5.4" width="0.01" layer="20" curve="-180"/>
-<wire x1="5.3" y1="6.5" x2="5.3" y2="5.4" width="0.01" layer="20"/>
-<wire x1="5.9" y1="6.5" x2="5.9" y2="5.4" width="0.01" layer="20"/>
-<wire x1="5.3" y1="6.5" x2="5.9" y2="6.5" width="0.01" layer="20" curve="-180"/>
-<wire x1="5.9" y1="5.4" x2="5.3" y2="5.4" width="0.01" layer="20" curve="-180"/>
-<pad name="P$16" x="5.6" y="2.75" drill="0.6" diameter="1.1" shape="offset" rot="R270"/>
-</package>
 <package name="GPS-OLD">
 <wire x1="-19.5" y1="-12.75" x2="19.5" y2="-12.75" width="0.127" layer="21"/>
 <wire x1="19.5" y1="-12.75" x2="19.5" y2="12.75" width="0.127" layer="21"/>
@@ -507,26 +461,53 @@
 <vertex x="3.3" y="-1.15"/>
 </polygon>
 </package>
+<package name="SLW15S">
+<pad name="P$1" x="-7" y="-0.5" drill="0.6" shape="octagon"/>
+<pad name="P$2" x="-6" y="0.5" drill="0.6" shape="octagon"/>
+<pad name="P$3" x="-5" y="-0.5" drill="0.6" shape="octagon"/>
+<pad name="P$4" x="-4" y="0.5" drill="0.6" shape="octagon"/>
+<pad name="P$5" x="-3" y="-0.5" drill="0.6" shape="octagon"/>
+<pad name="P$6" x="-2" y="0.5" drill="0.6" shape="octagon"/>
+<pad name="P$7" x="-1" y="-0.5" drill="0.6" shape="octagon"/>
+<pad name="P$8" x="0" y="0.5" drill="0.6" shape="octagon"/>
+<pad name="P$9" x="1" y="-0.5" drill="0.6" shape="octagon"/>
+<pad name="P$10" x="2" y="0.5" drill="0.6" shape="octagon"/>
+<pad name="P$11" x="3" y="-0.5" drill="0.6" shape="octagon"/>
+<pad name="P$12" x="4" y="0.5" drill="0.6" shape="octagon"/>
+<pad name="P$13" x="5" y="-0.5" drill="0.6" shape="octagon"/>
+<pad name="P$14" x="6" y="0.5" drill="0.6" shape="octagon"/>
+<pad name="P$15" x="7" y="-0.5" drill="0.6" shape="octagon"/>
+<wire x1="-10.6" y1="2" x2="10.6" y2="2" width="0.127" layer="21"/>
+<wire x1="10.6" y1="2" x2="10.6" y2="-2" width="0.127" layer="21"/>
+<wire x1="10.6" y1="-2" x2="-10.6" y2="-2" width="0.127" layer="21"/>
+<wire x1="-10.6" y1="-2" x2="-10.6" y2="2" width="0.127" layer="21"/>
+<text x="-11" y="-2" size="1.27" layer="25" rot="R90">FFC</text>
+</package>
+<package name="68611">
+<smd name="P$1" x="-7" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$2" x="-6" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$3" x="-5" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$4" x="-4" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$5" x="-3" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$6" x="-2" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$7" x="-1" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$8" x="0" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$9" x="1" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$10" x="2" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$11" x="3" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$12" x="4" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$13" x="5" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$14" x="6" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$15" x="7" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
+<smd name="P$16" x="8.8" y="-1.7" dx="1.8" dy="2" layer="1" rot="R90"/>
+<smd name="P$17" x="-8.8" y="-1.7" dx="1.8" dy="2" layer="1" rot="R90"/>
+<wire x1="-9" y1="0" x2="-9" y2="-5.6" width="0.127" layer="21"/>
+<wire x1="-9" y1="-5.6" x2="9" y2="-5.6" width="0.127" layer="21"/>
+<wire x1="9" y1="-5.6" x2="9" y2="0" width="0.127" layer="21"/>
+<wire x1="9" y1="0" x2="-9" y2="0" width="0.127" layer="21"/>
+</package>
 </packages>
 <symbols>
-<symbol name="USB-C">
-<pin name="GND" x="-17.78" y="5.08" length="middle"/>
-<pin name="NRST/EN" x="-17.78" y="2.54" length="middle"/>
-<pin name="RX0" x="-17.78" y="0" length="middle"/>
-<pin name="3V3/BUS" x="-17.78" y="-2.54" length="middle"/>
-<pin name="NC/3V3" x="-17.78" y="-5.08" length="middle"/>
-<pin name="NC/GPIO" x="17.78" y="-5.08" length="middle" rot="R180"/>
-<pin name="TX0" x="17.78" y="-2.54" length="middle" rot="R180"/>
-<pin name="NC/M1" x="17.78" y="0" length="middle" rot="R180"/>
-<pin name="SWC/TXD" x="17.78" y="2.54" length="middle" rot="R180"/>
-<pin name="SWD/RXD" x="17.78" y="5.08" length="middle" rot="R180"/>
-<wire x1="-12.7" y1="7.62" x2="-12.7" y2="-7.62" width="0.254" layer="94"/>
-<wire x1="-12.7" y1="-7.62" x2="12.6" y2="-7.62" width="0.254" layer="94"/>
-<wire x1="12.6" y1="-7.62" x2="12.7" y2="-7.52" width="0.254" layer="94" curve="90"/>
-<wire x1="12.7" y1="-7.52" x2="12.7" y2="7.62" width="0.254" layer="94"/>
-<wire x1="12.7" y1="7.62" x2="-12.7" y2="7.62" width="0.254" layer="94"/>
-<text x="-4.826" y="8.128" size="1.27" layer="95">USB-C</text>
-</symbol>
 <symbol name="GPS">
 <pin name="RX" x="12.7" y="-2.54" length="middle" rot="R180"/>
 <pin name="TX" x="12.7" y="0" length="middle" rot="R180"/>
@@ -657,32 +638,31 @@
 <pin name="5" x="7.62" y="2.54" visible="pad" length="middle" direction="pas" swaplevel="1" rot="R180"/>
 <pin name="6" x="7.62" y="5.08" visible="pad" length="middle" direction="pas" swaplevel="1" rot="R180"/>
 </symbol>
+<symbol name="PINHD15">
+<wire x1="-6.35" y1="-20.32" x2="1.27" y2="-20.32" width="0.4064" layer="94"/>
+<wire x1="1.27" y1="-20.32" x2="1.27" y2="20.32" width="0.4064" layer="94"/>
+<wire x1="1.27" y1="20.32" x2="-6.35" y2="20.32" width="0.4064" layer="94"/>
+<wire x1="-6.35" y1="20.32" x2="-6.35" y2="-20.32" width="0.4064" layer="94"/>
+<text x="-6.35" y="20.955" size="1.778" layer="95">&gt;NAME</text>
+<text x="-6.35" y="-22.86" size="1.778" layer="96">&gt;VALUE</text>
+<pin name="1" x="-2.54" y="17.78" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="2" x="-2.54" y="15.24" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="3" x="-2.54" y="12.7" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="4" x="-2.54" y="10.16" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="5" x="-2.54" y="7.62" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="6" x="-2.54" y="5.08" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="7" x="-2.54" y="2.54" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="8" x="-2.54" y="0" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="9" x="-2.54" y="-2.54" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="10" x="-2.54" y="-5.08" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="11" x="-2.54" y="-7.62" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="12" x="-2.54" y="-10.16" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="13" x="-2.54" y="-12.7" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="14" x="-2.54" y="-15.24" visible="pad" length="short" direction="pas" function="dot"/>
+<pin name="15" x="-2.54" y="-17.78" visible="pad" length="short" direction="pas" function="dot"/>
+</symbol>
 </symbols>
 <devicesets>
-<deviceset name="USB-C">
-<gates>
-<gate name="G$1" symbol="USB-C" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="USB-C">
-<connects>
-<connect gate="G$1" pin="3V3/BUS" pad="3V3/BUS0 3V3/BUS1"/>
-<connect gate="G$1" pin="GND" pad="GND0 GND1"/>
-<connect gate="G$1" pin="NC/3V3" pad="NC/3V3"/>
-<connect gate="G$1" pin="NC/GPIO" pad="NC/GPIO"/>
-<connect gate="G$1" pin="NC/M1" pad="NC/M1"/>
-<connect gate="G$1" pin="NRST/EN" pad="NRST/EN"/>
-<connect gate="G$1" pin="RX0" pad="RX0"/>
-<connect gate="G$1" pin="SWC/TXD" pad="SWC/TXD"/>
-<connect gate="G$1" pin="SWD/RXD" pad="SWD/RXD"/>
-<connect gate="G$1" pin="TX0" pad="TX0"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
 <deviceset name="GPS">
 <gates>
 <gate name="G$1" symbol="GPS" x="0" y="0"/>
@@ -923,6 +903,57 @@
 <connect gate="G$1" pin="4" pad="4"/>
 <connect gate="G$1" pin="5" pad="5"/>
 <connect gate="G$1" pin="6" pad="6"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="FFC-CONNECT">
+<gates>
+<gate name="G$1" symbol="PINHD15" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="SLW15S">
+<connects>
+<connect gate="G$1" pin="1" pad="P$1"/>
+<connect gate="G$1" pin="10" pad="P$10"/>
+<connect gate="G$1" pin="11" pad="P$11"/>
+<connect gate="G$1" pin="12" pad="P$12"/>
+<connect gate="G$1" pin="13" pad="P$13"/>
+<connect gate="G$1" pin="14" pad="P$14"/>
+<connect gate="G$1" pin="15" pad="P$15"/>
+<connect gate="G$1" pin="2" pad="P$2"/>
+<connect gate="G$1" pin="3" pad="P$3"/>
+<connect gate="G$1" pin="4" pad="P$4"/>
+<connect gate="G$1" pin="5" pad="P$5"/>
+<connect gate="G$1" pin="6" pad="P$6"/>
+<connect gate="G$1" pin="7" pad="P$7"/>
+<connect gate="G$1" pin="8" pad="P$8"/>
+<connect gate="G$1" pin="9" pad="P$9"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="68611" package="68611">
+<connects>
+<connect gate="G$1" pin="1" pad="P$1"/>
+<connect gate="G$1" pin="10" pad="P$10"/>
+<connect gate="G$1" pin="11" pad="P$11"/>
+<connect gate="G$1" pin="12" pad="P$12"/>
+<connect gate="G$1" pin="13" pad="P$13"/>
+<connect gate="G$1" pin="14" pad="P$14"/>
+<connect gate="G$1" pin="15" pad="P$15"/>
+<connect gate="G$1" pin="2" pad="P$2"/>
+<connect gate="G$1" pin="3" pad="P$3"/>
+<connect gate="G$1" pin="4" pad="P$4"/>
+<connect gate="G$1" pin="5" pad="P$5"/>
+<connect gate="G$1" pin="6" pad="P$6"/>
+<connect gate="G$1" pin="7" pad="P$7"/>
+<connect gate="G$1" pin="8" pad="P$8"/>
+<connect gate="G$1" pin="9" pad="P$9"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -17698,7 +17729,6 @@ variable-capacitance diode</description>
 <part name="BSK3" library="pinheadCS" deviceset="PINHD-1X6" device=""/>
 <part name="U1" library="STM32F405RGT6" deviceset="STM32F405RGT6" device=""/>
 <part name="GPS" library="CanCubeSat" deviceset="GPS" device="NEO6M" value="GPSNEO6M"/>
-<part name="U$6" library="CanCubeSat" deviceset="USB-C" device=""/>
 <part name="R1" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
 <part name="R15" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="R2" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
@@ -17784,6 +17814,7 @@ variable-capacitance diode</description>
 <part name="R30" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R31" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R32" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
+<part name="U$12" library="CanCubeSat" deviceset="FFC-CONNECT" device="68611"/>
 </parts>
 <sheets>
 <sheet>
@@ -18892,7 +18923,6 @@ variable-capacitance diode</description>
 <instance part="GPS" gate="G$1" x="431.8" y="233.68" smashed="yes" rot="R270">
 <attribute name="NAME" x="442.722" y="241.3" size="1.778" layer="95" rot="R270"/>
 </instance>
-<instance part="U$6" gate="G$1" x="88.9" y="264.16" smashed="yes"/>
 <instance part="R1" gate="G$1" x="411.48" y="193.04" smashed="yes" rot="R90">
 <attribute name="NAME" x="409.9814" y="189.23" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="414.782" y="189.23" size="1.778" layer="96" rot="R90"/>
@@ -19200,16 +19230,15 @@ variable-capacitance diode</description>
 <attribute name="NAME" x="524.7386" y="306.07" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="519.938" y="306.07" size="1.778" layer="96" rot="R270"/>
 </instance>
+<instance part="U$12" gate="G$1" x="91.44" y="271.78" smashed="yes" rot="R90">
+<attribute name="NAME" x="70.485" y="265.43" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="114.3" y="265.43" size="1.778" layer="96" rot="R90"/>
+</instance>
 </instances>
 <busses>
 </busses>
 <nets>
 <net name="GND" class="0">
-<segment>
-<pinref part="U$6" gate="G$1" pin="GND"/>
-<wire x1="71.12" y1="269.24" x2="53.34" y2="269.24" width="0.1524" layer="91"/>
-<label x="53.34" y="269.24" size="1.778" layer="95"/>
-</segment>
 <segment>
 <pinref part="SUPPLY1" gate="GND" pin="GND"/>
 <wire x1="360.68" y1="104.14" x2="370.84" y2="104.14" width="0.1524" layer="91"/>
@@ -19624,48 +19653,43 @@ variable-capacitance diode</description>
 </net>
 <net name="SWD" class="0">
 <segment>
-<pinref part="U$6" gate="G$1" pin="SWD/RXD"/>
-<wire x1="106.68" y1="269.24" x2="124.46" y2="269.24" width="0.1524" layer="91"/>
-<label x="119.38" y="269.24" size="1.778" layer="95"/>
-</segment>
-<segment>
 <pinref part="U1" gate="G$1" pin="PA13/JMS-SWDIO"/>
 <wire x1="360.68" y1="149.86" x2="421.64" y2="149.86" width="0.1524" layer="91"/>
 <wire x1="360.68" y1="149.86" x2="360.68" y2="152.4" width="0.1524" layer="91"/>
 <label x="391.16" y="149.86" size="1.778" layer="95"/>
 <pinref part="R2" gate="G$1" pin="1"/>
 </segment>
+<segment>
+<wire x1="93.98" y1="269.24" x2="93.98" y2="248.92" width="0.1524" layer="91"/>
+<label x="93.98" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="9"/>
+</segment>
 </net>
 <net name="RX-S" class="0">
-<segment>
-<wire x1="53.34" y1="264.16" x2="71.12" y2="264.16" width="0.1524" layer="91"/>
-<label x="53.34" y="264.16" size="1.778" layer="95"/>
-<pinref part="U$6" gate="G$1" pin="RX0"/>
-</segment>
 <segment>
 <pinref part="U1" gate="G$1" pin="PC10"/>
 <wire x1="482.6" y1="157.48" x2="492.76" y2="157.48" width="0.1524" layer="91"/>
 <label x="487.68" y="157.48" size="1.778" layer="95"/>
 </segment>
+<segment>
+<wire x1="83.82" y1="269.24" x2="83.82" y2="248.92" width="0.1524" layer="91"/>
+<label x="83.82" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="5"/>
+</segment>
 </net>
 <net name="TX-S" class="0">
-<segment>
-<wire x1="124.46" y1="261.62" x2="106.68" y2="261.62" width="0.1524" layer="91"/>
-<label x="119.38" y="261.62" size="1.778" layer="95"/>
-<pinref part="U$6" gate="G$1" pin="TX0"/>
-</segment>
 <segment>
 <pinref part="U1" gate="G$1" pin="PC11"/>
 <wire x1="482.6" y1="154.94" x2="492.76" y2="154.94" width="0.1524" layer="91"/>
 <label x="487.68" y="154.94" size="1.778" layer="95"/>
 </segment>
+<segment>
+<wire x1="88.9" y1="269.24" x2="88.9" y2="248.92" width="0.1524" layer="91"/>
+<label x="88.9" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="7"/>
+</segment>
 </net>
 <net name="SWC" class="0">
-<segment>
-<wire x1="124.46" y1="266.7" x2="106.68" y2="266.7" width="0.1524" layer="91"/>
-<label x="119.38" y="266.7" size="1.778" layer="95"/>
-<pinref part="U$6" gate="G$1" pin="SWC/TXD"/>
-</segment>
 <segment>
 <pinref part="U1" gate="G$1" pin="PA14/JTCK-SWCLK"/>
 <wire x1="368.3" y1="147.32" x2="421.64" y2="147.32" width="0.1524" layer="91"/>
@@ -19673,13 +19697,13 @@ variable-capacitance diode</description>
 <label x="391.16" y="147.32" size="1.778" layer="95"/>
 <pinref part="R3" gate="G$1" pin="1"/>
 </segment>
+<segment>
+<wire x1="99.06" y1="269.24" x2="99.06" y2="248.92" width="0.1524" layer="91"/>
+<label x="99.06" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="11"/>
+</segment>
 </net>
 <net name="NRST" class="0">
-<segment>
-<wire x1="53.34" y1="266.7" x2="71.12" y2="266.7" width="0.1524" layer="91"/>
-<label x="53.34" y="266.7" size="1.778" layer="95"/>
-<pinref part="U$6" gate="G$1" pin="NRST/EN"/>
-</segment>
 <segment>
 <pinref part="U1" gate="G$1" pin="NRST"/>
 <wire x1="411.48" y1="187.96" x2="421.64" y2="187.96" width="0.1524" layer="91"/>
@@ -19687,6 +19711,11 @@ variable-capacitance diode</description>
 <wire x1="411.48" y1="187.96" x2="398.78" y2="187.96" width="0.1524" layer="91"/>
 <junction x="411.48" y="187.96"/>
 <label x="398.78" y="187.96" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$12" gate="G$1" pin="3"/>
+<wire x1="78.74" y1="269.24" x2="78.74" y2="248.92" width="0.1524" layer="91"/>
+<label x="78.74" y="248.92" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="SDA" class="0">
@@ -19905,11 +19934,6 @@ variable-capacitance diode</description>
 <wire x1="482.6" y1="187.96" x2="482.6" y2="195.58" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<wire x1="71.12" y1="261.62" x2="53.34" y2="261.62" width="0.1524" layer="91"/>
-<label x="53.34" y="261.62" size="1.778" layer="95"/>
-<pinref part="U$6" gate="G$1" pin="3V3/BUS"/>
-</segment>
-<segment>
 <wire x1="467.36" y1="220.98" x2="467.36" y2="213.36" width="0.1524" layer="91"/>
 <label x="467.36" y="213.36" size="1.778" layer="95" rot="R90"/>
 <pinref part="D1" gate="G$1" pin="A"/>
@@ -19977,6 +20001,16 @@ variable-capacitance diode</description>
 <wire x1="556.26" y1="109.22" x2="556.26" y2="121.92" width="0.1524" layer="91"/>
 <wire x1="556.26" y1="121.92" x2="538.48" y2="121.92" width="0.1524" layer="91"/>
 <label x="551.18" y="121.92" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$12" gate="G$1" pin="2"/>
+<wire x1="76.2" y1="269.24" x2="76.2" y2="248.92" width="0.1524" layer="91"/>
+<label x="76.2" y="248.92" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<pinref part="U$12" gate="G$1" pin="1"/>
+<wire x1="73.66" y1="269.24" x2="73.66" y2="248.92" width="0.1524" layer="91"/>
+<label x="73.66" y="248.92" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="SINS-KVCC" class="0">
@@ -20079,6 +20113,26 @@ variable-capacitance diode</description>
 <wire x1="60.96" y1="314.96" x2="60.96" y2="330.2" width="0.1524" layer="91"/>
 <label x="60.96" y="320.04" size="1.778" layer="95" rot="R90"/>
 <pinref part="BSK3" gate="A" pin="4"/>
+</segment>
+<segment>
+<wire x1="96.52" y1="269.24" x2="96.52" y2="248.92" width="0.1524" layer="91"/>
+<label x="96.52" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="10"/>
+</segment>
+<segment>
+<wire x1="91.44" y1="269.24" x2="91.44" y2="248.92" width="0.1524" layer="91"/>
+<label x="91.44" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="8"/>
+</segment>
+<segment>
+<pinref part="U$12" gate="G$1" pin="6"/>
+<wire x1="86.36" y1="269.24" x2="86.36" y2="248.92" width="0.1524" layer="91"/>
+<label x="86.36" y="248.92" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<pinref part="U$12" gate="G$1" pin="4"/>
+<wire x1="81.28" y1="269.24" x2="81.28" y2="248.92" width="0.1524" layer="91"/>
+<label x="81.28" y="248.92" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="N$27" class="0">

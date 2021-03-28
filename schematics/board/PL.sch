@@ -21210,9 +21210,9 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <attribute name="NAME" x="54.61" y="6.5786" size="1.778" layer="95"/>
 <attribute name="VALUE" x="54.61" y="1.778" size="1.778" layer="96"/>
 </instance>
-<instance part="R1" gate="G$1" x="246.38" y="-48.26" smashed="yes">
-<attribute name="NAME" x="242.57" y="-46.7614" size="1.778" layer="95"/>
-<attribute name="VALUE" x="242.57" y="-51.562" size="1.778" layer="96"/>
+<instance part="R1" gate="G$1" x="238.76" y="-15.24" smashed="yes">
+<attribute name="NAME" x="234.95" y="-13.7414" size="1.778" layer="95"/>
+<attribute name="VALUE" x="234.95" y="-18.542" size="1.778" layer="96"/>
 </instance>
 <instance part="U2" gate="G$1" x="-307.34" y="-472.44" smashed="yes">
 <attribute name="NAME" x="-325.12" y="-458.74" size="2.0828" layer="95" ratio="10" rot="SR0"/>
@@ -21564,8 +21564,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </segment>
 <segment>
 <pinref part="R1" gate="G$1" pin="1"/>
-<wire x1="241.3" y1="-48.26" x2="228.6" y2="-48.26" width="0.1524" layer="91"/>
-<label x="228.6" y="-48.26" size="1.778" layer="95"/>
+<wire x1="233.68" y1="-15.24" x2="220.98" y2="-15.24" width="0.1524" layer="91"/>
+<label x="220.98" y="-15.24" size="1.778" layer="95"/>
 </segment>
 <segment>
 <wire x1="43.18" y1="-104.14" x2="38.1" y2="-104.14" width="0.1524" layer="91"/>
@@ -21608,26 +21608,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <wire x1="246.38" y1="-368.3" x2="231.14" y2="-368.3" width="0.1524" layer="91"/>
 <junction x="246.38" y="-368.3"/>
 <label x="231.14" y="-368.3" size="1.778" layer="95"/>
-</segment>
-<segment>
-<wire x1="360.68" y1="147.32" x2="360.68" y2="127" width="0.1524" layer="91"/>
-<label x="360.68" y="127" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$21" gate="G$1" pin="8"/>
-</segment>
-<segment>
-<pinref part="U$21" gate="G$1" pin="4"/>
-<wire x1="350.52" y1="147.32" x2="350.52" y2="127" width="0.1524" layer="91"/>
-<label x="350.52" y="127" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
-<pinref part="U$21" gate="G$1" pin="6"/>
-<wire x1="355.6" y1="147.32" x2="355.6" y2="127" width="0.1524" layer="91"/>
-<label x="355.6" y="127" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
-<wire x1="365.76" y1="147.32" x2="365.76" y2="127" width="0.1524" layer="91"/>
-<label x="365.76" y="127" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$21" gate="G$1" pin="10"/>
 </segment>
 </net>
 <net name="SCL" class="0">
@@ -22537,9 +22517,9 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </net>
 <net name="GND-OUT" class="0">
 <segment>
-<wire x1="269.24" y1="-48.26" x2="251.46" y2="-48.26" width="0.1524" layer="91"/>
+<wire x1="261.62" y1="-15.24" x2="243.84" y2="-15.24" width="0.1524" layer="91"/>
 <pinref part="R1" gate="G$1" pin="2"/>
-<label x="259.08" y="-48.26" size="1.778" layer="95"/>
+<label x="251.46" y="-15.24" size="1.778" layer="95"/>
 </segment>
 <segment>
 <wire x1="350.52" y1="53.34" x2="350.52" y2="35.56" width="0.1524" layer="91"/>
@@ -22550,6 +22530,26 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <wire x1="350.52" y1="60.96" x2="350.52" y2="78.74" width="0.1524" layer="91"/>
 <label x="350.52" y="73.66" size="1.778" layer="95" rot="R90"/>
 <pinref part="BSK1" gate="A" pin="5"/>
+</segment>
+<segment>
+<wire x1="365.76" y1="147.32" x2="365.76" y2="127" width="0.1524" layer="91"/>
+<label x="365.76" y="127" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$21" gate="G$1" pin="10"/>
+</segment>
+<segment>
+<wire x1="360.68" y1="147.32" x2="360.68" y2="127" width="0.1524" layer="91"/>
+<label x="360.68" y="127" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$21" gate="G$1" pin="8"/>
+</segment>
+<segment>
+<pinref part="U$21" gate="G$1" pin="6"/>
+<wire x1="355.6" y1="147.32" x2="355.6" y2="127" width="0.1524" layer="91"/>
+<label x="355.6" y="127" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<pinref part="U$21" gate="G$1" pin="4"/>
+<wire x1="350.52" y1="147.32" x2="350.52" y2="127" width="0.1524" layer="91"/>
+<label x="350.52" y="127" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="N$15" class="0">

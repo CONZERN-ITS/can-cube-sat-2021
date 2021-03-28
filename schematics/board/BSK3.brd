@@ -208,6 +208,7 @@
 <wire x1="18.328" y1="54.462" x2="18.328" y2="37.462" width="0.1" layer="21"/>
 <wire x1="18.328" y1="37.462" x2="6.328" y2="37.462" width="0.1" layer="21"/>
 <rectangle x1="6.328" y1="37.462" x2="18.328" y2="54.462" layer="29"/>
+<hole x="11" y="33" drill="5"/>
 </plain>
 <libraries>
 <library name="CanCubeSat">
