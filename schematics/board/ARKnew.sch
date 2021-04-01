@@ -252,7 +252,7 @@
 <text x="-0.889" y="-4.699" size="0.8128" layer="27">&gt;VALUE</text>
 <text x="-3.8862" y="4.3688" size="1.27" layer="25" ratio="10">&gt;NAME</text>
 </package>
-<package name="ECAP150">
+<package name="ECAP150-CMD">
 <smd name="P$1" x="0" y="2.85" dx="3.5" dy="1.2" layer="1" rot="R90"/>
 <smd name="P$2" x="0" y="-2.85" dx="3.5" dy="1.2" layer="1" rot="R90"/>
 <wire x1="-3.15" y1="3.15" x2="-3.15" y2="-3.15" width="0.127" layer="21"/>
@@ -262,7 +262,7 @@
 <text x="-3.429" y="-3.048" size="1.27" layer="25" rot="R90">&gt;NAME</text>
 <text x="4.699" y="-3.302" size="1.27" layer="27" rot="R90">&gt;VALUE</text>
 </package>
-<package name="ECAP220">
+<package name="ECAP220-CMD">
 <smd name="P$1" x="0" y="2.85" dx="3.5" dy="1.2" layer="1" rot="R90"/>
 <smd name="P$2" x="0" y="-2.85" dx="3.5" dy="1.2" layer="1" rot="R90"/>
 <wire x1="-3.15" y1="3.15" x2="-3.15" y2="-3.15" width="0.127" layer="21"/>
@@ -271,6 +271,18 @@
 <wire x1="3.15" y1="3.15" x2="-3.15" y2="3.15" width="0.127" layer="21"/>
 <text x="-3.429" y="-3.048" size="1.27" layer="25" rot="R90">&gt;NAME</text>
 <text x="4.699" y="-3.429" size="1.27" layer="27" rot="R90">&gt;VALUE</text>
+</package>
+<package name="SC70">
+<wire x1="-1.1" y1="0.7" x2="1.1" y2="0.7" width="0.127" layer="21"/>
+<wire x1="1.1" y1="0.7" x2="1.1" y2="-0.7" width="0.127" layer="21"/>
+<wire x1="1.1" y1="-0.7" x2="-1.1" y2="-0.7" width="0.127" layer="21"/>
+<wire x1="-1.1" y1="-0.7" x2="-1.1" y2="0.7" width="0.127" layer="21"/>
+<smd name="P$1" x="-0.75" y="-0.9" dx="1" dy="0.47" layer="1" rot="R90"/>
+<smd name="P$2" x="0" y="-0.9" dx="1" dy="0.47" layer="1" rot="R90"/>
+<smd name="P$3" x="0.75" y="-0.9" dx="1" dy="0.47" layer="1" rot="R90"/>
+<smd name="P$4" x="0.75" y="0.9" dx="1" dy="0.47" layer="1" rot="R90"/>
+<smd name="P$5" x="-0.75" y="0.9" dx="1" dy="0.47" layer="1" rot="R90"/>
+<text x="-1.778" y="-1.397" size="0.6096" layer="21" rot="R90">&gt;NAME</text>
 </package>
 <package name="SOT23-5">
 <wire x1="-1.5" y1="0.85" x2="1.5" y2="0.85" width="0.127" layer="21"/>
@@ -392,19 +404,19 @@
 <smd name="47" x="-4.25" y="-2.25" dx="1.2" dy="0.3" layer="1"/>
 <smd name="48" x="-4.25" y="-2.75" dx="1.2" dy="0.3" layer="1"/>
 </package>
-<package name="INA219AID">
+<package name="SOT23-8">
 <wire x1="-0.87" y1="1.5" x2="-0.87" y2="-1.5" width="0.127" layer="21"/>
 <wire x1="-0.87" y1="-1.5" x2="0.87" y2="-1.5" width="0.127" layer="21"/>
 <wire x1="0.87" y1="-1.5" x2="0.87" y2="1.5" width="0.127" layer="21"/>
 <wire x1="0.87" y1="1.5" x2="-0.87" y2="1.5" width="0.127" layer="21"/>
-<smd name="1" x="-1.3" y="0.975" dx="0.9" dy="0.45" layer="1"/>
-<smd name="2" x="-1.3" y="0.325" dx="0.9" dy="0.45" layer="1"/>
-<smd name="3" x="-1.3" y="-0.325" dx="0.9" dy="0.45" layer="1"/>
-<smd name="4" x="-1.3" y="-0.975" dx="0.9" dy="0.45" layer="1"/>
-<smd name="5" x="1.3" y="-0.975" dx="0.9" dy="0.45" layer="1"/>
-<smd name="6" x="1.3" y="-0.325" dx="0.9" dy="0.45" layer="1"/>
-<smd name="7" x="1.3" y="0.325" dx="0.9" dy="0.45" layer="1"/>
-<smd name="8" x="1.3" y="0.975" dx="0.9" dy="0.45" layer="1"/>
+<smd name="1" x="-1.3" y="0.975" dx="0.9" dy="0.4" layer="1"/>
+<smd name="2" x="-1.3" y="0.325" dx="0.9" dy="0.4" layer="1"/>
+<smd name="3" x="-1.3" y="-0.325" dx="0.9" dy="0.4" layer="1"/>
+<smd name="4" x="-1.3" y="-0.975" dx="0.9" dy="0.4" layer="1"/>
+<smd name="5" x="1.3" y="-0.975" dx="0.9" dy="0.4" layer="1"/>
+<smd name="6" x="1.3" y="-0.325" dx="0.9" dy="0.4" layer="1"/>
+<smd name="7" x="1.3" y="0.325" dx="0.9" dy="0.4" layer="1"/>
+<smd name="8" x="1.3" y="0.975" dx="0.9" dy="0.4" layer="1"/>
 <text x="0" y="0" size="0.4064" layer="25" rot="R90" align="center">&gt;NAME</text>
 <circle x="-0.508" y="1.143" radius="0.1" width="0.2" layer="21"/>
 </package>
@@ -464,7 +476,7 @@
 <wire x1="1.6" y1="1.4" x2="-1.6" y2="1.4" width="0.127" layer="21"/>
 <text x="-2" y="2" size="0.8128" layer="21">&gt;NAME</text>
 </package>
-<package name="AD5272">
+<package name="MSOP10">
 <smd name="1" x="-1" y="-2.24" dx="1.275" dy="0.3" layer="1" rot="R90"/>
 <smd name="2" x="-0.5" y="-2.24" dx="1.275" dy="0.3" layer="1" rot="R90"/>
 <smd name="3" x="0" y="-2.24" dx="1.275" dy="0.3" layer="1" rot="R90"/>
@@ -535,6 +547,32 @@
 <wire x1="1.5" y1="-7.2" x2="1.5" y2="7.2" width="0.127" layer="21"/>
 <wire x1="1.5" y1="7.2" x2="-1.5" y2="7.2" width="0.127" layer="21"/>
 </package>
+<package name="ECAP100-CMD">
+<smd name="P$1" x="0" y="2.85" dx="3.5" dy="1.2" layer="1" rot="R90"/>
+<smd name="P$2" x="0" y="-2.85" dx="3.5" dy="1.2" layer="1" rot="R90"/>
+<wire x1="-3.15" y1="3.15" x2="-3.15" y2="-3.15" width="0.127" layer="21"/>
+<wire x1="-3.15" y1="-3.15" x2="3.15" y2="-3.15" width="0.127" layer="21"/>
+<wire x1="3.15" y1="-3.15" x2="3.15" y2="3.15" width="0.127" layer="21"/>
+<wire x1="3.15" y1="3.15" x2="-3.15" y2="3.15" width="0.127" layer="21"/>
+<text x="-3.429" y="-3.048" size="1.27" layer="25" rot="R90">&gt;NAME</text>
+<text x="4.699" y="-3.302" size="1.27" layer="27" rot="R90">&gt;VALUE</text>
+</package>
+<package name="ECAP1MK">
+<pad name="P$1" x="-1" y="0" drill="0.8" diameter="1.5"/>
+<pad name="P$2" x="1" y="0" drill="0.8" diameter="1.5"/>
+<circle x="0" y="0" radius="2.5" width="0.127" layer="21"/>
+<polygon width="0.127" layer="21">
+<vertex x="1.27" y="2.159"/>
+<vertex x="1.27" y="-2.159"/>
+<vertex x="1.778" y="-1.651"/>
+<vertex x="2.159" y="-1.143"/>
+<vertex x="2.413" y="-0.508"/>
+<vertex x="2.413" y="0"/>
+<vertex x="2.413" y="0.508"/>
+<vertex x="2.159" y="1.143"/>
+<vertex x="1.778" y="1.651"/>
+</polygon>
+</package>
 </packages>
 <symbols>
 <symbol name="LTC3119">
@@ -572,13 +610,13 @@
 <text x="-4.318" y="6.096" size="1.27" layer="95">B82472G6</text>
 <text x="-1.778" y="-6.604" size="1.27" layer="96">&gt;VALUE</text>
 </symbol>
-<symbol name="ECAP">
-<wire x1="0" y1="0" x2="0" y2="-0.508" width="0.1524" layer="94"/>
-<wire x1="0" y1="-2.54" x2="0" y2="-2.032" width="0.1524" layer="94"/>
-<text x="1.524" y="0.381" size="1.778" layer="95">&gt;NAME</text>
-<text x="1.524" y="-4.699" size="1.778" layer="96">&gt;VALUE</text>
-<rectangle x1="-2.032" y1="-2.032" x2="2.032" y2="-1.524" layer="94"/>
-<rectangle x1="-2.032" y1="-1.016" x2="2.032" y2="-0.508" layer="94"/>
+<symbol name="C-US">
+<wire x1="-2.54" y1="0" x2="2.54" y2="0" width="0.254" layer="94"/>
+<wire x1="0" y1="-1.016" x2="0" y2="-2.54" width="0.1524" layer="94"/>
+<wire x1="0" y1="-1" x2="2.4892" y2="-1.8542" width="0.254" layer="94" curve="-37.878202"/>
+<wire x1="-2.4668" y1="-1.8504" x2="0" y2="-1.0161" width="0.254" layer="94" curve="-37.373024"/>
+<text x="1.016" y="0.635" size="1.778" layer="95">&gt;NAME</text>
+<text x="1.016" y="-4.191" size="1.778" layer="96">&gt;VALUE</text>
 <pin name="1" x="0" y="2.54" visible="off" length="short" direction="pas" swaplevel="1" rot="R270"/>
 <pin name="2" x="0" y="-5.08" visible="off" length="short" direction="pas" swaplevel="1" rot="R90"/>
 </symbol>
@@ -828,10 +866,10 @@
 </deviceset>
 <deviceset name="ECAP">
 <gates>
-<gate name="G$1" symbol="ECAP" x="0" y="0"/>
+<gate name="G$1" symbol="C-US" x="0" y="0"/>
 </gates>
 <devices>
-<device name="ECAP150" package="ECAP150">
+<device name="ECAP150" package="ECAP150-CMD">
 <connects>
 <connect gate="G$1" pin="1" pad="P$1"/>
 <connect gate="G$1" pin="2" pad="P$2"/>
@@ -840,7 +878,25 @@
 <technology name=""/>
 </technologies>
 </device>
-<device name="ECAP220" package="ECAP220">
+<device name="ECAP220" package="ECAP220-CMD">
+<connects>
+<connect gate="G$1" pin="1" pad="P$1"/>
+<connect gate="G$1" pin="2" pad="P$2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="ECAP100" package="ECAP100-CMD">
+<connects>
+<connect gate="G$1" pin="1" pad="P$1"/>
+<connect gate="G$1" pin="2" pad="P$2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="" package="ECAP1MK">
 <connects>
 <connect gate="G$1" pin="1" pad="P$1"/>
 <connect gate="G$1" pin="2" pad="P$2"/>
@@ -856,7 +912,7 @@
 <gate name="G$1" symbol="INVERTER" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="SOT23-5">
+<device name="." package="SC70">
 <connects>
 <connect gate="G$1" pin="A" pad="P$2"/>
 <connect gate="G$1" pin="GND" pad="P$3"/>
@@ -959,7 +1015,7 @@
 <gate name="G$1" symbol="INA219AID" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="INA219AID">
+<device name="" package="SOT23-8">
 <connects>
 <connect gate="G$1" pin="A0" pad="7"/>
 <connect gate="G$1" pin="A1" pad="8"/>
@@ -1050,7 +1106,7 @@
 <gate name="G$1" symbol="AD5272" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="AD5272">
+<device name="" package="MSOP10">
 <connects>
 <connect gate="G$1" pin="A" pad="2"/>
 <connect gate="G$1" pin="ADDR" pad="10"/>
@@ -10118,7 +10174,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </deviceset>
 </devicesets>
 </library>
-<library name="resistor" urn="urn:adsk.eagle:library:348">
+<library name="resistor">
 <description>&lt;b&gt;Resistors, Capacitors, Inductors&lt;/b&gt;&lt;p&gt;
 Based on the previous libraries:
 &lt;ul&gt;
@@ -16608,11 +16664,11 @@ Source: www.kingbright.com</description>
 <part name="U$59" library="CanCubeSat" deviceset="LTC3119" device="1" value="LTC31191"/>
 <part name="C40" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="C41" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
-<part name="R65" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
-<part name="R66" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
-<part name="R67" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
-<part name="R68" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
-<part name="R69" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
+<part name="R65" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
+<part name="R66" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
+<part name="R67" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
+<part name="R68" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
+<part name="R69" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
 <part name="3,3µH" library="CanCubeSat" deviceset="B82472G6" device="" value="3,3µ"/>
 <part name="C44" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="680p"/>
 <part name="C45" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="4.7µ"/>
@@ -16622,8 +16678,8 @@ Source: www.kingbright.com</description>
 <part name="U$23" library="CanCubeSat" deviceset="LTC3119" device="1" value="LTC31191"/>
 <part name="C49" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="C50" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
-<part name="R28" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
-<part name="R30" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
+<part name="R28" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
+<part name="R30" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="150k"/>
 <part name="3,3µH1" library="CanCubeSat" deviceset="B82472G6" device="" value="3,3µH"/>
 <part name="C52" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="680p"/>
 <part name="C53" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="4.7µ"/>
@@ -16631,41 +16687,41 @@ Source: www.kingbright.com</description>
 <part name="C55" library="CanCubeSat" deviceset="ECAP" device="ECAP220" value="220µ"/>
 <part name="C56" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="C57" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="10µ"/>
-<part name="INVERT" library="CanCubeSat" deviceset="INVERTER" device=""/>
-<part name="R100" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
+<part name="INVERT" library="CanCubeSat" deviceset="INVERTER" device="."/>
+<part name="R100" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="LED_G1" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
-<part name="R33" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
+<part name="R33" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="LED_G2" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="OPA" library="CanCubeSat" deviceset="OPA333" device=""/>
-<part name="R32" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
-<part name="R57" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
+<part name="R32" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
+<part name="R57" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="LED_R1" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="LED_R2" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="C5" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
 <part name="PWR" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="PB5" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
-<part name="R27" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
-<part name="R64" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
-<part name="R81" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
-<part name="R82" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
-<part name="R79" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
-<part name="R101" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
-<part name="R102" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
+<part name="R27" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
+<part name="R64" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
+<part name="R81" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
+<part name="R82" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
+<part name="R79" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
+<part name="R101" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
+<part name="R102" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
 <part name="IC2" library="CanCubeSat" deviceset="STM32F103C*T" device="" technology="8"/>
-<part name="R25" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
-<part name="R26" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
+<part name="R25" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
+<part name="R26" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
 <part name="C15" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
 <part name="C16" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="10µ"/>
 <part name="C6" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
 <part name="C7" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
 <part name="C8" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
 <part name="R71" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R2512" package3d_urn="urn:adsk.eagle:package:23545/2" value="R01"/>
-<part name="R73" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R"/>
-<part name="R74" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R"/>
+<part name="R73" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R"/>
+<part name="R74" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R"/>
 <part name="C9" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="R75" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R2512" package3d_urn="urn:adsk.eagle:package:23545/2" value="R01"/>
-<part name="R76" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R"/>
-<part name="R77" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R"/>
+<part name="R76" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R"/>
+<part name="R77" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R"/>
 <part name="C10" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="U$57" library="CanCubeSat" deviceset="INA219AID" device=""/>
 <part name="INA219#1" library="CanCubeSat" deviceset="INA219AID" device=""/>
@@ -16673,10 +16729,10 @@ Source: www.kingbright.com</description>
 <part name="U$2" library="CanCubeSat" deviceset="Q24" device=""/>
 <part name="C1" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="1nF"/>
 <part name="C2" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="10nF"/>
-<part name="R3" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="14K3"/>
+<part name="R3" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="14K3"/>
 <part name="AD5272#2" library="CanCubeSat" deviceset="AD5272" device=""/>
 <part name="C29" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="1µ"/>
-<part name="R1" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="91K"/>
+<part name="R1" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="91K"/>
 <part name="JP1" library="pinheadCS" deviceset="PINHD-2X8" device=""/>
 <part name="JP2" library="pinheadCS" deviceset="PINHD-1X2" device=""/>
 <part name="JP3" library="pinheadCS" deviceset="PINHD-1X2" device=""/>
