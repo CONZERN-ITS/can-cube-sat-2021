@@ -19660,9 +19660,9 @@ variable-capacitance diode</description>
 <pinref part="R2" gate="G$1" pin="1"/>
 </segment>
 <segment>
-<wire x1="93.98" y1="269.24" x2="93.98" y2="248.92" width="0.1524" layer="91"/>
-<label x="93.98" y="248.92" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$12" gate="G$1" pin="9"/>
+<wire x1="91.44" y1="269.24" x2="91.44" y2="248.92" width="0.1524" layer="91"/>
+<label x="91.44" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="8"/>
 </segment>
 </net>
 <net name="RX-S" class="0">
@@ -19672,9 +19672,9 @@ variable-capacitance diode</description>
 <label x="487.68" y="157.48" size="1.778" layer="95"/>
 </segment>
 <segment>
-<wire x1="83.82" y1="269.24" x2="83.82" y2="248.92" width="0.1524" layer="91"/>
-<label x="83.82" y="248.92" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$12" gate="G$1" pin="5"/>
+<wire x1="81.28" y1="269.24" x2="81.28" y2="248.92" width="0.1524" layer="91"/>
+<label x="81.28" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="4"/>
 </segment>
 </net>
 <net name="TX-S" class="0">
@@ -19684,9 +19684,9 @@ variable-capacitance diode</description>
 <label x="487.68" y="154.94" size="1.778" layer="95"/>
 </segment>
 <segment>
-<wire x1="88.9" y1="269.24" x2="88.9" y2="248.92" width="0.1524" layer="91"/>
-<label x="88.9" y="248.92" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$12" gate="G$1" pin="7"/>
+<wire x1="86.36" y1="269.24" x2="86.36" y2="248.92" width="0.1524" layer="91"/>
+<label x="86.36" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="6"/>
 </segment>
 </net>
 <net name="SWC" class="0">
@@ -19698,9 +19698,9 @@ variable-capacitance diode</description>
 <pinref part="R3" gate="G$1" pin="1"/>
 </segment>
 <segment>
-<wire x1="99.06" y1="269.24" x2="99.06" y2="248.92" width="0.1524" layer="91"/>
-<label x="99.06" y="248.92" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$12" gate="G$1" pin="11"/>
+<wire x1="96.52" y1="269.24" x2="96.52" y2="248.92" width="0.1524" layer="91"/>
+<label x="96.52" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="10"/>
 </segment>
 </net>
 <net name="NRST" class="0">
@@ -19713,9 +19713,9 @@ variable-capacitance diode</description>
 <label x="398.78" y="187.96" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U$12" gate="G$1" pin="3"/>
-<wire x1="78.74" y1="269.24" x2="78.74" y2="248.92" width="0.1524" layer="91"/>
-<label x="78.74" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="11"/>
+<wire x1="99.06" y1="269.24" x2="99.06" y2="248.92" width="0.1524" layer="91"/>
+<label x="99.06" y="248.92" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="SDA" class="0">
@@ -20115,24 +20115,24 @@ variable-capacitance diode</description>
 <pinref part="BSK3" gate="A" pin="4"/>
 </segment>
 <segment>
-<wire x1="96.52" y1="269.24" x2="96.52" y2="248.92" width="0.1524" layer="91"/>
-<label x="96.52" y="248.92" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$12" gate="G$1" pin="10"/>
+<wire x1="93.98" y1="269.24" x2="93.98" y2="248.92" width="0.1524" layer="91"/>
+<label x="93.98" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="9"/>
 </segment>
 <segment>
-<wire x1="91.44" y1="269.24" x2="91.44" y2="248.92" width="0.1524" layer="91"/>
-<label x="91.44" y="248.92" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$12" gate="G$1" pin="8"/>
+<wire x1="88.9" y1="269.24" x2="88.9" y2="248.92" width="0.1524" layer="91"/>
+<label x="88.9" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="7"/>
 </segment>
 <segment>
-<pinref part="U$12" gate="G$1" pin="6"/>
-<wire x1="86.36" y1="269.24" x2="86.36" y2="248.92" width="0.1524" layer="91"/>
-<label x="86.36" y="248.92" size="1.778" layer="95" rot="R90"/>
+<wire x1="83.82" y1="269.24" x2="83.82" y2="248.92" width="0.1524" layer="91"/>
+<label x="83.82" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="5"/>
 </segment>
 <segment>
-<pinref part="U$12" gate="G$1" pin="4"/>
-<wire x1="81.28" y1="269.24" x2="81.28" y2="248.92" width="0.1524" layer="91"/>
-<label x="81.28" y="248.92" size="1.778" layer="95" rot="R90"/>
+<wire x1="78.74" y1="269.24" x2="78.74" y2="248.92" width="0.1524" layer="91"/>
+<label x="78.74" y="248.92" size="1.778" layer="95" rot="R90"/>
+<pinref part="U$12" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="N$27" class="0">
