@@ -38,6 +38,11 @@
 #define MS5611_I2C_INSTANCE	I2C1
 #define MS5611_I2C_CLOCK_SPEED	400000
 
+
+extern I2C_HandleTypeDef hi2c3;
+#define MS_BUS_HANDLE &hi2c3
+
+
 #define SCL GPIO_PIN_6
 #define SDA GPIO_PIN_7
 
@@ -47,7 +52,7 @@
 
 struct prom_data prom = {0};
 
-
+/*
 I2C_HandleTypeDef ms5611_i2c = {
 		.Instance = MS5611_I2C_INSTANCE,
 		.Mode = HAL_I2C_MODE_MASTER,
@@ -61,7 +66,7 @@ I2C_HandleTypeDef ms5611_i2c = {
 				.OwnAddress1 = 0x00
 		}
 };
-
+*/
 
 
 int ms5611_reset(void * handle, uint16_t device_addr, uint8_t cmd)
@@ -79,7 +84,7 @@ int ms5611_read_prom_value(void * handle, uint16_t device_addr, uint8_t prom_sta
 	error = HAL_I2C_Master_Transmit(handle, device_addr, &prom_addr , sizeof(prom_addr), 10);
 
 	uint8_t bytes[2] = {0};
-	error = HAL_I2C_Master_Receive(&ms5611_i2c, device_addr, bytes, sizeof(bytes), 100);
+	error = HAL_I2C_Master_Receive(handle, device_addr, bytes, sizeof(bytes), 100);
 
 	*prom_value = ((uint16_t)bytes[0] << 1*8) | ((uint16_t)bytes[1] << 0*8);
 
@@ -117,7 +122,6 @@ unsigned char crc4(unsigned int n_prom[])
 	n_prom[7] = crc_read; 		// restore the crc_read to its original place
 	return (n_rem ^ 0x0);		//return crc4 code
 }
-
 
 
 int ms5611_read_all_prom_data(void * handle, uint16_t device_addr, uint8_t prom_start_addr, struct prom_data * _prom)
@@ -165,7 +169,7 @@ int ms5611_read_data(void * handle, uint16_t device_addr, uint8_t cmd, uint32_t 
 	error = HAL_I2C_Master_Transmit(handle, device_addr, &cmd , sizeof(cmd), 10);
 
 	uint8_t bytes[3];
-	error = HAL_I2C_Master_Receive(&ms5611_i2c, device_addr, bytes, sizeof(bytes), 10);
+	error = HAL_I2C_Master_Receive(handle, device_addr, bytes, sizeof(bytes), 10);
 	if (error){
 		// ...
 	}

@@ -23,6 +23,9 @@ typedef enum analog_target_t
 	//! O2 сенсор ME202
 	ANALOG_TARGET_ME202_O2,
 
+	//! внешний термистр для ДНК
+	ANALOG_TARGET_DNA_TEMP,
+
 	//! Интегрированный в stm32 термистр
 	ANALOG_TARGET_INTEGRATED_TEMP
 } analog_target_t;

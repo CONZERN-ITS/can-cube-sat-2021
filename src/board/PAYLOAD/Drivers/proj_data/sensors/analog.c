@@ -32,32 +32,36 @@ static int _channgel_config_for_target(analog_target_t target, ADC_ChannelConfTy
 	{
 	case ANALOG_TARGET_MICS6814_NO2:
 		config->Channel = ADC_CHANNEL_0;
-		config->Rank = ADC_REGULAR_RANK_1;
-		config->SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
+		config->Rank = 1;
+		config->SamplingTime = ADC_SAMPLETIME_480CYCLES;
 		break;
 
 	case ANALOG_TARGET_MICS6814_NH3:
 		config->Channel = ADC_CHANNEL_1;
-		config->Rank = ADC_REGULAR_RANK_1;
-		config->SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
+		config->Rank = 1;
+		config->SamplingTime = ADC_SAMPLETIME_480CYCLES;
 		break;
 
 	case ANALOG_TARGET_MICS6814_CO:
 		config->Channel = ADC_CHANNEL_2;
-		config->Rank = ADC_REGULAR_RANK_1;
-		config->SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
+		config->Rank = 1;
+		config->SamplingTime = ADC_SAMPLETIME_480CYCLES;
 		break;
 
 	case ANALOG_TARGET_ME202_O2:
 		config->Channel = ADC_CHANNEL_3;
-		config->Rank = ADC_REGULAR_RANK_1;
-		config->SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
+		config->Rank = 1;
+		config->SamplingTime = ADC_SAMPLETIME_480CYCLES;
 		break;
+
+	case ANALOG_TARGET_DNA_TEMP:
+		config->Channel = ADC_CHANNEL_4;
+		config->Rank = 1;
 
 	case ANALOG_TARGET_INTEGRATED_TEMP:
 		config->Channel = ADC_CHANNEL_TEMPSENSOR;
-		config->Rank = ADC_REGULAR_RANK_1;
-		config->SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
+		config->Rank = 1;
+		config->SamplingTime = ADC_SAMPLETIME_480CYCLES;
 		break;
 
 	default:

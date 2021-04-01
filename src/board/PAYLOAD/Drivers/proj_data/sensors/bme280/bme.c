@@ -18,9 +18,9 @@
 
 
 
-extern I2C_HandleTypeDef hi2c2;
+extern I2C_HandleTypeDef hi2c1;
 
-#define BME_BUS_HANDLE &hi2c2
+#define BME_BUS_HANDLE &hi2c1
 #define BME_BUS_RCC_FORCE_RESET __HAL_RCC_I2C2_FORCE_RESET
 #define BME_BUS_RCC_RELEASE_RESET __HAL_RCC_I2C2_RELEASE_RESET
 
