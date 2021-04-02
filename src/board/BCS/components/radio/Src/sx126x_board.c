@@ -38,10 +38,10 @@ int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg) {
 		.command_bits = 0,
 		.address_bits = 0,
 		.dummy_bits = 0,
-		.flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_NO_DUMMY,
+		.flags = 0,
 		.clock_speed_hz = 100000,
 		.mode = 0,
-		.spics_io_num = ITS_PIN_SPISR_CS_RA,
+		.spics_io_num = -1,
 		.queue_size = 30,
 		.pre_cb = 0,
 	};
@@ -108,19 +108,31 @@ static int _write_data(sx126x_board_t * brd, const uint8_t * data, uint16_t data
 
 static int _read_data(sx126x_board_t * brd, uint8_t * data, uint16_t data_size) {
 	ESP_LOGD("radio", "spi read  %d", data_size);
+	uint8_t dummy_data[data_size];
+	memset(dummy_data, 0xFF, data_size);
 	spi_transaction_t tran = {0};
 	tran.rx_buffer = data;
 	tran.rxlength = 8 * data_size;
+	tran.length = 8 * data_size;
+	tran.tx_buffer = dummy_data;
 	return spi_device_polling_transmit(brd->hspi, &tran);
 }
 
+static void _start_trans(sx126x_board_t * brd) {
+	spi_device_acquire_bus(brd->hspi, portMAX_DELAY);
+	gpio_set_level(ITS_PIN_SPISR_CS_RA, 0);
+}
+static void _end_trans(sx126x_board_t * brd) {
+	gpio_set_level(ITS_PIN_SPISR_CS_RA, 1);
+	spi_device_release_bus(brd->hspi);
+}
 
 int sx126x_brd_cmd_write(sx126x_board_t * brd, uint8_t cmd_code, const uint8_t * args, uint16_t args_size) {
 	ESP_LOGD("radio", "spi cmdw  0x%02X", cmd_code);
-	spi_device_acquire_bus(brd->hspi, portMAX_DELAY);
+	_start_trans(brd);
 	_write_data(brd, &cmd_code, 1);
 	_write_data(brd, args, args_size);
-	spi_device_release_bus(brd->hspi);
+	_end_trans(brd);
 	return 0;
 }
 int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status_, uint8_t * data, uint16_t data_size) {
@@ -129,11 +141,11 @@ int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status
 	*status = 0xFF; // Гоним единички на TX
 
 	ESP_LOGD("radio", "spi cmdr  0x%02X", cmd_code);
-	spi_device_acquire_bus(brd->hspi, portMAX_DELAY);
+	_start_trans(brd);
 	_write_data(brd, &cmd_code, 1);
 	_read_data(brd, status, 1);
 	_read_data(brd, data, data_size);
-	spi_device_release_bus(brd->hspi);
+	_end_trans(brd);
 
 	return 0;
 }
@@ -144,11 +156,11 @@ int sx126x_brd_reg_write(sx126x_board_t * brd, uint16_t addr, const uint8_t * da
 	addr = ((addr >> 8) & 0xFF) | ((addr >> 0) & 0xFF);
 
 	ESP_LOGD("radio", "spi cmdw  0x%02X", cmd_code);
-	spi_device_acquire_bus(brd->hspi, portMAX_DELAY);
+	_start_trans(brd);
 	_write_data(brd, (uint8_t * const) &cmd_code, 1);
 	_write_data(brd, (uint8_t * const) &addr, 2);
 	_write_data(brd, data, data_size);
-	spi_device_release_bus(brd->hspi);
+	_end_trans(brd);
 
 	return 0;
 }
@@ -157,11 +169,11 @@ int sx126x_brd_reg_read(sx126x_board_t * brd, uint16_t addr, uint8_t * data, uin
 
 	uint8_t status = 0xFF;
 	ESP_LOGD("radio", "spi cmdr  0x%02X", cmd_code);
-	spi_device_acquire_bus(brd->hspi, portMAX_DELAY);
+	_start_trans(brd);
 	_write_data(brd, (uint8_t * const) &cmd_code, 1);
 	_read_data(brd, &status, 1);
 	_read_data(brd, data, data_size);
-	spi_device_release_bus(brd->hspi);
+	_end_trans(brd);
 	return 0;
 }
 
@@ -169,11 +181,11 @@ int sx126x_brd_buf_write(sx126x_board_t * brd, uint8_t offset, const uint8_t * d
 	const uint8_t cmd_code = SX126X_CMD_WRITE_BUFFER;
 
 	ESP_LOGD("radio", "spi cmdw  0x%02X", cmd_code);
-	spi_device_acquire_bus(brd->hspi, portMAX_DELAY);
+	_start_trans(brd);
 	_write_data(brd, (uint8_t * const) &cmd_code, 1);
 	_write_data(brd, &offset, 1);
 	_write_data(brd, data, data_size);
-	spi_device_release_bus(brd->hspi);
+	_end_trans(brd);
 	return 0;
 }
 int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, uint8_t data_size) {
@@ -181,11 +193,11 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 
 	uint8_t status = 0xFF;
 	ESP_LOGD("radio", "spi cmdr  0x%02X", cmd_code);
-	spi_device_acquire_bus(brd->hspi, portMAX_DELAY);
+	_start_trans(brd);
 	_write_data(brd, (uint8_t * const) &cmd_code, 1);
 	_read_data(brd, &status, 1);
 	_read_data(brd, data, data_size);
-	spi_device_release_bus(brd->hspi);
+	_end_trans(brd);
 	return 0;
 }
 

@@ -369,28 +369,25 @@ void server_start(server_t *server) {
 
 void server_run(server_t * server)
 {
-	server_start(server);
+	//server_start(server);
 	int step = 0;
 	while (1) {
-		printf("Run\n");
-		fflush(stdout);
-		vTaskDelay(200);
-		ESP_LOGD("Radio", "run %d", step++);
+		printf("Run1 %d\n", step++);
+		vTaskDelay(2000 / portTICK_PERIOD_MS);
 
 		sx126x_drv_poll(&server->dev);
 		printf("Run2\n");
-		fflush(stdout);
-		vTaskDelay(200);
+		vTaskDelay(2000 / portTICK_PERIOD_MS);
+
 		uint8_t str[] = "Hello World!";
 		sx126x_drv_payload_write(&server->dev, str, sizeof(str));
-		printf("Run3\n");
-		fflush(stdout);
-		vTaskDelay(200);
+
 		sx126x_drv_mode_tx(&server->dev, 100);
 		_server_sync_tx_state(server);
 		_server_sync_rx_data(server);
 		_server_sync_rssi(server);
 
+		vTaskDelay(10000 / portTICK_PERIOD_MS);
 	}
 }
 
