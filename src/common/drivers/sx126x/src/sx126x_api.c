@@ -640,6 +640,7 @@ int sx126x_get_device_errors(sx126x_api_t * api, uint16_t device_errors)
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	device_errors = ((uint16_t)raw[0] << 8) | raw[1];
+	(void) device_errors;
 	return 0;
 }
 

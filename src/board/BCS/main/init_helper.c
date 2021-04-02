@@ -89,9 +89,10 @@ static uart_config_t init_pin_uart0 = {
 void common_packet_to_route(uint8_t *data, uint16_t size);
 uint8_t* common_imi_alloc(uint16_t size);
 
+
 static imi_config_t imi_config = {
 	.i2c_port = ITS_I2CTM_PORT,
-	.i2c_int = ITS_PIN_I2C_INT,
+	.i2c_int = -1,
 	.address_count = ITS_I2CTM_DEV_COUNT,
 	.ticksToWaitForOne = 100 / portTICK_RATE_MS,
 	.save = common_packet_to_route,
@@ -107,15 +108,16 @@ static spi_bus_config_t buscfg={
 	.miso_io_num = ITS_PIN_SPISR_MISO,
 	.mosi_io_num = ITS_PIN_SPISR_MOSI,
 	.sclk_io_num = ITS_PIN_SPISR_SCK,
+	.flags = SPICOMMON_BUSFLAG_MASTER,
 	.quadwp_io_num = -1, //not used
 	.quadhd_io_num = -1, //not used
-	.max_transfer_sz = ITS_BSK_COUNT * 5
+	.max_transfer_sz = 0
 };
 
 static void task_led(void *arg) {
 	gpio_config_t gc = {
 			.mode = GPIO_MODE_OUTPUT_OD,
-			.pull_up_en = GPIO_PULLUP_DISABLE,
+			.pull_up_en = GPIO_PULLUP_ENABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
 			.intr_type = GPIO_INTR_DISABLE,
 			.pin_bit_mask = 1ULL << ITS_PIN_LED,
@@ -125,15 +127,14 @@ static void task_led(void *arg) {
 	while (1) {
 		gpio_set_level(ITS_PIN_LED, x);
 		x ^= 1;
-		vTaskDelay(200 / portTICK_PERIOD_MS);
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 }
 #endif
 
+
 void init_basic(void) {
-#ifndef ITS_ESP_DEBUG
 	xTaskCreatePinnedToCore(task_led, "Led", configMINIMAL_STACK_SIZE + 1500, 0, 1, 0, tskNO_AFFINITY);
-#endif
 	//Initialize NVS
 	esp_err_t ret = nvs_flash_init();
 	if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -148,52 +149,97 @@ void init_basic(void) {
 	//esp - stm32f4
 	uart_param_config(ITS_UARTE_PORT, &init_pin_uart);
 	uart_driver_install(ITS_UARTE_PORT, ITS_UARTE_RX_BUF_SIZE, ITS_UARTE_TX_BUF_SIZE, ITS_UARTE_QUEUE_SIZE, &quart, 0);
-	uart_set_pin(ITS_UARTE_PORT, UART_PIN_NO_CHANGE, ITS_PIN_UARTE_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+	//uart_set_pin(ITS_UARTE_PORT, UART_PIN_NO_CHANGE, ITS_PIN_UARTE_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
 	//esp - radio
 	uart_param_config(ITS_UARTR_PORT, &init_pin_uart0);
 	uart_driver_install(ITS_UARTR_PORT, ITS_UARTR_RX_BUF_SIZE, ITS_UARTR_TX_BUF_SIZE, 0, 0, 0);
-	uart_set_pin(ITS_UARTR_PORT, ITS_PIN_UARTR_TX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+	//uart_set_pin(ITS_UARTR_PORT, ITS_PIN_UARTR_TX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
 #ifndef ITS_ESP_DEBUG
 	//shift reg
-	ret=spi_bus_initialize(ITS_SPISR_PORT, &buscfg, 0);
+	ret=spi_bus_initialize(ITS_SPISR_PORT, &buscfg, ITS_SPISR_DMA_CHAN);
 	ESP_ERROR_CHECK(ret);
 	ESP_LOGD("SYSTEM", "Bus inited");
 #endif
 
+	printf("HEELLLO2!!!!\n");
+	fflush(stdout);
+	vTaskDelay(200);
 	//time sync
 	gpio_config(&init_pin_time);
 	//gpio_config(&init_pin_pl_kvcc);
 	gpio_install_isr_service(0);
 
+	{
+		static gpio_config_t dio = {
+			.mode = GPIO_MODE_INPUT,
+			.pull_up_en = GPIO_PULLUP_DISABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_DISABLE,
+			.pin_bit_mask = 1ULL << ITS_PIN_RADIO_DIO1
+		};
+		static gpio_config_t reset = {
+			.mode = GPIO_MODE_OUTPUT_OD,
+			.pull_up_en = GPIO_PULLUP_ENABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_DISABLE,
+			.pin_bit_mask = 1ULL << ITS_PIN_RADIO_RESET
+		};
+		static gpio_config_t tx_en = {
+			.mode = GPIO_MODE_OUTPUT_OD,
+			.pull_up_en = GPIO_PULLUP_DISABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_DISABLE,
+			.pin_bit_mask = (1ULL << ITS_PIN_RADIO_TX_EN)
+		};
+		gpio_config(&dio);
+		gpio_config(&reset);
+		gpio_config(&tx_en);
+		gpio_set_level(ITS_PIN_RADIO_TX_EN, 0);
+		tx_en.pin_bit_mask = (1ULL << ITS_PIN_RADIO_RX_EN);
+		gpio_config(&tx_en);
+		gpio_set_level(ITS_PIN_RADIO_RX_EN, 0);
+
+	}
 
 #if ITS_WIFI_SERVER
 	wifi_init_ap();
 #else
 	wifi_init_sta();
 #endif
-}
 
+}
+server_t server_radio;
 void init_helper(void) {
 	log_collector_init(0);
 	init_basic();
-
+	printf("HEELLLO3.5!!!!\n");
+	fflush(stdout);
+	vTaskDelay(200);
+	server_init(&server_radio);
+	printf("HEELLLO4!!!!\n");
+	fflush(stdout);
+	vTaskDelay(200);
+	xTaskCreatePinnedToCore(server_task, "Radio task", configMINIMAL_STACK_SIZE + 4000, &server_radio, 1, 0, tskNO_AFFINITY);
+	printf("HEELLLO5!!!!\n");
+	fflush(stdout);
+	vTaskDelay(200);
 	//imi_init();
 
 	//Связь со всеми уст-ми на imi
-	i2c_chan = mavlink_claim_channel();
-	imi_install(&imi_config, ITS_IMI_PORT);
-	imi_add_address(ITS_IMI_PORT, ITS_ARK_ADDRESS);
-	imi_add_address(ITS_IMI_PORT, ITS_PLD_ADDRESS);
-	imi_start(ITS_IMI_PORT);
+	//i2c_chan = mavlink_claim_channel();
+	//imi_install(&imi_config, ITS_IMI_PORT);
+	//imi_add_address(ITS_IMI_PORT, ITS_ARK_ADDRESS);
+	//imi_add_address(ITS_IMI_PORT, ITS_PLD_ADDRESS);
+	//imi_start(ITS_IMI_PORT);
 
 	//Связь с SINS
-	uart_mavlink_install(ITS_UARTE_PORT, quart);
+	//uart_mavlink_install(ITS_UARTE_PORT, quart);
 #ifndef ITS_ESP_DEBUG
-	shift_reg_init_spi(&hsr, ITS_SPISR_PORT, ITS_BSK_COUNT * ITS_SR_PACK_SIZE, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_SS);
+	//shift_reg_init_spi(&hsr, ITS_SPISR_PORT, ITS_BSK_COUNT * ITS_SR_PACK_SIZE, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_SS);
 	ESP_LOGD("SYSTEM", "Shift reg inited");
-
+/*
 	control_vcc_init(&hsr, 0, ITS_PIN_PL_VCC);
 	control_vcc_bsk_enable(0, 1);
 	control_vcc_bsk_enable(1, 1);
@@ -226,7 +272,6 @@ void init_helper(void) {
 	control_heat_set_consumption(4, 300);
 	control_heat_set_consumption(5, 300);
 #endif
-/*
 	control_magnet_enable(ITS_BSK_1, 1);
 	control_magnet_enable(ITS_BSK_2A, -1);
 	control_magnet_enable(ITS_BSK_3, 1);
@@ -247,30 +292,25 @@ void init_helper(void) {
 	shift_reg_load(&hsr);*/
 
 	//xTaskCreate(test_task, "test task", configMINIMAL_STACK_SIZE + 2000, 0, 3, 0);
-	sensors_init();
+	//sensors_init();
 #endif
 
 	ESP_LOGD("SYSTEM", "Start wifi init");
-#if ITS_WIFI_SERVER
 	static ts_sync ts = {0};
-	ts.pin = ITS_PIN_UARTE_INT;
-	time_sync_from_sins_install(&ts);
-	radio_send_init();
+	//ts.pin = ITS_PIN_UARTE_INT;
+	//time_sync_from_sins_install(&ts);
+	//radio_send_init();
+	/*
 	vTaskDelay(1000 / portTICK_PERIOD_MS);
-#if ITS_SD_ON
 	while (sd_init()) {
 		ESP_LOGD("SYSTEM","Trying launch SD");
-	}
+	}*/
 
-#endif
-#else
-	time_sync_from_bcs_install(&ITS_WIFI_SERVER_ADDRESS);
-#endif
 
 	ESP_LOGD("SYSTEM", "Wifi inited");
-	op_config_ip(&hop, 53597);
-	op_init((op_handler_t *)&hop);
-	input_init((op_handler_t *)&hop);
+	//op_config_ip(&hop, 53597);
+	//op_init((op_handler_t *)&hop);
+	//input_init((op_handler_t *)&hop);
 }
 
 uint8_t mv_packet[MAVLINK_MAX_PACKET_LEN];

@@ -71,6 +71,7 @@
 #define ITS_UARTR_QUEUE_SIZE		20
 
 #define ITS_SPISR_PORT				SPI2_HOST
+#define ITS_SPISR_DMA_CHAN			1
 
 #define ITS_OWB_MAX_DEVICES			6
 
@@ -78,6 +79,8 @@
 static const ip_addr_t ITS_WIFI_SERVER_ADDRESS = IPADDR4_INIT_BYTES(192, 168, 4, 1);
 static const ip_addr_t ITS_WIFI_CLIENT_ADDRESS = IPADDR4_INIT_BYTES(192, 168, 4, 40);
 #define ITS_WIFI_PORT 53442
+
+#define ITS_RADIO_PACKET_SIZE 200
 
 void init_helper(void);
 

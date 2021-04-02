@@ -44,13 +44,9 @@ void app_main(void)
 	init_helper();
 
 	//xTaskCreatePinnedToCore(task_socket_comm, "Socket communication", configMINIMAL_STACK_SIZE + 4000, "Socket comm", 1, 0, tskNO_AFFINITY);
-	xTaskCreatePinnedToCore(task_print_telemetry, "Print telemetry", configMINIMAL_STACK_SIZE + 4000, "Print telemetry", 1, 0, tskNO_AFFINITY);
-	xTaskCreatePinnedToCore(ark_tsync_task, "ARK time sync", configMINIMAL_STACK_SIZE + 4000, "ARK time sync", 1, 0, tskNO_AFFINITY);
-#if ITS_WIFI_SERVER
+	//xTaskCreatePinnedToCore(task_print_telemetry, "Print telemetry", configMINIMAL_STACK_SIZE + 4000, "Print telemetry", 1, 0, tskNO_AFFINITY);
+	//xTaskCreatePinnedToCore(ark_tsync_task, "ARK time sync", configMINIMAL_STACK_SIZE + 4000, "ARK time sync", 1, 0, tskNO_AFFINITY);
 	xTaskCreatePinnedToCore(task_recv_telemetry_wifi, "Send tel", configMINIMAL_STACK_SIZE + 5000, 0, 2, 0, tskNO_AFFINITY);
-#else
-	xTaskCreatePinnedToCore(task_send_telemetry_wifi, "Send tel", configMINIMAL_STACK_SIZE + 4000, 0, 2, 0, tskNO_AFFINITY);
-#endif
 
 	ESP_LOGI("SYSTEM", "Tasks created");
 
