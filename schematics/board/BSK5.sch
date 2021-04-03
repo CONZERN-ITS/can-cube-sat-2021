@@ -17766,16 +17766,13 @@ variable-capacitance diode</description>
 <part name="R17" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.05A"/>
 <part name="R21" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.2A"/>
 <part name="U$19" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
-<part name="R22" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="U$20" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
-<part name="R23" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="U$21" library="CanCubeSat" deviceset="Q24" device=""/>
 <part name="C4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="1nF"/>
 <part name="C5" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="10nF"/>
 <part name="D1" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="BB141" device="" package3d_urn="urn:adsk.eagle:package:43410/4"/>
 <part name="R20" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.5A"/>
 <part name="U$22" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
-<part name="R24" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R27" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="LED-G" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="U$23" library="CanCubeSat" deviceset="LMC7101" device=""/>
@@ -17815,6 +17812,9 @@ variable-capacitance diode</description>
 <part name="R31" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R32" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="U$12" library="CanCubeSat" deviceset="FFC-CONNECT" device="68611"/>
+<part name="R33" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
+<part name="R24" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
+<part name="R22" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 </parts>
 <sheets>
 <sheet>
@@ -19055,15 +19055,7 @@ variable-capacitance diode</description>
 <attribute name="VALUE" x="435.61" y="207.518" size="1.778" layer="96"/>
 </instance>
 <instance part="U$19" gate="G$1" x="340.36" y="269.24" smashed="yes"/>
-<instance part="R22" gate="G$1" x="325.12" y="274.32" smashed="yes" rot="R270">
-<attribute name="NAME" x="326.6186" y="278.13" size="1.778" layer="95" rot="R270"/>
-<attribute name="VALUE" x="321.818" y="278.13" size="1.778" layer="96" rot="R270"/>
-</instance>
 <instance part="U$20" gate="G$1" x="523.24" y="284.48" smashed="yes"/>
-<instance part="R23" gate="G$1" x="508" y="289.56" smashed="yes" rot="R270">
-<attribute name="NAME" x="509.4986" y="293.37" size="1.778" layer="95" rot="R270"/>
-<attribute name="VALUE" x="504.698" y="293.37" size="1.778" layer="96" rot="R270"/>
-</instance>
 <instance part="U$21" gate="G$1" x="533.4" y="111.76" smashed="yes" rot="R180">
 <attribute name="NAME" x="538.48" y="119.38" size="1.778" layer="95" rot="R180"/>
 </instance>
@@ -19084,10 +19076,6 @@ variable-capacitance diode</description>
 <attribute name="VALUE" x="181.61" y="329.438" size="1.778" layer="96"/>
 </instance>
 <instance part="U$22" gate="G$1" x="205.74" y="332.74" smashed="yes"/>
-<instance part="R24" gate="G$1" x="190.5" y="337.82" smashed="yes" rot="R270">
-<attribute name="NAME" x="191.9986" y="341.63" size="1.778" layer="95" rot="R270"/>
-<attribute name="VALUE" x="187.198" y="341.63" size="1.778" layer="96" rot="R270"/>
-</instance>
 <instance part="R27" gate="G$1" x="218.44" y="345.44" smashed="yes" rot="R270">
 <attribute name="NAME" x="219.9386" y="349.25" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="215.138" y="349.25" size="1.778" layer="96" rot="R270"/>
@@ -19234,6 +19222,18 @@ variable-capacitance diode</description>
 <attribute name="NAME" x="70.485" y="265.43" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="114.3" y="265.43" size="1.778" layer="96" rot="R90"/>
 </instance>
+<instance part="R33" gate="G$1" x="195.58" y="342.9" smashed="yes">
+<attribute name="NAME" x="191.77" y="344.3986" size="1.778" layer="95"/>
+<attribute name="VALUE" x="191.77" y="339.598" size="1.778" layer="96"/>
+</instance>
+<instance part="R24" gate="G$1" x="330.2" y="279.4" smashed="yes">
+<attribute name="NAME" x="326.39" y="280.8986" size="1.778" layer="95"/>
+<attribute name="VALUE" x="326.39" y="276.098" size="1.778" layer="96"/>
+</instance>
+<instance part="R22" gate="G$1" x="513.08" y="294.64" smashed="yes">
+<attribute name="NAME" x="509.27" y="296.1386" size="1.778" layer="95"/>
+<attribute name="VALUE" x="509.27" y="291.338" size="1.778" layer="96"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -19321,19 +19321,13 @@ variable-capacitance diode</description>
 </segment>
 <segment>
 <pinref part="U$19" gate="G$1" pin="S"/>
-<wire x1="330.2" y1="269.24" x2="325.12" y2="269.24" width="0.1524" layer="91"/>
 <label x="309.88" y="269.24" size="1.778" layer="95"/>
-<pinref part="R22" gate="G$1" pin="2"/>
-<wire x1="325.12" y1="269.24" x2="309.88" y2="269.24" width="0.1524" layer="91"/>
-<junction x="325.12" y="269.24"/>
+<wire x1="330.2" y1="269.24" x2="309.88" y2="269.24" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="U$20" gate="G$1" pin="S"/>
-<wire x1="513.08" y1="284.48" x2="508" y2="284.48" width="0.1524" layer="91"/>
 <label x="492.76" y="284.48" size="1.778" layer="95"/>
-<pinref part="R23" gate="G$1" pin="2"/>
-<wire x1="508" y1="284.48" x2="492.76" y2="284.48" width="0.1524" layer="91"/>
-<junction x="508" y="284.48"/>
+<wire x1="513.08" y1="284.48" x2="492.76" y2="284.48" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C5" gate="G$1" pin="1"/>
@@ -19881,9 +19875,7 @@ variable-capacitance diode</description>
 <segment>
 <wire x1="195.58" y1="332.74" x2="190.5" y2="332.74" width="0.1524" layer="91"/>
 <pinref part="U$22" gate="G$1" pin="S"/>
-<pinref part="R24" gate="G$1" pin="2"/>
 <pinref part="R20" gate="G$1" pin="2"/>
-<junction x="190.5" y="332.74"/>
 </segment>
 </net>
 <net name="3V3" class="0">
@@ -20011,6 +20003,21 @@ variable-capacitance diode</description>
 <pinref part="U$12" gate="G$1" pin="1"/>
 <wire x1="73.66" y1="269.24" x2="73.66" y2="248.92" width="0.1524" layer="91"/>
 <label x="73.66" y="248.92" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<pinref part="R33" gate="G$1" pin="1"/>
+<wire x1="190.5" y1="342.9" x2="180.34" y2="342.9" width="0.1524" layer="91"/>
+<label x="180.34" y="342.9" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R24" gate="G$1" pin="1"/>
+<wire x1="325.12" y1="279.4" x2="314.96" y2="279.4" width="0.1524" layer="91"/>
+<label x="314.96" y="279.4" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R22" gate="G$1" pin="1"/>
+<wire x1="508" y1="294.64" x2="497.84" y2="294.64" width="0.1524" layer="91"/>
+<label x="497.84" y="294.64" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="SINS-KVCC" class="0">
@@ -20544,9 +20551,9 @@ variable-capacitance diode</description>
 <pinref part="R30" gate="G$1" pin="2"/>
 <pinref part="U$22" gate="G$1" pin="G"/>
 <wire x1="205.74" y1="345.44" x2="205.74" y2="342.9" width="0.1524" layer="91"/>
-<pinref part="R24" gate="G$1" pin="1"/>
+<pinref part="R33" gate="G$1" pin="2"/>
 <wire x1="205.74" y1="342.9" x2="205.74" y2="340.36" width="0.1524" layer="91"/>
-<wire x1="190.5" y1="342.9" x2="205.74" y2="342.9" width="0.1524" layer="91"/>
+<wire x1="200.66" y1="342.9" x2="205.74" y2="342.9" width="0.1524" layer="91"/>
 <junction x="205.74" y="342.9"/>
 </segment>
 </net>
@@ -20555,20 +20562,20 @@ variable-capacitance diode</description>
 <pinref part="R31" gate="G$1" pin="2"/>
 <pinref part="U$19" gate="G$1" pin="G"/>
 <wire x1="340.36" y1="281.94" x2="340.36" y2="279.4" width="0.1524" layer="91"/>
-<pinref part="R22" gate="G$1" pin="1"/>
+<pinref part="R24" gate="G$1" pin="2"/>
 <wire x1="340.36" y1="279.4" x2="340.36" y2="276.86" width="0.1524" layer="91"/>
-<wire x1="325.12" y1="279.4" x2="340.36" y2="279.4" width="0.1524" layer="91"/>
+<wire x1="335.28" y1="279.4" x2="340.36" y2="279.4" width="0.1524" layer="91"/>
 <junction x="340.36" y="279.4"/>
 </segment>
 </net>
 <net name="N$13" class="0">
 <segment>
-<pinref part="R23" gate="G$1" pin="1"/>
-<wire x1="508" y1="294.64" x2="523.24" y2="294.64" width="0.1524" layer="91"/>
 <pinref part="U$20" gate="G$1" pin="G"/>
-<wire x1="523.24" y1="294.64" x2="523.24" y2="292.1" width="0.1524" layer="91"/>
 <pinref part="R32" gate="G$1" pin="2"/>
 <wire x1="523.24" y1="297.18" x2="523.24" y2="294.64" width="0.1524" layer="91"/>
+<pinref part="R22" gate="G$1" pin="2"/>
+<wire x1="523.24" y1="294.64" x2="523.24" y2="292.1" width="0.1524" layer="91"/>
+<wire x1="518.16" y1="294.64" x2="523.24" y2="294.64" width="0.1524" layer="91"/>
 <junction x="523.24" y="294.64"/>
 </segment>
 </net>
