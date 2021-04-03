@@ -225,6 +225,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 		sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg
 )
 {
+	log_trace("Event handler");
 	server_t * server = (server_t*)user_arg;
 
 	bool went_tx = false;
@@ -243,7 +244,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 					log_warn("no rx");
 
 				// Мы уже долго ждали, будем отправлять
-				went_tx = _radio_go_tx_if_any(server);
+				//went_tx = _radio_go_tx_if_any(server);
 				if (went_tx)
 					server->rx_timedout_cnt = 0;
 			}
@@ -256,7 +257,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 			_radio_fetch_rx(server, arg->rx_done.crc_valid);
 			_radio_to_router(server);
 			// Тут же пойдем в TX, если нам есть чем
-			went_tx = _radio_go_tx_if_any(server);
+			//went_tx = _radio_go_tx_if_any(server);
 		}
 		break;
 
@@ -288,8 +289,8 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 		log_info("tx begun");
 		server->rx_timedout_cnt = 0;
 	}
-	else
-		_radio_go_rx(server);
+	//else
+		//_radio_go_rx(server);
 }
 
 
@@ -372,31 +373,31 @@ void server_run(server_t * server)
 	//server_start(server);
 	int rc = 0;
 	int step = 0;
-	while (1) {
-		printf("Run1 %d\n", step++);
-		vTaskDelay(2000 / portTICK_PERIOD_MS);
 
+	while (1) {
 		rc = sx126x_drv_poll(&server->dev);
 		if (rc) {
 			ESP_LOGE("radio", "poll %d", rc);
 		}
-		printf("Run2\n");
-		vTaskDelay(2000 / portTICK_PERIOD_MS);
+		if (step % 50 == 0) {
+			ESP_LOGD("radio", "Write");
+			uint8_t str[] = "Hello World!";
+			rc = sx126x_drv_payload_write(&server->dev, str, sizeof(str));
+			if (rc) {
+				ESP_LOGE("radio", "write %d", rc);
+			}
 
-		uint8_t str[] = "Hello World!";
-		rc = sx126x_drv_payload_write(&server->dev, str, sizeof(str));
-		if (rc) {
-			ESP_LOGE("radio", "write %d", rc);
+			rc = sx126x_drv_mode_tx(&server->dev, 4000);
+			if (rc) {
+				ESP_LOGE("radio", "mode_tx %d", rc);
+			}
 		}
-		rc = sx126x_drv_mode_tx(&server->dev, 100);
-		if (rc) {
-			ESP_LOGE("radio", "mode_tx %d", rc);
-		}
-		_server_sync_tx_state(server);
-		_server_sync_rx_data(server);
-		_server_sync_rssi(server);
 
-		vTaskDelay(10000 / portTICK_PERIOD_MS);
+		step++;
+		vTaskDelay(100 / portTICK_PERIOD_MS);
+		//_server_sync_tx_state(server);
+		//_server_sync_rx_data(server);
+		//_server_sync_rssi(server);
 	}
 }
 

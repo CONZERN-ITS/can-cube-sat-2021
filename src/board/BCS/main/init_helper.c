@@ -186,13 +186,21 @@ void init_basic(void) {
 			.intr_type = GPIO_INTR_DISABLE,
 			.pin_bit_mask = 1ULL << ITS_PIN_RADIO_RESET
 		};
+		static gpio_config_t cs_ra = {
+			.mode = GPIO_MODE_OUTPUT_OD,
+			.pull_up_en = GPIO_PULLUP_ENABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_DISABLE,
+			.pin_bit_mask = 1ULL << ITS_PIN_SPISR_CS_RA
+		};
 		static gpio_config_t tx_en = {
 			.mode = GPIO_MODE_OUTPUT_OD,
-			.pull_up_en = GPIO_PULLUP_DISABLE,
+			.pull_up_en = GPIO_PULLUP_ENABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
 			.intr_type = GPIO_INTR_DISABLE,
 			.pin_bit_mask = (1ULL << ITS_PIN_RADIO_TX_EN)
 		};
+		gpio_config(&cs_ra);
 		gpio_config(&dio);
 		gpio_config(&reset);
 		gpio_config(&tx_en);
@@ -221,7 +229,7 @@ void init_helper(void) {
 	printf("HEELLLO4!!!!\n");
 	fflush(stdout);
 	vTaskDelay(200);
-	xTaskCreatePinnedToCore(server_task, "Radio task", configMINIMAL_STACK_SIZE + 4000, &server_radio, 1, 0, tskNO_AFFINITY);
+	xTaskCreatePinnedToCore(server_task, "Radio task", configMINIMAL_STACK_SIZE + 4000, &server_radio, 10, 0, tskNO_AFFINITY);
 	printf("HEELLLO5!!!!\n");
 	fflush(stdout);
 	vTaskDelay(200);
