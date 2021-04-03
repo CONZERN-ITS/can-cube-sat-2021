@@ -467,17 +467,6 @@
 <wire x1="0.5" y1="-3" x2="0.5" y2="-4" width="0.127" layer="20"/>
 <wire x1="0.5" y1="-4" x2="-0.5" y2="-4" width="0.127" layer="20" curve="-180"/>
 </package>
-<package name="GRAFIT4_2">
-<smd name="OUT" x="0" y="0" dx="2" dy="2" layer="16" roundness="100" rot="R90"/>
-<wire x1="-0.5" y1="0" x2="0.5" y2="0" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="0" x2="-0.5" y2="0" width="0.127" layer="20" curve="-180"/>
-<smd name="P$1" x="0" y="3.5" dx="2" dy="3" layer="1" roundness="100"/>
-<wire x1="-0.5" y1="3.5" x2="0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="3.5" x2="-0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
-<smd name="P$2" x="0" y="-3.5" dx="2" dy="3" layer="1" roundness="100"/>
-<wire x1="-0.5" y1="-3.5" x2="0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="-3.5" x2="-0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
-</package>
 <package name="KCONNECT-_QUAD">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 0.1"</description>
 <pad name="1" x="-3.25" y="-3.25" drill="1" diameter="1.4" shape="square"/>
@@ -506,6 +495,17 @@
 <smd name="8" x="1.3" y="0.975" dx="0.9" dy="0.4" layer="1"/>
 <text x="0" y="0" size="0.4064" layer="25" rot="R90" align="center">&gt;NAME</text>
 <circle x="-0.508" y="1.143" radius="0.1" width="0.2" layer="21"/>
+</package>
+<package name="GRAFIT4_2">
+<smd name="OUT" x="0" y="0" dx="2" dy="2" layer="16" roundness="100" rot="R90"/>
+<wire x1="-0.5" y1="0" x2="0.5" y2="0" width="0.127" layer="20" curve="-180"/>
+<wire x1="0.5" y1="0" x2="-0.5" y2="0" width="0.127" layer="20" curve="-180"/>
+<smd name="P$1" x="0" y="3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
+<wire x1="-0.5" y1="3.5" x2="0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
+<wire x1="0.5" y1="3.5" x2="-0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
+<smd name="P$2" x="0" y="-3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
+<wire x1="-0.5" y1="-3.5" x2="0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
+<wire x1="0.5" y1="-3.5" x2="-0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
 </package>
 </packages>
 <packages3d>
@@ -704,7 +704,7 @@
 </device>
 <device name="QUAD-" package="KCONNECT-_QUAD">
 <connects>
-<connect gate="G$1" pin="P$1" pad="1"/>
+<connect gate="G$1" pin="P$1" pad="1 2 3 4"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -15687,10 +15687,10 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="LED_R" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="R20" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="CMD" library="CanCubeSat" deviceset="KCONNECT" device="QUAD" value="KCONNECTQUAD"/>
-<part name="U$27" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
-<part name="U$28" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
-<part name="U$29" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
-<part name="U$30" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
+<part name="U$27" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT4_2" value="GRAFITGRAFIT4_2"/>
+<part name="U$28" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT4_2" value="GRAFITGRAFIT4_2"/>
+<part name="U$29" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT4_2" value="GRAFITGRAFIT4_2"/>
+<part name="U$30" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT4_2" value="GRAFITGRAFIT4_2"/>
 <part name="BSK5" library="pinheadCS" deviceset="PINHD-1X8" device=""/>
 <part name="U$5" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R6" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
