@@ -367,17 +367,6 @@
 <wire x1="0.5" y1="-3" x2="0.5" y2="-4" width="0.127" layer="20"/>
 <wire x1="0.5" y1="-4" x2="-0.5" y2="-4" width="0.127" layer="20" curve="-180"/>
 </package>
-<package name="GRAFIT4_2">
-<smd name="OUT" x="0" y="0" dx="2" dy="2" layer="16" roundness="100" rot="R90"/>
-<wire x1="-0.5" y1="0" x2="0.5" y2="0" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="0" x2="-0.5" y2="0" width="0.127" layer="20" curve="-180"/>
-<smd name="P$1" x="0" y="3.5" dx="2" dy="3" layer="1" roundness="100"/>
-<wire x1="-0.5" y1="3.5" x2="0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="3.5" x2="-0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
-<smd name="P$2" x="0" y="-3.5" dx="2" dy="3" layer="1" roundness="100"/>
-<wire x1="-0.5" y1="-3.5" x2="0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="-3.5" x2="-0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
-</package>
 <package name="KCONNECT_QUAD">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 0.1"</description>
 <wire x1="-4.25" y1="-4.25" x2="-4.25" y2="4.25" width="0.254" layer="21"/>
@@ -409,6 +398,17 @@
 <rectangle x1="-3.504" y1="2.996" x2="-2.996" y2="3.504" layer="51"/>
 <rectangle x1="2.996" y1="2.996" x2="3.504" y2="3.504" layer="51"/>
 <rectangle x1="2.996" y1="-3.504" x2="3.504" y2="-2.996" layer="51"/>
+</package>
+<package name="GRAFIT4_2">
+<smd name="OUT" x="0" y="0" dx="2" dy="2" layer="16" roundness="100" rot="R90"/>
+<wire x1="-0.5" y1="0" x2="0.5" y2="0" width="0.127" layer="20" curve="-180"/>
+<wire x1="0.5" y1="0" x2="-0.5" y2="0" width="0.127" layer="20" curve="-180"/>
+<smd name="P$1" x="0" y="3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
+<wire x1="-0.5" y1="3.5" x2="0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
+<wire x1="0.5" y1="3.5" x2="-0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
+<smd name="P$2" x="0" y="-3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
+<wire x1="-0.5" y1="-3.5" x2="0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
+<wire x1="0.5" y1="-3.5" x2="-0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
 </package>
 </packages>
 <symbols>
@@ -7025,7 +7025,7 @@ Source: www.kingbright.com</description>
 <part name="R13" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1k5"/>
 <part name="LED7" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="R14" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
-<part name="U$6" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
+<part name="U$6" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT4_2" value="GRAFITGRAFIT4_2"/>
 <part name="U$5" library="CanCubeSat" deviceset="KCONNECT" device="QUAD-"/>
 </parts>
 <sheets>

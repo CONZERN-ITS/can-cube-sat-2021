@@ -238,25 +238,29 @@ Source: http://onsemi.com .. MBR0520LT1-D.pdf</description>
 </library>
 <library name="CanCubeSat">
 <packages>
-<package name="SOLAR_0">
+<package name="SOLAR_0-2">
 <wire x1="10" y1="-9.75" x2="10" y2="9.75" width="0.2" layer="21"/>
 <wire x1="10" y1="-9.75" x2="-10" y2="-9.75" width="0.2" layer="21"/>
 <wire x1="-10" y1="-9.75" x2="-10" y2="9.75" width="0.2" layer="21"/>
 <wire x1="-10" y1="9.75" x2="10" y2="9.75" width="0.2" layer="21"/>
 <smd name="IN" x="0" y="-4" dx="10" dy="2" layer="1" roundness="100" rot="R90"/>
-<smd name="OUT" x="0" y="10" dx="5" dy="3" layer="16" roundness="100"/>
+<smd name="OUT" x="0" y="10" dx="4.5" dy="2.5" layer="16" roundness="100"/>
 <wire x1="-1" y1="10.5" x2="1" y2="10.5" width="0.127" layer="20"/>
 <wire x1="1" y1="10.5" x2="1" y2="9.5" width="0.127" layer="20" curve="-180"/>
 <wire x1="1" y1="9.5" x2="-1" y2="9.5" width="0.127" layer="20"/>
 <wire x1="-1" y1="9.5" x2="-1" y2="10.5" width="0.127" layer="20" curve="-180"/>
-</package>
-<package name="SOLAR_1">
-<wire x1="10" y1="-9.75" x2="10" y2="9.75" width="0.2" layer="21"/>
-<wire x1="10" y1="-9.75" x2="-10" y2="-9.75" width="0.2" layer="21"/>
-<wire x1="-10" y1="-9.75" x2="-10" y2="9.75" width="0.2" layer="21"/>
-<wire x1="-10" y1="9.75" x2="10" y2="9.75" width="0.2" layer="21"/>
-<smd name="IN" x="0" y="-4" dx="10" dy="2" layer="1" roundness="100" rot="R90"/>
-<smd name="OUT" x="0" y="5" dx="8" dy="2" layer="16" roundness="100" rot="R270"/>
+<wire x1="-8.5" y1="6.5" x2="-8.5" y2="-6.5" width="0.127" layer="21"/>
+<wire x1="-8.5" y1="-6.5" x2="8.5" y2="-6.5" width="0.127" layer="21"/>
+<wire x1="8.5" y1="-6.5" x2="8.5" y2="6.5" width="0.127" layer="21"/>
+<wire x1="8.5" y1="6.5" x2="-8.5" y2="6.5" width="0.127" layer="21"/>
+<smd name="IN-2" x="-7.5" y="-3" dx="10" dy="2" layer="1" roundness="100" rot="R90"/>
+<smd name="OUT-2" x="-7.5" y="6.75" dx="4.5" dy="2.5" layer="16" roundness="100"/>
+<wire x1="-8.5" y1="7.25" x2="-6.5" y2="7.25" width="0.127" layer="20"/>
+<wire x1="-6.5" y1="7.25" x2="-6.5" y2="6.25" width="0.127" layer="20" curve="-180"/>
+<wire x1="-6.5" y1="6.25" x2="-8.5" y2="6.25" width="0.127" layer="20"/>
+<wire x1="-8.5" y1="6.25" x2="-8.5" y2="7.25" width="0.127" layer="20" curve="-180"/>
+<smd name="OUT-21" x="-7.5" y="6.75" dx="3.4" dy="1.4" layer="1" roundness="100"/>
+<smd name="OUT1" x="0" y="10" dx="3.4" dy="1.4" layer="1" roundness="100"/>
 </package>
 <package name="255SB" urn="urn:adsk.eagle:footprint:27544/1" locally_modified="yes">
 <description>&lt;b&gt;SLIDING SWITCH&lt;/b&gt;&lt;p&gt;
@@ -428,14 +432,33 @@ distributor Buerklin, 11G810</description>
 <wire x1="0.5" y1="-3" x2="0.5" y2="-4" width="0.127" layer="20"/>
 <wire x1="0.5" y1="-4" x2="-0.5" y2="-4" width="0.127" layer="20" curve="-180"/>
 </package>
+<package name="SOLAR_1-2">
+<wire x1="10" y1="-9.75" x2="10" y2="9.75" width="0.2" layer="21"/>
+<wire x1="10" y1="-9.75" x2="-10" y2="-9.75" width="0.2" layer="21"/>
+<wire x1="-10" y1="-9.75" x2="-10" y2="9.75" width="0.2" layer="21"/>
+<wire x1="-10" y1="9.75" x2="10" y2="9.75" width="0.2" layer="21"/>
+<smd name="IN" x="0" y="-4" dx="10" dy="2" layer="1" roundness="100" rot="R90"/>
+<smd name="OUT" x="0" y="5" dx="8" dy="2" layer="16" roundness="100" rot="R270"/>
+<wire x1="-8.5" y1="6.5" x2="-8.5" y2="-6.5" width="0.127" layer="21"/>
+<wire x1="-8.5" y1="-6.5" x2="8.5" y2="-6.5" width="0.127" layer="21"/>
+<wire x1="8.5" y1="-6.5" x2="8.5" y2="6.5" width="0.127" layer="21"/>
+<wire x1="8.5" y1="6.5" x2="-8.5" y2="6.5" width="0.127" layer="21"/>
+<smd name="IN-2" x="-7.5" y="-3" dx="10" dy="2" layer="1" roundness="100" rot="R90"/>
+<smd name="OUT-2" x="-7.5" y="6.75" dx="4.5" dy="2.5" layer="16" roundness="100"/>
+<wire x1="-8.5" y1="7.25" x2="-6.5" y2="7.25" width="0.127" layer="20"/>
+<wire x1="-6.5" y1="7.25" x2="-6.5" y2="6.25" width="0.127" layer="20" curve="-180"/>
+<wire x1="-6.5" y1="6.25" x2="-8.5" y2="6.25" width="0.127" layer="20"/>
+<wire x1="-8.5" y1="6.25" x2="-8.5" y2="7.25" width="0.127" layer="20" curve="-180"/>
+<smd name="OUT-21" x="-7.5" y="6.75" dx="3.4" dy="1.4" layer="1" roundness="100"/>
+</package>
 <package name="GRAFIT4_2">
 <smd name="OUT" x="0" y="0" dx="2" dy="2" layer="16" roundness="100" rot="R90"/>
 <wire x1="-0.5" y1="0" x2="0.5" y2="0" width="0.127" layer="20" curve="-180"/>
 <wire x1="0.5" y1="0" x2="-0.5" y2="0" width="0.127" layer="20" curve="-180"/>
-<smd name="P$1" x="0" y="3.5" dx="2" dy="3" layer="1" roundness="100"/>
+<smd name="P$1" x="0" y="3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
 <wire x1="-0.5" y1="3.5" x2="0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
 <wire x1="0.5" y1="3.5" x2="-0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
-<smd name="P$2" x="0" y="-3.5" dx="2" dy="3" layer="1" roundness="100"/>
+<smd name="P$2" x="0" y="-3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
 <wire x1="-0.5" y1="-3.5" x2="0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
 <wire x1="0.5" y1="-3.5" x2="-0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
 </package>
@@ -486,24 +509,24 @@ distributor Buerklin, 11G810</description>
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="SOLAR">
+<deviceset name="SOLAR-2">
 <gates>
 <gate name="G$1" symbol="SOLAR" x="0" y="0"/>
 </gates>
 <devices>
-<device name="_1" package="SOLAR_1">
+<device name="_0" package="SOLAR_0-2">
 <connects>
-<connect gate="G$1" pin="IN" pad="IN"/>
-<connect gate="G$1" pin="OUT" pad="OUT"/>
+<connect gate="G$1" pin="IN" pad="IN IN-2"/>
+<connect gate="G$1" pin="OUT" pad="OUT OUT-2 OUT-21 OUT1"/>
 </connects>
 <technologies>
 <technology name=""/>
 </technologies>
 </device>
-<device name="_0" package="SOLAR_0">
+<device name="_1" package="SOLAR_1-2">
 <connects>
-<connect gate="G$1" pin="IN" pad="IN"/>
-<connect gate="G$1" pin="OUT" pad="OUT"/>
+<connect gate="G$1" pin="IN" pad="IN IN-2"/>
+<connect gate="G$1" pin="OUT" pad="OUT OUT-2 OUT-21"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -7277,22 +7300,22 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </classes>
 <parts>
 <part name="D1" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="MBR0520LT" device="" package3d_urn="urn:adsk.eagle:package:43420/1"/>
-<part name="SOL1" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL2" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL3" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL5" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL6" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL7" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL9" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL10" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL11" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL13" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL14" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL15" library="CanCubeSat" deviceset="SOLAR" device="_0"/>
-<part name="SOL16" library="CanCubeSat" deviceset="SOLAR" device="_1"/>
-<part name="SOL12" library="CanCubeSat" deviceset="SOLAR" device="_1"/>
-<part name="SOL8" library="CanCubeSat" deviceset="SOLAR" device="_1"/>
-<part name="SOL4" library="CanCubeSat" deviceset="SOLAR" device="_1"/>
+<part name="SOL1" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL2" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL3" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL5" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL6" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL7" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL9" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL10" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL11" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL13" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL14" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL15" library="CanCubeSat" deviceset="SOLAR-2" device="_0"/>
+<part name="SOL16" library="CanCubeSat" deviceset="SOLAR-2" device="_1"/>
+<part name="SOL12" library="CanCubeSat" deviceset="SOLAR-2" device="_1"/>
+<part name="SOL8" library="CanCubeSat" deviceset="SOLAR-2" device="_1"/>
+<part name="SOL4" library="CanCubeSat" deviceset="SOLAR-2" device="_1"/>
 <part name="S1" library="CanCubeSat" deviceset="255SB" device="" package3d_urn="urn:adsk.eagle:package:27679/1"/>
 <part name="R1_2K7" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k7"/>
 <part name="PWR" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
@@ -7313,7 +7336,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="D15" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="MBR0520LT" device="" package3d_urn="urn:adsk.eagle:package:43420/1"/>
 <part name="D16" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="MBR0520LT" device="" package3d_urn="urn:adsk.eagle:package:43420/1"/>
 <part name="D17" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="MBR0520LT" device="" package3d_urn="urn:adsk.eagle:package:43420/1"/>
-<part name="U$6" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT3_1"/>
+<part name="U$6" library="CanCubeSat" deviceset="GRAFIT" device="GRAFIT4_2" value="GRAFITGRAFIT4_2"/>
 </parts>
 <sheets>
 <sheet>
