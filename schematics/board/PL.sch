@@ -23212,11 +23212,12 @@ MICS-6814</text>
 </segment>
 <segment>
 <pinref part="R45" gate="G$1" pin="1"/>
-<pinref part="R40" gate="G$1" pin="2"/>
 <wire x1="-7.62" y1="68.58" x2="-7.62" y2="60.96" width="0.1524" layer="91"/>
-<wire x1="-7.62" y1="60.96" x2="-7.62" y2="58.42" width="0.1524" layer="91"/>
 <wire x1="-33.02" y1="60.96" x2="-7.62" y2="60.96" width="0.1524" layer="91"/>
 <label x="-30.48" y="60.96" size="1.778" layer="95"/>
+<pinref part="R40" gate="G$1" pin="2"/>
+<wire x1="-7.62" y1="58.42" x2="-7.62" y2="60.96" width="0.1524" layer="91"/>
+<junction x="-7.62" y="60.96"/>
 </segment>
 </net>
 <net name="CTRL-NO2-1" class="0">

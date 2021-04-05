@@ -6403,8 +6403,6 @@ design rules under a new name.</description>
 <signal name="CTRL-NO2-2">
 <contactref element="U1" pad="22"/>
 <contactref element="R45" pad="1"/>
-<contactref element="R40" pad="2"/>
-<wire x1="28.35" y1="25.3" x2="30.65" y2="25.3" width="0.3" layer="1"/>
 <wire x1="30.65" y1="25.3" x2="31.55" y2="24.4" width="0.3" layer="1"/>
 <wire x1="31.55" y1="24.4" x2="36.76235" y2="24.4" width="0.3" layer="1"/>
 <wire x1="43.517178125" y1="31.154828125" x2="45" y2="31.154828125" width="0.3" layer="1"/>
@@ -6418,6 +6416,8 @@ design rules under a new name.</description>
 <wire x1="55.76" y1="35.16" x2="55.75" y2="35.17" width="0.3" layer="1"/>
 <wire x1="56.2" y1="33.5" x2="56.2" y2="33.870525" width="0.3" layer="1"/>
 <wire x1="56.2" y1="33.870525" x2="55.76" y2="34.310525" width="0.3" layer="1"/>
+<contactref element="R40" pad="2"/>
+<wire x1="28.35" y1="25.3" x2="30.65" y2="25.3" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="CTRL-NO2-1">
 <contactref element="U1" pad="23"/>
