@@ -42,7 +42,7 @@ class ModelWidget(OpenGL.GLViewWidget):
 
     def setup_ui_design(self):
         self.settings.beginGroup("CentralWidget/ModelWidget/Grid")
-        if self.settings.value("is_on"):
+        if self.settings.value("is_on") != False:
             self.gird.show()
             self.gird.scale(*self.settings.value("scale"))
             self.gird.translate(*self.settings.value("translate"))
@@ -51,7 +51,7 @@ class ModelWidget(OpenGL.GLViewWidget):
         self.settings.endGroup()
 
         self.settings.beginGroup("CentralWidget/ModelWidget/Axis")
-        if self.settings.value("is_on"):
+        if self.settings.value("is_on") != False:
             self.axis.show()
             self.axis.scale(*self.settings.value("scale"))
             self.axis.translate(*self.settings.value("translate"))
@@ -63,7 +63,7 @@ class ModelWidget(OpenGL.GLViewWidget):
         model_color = None
         try:
             verts = self._get_mesh_points(self.settings.value("path"))
-            if self.settings.value("Colors/is_on"):
+            if self.settings.value("Colors/is_on") != False:
                 model_color = self._get_face_colors(self.settings.value("Colors/path"))                
         except Exception:
             verts = self._get_mesh_points(MESH_PATH)
@@ -84,11 +84,11 @@ class ModelWidget(OpenGL.GLViewWidget):
         self.settings.endGroup()
 
         self.settings.beginGroup("CentralWidget/ModelWidget/Scene")
-        if self.settings.value("is_on"):
+        if self.settings.value("is_on") != False:
             model_color = None
             try:
                 verts = self._get_mesh_points(self.settings.value("path"))
-                if self.settings.value("Colors/is_on"):
+                if self.settings.value("Colors/is_on") != False:
                     model_color = self._get_face_colors(self.settings.value("Colors/path"))                
             except Exception:
                 verts = self._get_mesh_points(SCENE_MESH_PATH)
@@ -115,7 +115,9 @@ class ModelWidget(OpenGL.GLViewWidget):
         self.pan(*self.settings.value("pan"))
         self.settings.endGroup()
         
-        self.packet_name = self.settings.value("CentralWidget/ModelWidget/packet_name")
+        self.sourse_id = self.settings.value("CentralWidget/ModelWidget/sourse_id")
+        self.message_id = self.settings.value("CentralWidget/ModelWidget/message_id")
+        self.quat_field_id = self.settings.value("CentralWidget/ModelWidget/quat_field_id")
 
     def update_current_values (self):
         pass
@@ -141,14 +143,19 @@ class ModelWidget(OpenGL.GLViewWidget):
         return nd_points
 
     def new_data_reaction(self, data):
-        quat = None
-        pack = data.get(self.packet_name, None)
-        if pack is not None:
-            if (pack.shape[1] - 1) >= 4:
-                quat = pack[-1][1:]
-                quat = QtGui.QQuaternion(*quat)
-                self.clear_data()
-                self._rotate_object(self.mesh, *quat.getAxisAndAngle())
+        for msg in data[::-1]:
+            if (msg.get_source_id() == self.sourse_id) and (msg.get_message_id() == self.message_id):
+                quat = []
+                for i in range(4):
+                    quat.append(msg.get_data_dict().get(self.quat_field_id[i], None))
+                    if quat[-1] is None:
+                        quat = None
+                        break
+                if quat is not None:
+                    quat = QtGui.QQuaternion(*quat)
+                    self.clear_data()
+                    self._rotate_object(self.mesh, *quat.getAxisAndAngle())
+                    break
 
     def _rotate_object(self, obj, axis, angle):
         obj.rotate(angle, axis[0], axis[1], axis[2])

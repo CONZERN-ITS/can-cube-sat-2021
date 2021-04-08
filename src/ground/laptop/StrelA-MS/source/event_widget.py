@@ -25,10 +25,10 @@ class EventWidget(QtWidgets.QWidget):
         event_end = QtCore.pyqtSignal()
         relevance_changed = QtCore.pyqtSignal(bool)
 
-        def __init__(self, name, packet_name, index, trigger_value, time_limit, event_type=None, priority=1):
+        def __init__(self, name, packet_id, index, trigger_value, time_limit, event_type=None, priority=1):
             super(EventWidget.AbstractEvent, self).__init__()
             self.trigger_value = trigger_value
-            self.packet_name = packet_name
+            self.packet_id = packet_id
             self.index = index
 
             self.name = name
@@ -43,8 +43,8 @@ class EventWidget(QtWidgets.QWidget):
             self.set_event_index()
             self.set_priority(priority)
 
-        def get_packet_name(self):
-            return self.packet_name
+        def get_packet_id(self):
+            return self.packet_id
 
         def get_name(self):
             return self.name
@@ -126,22 +126,39 @@ class EventWidget(QtWidgets.QWidget):
 
     class OutOfRangeEvent(AbstractEvent):
         def check_condition(self, data):
-            return ((data[self.index] < self.trigger_value[0]) or (data[self.index] > self.trigger_value[1]))
+            value = data.get_data_dict().get(self.index, None)
+            if value is not None:
+                return ((value < self.trigger_value[0]) or (value > self.trigger_value[1]))
+            else:
+                return False
 
 
     class UnderRangeEvent(AbstractEvent):
         def check_condition(self, data):
-            return (data[self.index] < self.trigger_value)
+            value = data.get_data_dict().get(self.index, None)
+            if value is not None:
+                return (data[self.index] < self.trigger_value)
+            else:
+                return False
 
 
     class OverRangeEvent(AbstractEvent):
         def check_condition(self, data):
-            return (data[self.index] > self.trigger_value)
+            value = data.get_data_dict().get(self.index, None)
+            if value is not None:
+                return (data[self.index] > self.trigger_value)
+            else:
+                return False
 
 
     class EqualToEvent(AbstractEvent):
         def check_condition(self, data):
-            return (data[self.index] == self.trigger_value)
+            value = data.get_data_dict().get(self.index, None)
+            if value is not None:
+                return (data[self.index] == self.trigger_value)
+            else:
+                return False
+            
 
 
     class Event():
@@ -351,8 +368,6 @@ class EventWidget(QtWidgets.QWidget):
         self.playlist.insertMedia(0, DEFAULT_ALARM)
         self.player.stop()
 
-        print(self.playlist.mediaCount())
-
         for tree in [self.active_events_tree, self.events_tree]:
             tree.setPalette(palette)
             tree.setStyleSheet("QHeaderView::section { background-color:" + self.settings.value("background_color") + '}') 
@@ -361,14 +376,20 @@ class EventWidget(QtWidgets.QWidget):
 
         self.event_list = []
         self.settings.beginGroup("Event")
+        def_time_limit = self.settings.value("def_time_limit")
+        if def_time_limit is None:
+            def_time_limit = 1
         for group in self.settings.childGroups():
             self.settings.beginGroup(group)
+            time_limit = self.settings.value("time_limit")
+            if time_limit is None:
+                time_limit = def_time_limit
             self.event_list.append(self.init_event(self.settings.value("identifier"),
                                                    self.settings.value("name"),
-                                                   self.settings.value("packet_name"),
-                                                   self.settings.value("index"),
+                                                   [self.settings.value("sourse_id"), self.settings.value("message_id")],
+                                                   self.settings.value("field_id"),
                                                    self.settings.value("trigger_value"),
-                                                   self.settings.value("time_limit"),
+                                                   time_limit,
                                                    event_type=self.settings.value("event_type"),
                                                    priority=self.settings.value("priority")))
             if self.settings.value('audio') is not None:
@@ -429,9 +450,14 @@ class EventWidget(QtWidgets.QWidget):
 
     def new_data_reaction(self, data):
         for event in self.event_list:
-            pack = data.get(event.get_packet_name(), None)
-            if pack is not None:
-                event.check(pack[-1])
+            packet_id = event.get_packet_id()
+            last_msg = None
+            for msg in data[::-1]:
+                if (msg.get_source_id() == packet_id[0]) and (msg.get_message_id() == packet_id[1]):
+                    last_msg = msg
+                    break
+            if last_msg is not None:
+                event.check(msg)
 
     def clear_data(self):
         self.events.clear()

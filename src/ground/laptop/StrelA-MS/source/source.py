@@ -27,21 +27,21 @@ class CentralWidget(QtWidgets.QWidget):
         self.grid_layout = QtWidgets.QGridLayout(self)
 
         self.settings.beginGroup("CentralWidget")
-        if int(self.settings.value("GraphWidget/is_on")):
+        if self.settings.value("GraphWidget/is_on") != False:
             self.widgets_dict.update([("GraphWidget", graph_widget.GraphWidget())])
-        if int(self.settings.value("MapWidget/is_on")):
+        if self.settings.value("MapWidget/is_on") != False:
             self.widgets_dict.update([("MapWidget", map_widget.MapWidget())])
-        if int(self.settings.value("ModelWidget/is_on")):
+        if self.settings.value("ModelWidget/is_on") != False:
             self.widgets_dict.update([("ModelWidget", model_widget.ModelWidget())])
-        if int(self.settings.value("DataWidget/is_on")):
+        if self.settings.value("DataWidget/is_on") != False:
             self.widgets_dict.update([("DataWidget", data_widget.DataWidget())])
-        if int(self.settings.value("EventWidget/is_on")):
+        if self.settings.value("EventWidget/is_on") != False:
             self.widgets_dict.update([("EventWidget", event_widget.EventWidget())])
 
         for key in self.widgets_dict.keys():
             self.settings.beginGroup(key)
-            pos = self.settings.value("position")
-            self.grid_layout.addWidget(self.widgets_dict[key], int(pos[0]), int(pos[1]), int(pos[2]), int(pos[3]))
+            position = self.settings.value("position")
+            self.grid_layout.addWidget(self.widgets_dict[key], *[int(num) for num in position])
             self.settings.endGroup()
         self.settings.endGroup()
 
@@ -81,7 +81,7 @@ class CentralWidget(QtWidgets.QWidget):
 
 class MainWindow(QtWidgets.QMainWindow):
     class DataManager(QtCore.QObject):
-        new_data = QtCore.pyqtSignal(dict)
+        new_data = QtCore.pyqtSignal(list)
         autoclose = QtCore.pyqtSignal(str)
         def __init__(self, data_obj, update_time=0.2):
             super(MainWindow.DataManager, self).__init__()
@@ -113,31 +113,28 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.data_obj.start()
             except Exception as e:
                 self.autoclose.emit(str(e))
+                raise e
                 return
             start_time = time.time()
-            data_buf = {}
+            data_buf = []
             while not close:
                 try:
                     data = self.data_obj.read_data()
-                except RuntimeError:
-                    pass
+                #except RuntimeError:
+                #    pass
                 except EOFError as e:
                     self.autoclose.emit(str(e))
                     break
-                except Exception as e:
-                    print(e)
+                #except Exception as e:
+                #    print(e)
                 else:
-                    for pack in data:
-                        buf = data_buf.get(pack[0], None)
-                        if buf is not None:
-                            data_buf[pack[0]] = NumPy.vstack((buf, pack[1]))
-                        else:
-                            data_buf[pack[0]] = pack[1]
+                    data_buf.append(data)
                     if (time.time() - start_time) > self.update_time:
-                        last_time = pack[1][-1][0]
+                        if len(data_buf) > 0:
+                            last_time = data_buf[-1].get_time()
                         self.new_data.emit(data_buf)
                         start_time = time.time()
-                        data_buf = {}
+                        data_buf = []
                 self.mutex.lock()
                 close = self.close_flag
                 self.last_time = last_time
@@ -229,16 +226,16 @@ class MainWindow(QtWidgets.QMainWindow):
         sourse = self.settings.value('type')
         if sourse == 'Log':
             log = self.settings.value('Log/type')
-            #if log == "TXT":
-            #    data = TXTLogDataSource(self.settings.value('Log/path'),
-            #                     int(self.settings.value('Log/real_time')),
-            #                     float(self.settings.value('Log/time_delay')))
             if log == "MAV":
                 data = MAVLogDataSource(self.settings.value('Log/path'),
                                      int(self.settings.value('Log/real_time')),
                                      float(self.settings.value('Log/time_delay')))
         elif sourse == 'MAVLink':
             data = MAVDataSource(connection_str=self.settings.value('MAVLink/connection'),
+                                 log_path=LOG_FOLDER_PATH)
+        elif sourse == 'ZMQ':
+            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_pub'),
+                                 topics=self.settings.value('ZMQ/topics'),
                                  log_path=LOG_FOLDER_PATH)
         self.settings.endGroup()
         return data

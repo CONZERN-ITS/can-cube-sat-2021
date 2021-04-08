@@ -23,8 +23,11 @@ class MapWidget(OpenStreetMap):
         if self.is_load_finished:
             self.set_center(*self.settings.value("center"))
             self.set_zoom(self.settings.value("zoom"))
-        self.packet_name = self.settings.value("packet_name")
-        self.follow = self.settings.value("follow")
+        self.sourse_id = self.settings.value("sourse_id")
+        self.message_id = self.settings.value("message_id")
+        self.field_lat_id = self.settings.value("field_lat_id")
+        self.field_lon_id = self.settings.value("field_lon_id")
+        self.follow = (self.settings.value("follow") != False)
         self.max_data_length = self.settings.value("max_data_length")
         self.settings.endGroup()
 
@@ -37,10 +40,15 @@ class MapWidget(OpenStreetMap):
         self.update_current_values()
 
     def new_data_reaction(self, data):
-        points = data.get(self.packet_name, None)
-        if points is not None:
-            points = points[:,[1, 2]]
-            points = points.tolist()
+        points = []
+        for msg in data:
+            if (msg.get_source_id() == self.sourse_id) and (msg.get_message_id() == self.message_id):
+                lat = msg.get_data_dict().get(self.field_lat_id, None)
+                lon = msg.get_data_dict().get(self.field_lon_id, None)
+                if (lat is not None) and (lon is not None):
+                    points.append([lat, lon])
+
+        if len(points) > 0:
             if self.key is None:
                 self.key = 0
                 self.add_marker(self.key, points[-1][0], points[-1][1], **dict())
