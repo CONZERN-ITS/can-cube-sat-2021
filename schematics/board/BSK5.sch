@@ -20550,26 +20550,26 @@ variable-capacitance diode</description>
 </net>
 <net name="RX-S" class="0">
 <segment>
-<pinref part="U1" gate="G$1" pin="PC10"/>
-<wire x1="482.6" y1="157.48" x2="492.76" y2="157.48" width="0.1524" layer="91"/>
-<label x="487.68" y="157.48" size="1.778" layer="95"/>
-</segment>
-<segment>
 <wire x1="81.28" y1="269.24" x2="81.28" y2="248.92" width="0.1524" layer="91"/>
 <label x="81.28" y="248.92" size="1.778" layer="95" rot="R90"/>
 <pinref part="U$12" gate="G$1" pin="4"/>
 </segment>
-</net>
-<net name="TX-S" class="0">
 <segment>
 <pinref part="U1" gate="G$1" pin="PC11"/>
 <wire x1="482.6" y1="154.94" x2="492.76" y2="154.94" width="0.1524" layer="91"/>
 <label x="487.68" y="154.94" size="1.778" layer="95"/>
 </segment>
+</net>
+<net name="TX-S" class="0">
 <segment>
 <wire x1="86.36" y1="269.24" x2="86.36" y2="248.92" width="0.1524" layer="91"/>
 <label x="86.36" y="248.92" size="1.778" layer="95" rot="R90"/>
 <pinref part="U$12" gate="G$1" pin="6"/>
+</segment>
+<segment>
+<pinref part="U1" gate="G$1" pin="PC10"/>
+<wire x1="482.6" y1="157.48" x2="492.76" y2="157.48" width="0.1524" layer="91"/>
+<label x="487.68" y="157.48" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="SWC" class="0">
