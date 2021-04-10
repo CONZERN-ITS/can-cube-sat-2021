@@ -389,7 +389,7 @@ static void _zmq_send_rx_data(server_t * server)
 	rc = snprintf(
 			json_buffer, sizeof(json_buffer),
 			"{"
-				"checksum_valid: %s,"
+				"checksum_valid: %s, "
 				"cookie: %"MSG_COOKIE_T_PLSHOLDER""
 			"}",
 			server->rx_crc_valid ? "true" : "false",
@@ -749,6 +749,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 		else
 		{
 			log_trace("rx done");
+			server->rx_timedout_cnt = 0;
 			// Мы получили пакет!
 			// Выгружаем его с радио
 			_radio_fetch_rx(server, arg->rx_done.crc_valid);
