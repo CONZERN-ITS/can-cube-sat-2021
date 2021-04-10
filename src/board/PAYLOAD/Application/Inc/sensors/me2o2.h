@@ -8,7 +8,7 @@
 #ifndef INC_ME2O2_H_
 #define INC_ME2O2_H_
 
-#include <mavlink_main.h>
+#include "mavlink_main.h"
 
 //! Получение пакета данных от me2o2
 /*! АЦП должно быть уже включено */

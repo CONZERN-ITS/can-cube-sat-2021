@@ -11,7 +11,7 @@
 
 #include <stm32f4xx_hal.h>
 
-#include <bme280.h>
+#include "bme280.h"
 
 #include "time_svc.h"
 #include "util.h"

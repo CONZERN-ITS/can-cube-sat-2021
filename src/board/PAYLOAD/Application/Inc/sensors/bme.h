@@ -8,7 +8,7 @@
 #ifndef INC_BME280_H_
 #define INC_BME280_H_
 
-#include <mavlink_main.h>
+#include "mavlink_main.h"
 
 
 //! Инициализация сенсора

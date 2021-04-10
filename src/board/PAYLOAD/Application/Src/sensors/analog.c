@@ -105,8 +105,8 @@ int analog_restart(void)
 {
 	// Глушим ADC к чертям
 	HAL_ADC_DeInit(&hadc1);
-	__HAL_RCC_ADC1_FORCE_RESET();
-	__HAL_RCC_ADC1_RELEASE_RESET();
+	__HAL_RCC_ADC_FORCE_RESET();
+	__HAL_RCC_ADC_RELEASE_RESET();
 	__HAL_ADC_RESET_HANDLE_STATE(&hadc1);
 
 	// Включаем
