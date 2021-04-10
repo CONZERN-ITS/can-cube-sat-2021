@@ -60,7 +60,7 @@ static int _radio_init(server_t * server)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 433800*1000,
+			.frequency = 434000*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_3400_US,
 			.pa_power = 10,
 			.lna_boost = true,
@@ -379,10 +379,15 @@ void server_run(server_t * server)
 		if (rc) {
 			ESP_LOGE("radio", "poll %d", rc);
 		}
-		if (step % 50 == 0) {
+		if (step % 100 == 0) {
 			ESP_LOGD("radio", "Write");
-			uint8_t str[] = "Hello World!";
-			rc = sx126x_drv_payload_write(&server->dev, str, sizeof(str));
+			uint8_t str[] = "\xCA\xDE\xBA\xBA";
+			uint8_t buf[RADIO_PACKET_SIZE] = {0};
+			memcpy(buf, str, sizeof(str));
+			for (int i = sizeof(str); i < sizeof(buf); i++) {
+				buf[i] = i - sizeof(str) + 2;
+			}
+			rc = sx126x_drv_payload_write(&server->dev, buf, sizeof(buf));
 			if (rc) {
 				ESP_LOGE("radio", "write %d", rc);
 			}

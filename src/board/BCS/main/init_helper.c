@@ -179,6 +179,13 @@ void init_basic(void) {
 			.intr_type = GPIO_INTR_DISABLE,
 			.pin_bit_mask = 1ULL << ITS_PIN_RADIO_DIO1
 		};
+		static gpio_config_t busy = {
+			.mode = GPIO_MODE_INPUT,
+			.pull_up_en = GPIO_PULLUP_DISABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_DISABLE,
+			.pin_bit_mask = 1ULL << ITS_PIN_RADIO_BUSY
+		};
 		static gpio_config_t reset = {
 			.mode = GPIO_MODE_OUTPUT_OD,
 			.pull_up_en = GPIO_PULLUP_ENABLE,
@@ -194,13 +201,14 @@ void init_basic(void) {
 			.pin_bit_mask = 1ULL << ITS_PIN_SPISR_CS_RA
 		};
 		static gpio_config_t tx_en = {
-			.mode = GPIO_MODE_OUTPUT_OD,
-			.pull_up_en = GPIO_PULLUP_ENABLE,
+			.mode = GPIO_MODE_OUTPUT,
+			.pull_up_en = GPIO_PULLUP_DISABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
 			.intr_type = GPIO_INTR_DISABLE,
 			.pin_bit_mask = (1ULL << ITS_PIN_RADIO_TX_EN)
 		};
 		gpio_config(&cs_ra);
+		gpio_config(&busy);
 		gpio_config(&dio);
 		gpio_config(&reset);
 		gpio_config(&tx_en);

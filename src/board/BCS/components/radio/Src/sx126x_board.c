@@ -108,13 +108,12 @@ static int _write_data(sx126x_board_t * brd, const uint8_t * data, uint16_t data
 
 static int _read_data(sx126x_board_t * brd, uint8_t * data, uint16_t data_size) {
 	ESP_LOGD("radio", "spi read  %d", data_size);
-	uint8_t dummy_data[data_size];
-	memset(dummy_data, 0xFF, data_size);
+	memset(data, 0xFF, data_size);
 	spi_transaction_t tran = {0};
 	tran.rx_buffer = data;
 	tran.rxlength = 8 * data_size;
 	tran.length = 8 * data_size;
-	tran.tx_buffer = dummy_data;
+	tran.tx_buffer = data;
 	return spi_device_polling_transmit(brd->hspi, &tran);
 }
 
@@ -184,7 +183,16 @@ int sx126x_brd_buf_write(sx126x_board_t * brd, uint8_t offset, const uint8_t * d
 	_start_trans(brd);
 	_write_data(brd, (uint8_t * const) &cmd_code, 1);
 	_write_data(brd, &offset, 1);
-	_write_data(brd, data, data_size);
+
+	while (data_size > 0) {
+		uint8_t to_send = data_size;
+		if (to_send > 20) {
+			to_send = 20;
+		}
+		_write_data(brd, data, to_send);
+		data += to_send;
+		data_size -= to_send;
+	}
 	_end_trans(brd);
 	return 0;
 }

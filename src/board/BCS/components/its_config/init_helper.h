@@ -80,7 +80,7 @@ static const ip_addr_t ITS_WIFI_SERVER_ADDRESS = IPADDR4_INIT_BYTES(192, 168, 4,
 static const ip_addr_t ITS_WIFI_CLIENT_ADDRESS = IPADDR4_INIT_BYTES(192, 168, 4, 40);
 #define ITS_WIFI_PORT 53442
 
-#define ITS_RADIO_PACKET_SIZE 200
+#define ITS_RADIO_PACKET_SIZE 140
 
 void init_helper(void);
 
