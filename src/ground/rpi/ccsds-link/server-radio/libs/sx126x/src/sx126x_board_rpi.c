@@ -490,7 +490,7 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 	// Читаем статус (выкидываем его вернее)
 	uint8_t _status = 0xFF;
 	tran[2].tx_buf = (size_t)&_status;
-	tran[2].len = data_size;
+	tran[2].len = 1;
 
 	// Читаем данные
 	memset(data, 0xFF, data_size);
