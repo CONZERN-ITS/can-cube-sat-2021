@@ -11517,7 +11517,7 @@ Source: AVX .. aphvc.pdf</description>
 <part name="SOL8" library="CanCubeSat" deviceset="SOLAR-2" device="_1"/>
 <part name="SOL4" library="CanCubeSat" deviceset="SOLAR-2" device="_1"/>
 <part name="S1" library="CanCubeSat" deviceset="255SB" device="" package3d_urn="urn:adsk.eagle:package:27679/1"/>
-<part name="R1_2K7" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k7"/>
+<part name="2K7" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k7"/>
 <part name="PWR" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="JP1" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X2" device="" package3d_urn="urn:adsk.eagle:package:22435/2"/>
 <part name="D2" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="MBR0520LT" device="" package3d_urn="urn:adsk.eagle:package:43420/1"/>
@@ -12651,7 +12651,7 @@ Source: AVX .. aphvc.pdf</description>
 <attribute name="NAME" x="80.01" y="98.425" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="77.47" y="93.345" size="1.778" layer="96" rot="R270"/>
 </instance>
-<instance part="R1_2K7" gate="G$1" x="152.4" y="124.46" smashed="yes" rot="R90">
+<instance part="2K7" gate="G$1" x="152.4" y="124.46" smashed="yes" rot="R90">
 <attribute name="NAME" x="150.9014" y="120.65" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="155.702" y="120.65" size="1.778" layer="96" rot="R90"/>
 </instance>
@@ -12732,7 +12732,7 @@ Source: AVX .. aphvc.pdf</description>
 <wire x1="139.7" y1="114.3" x2="152.4" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="160.02" y1="129.54" x2="165.1" y2="129.54" width="0.1524" layer="91"/>
 <wire x1="160.02" y1="114.3" x2="160.02" y2="129.54" width="0.1524" layer="91"/>
-<pinref part="R1_2K7" gate="G$1" pin="1"/>
+<pinref part="2K7" gate="G$1" pin="1"/>
 <wire x1="152.4" y1="114.3" x2="160.02" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="152.4" y1="119.38" x2="152.4" y2="114.3" width="0.1524" layer="91"/>
 <junction x="152.4" y="114.3"/>
@@ -12989,7 +12989,7 @@ Source: AVX .. aphvc.pdf</description>
 <net name="N$5" class="0">
 <segment>
 <pinref part="PWR" gate="G$1" pin="A"/>
-<pinref part="R1_2K7" gate="G$1" pin="2"/>
+<pinref part="2K7" gate="G$1" pin="2"/>
 <wire x1="152.4" y1="134.62" x2="152.4" y2="129.54" width="0.1524" layer="91"/>
 </segment>
 </net>

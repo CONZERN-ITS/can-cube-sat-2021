@@ -34,8 +34,8 @@
 <layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
-<layer number="28" name="bValues" color="7" fill="1" visible="no" active="yes"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="yes" active="yes"/>
 <layer number="30" name="bStop" color="7" fill="6" visible="no" active="yes"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="yes"/>
@@ -170,17 +170,17 @@
 <hole x="71" y="4" drill="4.5"/>
 <hole x="71" y="96" drill="4.5"/>
 <hole x="11" y="96" drill="4.5"/>
-<text x="10.5" y="72.4" size="1.4224" layer="26" rot="MR45">BUS+</text>
-<text x="74.5" y="75.3" size="1.4224" layer="26" rot="MR315">BUS+</text>
-<text x="63.6" y="21.1" size="1.4224" layer="26" rot="MR225">BUS+</text>
-<text x="14.2" y="17" size="1.4224" layer="26" rot="MR135">BUS+</text>
-<text x="19.3" y="63.6" size="1.4224" layer="26" rot="MR45">BUS-</text>
-<text x="65.6" y="66.4" size="1.4224" layer="26" rot="MR315">BUS-</text>
-<text x="55.4" y="29.3" size="1.4224" layer="26" rot="MR225">BUS-</text>
-<text x="23.2" y="26" size="1.4224" layer="26" rot="MR135">BUS-</text>
-<text x="27" y="96" size="2" layer="26" rot="MR180">to BKU</text>
-<text x="32" y="4" size="2" layer="26" rot="MR180" align="top-left">to BSK5</text>
-<text x="5.4" y="46.2" size="1.778" layer="21" rot="R90" align="bottom-center">HEATER</text>
+<text x="10.5" y="72.4" size="1.2" layer="26" ratio="20" rot="MR45">BUS+</text>
+<text x="74.5" y="75.3" size="1.2" layer="26" ratio="20" rot="MR315">BUS+</text>
+<text x="63.6" y="21.1" size="1.2" layer="26" ratio="20" rot="MR225">BUS+</text>
+<text x="14.2" y="17" size="1.2" layer="26" ratio="20" rot="MR135">BUS+</text>
+<text x="19.3" y="63.6" size="1.2" layer="26" ratio="20" rot="MR45">BUS-</text>
+<text x="65.6" y="66.4" size="1.2" layer="26" ratio="20" rot="MR315">BUS-</text>
+<text x="55.4" y="29.3" size="1.2" layer="26" ratio="20" rot="MR225">BUS-</text>
+<text x="23.2" y="26" size="1.2" layer="26" ratio="20" rot="MR135">BUS-</text>
+<text x="35.2" y="96.6" size="1.2" layer="26" ratio="20" rot="MR180">to BKU</text>
+<text x="37.5" y="3.3" size="1.2" layer="26" ratio="20" rot="MR180" align="top-left">to BSK5</text>
+<text x="5.4" y="46.2" size="1.2" layer="21" ratio="20" rot="R90" align="bottom-center">HEATER</text>
 <wire x1="75" y1="100" x2="75" y2="91.5" width="0.1524" layer="20"/>
 <wire x1="75" y1="8.5" x2="75" y2="0" width="0.1524" layer="20"/>
 <wire x1="75" y1="0" x2="7" y2="0" width="0.1524" layer="20"/>
@@ -4901,168 +4901,122 @@ design rules under a new name.</description>
 </pass>
 </autorouter>
 <elements>
-<element name="U$1" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="13.069" y="77.931" smashed="yes" rot="R45">
-<attribute name="VALUE" x="15.123146875" y="70.8705375" size="1.27" layer="27" rot="R45"/>
-</element>
-<element name="U$18" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="13.069" y="22.069" smashed="yes" rot="R135">
-<attribute name="VALUE" x="20.1294625" y="24.12314375" size="1.27" layer="27" rot="R135"/>
-</element>
-<element name="U$19" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="21.555" y="30.555" smashed="yes" rot="R135">
-<attribute name="VALUE" x="28.615459375" y="32.60914375" size="1.27" layer="27" rot="R135"/>
-</element>
-<element name="U$2" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="21.555" y="69.445" smashed="yes" rot="R45">
-<attribute name="VALUE" x="23.609146875" y="62.3845375" size="1.27" layer="27" rot="R45"/>
-</element>
-<element name="U$20" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="68.931" y="22.069" smashed="yes" rot="R225">
-<attribute name="VALUE" x="66.87685625" y="29.129459375" size="1.27" layer="27" rot="R225"/>
-</element>
-<element name="U$21" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="60.445" y="30.555" smashed="yes" rot="R225">
-<attribute name="VALUE" x="58.39085625" y="37.615459375" size="1.27" layer="27" rot="R225"/>
-</element>
-<element name="U$3" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="68.931" y="77.931" smashed="yes" rot="R315">
-<attribute name="VALUE" x="61.870540625" y="75.876853125" size="1.27" layer="27" rot="R315"/>
-</element>
-<element name="U$4" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="60.445" y="69.445" smashed="yes" rot="R315">
-<attribute name="VALUE" x="53.384540625" y="67.390853125" size="1.27" layer="27" rot="R315"/>
-</element>
+<element name="U$1" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="13.069" y="77.931" smashed="yes" rot="R45"/>
+<element name="U$18" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="13.069" y="22.069" smashed="yes" rot="R135"/>
+<element name="U$19" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="21.555" y="30.555" smashed="yes" rot="R135"/>
+<element name="U$2" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="21.555" y="69.445" smashed="yes" rot="R45"/>
+<element name="U$20" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="68.931" y="22.069" smashed="yes" rot="R225"/>
+<element name="U$21" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="60.445" y="30.555" smashed="yes" rot="R225"/>
+<element name="U$3" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="68.931" y="77.931" smashed="yes" rot="R315"/>
+<element name="U$4" library="CanCubeSat" package="KCONNECT" value="KCONNECT" x="60.445" y="69.445" smashed="yes" rot="R315"/>
 <element name="BSK5" library="pinheadCS" package="1X06" value="" x="41" y="1.25" smashed="yes">
 <attribute name="VALUE" x="30.84" y="-1.925" size="1.27" layer="27"/>
 </element>
 <element name="BKU" library="pinheadCS" package="1X14" value="" x="41" y="98.75" smashed="yes">
 <attribute name="VALUE" x="25.76" y="95.575" size="1.27" layer="27"/>
 </element>
-<element name="DS18B20Z1" library="CanCubeSat" package="SOIC8+HEAT_S" value="DS18B20Z" x="33.1" y="78.6" smashed="yes" rot="R270">
-<attribute name="NAME" x="30.56" y="81.648" size="1" layer="25"/>
+<element name="DS18B20Z" library="CanCubeSat" package="SOIC8+HEAT_S" value="DS18B20Z" x="33.1" y="78.6" smashed="yes" rot="R270">
+<attribute name="NAME" x="28.86" y="81.648" size="0.8" layer="25" ratio="15"/>
 </element>
 <element name="R94" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="200k" x="40.1" y="78.1" smashed="yes">
-<attribute name="NAME" x="39.465" y="78.735" size="1.27" layer="25"/>
-<attribute name="VALUE" x="39.465" y="76.195" size="1.27" layer="27"/>
+<attribute name="VALUE" x="38.865" y="76.095" size="0.8" layer="27" ratio="15"/>
 </element>
 <element name="R95" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="200k" x="40.1" y="80.5" smashed="yes">
-<attribute name="NAME" x="39.465" y="81.135" size="1.27" layer="25"/>
-<attribute name="VALUE" x="39.465" y="78.595" size="1.27" layer="27"/>
+<attribute name="VALUE" x="38.405" y="79.365" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
-<element name="U$26" library="CanCubeSat" package="FS8205A+" value="FS8205A+" x="30" y="85" smashed="yes" rot="R90">
-<attribute name="NAME" x="32.1" y="83.3" size="0.6096" layer="25" rot="R180"/>
-</element>
-<element name="U$5" library="CanCubeSat" package="SOIC8" package3d_urn="urn:adsk.eagle:package:8087957/1" value="MOCD217M" x="41.2" y="86.4" smashed="yes">
-<attribute name="NAME" x="38.533" y="84.495" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="45.137" y="84.495" size="1.27" layer="27" rot="R90"/>
+<element name="U$26" library="CanCubeSat" package="FS8205A+" value="FS8205A+" x="30" y="85" smashed="yes" rot="R90"/>
+<element name="U$5" library="CanCubeSat" package="SOIC8" package3d_urn="urn:adsk.eagle:package:8087957/1" value="MOCD" x="41.2" y="86.4" smashed="yes">
+<attribute name="VALUE" x="44.737" y="84.995" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
 <element name="R9" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R" x="33.6" y="88.6" smashed="yes" rot="R90">
-<attribute name="NAME" x="32.965" y="87.965" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="35.505" y="87.965" size="1.27" layer="27" rot="R90"/>
+<attribute name="VALUE" x="35.605" y="87.265" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
 <element name="R5" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R" x="26.4" y="88.6" smashed="yes" rot="R90">
-<attribute name="NAME" x="25.765" y="87.965" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="28.305" y="87.965" size="1.27" layer="27" rot="R90"/>
+<attribute name="VALUE" x="25.405" y="87.265" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
 <element name="R6" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100k" x="28.8" y="88.6" smashed="yes" rot="R270">
-<attribute name="NAME" x="29.435" y="89.235" size="1.27" layer="25" rot="R270"/>
-<attribute name="VALUE" x="26.895" y="89.235" size="1.27" layer="27" rot="R270"/>
+<attribute name="VALUE" x="26.465" y="90.395" size="0.8" layer="27" ratio="15"/>
 </element>
 <element name="R12" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100k" x="31.2" y="88.6" smashed="yes" rot="R90">
-<attribute name="NAME" x="30.565" y="87.965" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="33.105" y="87.965" size="1.27" layer="27" rot="R90"/>
+<attribute name="VALUE" x="32.005" y="90.465" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
 <element name="R4" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k" x="27.5" y="24" smashed="yes" rot="R135">
-<attribute name="NAME" x="27.5" y="23.101971875" size="1.27" layer="25" rot="R135"/>
-<attribute name="VALUE" x="29.29605" y="24.898025" size="1.27" layer="27" rot="R135"/>
+<attribute name="VALUE" x="29.201975" y="23.09605" size="0.8" layer="27" ratio="15" rot="R225"/>
 </element>
-<element name="YELLOW" library="led" library_urn="urn:adsk.eagle:library:259" package="P47F-BOTTOM" package3d_urn="urn:adsk.eagle:package:15878/1" value="LAP4-BOTTOM" x="23.1" y="20" smashed="yes" rot="R225">
-<attribute name="NAME" x="27.1411125" y="21.347034375" size="1.27" layer="25" rot="R225"/>
+<element name="LED-Y" library="led" library_urn="urn:adsk.eagle:library:259" package="P47F-BOTTOM" package3d_urn="urn:adsk.eagle:package:15878/1" value="LAP4-BOTTOM" x="23.1" y="20" smashed="yes" rot="R225">
+<attribute name="NAME" x="25.5411125" y="19.947034375" size="0.8" layer="25" ratio="15" rot="R225"/>
 <attribute name="POPULARITY" value="1" x="21.827209375" y="49.8399" size="1.778" layer="27" rot="R225" display="off"/>
-<attribute name="VALUE" x="23.5490125" y="24.939140625" size="1.27" layer="27" rot="R225"/>
 </element>
-<element name="U$8" library="CanCubeSat" package="SOT23-3" value="SI2302CDS" x="7.1" y="60.5" smashed="yes">
-<attribute name="NAME" x="5.2712" y="57.8838" size="1.27" layer="25" ratio="10" rot="R90"/>
-</element>
-<element name="U$14" library="CanCubeSat" package="EM_HEAT" value="EM_HEAT" x="12" y="64.5" smashed="yes">
-<attribute name="NAME" x="9.063" y="66.913" size="1" layer="25"/>
-</element>
+<element name="U$8" library="CanCubeSat" package="SOT23-3" value="SI2302CDS" x="7.1" y="60.5" smashed="yes"/>
+<element name="U$14" library="CanCubeSat" package="EM_HEAT" value="EM_HEAT" x="12" y="64.5" smashed="yes"/>
 <element name="R7" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k" x="11.4" y="69.2" smashed="yes" rot="R270">
-<attribute name="NAME" x="12.035" y="69.835" size="1.27" layer="25" rot="R270"/>
-<attribute name="VALUE" x="9.495" y="69.835" size="1.27" layer="27" rot="R270"/>
+<attribute name="VALUE" x="12.595" y="69.535" size="0.8" layer="27" ratio="15" rot="R270"/>
 </element>
-<element name="LED6" library="led" library_urn="urn:adsk.eagle:library:259" package="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2" value="" x="8.8" y="69.2" smashed="yes">
-<attribute name="NAME" x="8.165" y="67.93" size="1.27" layer="25" rot="R90"/>
+<element name="LED-B2" library="led" library_urn="urn:adsk.eagle:library:259" package="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2" value="" x="8.8" y="69.2" smashed="yes">
+<attribute name="NAME" x="7.965" y="67.13" size="0.8" layer="25" ratio="15" rot="R90"/>
 <attribute name="POPULARITY" value="28" x="-27.9" y="41.8" size="1.778" layer="27" display="off"/>
 <attribute name="VALUE" x="10.705" y="67.93" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R8" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M" x="7.1" y="57.4" smashed="yes">
-<attribute name="NAME" x="6.465" y="58.035" size="1.27" layer="25"/>
-<attribute name="VALUE" x="6.465" y="55.495" size="1.27" layer="27"/>
+<attribute name="VALUE" x="6.465" y="55.495" size="0.8" layer="27" ratio="15"/>
 </element>
-<element name="U$13" library="CanCubeSat" package="SOT23-3" value="SI2302CDS" x="67" y="50.7" smashed="yes">
-<attribute name="NAME" x="65.1712" y="48.0838" size="1.27" layer="25" ratio="10" rot="R90"/>
-</element>
+<element name="U$13" library="CanCubeSat" package="SOT23-3" value="SI2302CDS" x="67" y="50.7" smashed="yes"/>
 <element name="R13" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1k5" x="67" y="53.7" smashed="yes">
-<attribute name="NAME" x="66.365" y="54.335" size="1.27" layer="25"/>
-<attribute name="VALUE" x="66.365" y="51.795" size="1.27" layer="27"/>
+<attribute name="VALUE" x="66.065" y="54.895" size="0.8" layer="27" ratio="15"/>
 </element>
-<element name="LED7" library="led" library_urn="urn:adsk.eagle:library:259" package="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2" value="" x="67" y="56.5" smashed="yes" rot="R90">
-<attribute name="NAME" x="65.43" y="57.335" size="1.27" layer="25"/>
+<element name="LED-B1" library="led" library_urn="urn:adsk.eagle:library:259" package="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2" value="" x="67" y="56.5" smashed="yes" rot="R90">
+<attribute name="NAME" x="65.43" y="57.335" size="0.8" layer="25" ratio="15"/>
 <attribute name="POPULARITY" value="28" x="104.2" y="6.4" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="VALUE" x="68.27" y="58.405" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R14" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M" x="67" y="47.6" smashed="yes">
-<attribute name="NAME" x="66.365" y="48.235" size="1.27" layer="25"/>
-<attribute name="VALUE" x="66.365" y="45.695" size="1.27" layer="27"/>
+<attribute name="VALUE" x="66.365" y="45.695" size="0.8" layer="27" ratio="15"/>
 </element>
 <element name="U$6" library="CanCubeSat" package="GRAFIT4_2" value="GRAFITGRAFIT4_2" x="26" y="65" smashed="yes" rot="R135"/>
 <element name="U$7" library="CanCubeSat" package="GRAFIT4_2" value="GRAFITGRAFIT4_2" x="26" y="35" smashed="yes" rot="R225"/>
 <element name="U$15" library="CanCubeSat" package="GRAFIT4_2" value="GRAFITGRAFIT4_2" x="56" y="65" smashed="yes" rot="R45"/>
 <element name="U$16" library="CanCubeSat" package="GRAFIT4_2" value="GRAFITGRAFIT4_2" x="56" y="35" smashed="yes" rot="R315"/>
 <element name="R75" library="rcl" library_urn="urn:adsk.eagle:library:334" package="R2512" package3d_urn="urn:adsk.eagle:package:23545/2" value="R01" x="57.1" y="81.2" smashed="yes" rot="R180">
-<attribute name="NAME" x="59.64" y="79.295" size="1.27" layer="25" rot="R180"/>
 <attribute name="POPULARITY" value="0" x="119.7" y="136.3" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="SPICEPREFIX" value="R" x="119.7" y="136.3" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="VALUE" x="59.64" y="84.375" size="1.27" layer="27" rot="R180"/>
+<attribute name="VALUE" x="58.04" y="78.975" size="0.8" layer="27" ratio="15" rot="R180"/>
 </element>
 <element name="R76" library="resistor" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R" x="54.1" y="85.2" smashed="yes" rot="R90">
-<attribute name="NAME" x="53.465" y="84.565" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="56.005" y="84.565" size="1.27" layer="27" rot="R90"/>
+<attribute name="VALUE" x="52.905" y="84.165" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
 <element name="R77" library="resistor" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10R" x="60.1" y="85.2" smashed="yes" rot="R90">
-<attribute name="NAME" x="59.465" y="84.565" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="62.005" y="84.565" size="1.27" layer="27" rot="R90"/>
+<attribute name="VALUE" x="62.005" y="84.065" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
 <element name="C41" library="rcl" library_urn="urn:adsk.eagle:library:334" package="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ" x="57.1" y="85.2" smashed="yes">
-<attribute name="NAME" x="56.465" y="85.835" size="1.27" layer="25"/>
 <attribute name="POPULARITY" value="37" x="3" y="31.2" size="1.778" layer="27" display="off"/>
 <attribute name="SPICEPREFIX" value="C" x="3" y="31.2" size="1.778" layer="27" display="off"/>
-<attribute name="VALUE" x="56.465" y="83.295" size="1.27" layer="27"/>
+<attribute name="VALUE" x="55.965" y="83.295" size="0.8" layer="27" ratio="15"/>
 </element>
-<element name="U$57" library="CanCubeSat" package="SOT23-8" value="INA219AID" x="57.1" y="88.7" smashed="yes" rot="R90">
-<attribute name="NAME" x="55.1" y="88.7" size="0.4064" layer="25" rot="R270" align="center"/>
+<element name="INA" library="CanCubeSat" package="SOT23-8" value="INA219AID" x="57.1" y="88.7" smashed="yes" rot="R90">
+<attribute name="NAME" x="54.9" y="88.7" size="0.8" layer="25" ratio="15" rot="R270" align="center"/>
 </element>
 <element name="R1" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k26" x="43.5" y="78.1" smashed="yes">
-<attribute name="NAME" x="42.865" y="78.735" size="1.27" layer="25"/>
-<attribute name="VALUE" x="42.865" y="76.195" size="1.27" layer="27"/>
+<attribute name="VALUE" x="42.365" y="76.095" size="0.8" layer="27" ratio="15"/>
 </element>
 <element name="R2" library="resistor" library_urn="urn:adsk.eagle:library:348" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k26" x="43.5" y="80.5" smashed="yes">
-<attribute name="NAME" x="42.865" y="81.135" size="1.27" layer="25"/>
-<attribute name="VALUE" x="42.865" y="78.595" size="1.27" layer="27"/>
+<attribute name="VALUE" x="46.005" y="79.365" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
 <element name="CMD" library="CanCubeSat" package="KCONNECT_QUAD" value="KCONNECTQUAD" x="41" y="50" smashed="yes">
-<attribute name="NAME" x="38.86" y="54.375" size="1.27" layer="25" ratio="10"/>
-<attribute name="VALUE" x="37.46" y="43.555" size="1.27" layer="27"/>
+<attribute name="NAME" x="39.46" y="54.575" size="0.8" layer="25" ratio="15"/>
 </element>
 <element name="R32" library="resistor" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R" x="4.3" y="57.9" smashed="yes" rot="R90">
-<attribute name="NAME" x="3.665" y="57.265" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="6.205" y="57.265" size="1.27" layer="27" rot="R90"/>
+<attribute name="VALUE" x="3.105" y="56.565" size="0.8" layer="27" ratio="15" rot="R90"/>
 </element>
 <element name="R3" library="resistor" package="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R" x="64.2" y="48.1" smashed="yes" rot="R270">
-<attribute name="NAME" x="64.835" y="48.735" size="1.27" layer="25" rot="R270"/>
-<attribute name="VALUE" x="62.295" y="48.735" size="1.27" layer="27" rot="R270"/>
+<attribute name="VALUE" x="62.295" y="49.335" size="0.8" layer="27" ratio="15" rot="R270"/>
 </element>
 <element name="U$9" library="CanCubeSat" package="ITS-LOGO" value="PCB &quot;BSK3&quot;" x="57.2" y="9.1" smashed="yes" rot="MR0">
-<attribute name="VALUE" x="57.2" y="7.6" size="1" layer="22" font="vector" ratio="15" rot="MR0"/>
+<attribute name="VALUE" x="57.2" y="7.6" size="0.8" layer="22" font="vector" ratio="15" rot="MR0"/>
 </element>
 </elements>
 <signals>
 <signal name="GND">
-<contactref element="DS18B20Z1" pad="5"/>
+<contactref element="DS18B20Z" pad="5"/>
 <contactref element="U$5" pad="5"/>
 <contactref element="U$26" pad="23"/>
 <contactref element="U$8" pad="2"/>
@@ -5070,9 +5024,9 @@ design rules under a new name.</description>
 <contactref element="U$13" pad="2"/>
 <contactref element="R14" pad="2"/>
 <contactref element="U$26" pad="HEAT"/>
-<contactref element="DS18B20Z1" pad="HEAT"/>
-<contactref element="U$57" pad="3"/>
-<contactref element="U$57" pad="8"/>
+<contactref element="DS18B20Z" pad="HEAT"/>
+<contactref element="INA" pad="3"/>
+<contactref element="INA" pad="8"/>
 <contactref element="U$5" pad="2"/>
 <contactref element="U$5" pad="4"/>
 <contactref element="R95" pad="1"/>
@@ -5151,9 +5105,9 @@ design rules under a new name.</description>
 <contactref element="BKU" pad="14"/>
 </signal>
 <signal name="5V">
-<contactref element="DS18B20Z1" pad="3"/>
+<contactref element="DS18B20Z" pad="3"/>
 <contactref element="R4" pad="1"/>
-<contactref element="LED6" pad="A"/>
+<contactref element="LED-B2" pad="A"/>
 <contactref element="U$14" pad="1"/>
 <contactref element="BKU" pad="7"/>
 <contactref element="BSK5" pad="3"/>
@@ -5196,7 +5150,7 @@ design rules under a new name.</description>
 <wire x1="39.73" y1="16.88" x2="32.11" y2="24.5" width="0.5" layer="16"/>
 </signal>
 <signal name="1W">
-<contactref element="DS18B20Z1" pad="4"/>
+<contactref element="DS18B20Z" pad="4"/>
 <contactref element="BKU" pad="5"/>
 <contactref element="BSK5" pad="1"/>
 <wire x1="31.98" y1="76.44" x2="30.68" y2="76.44" width="0.3" layer="1"/>
@@ -5235,7 +5189,7 @@ design rules under a new name.</description>
 <signal name="BUS+">
 <contactref element="R6" pad="1"/>
 <contactref element="R12" pad="2"/>
-<contactref element="LED7" pad="A"/>
+<contactref element="LED-B1" pad="A"/>
 <contactref element="U$6" pad="P$2"/>
 <contactref element="U$16" pad="P$2"/>
 <contactref element="U$7" pad="P$2"/>
@@ -5536,14 +5490,14 @@ design rules under a new name.</description>
 </signal>
 <signal name="N$28">
 <contactref element="R4" pad="2"/>
-<contactref element="YELLOW" pad="A"/>
+<contactref element="LED-Y" pad="A"/>
 <wire x1="26.78" y1="23.66" x2="26.78" y2="24.44" width="0.3" layer="1"/>
 <wire x1="24.96" y1="21.84" x2="26.78" y2="23.66" width="0.3" layer="1"/>
 <wire x1="26.78" y1="24.44" x2="26.89895625" y2="24.601040625" width="0.3" layer="1"/>
 <wire x1="24.96" y1="21.84" x2="24.832409375" y2="21.732409375" width="0.3" layer="1"/>
 </signal>
 <signal name="N$31">
-<contactref element="LED6" pad="C"/>
+<contactref element="LED-B2" pad="C"/>
 <contactref element="R7" pad="1"/>
 <wire x1="11.4" y1="70.05" x2="8.9" y2="70.05" width="0.5" layer="1"/>
 <wire x1="8.9" y1="70.05" x2="8.8" y2="69.95" width="0.5" layer="1"/>
@@ -5558,7 +5512,7 @@ design rules under a new name.</description>
 <wire x1="14" y1="65.75" x2="14" y2="64.5" width="0.5" layer="1"/>
 </signal>
 <signal name="N$29">
-<contactref element="LED7" pad="C"/>
+<contactref element="LED-B1" pad="C"/>
 <contactref element="R13" pad="1"/>
 <wire x1="66.22" y1="53.82" x2="66.22" y2="56.42" width="0.3" layer="1"/>
 <wire x1="66.22" y1="56.42" x2="66.25" y2="56.5" width="0.3" layer="1"/>
@@ -5606,8 +5560,8 @@ design rules under a new name.</description>
 <wire x1="35.8" y1="44.7" x2="46.5" y2="44.7" width="1" layer="16"/>
 </signal>
 <signal name="SCL-TM">
-<contactref element="U$57" pad="5"/>
-<contactref element="U$57" pad="7"/>
+<contactref element="INA" pad="5"/>
+<contactref element="INA" pad="7"/>
 <wire x1="56.775" y1="90" x2="56.775" y2="89.405025" width="0.3" layer="1"/>
 <wire x1="56.775" y1="89.405025" x2="57.080025" y2="89.1" width="0.3" layer="1"/>
 <wire x1="57.769975" y1="89.1" x2="58.075" y2="89.405025" width="0.3" layer="1"/>
@@ -5621,7 +5575,7 @@ design rules under a new name.</description>
 <wire x1="58.1" y1="93.08" x2="58.1" y2="91.1" width="0.3" layer="16"/>
 </signal>
 <signal name="SDA-TM">
-<contactref element="U$57" pad="6"/>
+<contactref element="INA" pad="6"/>
 <wire x1="57.425" y1="90" x2="57.425" y2="90.6" width="0.3" layer="1"/>
 <wire x1="57.425" y1="90.6" x2="57.225" y2="90.8" width="0.3" layer="1"/>
 <wire x1="57.225" y1="91.425" x2="57.225" y2="90.8" width="0.3" layer="1"/>
@@ -5633,7 +5587,7 @@ design rules under a new name.</description>
 <wire x1="58.9" y1="94.82" x2="58.9" y2="91.9" width="0.3" layer="16"/>
 </signal>
 <signal name="3V3">
-<contactref element="U$57" pad="4"/>
+<contactref element="INA" pad="4"/>
 <contactref element="BKU" pad="8"/>
 <wire x1="48.190171875" y1="90.289828125" x2="48.190171875" y2="87.7" width="0.5" layer="16"/>
 <wire x1="58.075" y1="87.4" x2="59.2" y2="87.4" width="0.4" layer="1"/>
@@ -5649,7 +5603,7 @@ design rules under a new name.</description>
 <signal name="N$150">
 <contactref element="R76" pad="2"/>
 <contactref element="C41" pad="1"/>
-<contactref element="U$57" pad="1"/>
+<contactref element="INA" pad="1"/>
 <wire x1="54.775" y1="86.05" x2="54.1" y2="86.05" width="0.5" layer="1"/>
 <wire x1="54.775" y1="86.05" x2="55.625" y2="85.2" width="0.5" layer="1"/>
 <wire x1="55.625" y1="85.2" x2="56.25" y2="85.2" width="0.5" layer="1"/>
@@ -5658,7 +5612,7 @@ design rules under a new name.</description>
 <signal name="N$151">
 <contactref element="C41" pad="2"/>
 <contactref element="R77" pad="2"/>
-<contactref element="U$57" pad="2"/>
+<contactref element="INA" pad="2"/>
 <wire x1="57.95" y1="85.3" x2="57.95" y2="85.2" width="0.5" layer="1"/>
 <wire x1="57.95" y1="85.3" x2="56.775" y2="86.475" width="0.5" layer="1"/>
 <wire x1="57.95" y1="85.2" x2="58.8" y2="86.05" width="0.5" layer="1"/>
@@ -5697,7 +5651,7 @@ design rules under a new name.</description>
 <signal name="SP-">
 <contactref element="U$5" pad="7"/>
 <contactref element="U$26" pad="67"/>
-<contactref element="YELLOW" pad="C"/>
+<contactref element="LED-Y" pad="C"/>
 <contactref element="U$2" pad="1"/>
 <contactref element="U$2" pad="2"/>
 <contactref element="U$2" pad="3"/>
