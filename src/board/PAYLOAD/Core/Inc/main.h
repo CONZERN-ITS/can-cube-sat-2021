@@ -60,6 +60,9 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
 
+#define I2C_INT_Pin GPIO_PIN_7
+#define I2C_INT_GPIO_Port GPIOF
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
