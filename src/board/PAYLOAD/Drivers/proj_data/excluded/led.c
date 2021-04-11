@@ -16,7 +16,7 @@ void led_init()
 {
 	// Все настроено уже кубом ...
 	// У нас два дублирующих леда. Один будет работать на блипилах
-	// (который PC13 или LED_BLUEPILL)
+	// (который PC12 или LED_Pin)
 	// второй будет работать на готовой плате.
 	// (PB5 или LED_REL_BOARD)
 
@@ -32,13 +32,13 @@ void led_set(bool state)
 	// к пину в качестве земли. Пин работает на OpenDrain
 	GPIO_PinState pin_state = state ? GPIO_PIN_RESET : GPIO_PIN_SET;
 
-	HAL_GPIO_WritePin(LED_BLUEPILL_GPIO_Port, LED_BLUEPILL_Pin, pin_state);
+	HAL_GPIO_WritePin(LED_Pin_GPIO_Port, LED_Pin_Pin, pin_state);
 	HAL_GPIO_WritePin(LED_REL_BOARD_GPIO_Port, LED_REL_BOARD_Pin, pin_state);
 }
 
 
 void led_toggle()
 {
-	HAL_GPIO_TogglePin(LED_BLUEPILL_GPIO_Port, LED_BLUEPILL_Pin);
+	HAL_GPIO_TogglePin(LED_Pin_GPIO_Port, LED_Pin_Pin);
 	HAL_GPIO_TogglePin(LED_REL_BOARD_GPIO_Port, LED_REL_BOARD_Pin);
 }

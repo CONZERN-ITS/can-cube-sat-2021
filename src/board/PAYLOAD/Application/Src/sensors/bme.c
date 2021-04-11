@@ -5,7 +5,7 @@
  *      Author: snork
  */
 
-#include "sensors/bme280/bme.h"
+#include "bme.h"
 
 #include <assert.h>
 
