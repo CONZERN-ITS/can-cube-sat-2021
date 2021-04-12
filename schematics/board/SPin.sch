@@ -3,7 +3,7 @@
 <eagle version="9.4.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -409,6 +409,9 @@
 <smd name="P$2" x="0" y="-3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
 <wire x1="-0.5" y1="-3.5" x2="0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
 <wire x1="0.5" y1="-3.5" x2="-0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
+<smd name="P$3" x="0" y="0" dx="1.4" dy="1.4" layer="1" roundness="100"/>
+<smd name="P$4" x="0" y="3.5" dx="1.4" dy="1.4" layer="16" roundness="100"/>
+<smd name="P$5" x="0" y="-3.5" dx="1.4" dy="1.4" layer="16" roundness="100"/>
 </package>
 </packages>
 <symbols>
@@ -634,8 +637,8 @@
 </device>
 <device name="GRAFIT4_2" package="GRAFIT4_2">
 <connects>
-<connect gate="G$1" pin="P$1" pad="P$1"/>
-<connect gate="G$1" pin="P$2" pad="P$2"/>
+<connect gate="G$1" pin="P$1" pad="P$1 P$4"/>
+<connect gate="G$1" pin="P$2" pad="P$2 P$5"/>
 </connects>
 <technologies>
 <technology name=""/>

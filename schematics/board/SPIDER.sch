@@ -3,7 +3,7 @@
 <eagle version="9.4.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -162,10 +162,10 @@
 <packages>
 <package name="KCONNECT-">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 0.1"</description>
-<pad name="1" x="-3" y="-3.5" drill="1" diameter="1.4" shape="square"/>
-<pad name="2" x="-3" y="3.5" drill="1" diameter="1.4" shape="octagon"/>
-<pad name="3" x="3" y="-3.5" drill="1" diameter="1.4" shape="octagon"/>
-<pad name="4" x="3" y="3.5" drill="1" diameter="1.4" shape="octagon"/>
+<pad name="1" x="-3" y="-3.5" drill="1" diameter="1.3" shape="square"/>
+<pad name="2" x="-3" y="3.5" drill="1" diameter="1.3" shape="octagon"/>
+<pad name="3" x="3" y="-3.5" drill="1" diameter="1.3" shape="octagon"/>
+<pad name="4" x="3" y="3.5" drill="1" diameter="1.3" shape="octagon"/>
 <text x="-3.54" y="5.175" size="1.27" layer="25" ratio="10">&gt;NAME</text>
 <text x="-3.54" y="-6.445" size="1.27" layer="27">&gt;VALUE</text>
 <rectangle x1="-3.254" y1="-3.754" x2="-2.746" y2="-3.246" layer="51"/>

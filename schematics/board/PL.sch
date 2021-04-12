@@ -21970,8 +21970,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="R12" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
 <part name="SUPPLY1" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 <part name="R16" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
-<part name="LED2" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
-<part name="LED3" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
+<part name="LED-B" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
+<part name="LED-G" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="C9" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="2,2µ"/>
 <part name="C13" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="2,2µ"/>
 <part name="C18" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
@@ -21980,38 +21980,38 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="C19" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="10µ"/>
 <part name="C6" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
 <part name="C20" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
-<part name="U$2" library="CanCubeSat" deviceset="Q24" device=""/>
+<part name="Q24" library="CanCubeSat" deviceset="Q24" device=""/>
 <part name="C8" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="1nF"/>
 <part name="C10" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="10nF"/>
 <part name="R17" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
 <part name="R18" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
 <part name="MS5611" library="CanCubeSat" deviceset="MS5611" device="MS5611-PIN-ONLY" value="MS5611MS5611-PIN-ONLY"/>
 <part name="R13" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.05A"/>
-<part name="U$19" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-1" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R22" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R31" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
-<part name="U$3" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-2" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R14" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R19" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R20" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.05A"/>
-<part name="U$4" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-7" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R21" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R23" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
-<part name="U$5" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-8" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R25" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R26" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R27" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.05A"/>
-<part name="U$7" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-6" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R28" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R29" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R30" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.05A"/>
-<part name="U$8" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-4" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R32" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R33" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R34" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.05A"/>
 <part name="R24" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.05A"/>
 <part name="R1" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.5A"/>
-<part name="U2" library="LMC555CMX_NOPB" deviceset="LMC555CMX/NOPB" device=""/>
+<part name="U2" library="LMC555CMX_NOPB" deviceset="LMC555CMX/NOPB" device="" value="LMC555"/>
 <part name="C1" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
 <part name="R2" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1k"/>
 <part name="VR1" library="CanCubeSat" deviceset="3362H-1-502LF" device=""/>
@@ -22052,7 +22052,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="R43" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
 <part name="R44" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
 <part name="R45" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="10k"/>
-<part name="U$18" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-5" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R46" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R47" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R48" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.05A"/>
@@ -22061,13 +22061,13 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="COMPR" library="pinheadCS" deviceset="PINHD-1X2" device=""/>
 <part name="HEAT" library="pinheadCS" deviceset="PINHD-1X2" device=""/>
 <part name="TEMP" library="pinheadCS" deviceset="PINHD-1X2" device=""/>
-<part name="U$20" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-0" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R49" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R50" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
-<part name="U$22" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-9" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R53" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R54" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
-<part name="U$23" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
+<part name="SI2302-3" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
 <part name="R55" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R56" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100R"/>
 <part name="R51" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="124k"/>
@@ -22076,7 +22076,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="U$21" library="CanCubeSat" deviceset="FFC-CONNECT" device="68611"/>
 <part name="U$6" library="CanCubeSat" deviceset="ECAP" device="ECAP220" value="220uF"/>
 <part name="U$24" library="CanCubeSat" deviceset="ECAP" device="ECAP220" value="220uF"/>
-<part name="U$25" library="CanCubeSat" deviceset="ADP150AUJZ-3.3-R7" device=""/>
+<part name="STAB" library="CanCubeSat" deviceset="ADP150AUJZ-3.3-R7" device=""/>
 <part name="C11" library="CanCubeSat" deviceset="ECAP" device="1UF" value="1uF"/>
 <part name="C12" library="CanCubeSat" deviceset="ECAP" device="1UF" value="1uF"/>
 <part name="U$1" library="CanCubeSat" deviceset="ITS-LOGO" device="PCB-&quot;&quot;" value="PCB &quot;Payload&quot;"/>
@@ -22209,11 +22209,11 @@ MICS-6814</text>
 <attribute name="NAME" x="255.27" y="37.0586" size="1.778" layer="95"/>
 <attribute name="VALUE" x="255.27" y="32.258" size="1.778" layer="96"/>
 </instance>
-<instance part="LED2" gate="G$1" x="210.82" y="180.34" smashed="yes" rot="R90">
+<instance part="LED-B" gate="G$1" x="210.82" y="180.34" smashed="yes" rot="R90">
 <attribute name="NAME" x="215.392" y="183.896" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="215.392" y="186.055" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="LED3" gate="G$1" x="274.32" y="35.56" smashed="yes" rot="R270">
+<instance part="LED-G" gate="G$1" x="274.32" y="35.56" smashed="yes" rot="R270">
 <attribute name="NAME" x="269.748" y="32.004" size="1.778" layer="95"/>
 <attribute name="VALUE" x="269.748" y="29.845" size="1.778" layer="96"/>
 </instance>
@@ -22249,7 +22249,7 @@ MICS-6814</text>
 <attribute name="NAME" x="301.879" y="197.104" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="306.959" y="197.104" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="U$2" gate="G$1" x="284.48" y="203.2" smashed="yes" rot="R270">
+<instance part="Q24" gate="G$1" x="284.48" y="203.2" smashed="yes" rot="R270">
 <attribute name="NAME" x="276.86" y="208.28" size="1.778" layer="95" rot="R270"/>
 </instance>
 <instance part="C8" gate="G$1" x="287.02" y="177.8" smashed="yes" rot="R180">
@@ -22273,7 +22273,7 @@ MICS-6814</text>
 <attribute name="NAME" x="-49.53" y="131.0386" size="1.778" layer="95"/>
 <attribute name="VALUE" x="-49.53" y="126.238" size="1.778" layer="96"/>
 </instance>
-<instance part="U$19" gate="G$1" x="58.42" y="121.92" smashed="yes"/>
+<instance part="SI2302-1" gate="G$1" x="58.42" y="121.92" smashed="yes"/>
 <instance part="R22" gate="G$1" x="43.18" y="132.08" smashed="yes" rot="R180">
 <attribute name="NAME" x="46.99" y="130.5814" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="46.99" y="135.382" size="1.778" layer="96" rot="R180"/>
@@ -22282,7 +22282,7 @@ MICS-6814</text>
 <attribute name="NAME" x="59.9186" y="143.51" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="55.118" y="143.51" size="1.778" layer="96" rot="R270"/>
 </instance>
-<instance part="U$3" gate="G$1" x="58.42" y="182.88" smashed="yes"/>
+<instance part="SI2302-2" gate="G$1" x="58.42" y="182.88" smashed="yes"/>
 <instance part="R14" gate="G$1" x="40.64" y="193.04" smashed="yes" rot="R180">
 <attribute name="NAME" x="44.45" y="191.5414" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="44.45" y="196.342" size="1.778" layer="96" rot="R180"/>
@@ -22295,7 +22295,7 @@ MICS-6814</text>
 <attribute name="NAME" x="-105.41" y="181.3814" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="-105.41" y="186.182" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="U$4" gate="G$1" x="58.42" y="50.8" smashed="yes"/>
+<instance part="SI2302-7" gate="G$1" x="58.42" y="50.8" smashed="yes"/>
 <instance part="R21" gate="G$1" x="43.18" y="60.96" smashed="yes" rot="R180">
 <attribute name="NAME" x="46.99" y="59.4614" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="46.99" y="64.262" size="1.778" layer="96" rot="R180"/>
@@ -22304,7 +22304,7 @@ MICS-6814</text>
 <attribute name="NAME" x="59.9186" y="72.39" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="55.118" y="72.39" size="1.778" layer="96" rot="R270"/>
 </instance>
-<instance part="U$5" gate="G$1" x="58.42" y="-121.92" smashed="yes"/>
+<instance part="SI2302-8" gate="G$1" x="58.42" y="-121.92" smashed="yes"/>
 <instance part="R25" gate="G$1" x="40.64" y="-111.76" smashed="yes" rot="R180">
 <attribute name="NAME" x="44.45" y="-113.2586" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="44.45" y="-108.458" size="1.778" layer="96" rot="R180"/>
@@ -22317,7 +22317,7 @@ MICS-6814</text>
 <attribute name="NAME" x="62.23" y="-133.1214" size="1.778" layer="95"/>
 <attribute name="VALUE" x="62.23" y="-137.922" size="1.778" layer="96"/>
 </instance>
-<instance part="U$7" gate="G$1" x="58.42" y="-200.66" smashed="yes"/>
+<instance part="SI2302-6" gate="G$1" x="58.42" y="-200.66" smashed="yes"/>
 <instance part="R28" gate="G$1" x="40.64" y="-190.5" smashed="yes" rot="R180">
 <attribute name="NAME" x="44.45" y="-191.9986" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="44.45" y="-187.198" size="1.778" layer="96" rot="R180"/>
@@ -22330,7 +22330,7 @@ MICS-6814</text>
 <attribute name="NAME" x="62.23" y="-211.8614" size="1.778" layer="95"/>
 <attribute name="VALUE" x="62.23" y="-216.662" size="1.778" layer="96"/>
 </instance>
-<instance part="U$8" gate="G$1" x="281.94" y="-289.56" smashed="yes"/>
+<instance part="SI2302-4" gate="G$1" x="281.94" y="-289.56" smashed="yes"/>
 <instance part="R32" gate="G$1" x="264.16" y="-279.4" smashed="yes" rot="R180">
 <attribute name="NAME" x="267.97" y="-280.8986" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="267.97" y="-276.098" size="1.778" layer="96" rot="R180"/>
@@ -22512,7 +22512,7 @@ MICS-6814</text>
 <attribute name="NAME" x="-9.1186" y="69.85" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="-4.318" y="69.85" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="U$18" gate="G$1" x="58.42" y="-48.26" smashed="yes"/>
+<instance part="SI2302-5" gate="G$1" x="58.42" y="-48.26" smashed="yes"/>
 <instance part="R46" gate="G$1" x="40.64" y="-38.1" smashed="yes" rot="R180">
 <attribute name="NAME" x="44.45" y="-39.5986" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="44.45" y="-34.798" size="1.778" layer="96" rot="R180"/>
@@ -22545,7 +22545,7 @@ MICS-6814</text>
 <attribute name="NAME" x="402.59" y="-42.545" size="1.778" layer="95"/>
 <attribute name="VALUE" x="402.59" y="-53.34" size="1.778" layer="96"/>
 </instance>
-<instance part="U$20" gate="G$1" x="172.72" y="-55.88" smashed="yes"/>
+<instance part="SI2302-0" gate="G$1" x="172.72" y="-55.88" smashed="yes"/>
 <instance part="R49" gate="G$1" x="157.48" y="-50.8" smashed="yes" rot="R270">
 <attribute name="NAME" x="158.9786" y="-46.99" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="154.178" y="-46.99" size="1.778" layer="96" rot="R270"/>
@@ -22554,7 +22554,7 @@ MICS-6814</text>
 <attribute name="NAME" x="174.2186" y="-34.29" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="169.418" y="-34.29" size="1.778" layer="96" rot="R270"/>
 </instance>
-<instance part="U$22" gate="G$1" x="172.72" y="-132.08" smashed="yes"/>
+<instance part="SI2302-9" gate="G$1" x="172.72" y="-132.08" smashed="yes"/>
 <instance part="R53" gate="G$1" x="157.48" y="-127" smashed="yes" rot="R270">
 <attribute name="NAME" x="158.9786" y="-123.19" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="154.178" y="-123.19" size="1.778" layer="96" rot="R270"/>
@@ -22563,7 +22563,7 @@ MICS-6814</text>
 <attribute name="NAME" x="174.2186" y="-110.49" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="169.418" y="-110.49" size="1.778" layer="96" rot="R270"/>
 </instance>
-<instance part="U$23" gate="G$1" x="172.72" y="-205.74" smashed="yes"/>
+<instance part="SI2302-3" gate="G$1" x="172.72" y="-205.74" smashed="yes"/>
 <instance part="R55" gate="G$1" x="157.48" y="-200.66" smashed="yes" rot="R270">
 <attribute name="NAME" x="158.9786" y="-196.85" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="154.178" y="-196.85" size="1.778" layer="96" rot="R270"/>
@@ -22596,7 +22596,7 @@ MICS-6814</text>
 <attribute name="NAME" x="247.396" y="-37.465" size="1.778" layer="95"/>
 <attribute name="VALUE" x="247.396" y="-42.291" size="1.778" layer="96"/>
 </instance>
-<instance part="U$25" gate="G$1" x="152.4" y="127" smashed="yes"/>
+<instance part="STAB" gate="G$1" x="152.4" y="127" smashed="yes"/>
 <instance part="C11" gate="G$1" x="167.64" y="129.54" smashed="yes">
 <attribute name="NAME" x="168.656" y="130.175" size="1.778" layer="95"/>
 <attribute name="VALUE" x="168.656" y="125.349" size="1.778" layer="96"/>
@@ -22671,7 +22671,7 @@ MICS-6814</text>
 <wire x1="274.32" y1="200.66" x2="274.32" y2="187.96" width="0.1524" layer="91"/>
 <wire x1="274.32" y1="187.96" x2="281.94" y2="187.96" width="0.1524" layer="91"/>
 <label x="274.32" y="187.96" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$2" gate="G$1" pin="GND"/>
+<pinref part="Q24" gate="G$1" pin="GND"/>
 <pinref part="C10" gate="G$1" pin="1"/>
 </segment>
 <segment>
@@ -22681,32 +22681,32 @@ MICS-6814</text>
 </segment>
 <segment>
 <label x="27.94" y="121.92" size="1.778" layer="95"/>
-<pinref part="U$19" gate="G$1" pin="S"/>
+<pinref part="SI2302-1" gate="G$1" pin="S"/>
 <wire x1="27.94" y1="121.92" x2="48.26" y2="121.92" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <label x="27.94" y="182.88" size="1.778" layer="95"/>
-<pinref part="U$3" gate="G$1" pin="S"/>
+<pinref part="SI2302-2" gate="G$1" pin="S"/>
 <wire x1="27.94" y1="182.88" x2="48.26" y2="182.88" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <label x="27.94" y="50.8" size="1.778" layer="95"/>
-<pinref part="U$4" gate="G$1" pin="S"/>
+<pinref part="SI2302-7" gate="G$1" pin="S"/>
 <wire x1="27.94" y1="50.8" x2="48.26" y2="50.8" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <label x="27.94" y="-121.92" size="1.778" layer="95"/>
-<pinref part="U$5" gate="G$1" pin="S"/>
+<pinref part="SI2302-8" gate="G$1" pin="S"/>
 <wire x1="27.94" y1="-121.92" x2="48.26" y2="-121.92" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <label x="27.94" y="-200.66" size="1.778" layer="95"/>
-<pinref part="U$7" gate="G$1" pin="S"/>
+<pinref part="SI2302-6" gate="G$1" pin="S"/>
 <wire x1="27.94" y1="-200.66" x2="48.26" y2="-200.66" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <label x="251.46" y="-289.56" size="1.778" layer="95"/>
-<pinref part="U$8" gate="G$1" pin="S"/>
+<pinref part="SI2302-4" gate="G$1" pin="S"/>
 <wire x1="251.46" y1="-289.56" x2="271.78" y2="-289.56" width="0.1524" layer="91"/>
 </segment>
 <segment>
@@ -22716,7 +22716,7 @@ MICS-6814</text>
 </segment>
 <segment>
 <label x="27.94" y="-48.26" size="1.778" layer="95"/>
-<pinref part="U$18" gate="G$1" pin="S"/>
+<pinref part="SI2302-5" gate="G$1" pin="S"/>
 <wire x1="27.94" y1="-48.26" x2="48.26" y2="-48.26" width="0.1524" layer="91"/>
 </segment>
 <segment>
@@ -22724,7 +22724,7 @@ MICS-6814</text>
 <label x="142.24" y="-55.88" size="1.778" layer="95"/>
 <wire x1="157.48" y1="-55.88" x2="142.24" y2="-55.88" width="0.1524" layer="91"/>
 <junction x="157.48" y="-55.88"/>
-<pinref part="U$20" gate="G$1" pin="S"/>
+<pinref part="SI2302-0" gate="G$1" pin="S"/>
 <pinref part="R49" gate="G$1" pin="2"/>
 </segment>
 <segment>
@@ -22732,7 +22732,7 @@ MICS-6814</text>
 <label x="142.24" y="-132.08" size="1.778" layer="95"/>
 <wire x1="157.48" y1="-132.08" x2="142.24" y2="-132.08" width="0.1524" layer="91"/>
 <junction x="157.48" y="-132.08"/>
-<pinref part="U$22" gate="G$1" pin="S"/>
+<pinref part="SI2302-9" gate="G$1" pin="S"/>
 <pinref part="R53" gate="G$1" pin="2"/>
 </segment>
 <segment>
@@ -22740,7 +22740,7 @@ MICS-6814</text>
 <label x="142.24" y="-205.74" size="1.778" layer="95"/>
 <wire x1="157.48" y1="-205.74" x2="142.24" y2="-205.74" width="0.1524" layer="91"/>
 <junction x="157.48" y="-205.74"/>
-<pinref part="U$23" gate="G$1" pin="S"/>
+<pinref part="SI2302-3" gate="G$1" pin="S"/>
 <pinref part="R55" gate="G$1" pin="2"/>
 </segment>
 <segment>
@@ -22754,7 +22754,7 @@ MICS-6814</text>
 <label x="368.3" y="-50.8" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U$25" gate="G$1" pin="GND"/>
+<pinref part="STAB" gate="G$1" pin="GND"/>
 <wire x1="139.7" y1="127" x2="124.46" y2="127" width="0.1524" layer="91"/>
 <label x="129.54" y="127" size="1.778" layer="95"/>
 <wire x1="124.46" y1="127" x2="124.46" y2="124.46" width="0.1524" layer="91"/>
@@ -22880,13 +22880,13 @@ MICS-6814</text>
 <label x="256.54" y="-200.66" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U$25" gate="G$1" pin="VIN"/>
+<pinref part="STAB" gate="G$1" pin="VIN"/>
 <label x="129.54" y="132.08" size="1.778" layer="95"/>
 <pinref part="C12" gate="G$1" pin="1"/>
 <wire x1="139.7" y1="132.08" x2="114.3" y2="132.08" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="U$25" gate="G$1" pin="EN"/>
+<pinref part="STAB" gate="G$1" pin="EN"/>
 <wire x1="139.7" y1="121.92" x2="129.54" y2="121.92" width="0.1524" layer="91"/>
 <label x="129.54" y="121.92" size="1.778" layer="95"/>
 </segment>
@@ -22955,7 +22955,7 @@ MICS-6814</text>
 <segment>
 <label x="208.28" y="160.02" size="1.778" layer="95" rot="R90"/>
 <wire x1="208.28" y1="180.34" x2="208.28" y2="157.48" width="0.1524" layer="91"/>
-<pinref part="LED2" gate="G$1" pin="A"/>
+<pinref part="LED-B" gate="G$1" pin="A"/>
 <pinref part="U1" gate="G$1" pin="VDD"/>
 <wire x1="198.12" y1="152.4" x2="198.12" y2="157.48" width="0.1524" layer="91"/>
 <wire x1="198.12" y1="157.48" x2="208.28" y2="157.48" width="0.1524" layer="91"/>
@@ -22988,7 +22988,7 @@ MICS-6814</text>
 <wire x1="287.02" y1="226.06" x2="274.32" y2="226.06" width="0.1524" layer="91"/>
 <wire x1="274.32" y1="226.06" x2="274.32" y2="208.28" width="0.1524" layer="91"/>
 <label x="274.32" y="220.98" size="1.778" layer="95" rot="R90"/>
-<pinref part="U$2" gate="G$1" pin="VCC"/>
+<pinref part="Q24" gate="G$1" pin="VCC"/>
 <pinref part="C10" gate="G$1" pin="2"/>
 </segment>
 <segment>
@@ -23069,7 +23069,7 @@ MICS-6814</text>
 <junction x="233.68" y="48.26"/>
 <wire x1="276.86" y1="48.26" x2="276.86" y2="35.56" width="0.1524" layer="91"/>
 <label x="276.86" y="40.64" size="1.778" layer="95" rot="R90"/>
-<pinref part="LED3" gate="G$1" pin="A"/>
+<pinref part="LED-G" gate="G$1" pin="A"/>
 <wire x1="269.24" y1="50.8" x2="269.24" y2="48.26" width="0.1524" layer="91"/>
 <wire x1="269.24" y1="48.26" x2="276.86" y2="48.26" width="0.1524" layer="91"/>
 <pinref part="R17" gate="G$1" pin="1"/>
@@ -23124,7 +23124,7 @@ MICS-6814</text>
 <segment>
 <wire x1="215.9" y1="180.34" x2="218.44" y2="180.34" width="0.1524" layer="91"/>
 <pinref part="R15" gate="G$1" pin="2"/>
-<pinref part="LED2" gate="G$1" pin="C"/>
+<pinref part="LED-B" gate="G$1" pin="C"/>
 </segment>
 </net>
 <net name="N$29" class="0">
@@ -23146,7 +23146,7 @@ MICS-6814</text>
 <net name="N$4" class="0">
 <segment>
 <wire x1="287.02" y1="182.88" x2="287.02" y2="187.96" width="0.1524" layer="91"/>
-<pinref part="U$2" gate="G$1" pin="OUTPUT"/>
+<pinref part="Q24" gate="G$1" pin="OUTPUT"/>
 <pinref part="C8" gate="G$1" pin="2"/>
 </segment>
 </net>
@@ -23441,7 +23441,7 @@ MICS-6814</text>
 <wire x1="58.42" y1="132.08" x2="58.42" y2="129.54" width="0.1524" layer="91"/>
 <wire x1="48.26" y1="132.08" x2="58.42" y2="132.08" width="0.1524" layer="91"/>
 <junction x="58.42" y="132.08"/>
-<pinref part="U$19" gate="G$1" pin="G"/>
+<pinref part="SI2302-1" gate="G$1" pin="G"/>
 <pinref part="R22" gate="G$1" pin="1"/>
 <pinref part="R31" gate="G$1" pin="2"/>
 </segment>
@@ -23466,7 +23466,7 @@ MICS-6814</text>
 <segment>
 <wire x1="68.58" y1="121.92" x2="88.9" y2="121.92" width="0.1524" layer="91"/>
 <label x="73.66" y="121.92" size="1.778" layer="95"/>
-<pinref part="U$19" gate="G$1" pin="D"/>
+<pinref part="SI2302-1" gate="G$1" pin="D"/>
 </segment>
 </net>
 <net name="N$2" class="0">
@@ -23475,7 +23475,7 @@ MICS-6814</text>
 <wire x1="58.42" y1="193.04" x2="58.42" y2="190.5" width="0.1524" layer="91"/>
 <wire x1="45.72" y1="193.04" x2="58.42" y2="193.04" width="0.1524" layer="91"/>
 <junction x="58.42" y="193.04"/>
-<pinref part="U$3" gate="G$1" pin="G"/>
+<pinref part="SI2302-2" gate="G$1" pin="G"/>
 <pinref part="R14" gate="G$1" pin="1"/>
 <pinref part="R19" gate="G$1" pin="2"/>
 </segment>
@@ -23491,7 +23491,7 @@ MICS-6814</text>
 <segment>
 <wire x1="68.58" y1="-48.26" x2="88.9" y2="-48.26" width="0.1524" layer="91"/>
 <label x="73.66" y="-48.26" size="1.778" layer="95"/>
-<pinref part="U$18" gate="G$1" pin="D"/>
+<pinref part="SI2302-5" gate="G$1" pin="D"/>
 </segment>
 <segment>
 <wire x1="68.58" y1="-60.96" x2="86.36" y2="-60.96" width="0.1524" layer="91"/>
@@ -23505,7 +23505,7 @@ MICS-6814</text>
 <wire x1="58.42" y1="60.96" x2="58.42" y2="58.42" width="0.1524" layer="91"/>
 <wire x1="48.26" y1="60.96" x2="58.42" y2="60.96" width="0.1524" layer="91"/>
 <junction x="58.42" y="60.96"/>
-<pinref part="U$4" gate="G$1" pin="G"/>
+<pinref part="SI2302-7" gate="G$1" pin="G"/>
 <pinref part="R21" gate="G$1" pin="1"/>
 <pinref part="R23" gate="G$1" pin="2"/>
 </segment>
@@ -23514,7 +23514,7 @@ MICS-6814</text>
 <segment>
 <wire x1="68.58" y1="50.8" x2="88.9" y2="50.8" width="0.1524" layer="91"/>
 <label x="76.2" y="50.8" size="1.778" layer="95"/>
-<pinref part="U$4" gate="G$1" pin="D"/>
+<pinref part="SI2302-7" gate="G$1" pin="D"/>
 </segment>
 <segment>
 <wire x1="71.12" y1="38.1" x2="88.9" y2="38.1" width="0.1524" layer="91"/>
@@ -23528,7 +23528,7 @@ MICS-6814</text>
 <wire x1="58.42" y1="-111.76" x2="58.42" y2="-114.3" width="0.1524" layer="91"/>
 <wire x1="45.72" y1="-111.76" x2="58.42" y2="-111.76" width="0.1524" layer="91"/>
 <junction x="58.42" y="-111.76"/>
-<pinref part="U$5" gate="G$1" pin="G"/>
+<pinref part="SI2302-8" gate="G$1" pin="G"/>
 <pinref part="R25" gate="G$1" pin="1"/>
 <pinref part="R26" gate="G$1" pin="2"/>
 </segment>
@@ -23551,7 +23551,7 @@ MICS-6814</text>
 <wire x1="58.42" y1="-190.5" x2="58.42" y2="-193.04" width="0.1524" layer="91"/>
 <wire x1="45.72" y1="-190.5" x2="58.42" y2="-190.5" width="0.1524" layer="91"/>
 <junction x="58.42" y="-190.5"/>
-<pinref part="U$7" gate="G$1" pin="G"/>
+<pinref part="SI2302-6" gate="G$1" pin="G"/>
 <pinref part="R28" gate="G$1" pin="1"/>
 <pinref part="R29" gate="G$1" pin="2"/>
 </segment>
@@ -23577,14 +23577,14 @@ MICS-6814</text>
 <segment>
 <wire x1="68.58" y1="-121.92" x2="88.9" y2="-121.92" width="0.1524" layer="91"/>
 <label x="76.2" y="-121.92" size="1.778" layer="95"/>
-<pinref part="U$5" gate="G$1" pin="D"/>
+<pinref part="SI2302-8" gate="G$1" pin="D"/>
 </segment>
 </net>
 <net name="GND-MS-INT" class="0">
 <segment>
 <wire x1="68.58" y1="-200.66" x2="88.9" y2="-200.66" width="0.1524" layer="91"/>
 <label x="76.2" y="-200.66" size="1.778" layer="95"/>
-<pinref part="U$7" gate="G$1" pin="D"/>
+<pinref part="SI2302-6" gate="G$1" pin="D"/>
 </segment>
 <segment>
 <wire x1="71.12" y1="-213.36" x2="88.9" y2="-213.36" width="0.1524" layer="91"/>
@@ -23598,7 +23598,7 @@ MICS-6814</text>
 <wire x1="281.94" y1="-279.4" x2="281.94" y2="-281.94" width="0.1524" layer="91"/>
 <wire x1="269.24" y1="-279.4" x2="281.94" y2="-279.4" width="0.1524" layer="91"/>
 <junction x="281.94" y="-279.4"/>
-<pinref part="U$8" gate="G$1" pin="G"/>
+<pinref part="SI2302-4" gate="G$1" pin="G"/>
 <pinref part="R32" gate="G$1" pin="1"/>
 <pinref part="R33" gate="G$1" pin="2"/>
 </segment>
@@ -23659,7 +23659,7 @@ MICS-6814</text>
 <segment>
 <wire x1="292.1" y1="-289.56" x2="312.42" y2="-289.56" width="0.1524" layer="91"/>
 <label x="299.72" y="-289.56" size="1.778" layer="95"/>
-<pinref part="U$8" gate="G$1" pin="D"/>
+<pinref part="SI2302-4" gate="G$1" pin="D"/>
 </segment>
 <segment>
 <wire x1="287.02" y1="-312.42" x2="304.8" y2="-312.42" width="0.1524" layer="91"/>
@@ -23906,7 +23906,7 @@ MICS-6814</text>
 <wire x1="58.42" y1="-38.1" x2="58.42" y2="-40.64" width="0.1524" layer="91"/>
 <wire x1="45.72" y1="-38.1" x2="58.42" y2="-38.1" width="0.1524" layer="91"/>
 <junction x="58.42" y="-38.1"/>
-<pinref part="U$18" gate="G$1" pin="G"/>
+<pinref part="SI2302-5" gate="G$1" pin="G"/>
 <pinref part="R46" gate="G$1" pin="1"/>
 <pinref part="R47" gate="G$1" pin="2"/>
 </segment>
@@ -23915,7 +23915,7 @@ MICS-6814</text>
 <segment>
 <wire x1="68.58" y1="182.88" x2="88.9" y2="182.88" width="0.1524" layer="91"/>
 <label x="73.66" y="182.88" size="1.778" layer="95"/>
-<pinref part="U$3" gate="G$1" pin="D"/>
+<pinref part="SI2302-2" gate="G$1" pin="D"/>
 </segment>
 <segment>
 <wire x1="-114.3" y1="182.88" x2="-132.08" y2="182.88" width="0.1524" layer="91"/>
@@ -23965,7 +23965,7 @@ MICS-6814</text>
 <wire x1="172.72" y1="-45.72" x2="172.72" y2="-48.26" width="0.1524" layer="91"/>
 <wire x1="157.48" y1="-45.72" x2="172.72" y2="-45.72" width="0.1524" layer="91"/>
 <junction x="172.72" y="-45.72"/>
-<pinref part="U$20" gate="G$1" pin="G"/>
+<pinref part="SI2302-0" gate="G$1" pin="G"/>
 <pinref part="R49" gate="G$1" pin="1"/>
 <pinref part="R50" gate="G$1" pin="2"/>
 </segment>
@@ -23976,7 +23976,7 @@ MICS-6814</text>
 <wire x1="172.72" y1="-121.92" x2="172.72" y2="-124.46" width="0.1524" layer="91"/>
 <wire x1="157.48" y1="-121.92" x2="172.72" y2="-121.92" width="0.1524" layer="91"/>
 <junction x="172.72" y="-121.92"/>
-<pinref part="U$22" gate="G$1" pin="G"/>
+<pinref part="SI2302-9" gate="G$1" pin="G"/>
 <pinref part="R53" gate="G$1" pin="1"/>
 <pinref part="R54" gate="G$1" pin="2"/>
 </segment>
@@ -23987,7 +23987,7 @@ MICS-6814</text>
 <wire x1="172.72" y1="-195.58" x2="172.72" y2="-198.12" width="0.1524" layer="91"/>
 <wire x1="157.48" y1="-195.58" x2="172.72" y2="-195.58" width="0.1524" layer="91"/>
 <junction x="172.72" y="-195.58"/>
-<pinref part="U$23" gate="G$1" pin="G"/>
+<pinref part="SI2302-3" gate="G$1" pin="G"/>
 <pinref part="R55" gate="G$1" pin="1"/>
 <pinref part="R56" gate="G$1" pin="2"/>
 </segment>
@@ -23996,7 +23996,7 @@ MICS-6814</text>
 <segment>
 <wire x1="182.88" y1="-55.88" x2="203.2" y2="-55.88" width="0.1524" layer="91"/>
 <label x="190.5" y="-55.88" size="1.778" layer="95"/>
-<pinref part="U$20" gate="G$1" pin="D"/>
+<pinref part="SI2302-0" gate="G$1" pin="D"/>
 </segment>
 <segment>
 <pinref part="VALVE1" gate="G$1" pin="2"/>
@@ -24017,7 +24017,7 @@ MICS-6814</text>
 <segment>
 <wire x1="182.88" y1="-132.08" x2="203.2" y2="-132.08" width="0.1524" layer="91"/>
 <label x="187.96" y="-132.08" size="1.778" layer="95"/>
-<pinref part="U$22" gate="G$1" pin="D"/>
+<pinref part="SI2302-9" gate="G$1" pin="D"/>
 </segment>
 <segment>
 <pinref part="COMPR" gate="G$1" pin="2"/>
@@ -24033,7 +24033,7 @@ MICS-6814</text>
 <segment>
 <wire x1="182.88" y1="-205.74" x2="203.2" y2="-205.74" width="0.1524" layer="91"/>
 <label x="190.5" y="-205.74" size="1.778" layer="95"/>
-<pinref part="U$23" gate="G$1" pin="D"/>
+<pinref part="SI2302-3" gate="G$1" pin="D"/>
 </segment>
 <segment>
 <pinref part="HEAT" gate="G$1" pin="2"/>
@@ -24146,7 +24146,7 @@ MICS-6814</text>
 <wire x1="200.66" y1="154.94" x2="208.28" y2="154.94" width="0.1524" layer="91"/>
 <wire x1="208.28" y1="154.94" x2="208.28" y2="132.08" width="0.1524" layer="91"/>
 <wire x1="208.28" y1="132.08" x2="180.34" y2="132.08" width="0.1524" layer="91"/>
-<pinref part="U$25" gate="G$1" pin="VOUT"/>
+<pinref part="STAB" gate="G$1" pin="VOUT"/>
 <pinref part="C3" gate="G$1" pin="1"/>
 <wire x1="180.34" y1="132.08" x2="167.64" y2="132.08" width="0.1524" layer="91"/>
 <junction x="180.34" y="132.08"/>
@@ -24157,7 +24157,7 @@ MICS-6814</text>
 </net>
 <net name="N$13" class="0">
 <segment>
-<pinref part="LED3" gate="G$1" pin="C"/>
+<pinref part="LED-G" gate="G$1" pin="C"/>
 <pinref part="R16" gate="G$1" pin="2"/>
 <wire x1="264.16" y1="35.56" x2="269.24" y2="35.56" width="0.1524" layer="91"/>
 </segment>

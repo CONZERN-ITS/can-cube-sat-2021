@@ -1,7 +1,7 @@
 {
     "Header": {
         "Comment": "All values are metric (mm)",
-        "CreationDate": "2020-12-30T18:32:19Z",
+        "CreationDate": "2021-04-12T20:39:38Z",
         "GenerationSoftware": {
             "Application": "EAGLE",
             "Vendor": "Autodesk",
@@ -13,7 +13,7 @@
         "BoardThickness": 1.57,
         "LayerNumber": 2,
         "Name": {
-            "ProjectId": "AB+DC-DC"
+            "ProjectId": "BSK+PL"
         },
         "Owner": "  <>"
     }
