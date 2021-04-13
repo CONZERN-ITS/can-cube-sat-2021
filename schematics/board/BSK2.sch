@@ -391,19 +391,6 @@
 <wire x1="0.5" y1="-3" x2="0.5" y2="-4" width="0.127" layer="20"/>
 <wire x1="0.5" y1="-4" x2="-0.5" y2="-4" width="0.127" layer="20" curve="-180"/>
 </package>
-<package name="KCONNECT-">
-<description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 0.1"</description>
-<pad name="1" x="-3" y="-3.5" drill="1" diameter="1.4" shape="square"/>
-<pad name="2" x="-3" y="3.5" drill="1" diameter="1.4" shape="octagon"/>
-<pad name="3" x="3" y="-3.5" drill="1" diameter="1.4" shape="octagon"/>
-<pad name="4" x="3" y="3.5" drill="1" diameter="1.4" shape="octagon"/>
-<text x="-3.54" y="5.175" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="-3.54" y="-6.445" size="1.27" layer="27">&gt;VALUE</text>
-<rectangle x1="-3.254" y1="-3.754" x2="-2.746" y2="-3.246" layer="51"/>
-<rectangle x1="-3.254" y1="3.246" x2="-2.746" y2="3.754" layer="51"/>
-<rectangle x1="2.746" y1="3.246" x2="3.254" y2="3.754" layer="51"/>
-<rectangle x1="2.746" y1="-3.754" x2="3.254" y2="-3.246" layer="51"/>
-</package>
 <package name="KCONNECT-1">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 0.1"</description>
 <pad name="2" x="-3" y="3.5" drill="1" diameter="1.4" shape="octagon"/>
@@ -498,17 +485,14 @@
 </package>
 <package name="GRAFIT4_2">
 <smd name="OUT" x="0" y="0" dx="2" dy="2" layer="16" roundness="100" rot="R90"/>
-<wire x1="-0.5" y1="0" x2="0.5" y2="0" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="0" x2="-0.5" y2="0" width="0.127" layer="20" curve="-180"/>
 <smd name="P$1" x="0" y="3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
-<wire x1="-0.5" y1="3.5" x2="0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="3.5" x2="-0.5" y2="3.5" width="0.127" layer="20" curve="-180"/>
 <smd name="P$2" x="0" y="-3.4" dx="2" dy="2.9" layer="1" roundness="100"/>
-<wire x1="-0.5" y1="-3.5" x2="0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
-<wire x1="0.5" y1="-3.5" x2="-0.5" y2="-3.5" width="0.127" layer="20" curve="-180"/>
 <smd name="P$3" x="0" y="0" dx="1.4" dy="1.4" layer="1" roundness="100"/>
 <smd name="P$4" x="0" y="3.5" dx="1.4" dy="1.4" layer="16" roundness="100"/>
 <smd name="P$5" x="0" y="-3.5" dx="1.4" dy="1.4" layer="16" roundness="100"/>
+<hole x="0" y="3.5" drill="1"/>
+<hole x="0" y="0" drill="1"/>
+<hole x="0" y="-3.5" drill="1"/>
 </package>
 <package name="ITS-LOGO">
 <rectangle x1="0.564" y1="0.684" x2="0.732" y2="0.692" layer="21"/>
@@ -1378,6 +1362,19 @@
 <text x="3.3" y="0.8" size="1.5" layer="21" font="vector" ratio="15">Концерн "ИТС"</text>
 <wire x1="0" y1="0" x2="17.7" y2="0" width="0.1" layer="21"/>
 <text x="0" y="-1.5" size="1" layer="21" font="vector" ratio="15">&gt;VALUE</text>
+</package>
+<package name="KCONNECT-">
+<description>&lt;b&gt;PIN HEADER&lt;/b&gt; - 0.1"</description>
+<pad name="1" x="-3" y="-3.5" drill="1" diameter="1.3" shape="square"/>
+<pad name="2" x="-3" y="3.5" drill="1" diameter="1.3" shape="octagon"/>
+<pad name="3" x="3" y="-3.5" drill="1" diameter="1.3" shape="octagon"/>
+<pad name="4" x="3" y="3.5" drill="1" diameter="1.3" shape="octagon"/>
+<text x="-3.54" y="5.175" size="1.27" layer="25" ratio="10">&gt;NAME</text>
+<text x="-3.54" y="-6.445" size="1.27" layer="27">&gt;VALUE</text>
+<rectangle x1="-3.254" y1="-3.754" x2="-2.746" y2="-3.246" layer="51"/>
+<rectangle x1="-3.254" y1="3.246" x2="-2.746" y2="3.754" layer="51"/>
+<rectangle x1="2.746" y1="3.246" x2="3.254" y2="3.754" layer="51"/>
+<rectangle x1="2.746" y1="-3.754" x2="3.254" y2="-3.246" layer="51"/>
 </package>
 </packages>
 <packages3d>
