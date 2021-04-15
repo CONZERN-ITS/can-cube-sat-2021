@@ -11,8 +11,6 @@
 
 #include "stm32f4xx_hal.h"
 
-extern I2C_HandleTypeDef ms5611_i2c;
-
 
 struct prom_data {
 	uint16_t c1;
@@ -31,9 +29,8 @@ struct prom_data {
  */
 
 /*	Функция для резета
- * 	3) cmd - команда на переинициализацию датчика (CMD_RESET)
  */
-extern int ms5611_reset(void * handle, uint16_t device_addr, uint8_t cmd);
+extern int ms5611_reset(void * handle, uint16_t device_addr);
 
 
 /*	Функция для чтения всех коэффициентов в памяти
@@ -52,10 +49,9 @@ extern int ms5611_initiate_conversion(void * handle, uint16_t device_addr, uint8
 
 /*	Функция для чтения данных. Данные формируются в течении некоторого времени (см datasheet),
  * после отправки initiate_conversion
- * 	3) cmd - команда для чтения данных (CMD_READ_DATA)
- * 	4) data - указатеть на переменную, в которую необходимо положить результат
+ * 	3) data - указатеть на переменную, в которую необходимо положить результат
  */
-extern int ms5611_read_data(void * handle, uint16_t device_addr, uint8_t cmd, uint32_t * data);
+extern int ms5611_read_data(void * handle, uint16_t device_addr, uint32_t * data);
 
 
 /*	Функция для пересчета сырых значений в реальные

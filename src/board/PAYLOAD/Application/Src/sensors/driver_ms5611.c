@@ -12,21 +12,6 @@
 #include <math.h>
 #include "stm32f4xx_hal.h"
 
-
-#define CMD_RESET	0x1E
-#define CMD_READ_DATA	0x00
-
-#define CMD_CONVERT_PRESSURE_OSR_256	0x40
-#define CMD_CONVERT_PRESSURE_OSR_512	0x42
-#define CMD_CONVERT_PRESSURE_OSR_1024	0x44
-#define CMD_CONVERT_PRESSURE_OSR_2048	0x46
-#define CMD_CONVERT_PRESSURE_OSR_4096	0x48
-#define CMD_CONVERT_TEMP_OSR_256		0x50
-#define CMD_CONVERT_TEMP_OSR_512		0x52
-#define CMD_CONVERT_TEMP_OSR_1024		0x54
-#define CMD_CONVERT_TEMP_OSR_2048		0x56
-#define CMD_CONVERT_TEMP_OSR_4096		0x58
-
 #define START_PROM_READ_ADDRESS		0b10100000
 
 
@@ -39,15 +24,23 @@
 #define MS5611_I2C_CLOCK_SPEED	400000
 
 
-extern I2C_HandleTypeDef hi2c3;
-#define MS_BUS_HANDLE &hi2c3
-
-
-#define SCL GPIO_PIN_6
-#define SDA GPIO_PIN_7
-
 #define MS5611_I2C_FORCE_RESET 	__HAL_RCC_I2C1_FORCE_RESET
 #define MS5611_I2C_RELEASE_RESET __HAL_RCC_I2C1_RELEASE_RESET
+
+
+uint8_t  CMD_RESET = 0x1E;
+uint8_t CMD_READ_DATA = 0x00;
+
+uint8_t CMD_CONVERT_PRESSURE_OSR_256 = 0x40;
+uint8_t CMD_CONVERT_PRESSURE_OSR_512 = 0x42;
+uint8_t CMD_CONVERT_PRESSURE_OSR_1024 = 0x44;
+uint8_t CMD_CONVERT_PRESSURE_OSR_2048 = 0x46;
+uint8_t CMD_CONVERT_PRESSURE_OSR_4096 = 0x48;
+uint8_t CMD_CONVERT_TEMP_OSR_256 = 0x50;
+uint8_t CMD_CONVERT_TEMP_OSR_512 = 0x52;
+uint8_t CMD_CONVERT_TEMP_OSR_1024 = 0x54;
+uint8_t CMD_CONVERT_TEMP_OSR_2048 = 0x56;
+uint8_t CMD_CONVERT_TEMP_OSR_4096 = 0x58;
 
 
 struct prom_data prom = {0};
@@ -69,10 +62,10 @@ I2C_HandleTypeDef ms5611_i2c = {
 */
 
 
-int ms5611_reset(void * handle, uint16_t device_addr, uint8_t cmd)
+int ms5611_reset(void * handle, uint16_t device_addr)
 {
 	int error = 0;
-	error = HAL_I2C_Master_Transmit(handle, device_addr, &cmd, sizeof(cmd), 10);
+	error = HAL_I2C_Master_Transmit(handle, device_addr, &CMD_RESET, sizeof(CMD_RESET), 10);
 	return error;
 }
 
@@ -163,10 +156,10 @@ int ms5611_initiate_conversion(void * handle, uint16_t device_addr, uint8_t cmd)
 }
 
 
-int ms5611_read_data(void * handle, uint16_t device_addr, uint8_t cmd, uint32_t * data)
+int ms5611_read_data(void * handle, uint16_t device_addr, uint32_t * data)
 {
 	int error = 0;
-	error = HAL_I2C_Master_Transmit(handle, device_addr, &cmd , sizeof(cmd), 10);
+	error = HAL_I2C_Master_Transmit(handle, device_addr, &CMD_READ_DATA , sizeof(CMD_READ_DATA), 10);
 
 	uint8_t bytes[3];
 	error = HAL_I2C_Master_Receive(handle, device_addr, bytes, sizeof(bytes), 10);

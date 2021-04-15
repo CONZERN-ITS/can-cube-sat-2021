@@ -168,29 +168,29 @@ void mav_main_process_owntemp_message(mavlink_own_temp_t * msg)
 void mav_main_process_own_stats(mavlink_pld_stats_t * msg)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("bme-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->bme_init_error, msg->bme_last_error, msg->bme_error_counter
+	printf("bme-> le: %"PRIi32", ec: %"PRIu16":\n",
+			 msg->int_bme_last_error, msg->int_bme_error_counter
 	);
 
-	printf("adc-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->adc_init_error, msg->adc_last_error, msg->adc_error_counter
-	);
-
-	printf("me2o2-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->me2o2_init_error, msg->me2o2_last_error, msg->me2o2_error_counter
-	);
-
-	printf("mics6814-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->mics6814_init_error, msg->mics6814_last_error, msg->mics6814_error_counter
-	);
-
-	printf("integrated-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->integrated_init_error, msg->integrated_last_error, msg->integrated_error_counter
-	);
-
-	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
-			(uint32_t)(msg->time_s >> 4*8), (uint32_t)(msg->time_s & 0xFFFFFFFF), msg->time_us
-	);
+//	printf("adc-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
+//			msg->adc_init_error, msg->adc_last_error, msg->adc_error_counter
+//	);
+//
+//	printf("me2o2-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
+//			msg->me2o2_init_error, msg->me2o2_last_error, msg->me2o2_error_counter
+//	);
+//
+//	printf("mics6814-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
+//			msg->mics6814_init_error, msg->mics6814_last_error, msg->mics6814_error_counter
+//	);
+//
+//	printf("integrated-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
+//			msg->integrated_init_error, msg->integrated_last_error, msg->integrated_error_counter
+//	);
+//
+//	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
+//			(uint32_t)(msg->time_s >> 4*8), (uint32_t)(msg->time_s & 0xFFFFFFFF), msg->time_us
+//	);
 	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 #endif
 
