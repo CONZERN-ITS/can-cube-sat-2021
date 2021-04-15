@@ -106,14 +106,16 @@
     </enum>
   </enums>
   <messages>
-    <message id="50010" name="THERMAL_STATE">
+
+  	<!--  Messages for all systems. Id range: 50000 - 50099  -->
+    <message id="50001" name="THERMAL_STATE">
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
       <field type="float" name="temperature" units="degC">Area temperature</field>
     </message>
 
-    <message id="50011" name="ELECTRICAL_STATE">
+    <message id="50002" name="ELECTRICAL_STATE">
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -121,7 +123,56 @@
       <field type="float" name="voltage" units="V">Area Voltage</field>
     </message>
 
-    <message id="50012" name="GPS_UBX_NAV_SOL">
+    <message id="50003" name="TIMESTAMP">
+      <description></description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint8_t" name="time_base" enum="TIME_BASE_TYPE">Time base</field>
+    </message>
+
+    <message id="50004" name="OWN_TEMP">
+      <description>
+        Temperature of a subsystem main computer. 
+        Subsytem can be identified by system id and component id defined in the message header.
+        The values for system id and component id are defined in enums of this file.
+      </description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+
+      <field type="float" name="deg">Temperature of a computer</field>
+    </message>
+
+    <message id="50005" name="I2C_LINK_STATS">
+      <description>
+        This message contains a statistics for its-i2c-link module which is present in BCU, ARK and PAYLOAD subsystems 
+      </description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+
+      <field type="uint16_t" name="rx_done_cnt">received packets count</field>
+      <field type="uint16_t" name="rx_dropped_cnt">received and dropped packets count (no free buffers)</field>
+      <field type="uint16_t" name="rx_error_cnt">errors count on packet receival</field>
+      <field type="uint16_t" name="tx_done_cnt">sent packets count</field>
+      <field type="uint16_t" name="tx_zeroes_cnt">amount of situations where master requested data, but we had not any</field>
+      <field type="uint16_t" name="tx_overrun_cnt">amount of situations where we wanted to send data, but there were no space</field>
+      <field type="uint16_t" name="tx_error_cnt">errors count on packet transmission</field>
+      <field type="uint16_t" name="restarts_cnt">i2c peripheral restarts count</field>
+      <field type="uint16_t" name="listen_done_cnt">listen done HAL events count</field>
+      <field type="uint32_t" name="last_error">last error code</field>
+    </message>
+
+    <message id="50006" name="RSSI">
+      <description>
+        This message contains RSSI
+      </description>
+
+      <field type="float" name="rssi"></field>
+    </message>
+
+
+
+    <!--  SINS messages. Id range: 50100 - 50199  -->
+    <message id="50100" name="GPS_UBX_NAV_SOL">
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -143,7 +194,7 @@
       <field type="uint8_t" name="numSV">Number of SVs used in Nav Solution</field>
     </message>
 
-    <message id="50013" name="GPS_UBX_NAV_TIMEGPS">
+    <message id="50101" name="GPS_UBX_NAV_TIMEGPS">
       <description></description>
       <field type="uint32_t" name="iTOW" units="ms">Time of week of the navigation epoch</field>
       <field type="int32_t" name="fTOW" units="ns">Fractorial part of iTOW</field>
@@ -153,7 +204,7 @@
       <field type="uint32_t" name="tAcc" units="ns">Time accuracy estimate</field>
     </message>
 
-    <message id="50014" name="SINS_isc">
+    <message id="50102" name="SINS_isc">
       <description>SINS data in ISC</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch).</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -162,28 +213,39 @@
       <field type="float[4]" name="quaternion">quaternion for translating RSC into ISC (scalar part first)</field>
     </message>
 
-    <message id="50015" name="TIMESTAMP">
-      <description></description>
-      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
-      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-      <field type="uint8_t" name="time_base" enum="TIME_BASE_TYPE">Time base</field>
-    </message>
-
-    <message id="50016" name="OWN_TEMP">
+    <message id="50103" name="SINS_errors">
       <description>
-        Temperature of a subsystem main computer. 
-        Subsytem can be identified by system id and component id defined in the message header.
-        The values for system id and component id are defined in enums of this file.
+        This message contains SINS errors
       </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
 
-      <field type="float" name="deg">Temperature of a computer</field>
+      <field type="int32_t" name="gps_init_error"> last gps init error </field>
+      <field type="int32_t" name="gps_config_error"> last gps config error </field>
+      <field type="int32_t" name="lsm6ds3_error"> last lsm error</field>
+      <field type="int32_t" name="lis3mdl_error"> last lis error</field>
+      <field type="int32_t" name="analog_sensor_init_error"> last analog sensor init error</field>
+      
+      <field type="int32_t" name="gps_uart_init_error"> last gps_uart init error</field>
+      <field type="int32_t" name="mems_i2c_error"> last mems_i2s error</field>
+      <field type="int32_t" name="uart_transfer_init_error"> last uart_transfer init error</field>
+      <field type="int32_t" name="uart_transfer_error"> last uart_transfer error</field>
+      <field type="int32_t" name="timers_error"> last timers error</field>
+      <field type="int32_t" name="rtc_error"> last rtc error</field>
+
+      <field type="int32_t" name="mems_i2c_error_counter"> counter mems_i2c errors</field>
+      <field type="int32_t" name="lsm6ds3_error_counter"> counter lsm errors</field>
+      <field type="int32_t" name="lis3mdl_error_counter"> counter lis errors</field>
+      <field type="int32_t" name="gps_reconfig_counter"> gps reconfiguration counter</field>
+
+      <field type="uint8_t" name="reset_counter"> reset counter</field>
     </message>
+
     
-    <!-- Сообщения модуля полезной нагрузки -->
-    <message id="50017" name="PLD_BME280_DATA">
-      <description>Payload module message with bme280 related data</description>
+    
+    <!--  Payload messages. Id range: 50200 - 50299  -->
+    <message id="50200" name="PLD_INT_BME280_DATA">
+      <description>Payload module message with internal bme280 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
       
@@ -193,7 +255,18 @@
       <field type="double" name="altitude" units="m">Cube altitude relative to cube power-on location</field>
     </message>
 
-    <message id="50018" name="PLD_MICS_6814_DATA">
+	<message id="50201" name="PLD_EXT_BME280_DATA">
+      <description>Payload module message with external bme280 related data</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      
+      <field type="double" name="temperature" units="deg">Atmospheric temerapture</field>
+      <field type="double" name="pressure" units="Pa">Atmospheric pressure</field>
+      <field type="double" name="humidity" units="percent">Atmospheric relative humidity</field>
+      <field type="double" name="altitude" units="m">Cube altitude relative to cube power-on location</field>
+    </message>
+
+    <message id="50202" name="PLD_MICS_6814_DATA">
       <description>Payload module message with MiCS-6814 gas sensors data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -206,7 +279,7 @@
       <field type="float" name="nh3_conc" units="ppm">NH3 concentration from MiCS-6814 NH3 sensor</field>
     </message>
 
-    <message id="50019" name="PLD_ME2O2_DATA">
+    <message id="50203" name="PLD_ME2O2_DATA">
       <description>Payload module message with ME2-O2-F20 gas sensor data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -214,26 +287,7 @@
       <field type="float" name="o2_conc" units="percent">O2 concetration</field>
     </message>
 
-    <message id="50020" name="I2C_LINK_STATS">
-      <description>
-        This message contains a statistics for its-i2c-link module which is present in BCU, ARK and PAYLOAD subsystems 
-      </description>
-      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
-      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-
-      <field type="uint16_t" name="rx_done_cnt">received packets count</field>
-      <field type="uint16_t" name="rx_dropped_cnt">received and dropped packets count (no free buffers)</field>
-      <field type="uint16_t" name="rx_error_cnt">errors count on packet receival</field>
-      <field type="uint16_t" name="tx_done_cnt">sent packets count</field>
-      <field type="uint16_t" name="tx_zeroes_cnt">amount of situations where master requested data, but we had not any</field>
-      <field type="uint16_t" name="tx_overrun_cnt">amount of situations where we wanted to send data, but there were no space</field>
-      <field type="uint16_t" name="tx_error_cnt">errors count on packet transmission</field>
-      <field type="uint16_t" name="restarts_cnt">i2c peripheral restarts count</field>
-      <field type="uint16_t" name="listen_done_cnt">listen done HAL events count</field>
-      <field type="uint32_t" name="last_error">last error code</field>
-    </message>
-
-    <message id="50021" name="PLD_STATS">
+    <message id="50204" name="PLD_STATS">
       <description>
         This message contains internal statistics of PAYLOAD subsystem
       </description>
@@ -241,8 +295,11 @@
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
 
-      <field type="int32_t" name="bme_last_error">last error of bme280</field>
-      <field type="uint16_t" name="bme_error_counter">bme280 errors counter</field>
+      <field type="int32_t" name="int_bme_last_error">last error of internal bme280</field>
+      <field type="uint16_t" name="int_bme_error_counter">internal bme280 errors counter</field>
+
+      <field type="int32_t" name="ext_bme_last_error">last error of external bme280</field>
+      <field type="uint16_t" name="ext_bme_error_counter">external bme280 errors counter</field>
 
       <field type="int32_t" name="adc_last_error">adc last error code</field>
       <field type="uint16_t" name="adc_error_counter">adc errors counter</field>
@@ -251,15 +308,10 @@
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
     </message>
 
-    <message id="50022" name="RSSI">
-      <description>
-        This message contains RSSI
-      </description>
 
-      <field type="float" name="rssi"></field>
-    </message>
 
-    <message id="50023" name="BCU_STATS">
+    <!--  BCU messages. Id range 50300 - 50399  -->
+    <message id="50300" name="BCU_STATS">
       <description>
         This message contains internal statistics of BCU subsystem
       </description>
@@ -313,37 +365,10 @@
       <field type="uint32_t" name="shift_reg_last_state">last state of shift_reg</field>
     </message>
 
-    <message id="50024" name="SINS_errors">
-      <description>
-        This message contains SINS errors
-      </description>
+    
 
-      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
-      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-
-      <field type="int32_t" name="gps_init_error"> last gps init error </field>
-      <field type="int32_t" name="gps_config_error"> last gps config error </field>
-      <field type="int32_t" name="lsm6ds3_error"> last lsm error</field>
-      <field type="int32_t" name="lis3mdl_error"> last lis error</field>
-      <field type="int32_t" name="analog_sensor_init_error"> last analog sensor init error</field>
-      
-      <field type="int32_t" name="gps_uart_init_error"> last gps_uart init error</field>
-      <field type="int32_t" name="mems_i2c_error"> last mems_i2s error</field>
-      <field type="int32_t" name="uart_transfer_init_error"> last uart_transfer init error</field>
-      <field type="int32_t" name="uart_transfer_error"> last uart_transfer error</field>
-      <field type="int32_t" name="timers_error"> last timers error</field>
-      <field type="int32_t" name="rtc_error"> last rtc error</field>
-
-      <field type="int32_t" name="mems_i2c_error_counter"> counter mems_i2c errors</field>
-      <field type="int32_t" name="lsm6ds3_error_counter"> counter lsm errors</field>
-      <field type="int32_t" name="lis3mdl_error_counter"> counter lis errors</field>
-      <field type="int32_t" name="gps_reconfig_counter"> gps reconfiguration counter</field>
-
-      <field type="uint8_t" name="reset_counter"> reset counter</field>
-    </message>
-
-    <!-- Сообщения антенной системы -->
-    <message id="50025" name="AS_HARD_MANUAL_CONTROL">
+    <!--  Antenna system messages. Id range: 51000 - 51099  -->
+    <message id="51000" name="AS_HARD_MANUAL_CONTROL">
       <description>Antenna system manual control without angle recording</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -352,7 +377,7 @@
       <field type="float" name="elevation" units="grad">Elevation angle delta</field>
     </message>
 
-    <message id="50026" name="AS_SOFT_MANUAL_CONTROL">
+    <message id="51001" name="AS_SOFT_MANUAL_CONTROL">
       <description>Antenna system manual control with angle recording</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -361,7 +386,7 @@
       <field type="float" name="elevation" units="grad">Elevation angle delta</field>
     </message>
 
-    <message id="50027" name="AS_SEND_COMMAND">
+    <message id="51002" name="AS_SEND_COMMAND">
       <description>Send command to antenna system </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -369,7 +394,7 @@
       <field type="uint8_t" name="command_id" enum="AS_COMMANDS">Time since the Unix epoch</field>
     </message>
 
-    <message id="50028" name="AS_AUTOMATIC_CONTROL">
+    <message id="51003" name="AS_AUTOMATIC_CONTROL">
       <description>Set antenna system automatic control mode</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -377,7 +402,7 @@
       <field type="uint8_t" name="mode">Boolean turning on (1) or off (0) auto control</field>
     </message>
 
-    <message id="50029" name="AS_MOTORS_AUTO_DISABLE">
+    <message id="51004" name="AS_MOTORS_AUTO_DISABLE">
       <description>Set motors auto disable mode</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -385,7 +410,7 @@
       <field type="uint8_t" name="mode">Boolean turning on (1) or off (0) motors auto disable</field>
     </message>
 
-    <message id="50030" name="AS_SET_MOTORS_TIMEOUT">
+    <message id="51005" name="AS_SET_MOTORS_TIMEOUT">
       <description>Set motors auto disable timeout</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -393,7 +418,7 @@
       <field type="float" name="timeout" units="s">Motors auto disable timeout</field>
     </message>
 
-    <message id="50031" name="AS_AIMING_PERIOD">
+    <message id="51006" name="AS_AIMING_PERIOD">
       <description>Set antenna aiming period</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -401,7 +426,7 @@
       <field type="float" name="period" units="s">Antenna aiming period</field>
     </message>
 
-    <message id="50032" name="AS_MOTORS_ENABLE_MODE">
+    <message id="51007" name="AS_MOTORS_ENABLE_MODE">
       <description>Set motors enable pin state</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -409,7 +434,7 @@
       <field type="uint8_t" name="mode">Boolean seting hight (1) or low (0) motors enable pin state</field>
     </message>
 
-    <message id="50033" name="AS_STATE">
+    <message id="51008" name="AS_STATE">
       <description>Antenna system state</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
