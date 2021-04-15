@@ -8,10 +8,12 @@ os.environ['MAVLINK20'] = "its"
 from pymavlink.dialects.v20 import its as mavlink2
 from pymavlink import mavutil
 
-from source import antenna
 from source import data_widget
 from source import pos_control_widget
 from source import log_widget
+from source import settings_control
+from source.data_control import *
+from source.antenna_interface import *
 
 import time
 
@@ -91,46 +93,61 @@ class CentralWidget(QtWidgets.QWidget):
 
 class MainWindow(QtWidgets.QMainWindow):
     class DataManager(QtCore.QObject):
-        new_msg = QtCore.pyqtSignal(object)
-        def __init__(self, ip, port):
+        new_data = QtCore.pyqtSignal(list)
+        autoclose = QtCore.pyqtSignal(str)
+        def __init__(self, data_obj):
             super(MainWindow.DataManager, self).__init__()
+            self.data_obj = data_obj
             self.mutex = QtCore.QMutex()
             self._set_close_flag(True)
-            self.ip = ip
-            self.port = port
-
-        def change_ip_and_port(self, ip, port):
-            self.ip = ip
-            self.port = port
 
         def _set_close_flag(self, mode):
             self.mutex.lock()
             self.close_flag = mode
             self.mutex.unlock()
 
+        def change_data_obj(self, data_obj):
+            self.data_obj = data_obj
+
         def start(self):
             self._set_close_flag(False)
             close = False
-            self.connection = mavutil.mavlink_connection('udpin:' + self.ip + ':' + self.port)
+            try:
+                self.data_obj.start()
+            except Exception as e:
+                self.autoclose.emit(str(e))
+                return
             while not close:
                 try:
-                    msg = self.connection.recv_match(blocking=True)
-                    print(msg)
+                    data = self.data_obj.read_data()
+                except RuntimeError:
+                    pass
+                except EOFError as e:
+                    self.autoclose.emit(str(e))
+                    break
                 except Exception as e:
                     print(e)
-                if msg is not None:
-                    self.new_msg.emit(msg)
-                
+                else:
+                    self.new_data.emit(data)
                 self.mutex.lock()
                 close = self.close_flag
                 self.mutex.unlock()
 
+        def write_data(self, msg):
+            self.data_obj.write_data(msg)
+
         def quit(self):
             self._set_close_flag(True)
             time.sleep(0.01)
+            try:
+                self.data_obj.stop()
+            except Exception as e:
+                pass
 
     def __init__(self):
         super(MainWindow, self).__init__()
+
+        self.settings = settings_control.init_settings()
 
         self.setWindowIcon(QtGui.QIcon(APP_ICON_PATH))
 
@@ -140,8 +157,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.move_to_center()
 
     def setup_ui(self):
-        self.antenna = antenna.CommandSystem()
-        self.antenna.start_connection('10.10.10.228', '13404')
+        self.antenna = self.get_data_interface()
 
         self.toolbar = self.addToolBar('Commands')
         self.auto_control_on_btn = self.toolbar.addAction('Turn on\nautomatic\ncontrol')
@@ -183,11 +199,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.central_widget = CentralWidget(self.antenna)
         self.setCentralWidget(self.central_widget)
 
-        self.data_manager = MainWindow.DataManager('0.0.0.0', '13404')
+        self.data_obj = self.get_data_object()
+        self.antenna.send_msg.connect(self.data_manager.write_data())
+
+        self.data_manager = MainWindow.DataManager(self.data_obj)
         self.data_thread = QtCore.QThread(self)
         self.data_manager.moveToThread(self.data_thread)
         self.data_thread.started.connect(self.data_manager.start)
-        self.data_manager.new_msg.connect(self.antenna.new_msg_reaction)
+        self.data_manager.new_msg.connect(self.antenna.msg_reaction)
         self.data_thread.start()
 
     def setup_ui_design(self):
@@ -197,6 +216,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menu_file.setTitle("&File")
         self.action_exit.setText("&Exit")
         self.action_exit.setStatusTip("Exit")
+
+    def get_data_object(self):
+        self.settings.beginGroup('MainWindow/DataSourse')
+        sourse = self.settings.value('type')
+        if sourse == 'MAVLink':
+            data = MAVDataSource(connection_str_in=self.settings.value('MAVLink/connection_in'),
+                                 connection_str_out=self.settings.value('MAVLink/connection_out'),
+                                 log_path=LOG_FOLDER_PATH)
+        elif sourse == 'ZMQ':
+            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_pub'),
+                                 bus_sub=self.settings.value('ZMQ/bus_sub'),
+                                 topics=self.settings.value('ZMQ/topics'),
+                                 log_path=LOG_FOLDER_PATH)
+        self.settings.endGroup()
+        return data
+
+    def get_data_interface(self):
+        self.settings.beginGroup('MainWindow/DataInterface')
+        sourse = self.settings.value('type')
+        if sourse == 'MAVITS':
+            interface = MAVITSInterface()
+        elif sourse == 'ZMQITS':
+            interface = ZMQitsInterface()
+        self.settings.endGroup()
+        return interface
 
     def move_to_center(self):
         frame = self.frameGeometry()
