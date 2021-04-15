@@ -1,4 +1,4 @@
-#include "sensors/mics6814/mics6814.h"
+#include "sensors/mics6814.h"
 
 #include <math.h>
 #include <errno.h>

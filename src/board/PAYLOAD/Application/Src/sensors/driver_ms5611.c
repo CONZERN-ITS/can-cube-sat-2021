@@ -5,7 +5,7 @@
  *      Author: developer
  */
 
-#include "driver_ms5611.h"
+#include "sensors/driver_ms5611.h"
 
 #include <stdlib.h>
 #include <stdint.h>

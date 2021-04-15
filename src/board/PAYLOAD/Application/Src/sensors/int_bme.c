@@ -1,11 +1,5 @@
-/*
- * bme280.c
- *
- *  Created on: May 17, 2020
- *      Author: snork
- */
 
-#include "bme.h"
+#include "sensors/int_bme.h"
 
 #include <assert.h>
 
@@ -17,14 +11,13 @@
 #include "util.h"
 
 
-
 extern I2C_HandleTypeDef hi2c1;
 
 #define BME_BUS_HANDLE &hi2c1
 #define BME_BUS_RCC_FORCE_RESET __HAL_RCC_I2C2_FORCE_RESET
 #define BME_BUS_RCC_RELEASE_RESET __HAL_RCC_I2C2_RELEASE_RESET
 
-#define BME_I2C_ADDR BME280_I2C_ADDR_PRIM
+#define BME_I2C_ADDR BME280_I2C_ADDR_SEC
 #define BME_HAL_TIMEOUT (300)
 
 
@@ -73,12 +66,12 @@ static int8_t _i2c_write(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t l
 #endif
 
 #ifdef ITS_IMITATOR
-int bme_init()
+int int_bme_init()
 {
 	return 0;
 }
 #else
-int bme_init()
+int int_bme_init()
 {
 	_device.intf = BME280_I2C_INTF;
 	_device.read = _i2c_read;
@@ -113,12 +106,12 @@ int bme_init()
 
 
 #ifdef ITS_IMITATOR
-int bme_restart()
+int int_bme_restart()
 {
 	return 0;
 }
 #else
-int bme_restart()
+int int_bme_restart()
 {
 	I2C_HandleTypeDef * bus_handle = BME_BUS_HANDLE;
 
@@ -140,13 +133,13 @@ int bme_restart()
 	if (0 != rc)
 		return rc;
 
-	return bme_init();
+	return int_bme_init();
 }
 #endif
 
 
 #ifdef ITS_IMITATOR
-int bme_read(mavlink_pld_bme280_data_t * data)
+int int_bme_read(mavlink_pld_int_bme280_data_t * data)
 {
 	struct timeval tv;
 	time_svc_gettimeofday(&tv);
@@ -161,7 +154,7 @@ int bme_read(mavlink_pld_bme280_data_t * data)
 	return 0;
 }
 #else
-int bme_read(mavlink_pld_bme280_data_t * data)
+int int_bme_read(mavlink_pld_int_bme280_data_t * data)
 {
 	struct bme280_data bme280_data;
 

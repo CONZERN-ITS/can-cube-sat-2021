@@ -5,7 +5,7 @@
  *      Author: snork
  */
 
-#include "sensors/me2o2/me2o2.h"
+#include "sensors/me2o2.h"
 
 #include <stm32f4xx_hal.h>
 

@@ -5,8 +5,8 @@
  *      Author: snork
  */
 
-#ifndef SRC_LED_H_
-#define SRC_LED_H_
+#ifndef INC_LED_H_
+#define INC_LED_H_
 
 #include <stdbool.h>
 
@@ -22,4 +22,4 @@ void led_set(bool state);
 void led_toggle(void);
 
 
-#endif /* SRC_LED_H_ */
+#endif /* INC_LED_H_ */

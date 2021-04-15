@@ -2,20 +2,20 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <led.h>
 
 #include <stm32f4xx_hal.h>
 
-#include <its-i2c-link.h>
+#include "Inc/its-i2c-link.h"
 
 #include "main.h"
-#include "led.h"
-
 #include "mavlink_main.h"
 #include "util.h"
 #include "time_svc.h"
 
+#include "sensors/int_bme.h"
+#include "sensors/ext_bme.h"
 #include "sensors/analog.h"
-#include "sensors/bme.h"
 #include "sensors/me2o2.h"
 #include "sensors/mics6814.h"
 #include "sensors/integrated.h"
@@ -48,10 +48,15 @@
 //! Статистика об ошибках этого модуля
 typedef struct its_pld_status_t
 {
-	//! Код последней ошибки работы с bme
-	int32_t bme_last_error;
-	//! Количество ошибок при работе с bme
-	uint16_t bme_error_counter;
+	//! Код последней ошибки работы с bme внутри герметичного корпуса
+	int32_t int_bme_last_error;
+	//! Количество ошибок при работе с bme внутри герметичного корпуса
+	uint16_t int_bme_error_counter;
+
+	//! Код последней ошибки работы с bme снаружи герметичного корпуса
+	int32_t ext_bme_last_error;
+	//! Количество ошибок при работе с bme снаружи герметичного корпуса
+	uint16_t ext_bme_error_counter;
 
 	//! Код последней ошибки при работе с АЦП
 	int32_t adc_last_error;
@@ -78,10 +83,15 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg);
 //! Пакуем i2c-link статистику в мав пакет
 static void _collect_i2c_link_stats(mavlink_i2c_link_stats_t * msg);
 
-//! Анализ кода возвращенного bme операцией
-static int _bme_op_analysis(int rc);
-//! Убеждаемся в том, что БМЕ функционален. Пытаемся его рестартнуть если нет
-static int _bme_restart_if_need_so(void);
+//! Анализ кода возвращенного внутреннему bme операцией
+static int _int_bme_op_analysis(int rc);
+//! Убеждаемся в том, что внутренний БМЕ функционален. Пытаемся его рестартнуть если нет
+static int _int_bme_restart_if_need_so(void);
+
+//! Анализ кода возвращенного внешнему bme операцией
+static int _ext_bme_op_analysis(int rc);
+//! Убеждаемся в том, что внешний БМЕ функционален. Пытаемся его рестартнуть если нет
+static int _ext_bme_restart_if_need_so(void);
 
 //! Анализ кода возвращенного аналоговой операцией
 static int _analog_op_analysis(int rc);
@@ -103,9 +113,9 @@ static uint16_t _fetch_reset_cause(void);
 int app_main()
 {
 	// Грузим из бэкап регистров количество рестартов, которое с нами случилось
-	_status.resets_count = LL_RTC_BKP_GetRegister(BKP, LL_RTC_BKP_DR1);
+	_status.resets_count = LL_RTC_BAK_GetRegister(RTC, LL_RTC_BKP_DR1);
 	_status.resets_count += 1;
-	LL_RTC_BKP_SetRegister(BKP, LL_RTC_BKP_DR1, _status.resets_count);
+	LL_RTC_BAK_SetRegister(RTC, LL_RTC_BKP_DR1, _status.resets_count);
 
 	// Смотрим причину последнего резета
 	_status.reset_cause = _fetch_reset_cause();
@@ -115,7 +125,8 @@ int app_main()
 	time_svc_init();
 	its_i2c_link_start(&hi2c2);
 
-	_bme_op_analysis(bme_init());
+	_int_bme_op_analysis(int_bme_init());
+	_ext_bme_op_analysis(ext_bme_init());
 	_analog_op_analysis(analog_init());
 	mics6814_init();
 
@@ -158,12 +169,19 @@ int app_main()
 
 		if (tock % PACKET_PERIOD_BME == PACKET_OFFSET_BME)
 		{
-			if (0 == _bme_restart_if_need_so())
+			if (0 == _int_bme_restart_if_need_so())
 			{
-				mavlink_pld_bme280_data_t bme_msg = {0};
-				int rc = _bme_op_analysis(bme_read(&bme_msg));
+				mavlink_pld_int_bme280_data_t bme_msg = {0};
+				int rc = _int_bme_op_analysis(int_bme_read(&bme_msg));
 				if (0 == rc)
-					mav_main_process_bme_message(&bme_msg);
+					mav_main_process_int_bme_message(&bme_msg);
+			}
+			if (0 == _ext_bme_restart_if_need_so())
+			{
+				mavlink_pld_ext_bme280_data_t bme_msg = {0};
+				int rc = _ext_bme_op_analysis(ext_bme_read(&bme_msg));
+				if (0 == rc)
+					mav_main_process_ext_bme_message(&bme_msg);
 			}
 		}
 
@@ -247,8 +265,10 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg)
 	msg->time_us = tmv.tv_usec;
 	msg->adc_error_counter = _status.adc_error_counter;
 	msg->adc_last_error = _status.adc_last_error;
-	msg->bme_error_counter = _status.adc_error_counter;
-	msg->bme_last_error = _status.bme_last_error;
+	msg->int_bme_error_counter = _status.int_bme_error_counter;
+	msg->int_bme_last_error = _status.int_bme_last_error;
+	msg->ext_bme_error_counter = _status.ext_bme_error_counter;
+	msg->ext_bme_last_error = _status.ext_bme_last_error;
 	msg->resets_count = _status.resets_count;
 	msg->reset_cause = _status.reset_cause;
 }
@@ -316,22 +336,41 @@ static uint16_t _fetch_reset_cause(void)
 }
 
 
-static int _bme_op_analysis(int rc)
+static int _int_bme_op_analysis(int rc)
 {
-	_status.bme_last_error = rc;
+	_status.int_bme_last_error = rc;
 	if (rc)
-		_status.bme_error_counter++;
+		_status.int_bme_error_counter++;
 
-	return _status.bme_last_error;
+	return _status.int_bme_last_error;
 }
 
 
-static int _bme_restart_if_need_so(void)
+static int _ext_bme_op_analysis(int rc)
 {
-	if (_status.bme_last_error)
-		_bme_op_analysis(bme_restart());
+	_status.ext_bme_last_error = rc;
+	if (rc)
+		_status.ext_bme_error_counter++;
 
-	return _status.bme_last_error;
+	return _status.ext_bme_last_error;
+}
+
+
+static int _int_bme_restart_if_need_so(void)
+{
+	if (_status.int_bme_last_error)
+		_int_bme_op_analysis(int_bme_restart());
+
+	return _status.int_bme_last_error;
+}
+
+
+static int _ext_bme_restart_if_need_so(void)
+{
+	if (_status.ext_bme_last_error)
+		_ext_bme_op_analysis(ext_bme_restart());
+
+	return _status.ext_bme_last_error;
 }
 
 

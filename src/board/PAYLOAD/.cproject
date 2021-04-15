@@ -36,6 +36,7 @@
 									<listOptionValue builtIn="false" value="../../../common/mavlink/generated/mavlink/its"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Application/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/BME280_driver-bme280_v3.4.3}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.input.1526225915" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.input"/>
 							</tool>
@@ -59,6 +60,7 @@
 									<listOptionValue builtIn="false" value="../../../common/mavlink/generated/mavlink/its"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Application/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/BME280_driver-bme280_v3.4.3}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1655456573" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -130,6 +132,7 @@
 									<listOptionValue builtIn="false" value="../../../common/mavlink/generated/mavlink/its"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Application/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/BME280_driver-bme280_v3.4.3}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.input.1427486565" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.input"/>
 							</tool>
@@ -152,6 +155,7 @@
 									<listOptionValue builtIn="false" value="../../../common/mavlink/generated/mavlink/its"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Application/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/BME280_driver-bme280_v3.4.3}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.200090962" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
