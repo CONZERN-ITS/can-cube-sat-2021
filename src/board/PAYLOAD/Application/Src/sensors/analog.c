@@ -91,13 +91,13 @@ int analog_init()
 	//	}
 
 	// Калибруем ацп
-	int error = hal_status_to_errno(HAL_ADCEx_Calibration_Start(&hadc1));
+//	int error = hal_status_to_errno(HAL_ADCEx_Calibration_Start(&hadc1));
 	// Ошибку тут проигнорируем. Вдруг как-то да заработает дальше
 
 	// Включаем АЦП
 	__HAL_ADC_ENABLE(&hadc1);
 
-	return error;
+	return 0;
 }
 
 

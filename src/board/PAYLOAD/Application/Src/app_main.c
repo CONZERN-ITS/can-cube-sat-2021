@@ -8,6 +8,7 @@
 
 #include "Inc/its-i2c-link.h"
 
+#include "app_main.h"
 #include "main.h"
 #include "mavlink_main.h"
 #include "util.h"
