@@ -12,8 +12,6 @@
 #include <math.h>
 #include "stm32f4xx_hal.h"
 
-#define START_PROM_READ_ADDRESS		0b10100000
-
 
 //last address bit is CSB pin value
 #define MS5611_HIGH_I2C_ADDRESS		0b1110111

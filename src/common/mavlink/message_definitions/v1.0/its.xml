@@ -308,6 +308,23 @@
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
     </message>
 
+    <message id="50205" name="PLD_INT_MS5611_DATA">
+      <description>Payload module message with internal ms5611 related data</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      
+      <field type="int32_t" name="temperature" units="deg">Atmospheric temperature</field>
+      <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>`
+    </message>
+
+    <message id="50206" name="PLD_EXT_MS5611_DATA">
+      <description>Payload module message with external ms5611 related data</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      
+      <field type="int32_t" name="temperature" units="deg">Atmospheric temperature</field>
+      <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>
+    </message>
 
 
     <!--  BCU messages. Id range 50300 - 50399  -->

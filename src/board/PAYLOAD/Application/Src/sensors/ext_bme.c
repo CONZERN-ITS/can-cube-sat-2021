@@ -66,7 +66,7 @@ static int8_t _i2c_write(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t l
 #endif
 
 #ifdef ITS_IMITATOR
-int bme_init()
+int ext_bme_init()
 {
 	return 0;
 }

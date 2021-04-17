@@ -12,6 +12,26 @@
 #include "stm32f4xx_hal.h"
 
 
+//last address bit is CSB pin value
+#define MS5611_HIGH_I2C_ADDRESS		0b1110111
+#define MS5611_LOW_I2C_ADDRESS		0b1110110
+
+#define START_PROM_READ_ADDRESS		0b10100000
+
+extern uint8_t  CMD_RESET;
+extern uint8_t CMD_READ_DATA;
+
+extern uint8_t CMD_CONVERT_PRESSURE_OSR_256;
+extern uint8_t CMD_CONVERT_PRESSURE_OSR_512;
+extern uint8_t CMD_CONVERT_PRESSURE_OSR_1024;
+extern uint8_t CMD_CONVERT_PRESSURE_OSR_2048;
+extern uint8_t CMD_CONVERT_PRESSURE_OSR_4096;
+extern uint8_t CMD_CONVERT_TEMP_OSR_256;
+extern uint8_t CMD_CONVERT_TEMP_OSR_512;
+extern uint8_t CMD_CONVERT_TEMP_OSR_1024;
+extern uint8_t CMD_CONVERT_TEMP_OSR_2048;
+extern uint8_t CMD_CONVERT_TEMP_OSR_4096;
+
 struct prom_data {
 	uint16_t c1;
 	uint16_t c2;
