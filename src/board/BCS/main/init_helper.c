@@ -176,7 +176,7 @@ void init_basic(void) {
 			.mode = GPIO_MODE_INPUT,
 			.pull_up_en = GPIO_PULLUP_DISABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
-			.intr_type = GPIO_INTR_DISABLE,
+			.intr_type = GPIO_INTR_POSEDGE,
 			.pin_bit_mask = 1ULL << ITS_PIN_RADIO_DIO1
 		};
 		static gpio_config_t busy = {
@@ -226,18 +226,16 @@ void init_basic(void) {
 #endif
 
 }
-server_t server_radio;
+
 void init_helper(void) {
 	log_collector_init(0);
 	init_basic();
 	printf("HEELLLO3.5!!!!\n");
 	fflush(stdout);
 	vTaskDelay(200);
-	server_init(&server_radio);
 	printf("HEELLLO4!!!!\n");
 	fflush(stdout);
 	vTaskDelay(200);
-	xTaskCreatePinnedToCore(server_task, "Radio task", configMINIMAL_STACK_SIZE + 4000, &server_radio, 10, 0, tskNO_AFFINITY);
 	printf("HEELLLO5!!!!\n");
 	fflush(stdout);
 	vTaskDelay(200);
@@ -271,7 +269,7 @@ void init_helper(void) {
 	control_magnet_init(&hsr, 2, 3);
 	control_heat_init(&hsr, 1, 1);
 
-#if ITS_WIFI_SERVER
+
 	control_heat_set_max_consumption(1199);
 	control_heat_set_consumption(0, 300);
 	control_heat_set_consumption(1, 300);
@@ -279,15 +277,7 @@ void init_helper(void) {
 	control_heat_set_consumption(3, 300);
 	control_heat_set_consumption(4, 300);
 	control_heat_set_consumption(5, 300);
-#else
-	control_heat_set_max_consumption(1199);
-	control_heat_set_consumption(0, 300);
-	control_heat_set_consumption(1, 300);
-	control_heat_set_consumption(2, 300);
-	control_heat_set_consumption(3, 300);
-	control_heat_set_consumption(4, 300);
-	control_heat_set_consumption(5, 300);
-#endif
+
 	control_magnet_enable(ITS_BSK_1, 1);
 	control_magnet_enable(ITS_BSK_2A, -1);
 	control_magnet_enable(ITS_BSK_3, 1);
@@ -315,7 +305,7 @@ void init_helper(void) {
 	static ts_sync ts = {0};
 	//ts.pin = ITS_PIN_UARTE_INT;
 	//time_sync_from_sins_install(&ts);
-	//radio_send_init();
+	radio_send_init();
 	/*
 	vTaskDelay(1000 / portTICK_PERIOD_MS);
 	while (sd_init()) {

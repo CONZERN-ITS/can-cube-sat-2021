@@ -11,10 +11,18 @@
 #include "router.h"
 #include "assert.h"
 #include "esp_log.h"
+#include "pinout_cfg.h"
 
 #define RADIO_SEND_DELAY 50
 #define RADIO_SLEEP_AWAKE_LEGNTH 300 //ms
 #define RADIO_SLEEP_SLEEP_LENGTH 4000 //ms
+
+
+
+#define log_error(fmt, ...) ESP_LOGE("radio", fmt, ##__VA_ARGS__)
+#define log_trace(fmt, ...) ESP_LOGD("radio", fmt, ##__VA_ARGS__)
+#define log_warn(fmt, ...) ESP_LOGW("radio", fmt, ##__VA_ARGS__)
+#define log_info(fmt, ...) ESP_LOGI("radio", fmt, ##__VA_ARGS__)
 
 typedef struct  {
 	int id; //ID сообщения
@@ -222,7 +230,222 @@ static int is_sleeping(safe_send_t *sst) {
 }
 */
 
+int generate_packet(radio_t * server, uint8_t *buf, size_t size) {
+	int settled = 0;
+	while (settled < size) {
+		if (server->buf_size - server->buf_index > 0) {
+			uint8_t *out = server->buf + server->buf_index;
+			int cnt = server->buf_size - server->buf_index;
+			if (cnt > size - settled) {
+				cnt = size - settled;
+			}
+			memcpy(buf + settled, out, cnt);
+			server->buf_index += cnt;
+		} else {
+			msg_container *st = 0;
+			st = get_best(server->msg_count);
+			if (0 == st) {
+				break;
+			}
+
+			server->buf_size = mavlink_msg_to_send_buffer(server->buf, &st->last_msg);
+			server->buf_index = 0;
+			st->is_updated = 0; // Сообщение внутри контейнера уже не свежее
+			st->last = server->msg_count;// Запоминаем, когда сообщение было отправленно в последний раз
+			server->msg_count++;
+		}
+	}
+	return settled;
+}
+
+
+
+
+static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
+		sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg
+);
+
+
+static void _radio_deinit(radio_t * server)
+{
+	sx126x_drv_t * const radio = &server->dev;
+
+	// резетим радио на последок
+	// Даже если ничего не получается
+	sx126x_drv_reset(radio);
+	// Деструктим дескриптор
+	sx126x_drv_dtor(radio);
+}
+
+
+static int _radio_init(radio_t * server)
+{
+	sx126x_drv_t * const radio = &server->dev;
+	int rc;
+
+	const sx126x_drv_basic_cfg_t basic_cfg = {
+			.use_dio3_for_tcxo = true,
+			.tcxo_v = SX126X_TCXO_CTRL_1_6V,
+			.use_dio2_for_rf_switch = false,
+			.allow_dcdc = true,
+			.standby_mode = SX126X_STANDBY_XOSC
+	};
+
+	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
+			// Параметры усилителей и частот
+			.frequency = 434000*1000,
+			.pa_ramp_time = SX126X_PA_RAMP_3400_US,
+			.pa_power = 10,
+			.lna_boost = true,
+
+			// Параметры пакетирования
+			.spreading_factor = SX126X_LORA_SF_12,
+			.bandwidth = SX126X_LORA_BW_250,
+			.coding_rate = SX126X_LORA_CR_4_5,
+			.ldr_optimizations = true,
+	};
+
+	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
+			.invert_iq = false,
+			.syncword = SX126X_LORASYNCWORD_PRIVATE,
+			.preamble_length = 24,
+			.explicit_header = true,
+			.payload_length = RADIO_PACKET_SIZE,
+			.use_crc = true,
+	};
+
+	const sx126x_drv_cad_cfg_t cad_cfg = {
+			.cad_len = SX126X_LORA_CAD_04_SYMBOL,
+			.cad_min = 10,
+			.cad_peak = 28,
+			.exit_mode = SX126X_LORA_CAD_RX,
+	};
+
+	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
+			.stop_timer_on_preable = false,
+			.lora_symb_timeout = 100
+	};
+
+
+	rc = sx126x_drv_ctor(radio, NULL);
+
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_register_event_handler(radio, _radio_event_handler, server);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_reset(radio);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_mode_standby_rc(radio);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_configure_basic(radio, &basic_cfg);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_configure_lora_modem(radio, &modem_cfg);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_configure_lora_packet(radio, &packet_cfg);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_configure_lora_cad(radio, &cad_cfg);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
+	if (0 != rc)
+		goto bad_exit;
+
+	return 0;
+
+bad_exit:
+	log_error("BAD INIT");
+	_radio_deinit(server);
+	return -1;
+}
+
+
+static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
+		sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg
+)
+{
+	int rc;
+	log_trace("Event handler");
+	radio_t * radio_server = (radio_t*)user_arg;
+
+	bool went_tx = false;
+	switch (kind)
+	{
+	case SX126X_EVTKIND_RX_DONE:
+		if (!arg->rx_done.timed_out) {
+			log_trace("rx done");
+
+			uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
+			rc = sx126x_drv_payload_read(&radio_server->dev, buf, sizeof(buf));
+			if (0 != rc)
+			{
+				log_error("unable to read frame from radio buffer: %d", rc);
+				return;
+			}
+			mavlink_message_t msg = {0};
+			mavlink_status_t st = {0};
+			for (int i = 0; i < sizeof(buf); i++) {
+				if (mavlink_parse_char(radio_server->mavlink_chan, buf[i], &msg, &st)) {
+					log_trace("yay! we've got a message %d", msg.msgid);
+					its_rt_sender_ctx_t ctx = {0};
+					its_rt_route(&ctx, &msg, SERVER_SMALL_TIMEOUT_MS);
+				}
+			}
+		} else {
+			log_trace("rx done");
+		}
+		uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
+		int size = generate_packet(radio_server, buf, ITS_RADIO_PACKET_SIZE);
+
+		rc = sx126x_drv_payload_write(&radio_server->dev, buf, ITS_RADIO_PACKET_SIZE);
+		if (0 != rc) {
+			log_error("unable to write tx payload to radio: %d. Dropping frame", rc);
+			return;
+		}
+		rc = sx126x_drv_mode_tx(&radio_server->dev, 0);
+		if (0 != rc) {
+			log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
+			return;
+		}
+		break;
+
+	case SX126X_EVTKIND_TX_DONE:
+		if (arg->tx_done.timed_out)
+		{
+			// Ой, что-то пошло не так
+			log_error("TX TIMED OUT!");
+		}
+		else
+		{
+			// Все пошло так
+			log_info("tx done");
+		}
+
+		rc = sx126x_drv_mode_rx(&radio_server->dev, 0);
+		if (0 != rc) {
+			log_error("unable to switch radio to rx mode: %d. Dropping frame", rc);
+			return;
+		}
+		break;
+	default:
+		break;
+	}
+}
 static void task_send(void *arg) {
+	radio_t * radio_server = arg;
 	// Конфигурация отправки пакетов с контроллируемой скоростью
 
 	// Регистрация таска в маршрутизаторе
@@ -246,11 +469,15 @@ static void task_send(void *arg) {
 
 
 	while (1) {
-		// Пробуем получить новое сообщение из очереди
-		// Блокируемся ненадолго, чтобы равномерно отправлять сообщения из очереди
+		BaseType_t got = xTaskNotifyWait(0, 0, 0, 200 / portTICK_PERIOD_MS);
+		if (pdTRUE == got) {
+			int rc = sx126x_drv_poll(&radio_server->dev);
+			if (rc) {
+				ESP_LOGE("radio", "poll %d", rc);
+			}
+		}
 		mavlink_message_t incoming_msg = {0};
-		BaseType_t received = xQueueReceive(tid.queue, &incoming_msg, 200 / portTICK_PERIOD_MS);
-		if (pdTRUE == received)
+		while (pdTRUE == xQueueReceive(tid.queue, &incoming_msg, 0))
 		{
 			// Если мы получили сообщение - складываем в его хранилище
 			update_msg(&incoming_msg);
@@ -277,27 +504,7 @@ static void task_send(void *arg) {
 			msg_count++;
 		}
 
-		// Отлично, мы готовы отправлять. Сколько там радио может принять?
-		const int Bs = sst.cfg.baud_send / 8; //Перевод из бит/сек в Байт/сек
-		//Буфер успел освободиться за то время, пока эта ф-ия не вызывалась
-		const int64_t now = esp_timer_get_time();
-		// Сколько байт успело уйти из буфера радио
-		int64_t drained_bytes = ((now - sst.last_checked) * Bs) / (1000*1000);
-		if (drained_bytes >= sst.filled)
-			sst.filled = 0;
-		else
-			sst.filled -= drained_bytes;
-		sst.last_checked = now;
-
-		int64_t radio_free_space = sst.cfg.buffer_size - sst.filled;
-		if (radio_free_space < 0)
-			radio_free_space = 0;
-
-		if (radio_free_space < portion_size)
-		{
-			// Слишком мало. Подождем. Нужно отправлять целый пакет
-			continue;
-		}
+		int64_t now = esp_timer_get_time();
 
 		switch (sst.sleep_state)
 		{
@@ -332,40 +539,6 @@ static void task_send(void *arg) {
 			}
 			continue;
 		}
-
-		// Теперь понятно сколько мы можем и сколько хотим отправить
-		int to_write = portion_size;
-		if (to_write > radio_free_space)
-			to_write = (int)radio_free_space;
-
-		if (to_write > 0)
-		{
-			int rc = uart_write_bytes(sst.cfg.port, (char*)portion, to_write);
-			if (rc < 0)
-			{
-				// Что-то не то с записью
-				ESP_LOGE("radio", "error on uart write: %d", rc);
-				// Сбросим этот пакет, так как он всеравно устареет
-				portion_size = 0;
-				// Пойдем дальше, что делать
-				continue;
-			}
-			else if (rc == 0)
-			{
-				// Кажется, мы пишем слишком быстро, что фифо за нами не успевает?
-				ESP_LOGW("radio", "tx fifo overflow");
-				continue;
-			}
-
-			// Сдвигаем указатели на количество записанного
-			portion += rc;
-			portion_size -= rc;
-			sst.super_portion_byte_counter -= rc;
-
-			// эти байты как заполненные в буфере радио
-			sst.filled += rc;
-			uart_wait_tx_done(sst.cfg.port, portMAX_DELAY);
-		}
 	} // while(1)
 	vTaskDelete(NULL);
 }
@@ -388,7 +561,20 @@ void radio_send_resume(void) {
 void radio_send_set_sleep_delay(int64_t sleep_delay) {
 	sst.cfg.sleep_delay = sleep_delay;
 }
+static void IRAM_ATTR gpio_isr_handler(void* arg)
+{
+	TaskHandle_t *handler = arg;
+	uint32_t gpio_num = (uint32_t) arg;
+	xTaskNotify(*handler, 0, 0);
+}
 
+static radio_t radio_server;
 void radio_send_init(void) {
+	radio_server.mavlink_chan = mavlink_claim_channel();
+
+	int rc = _radio_init(&radio_server);
+	assert(rc == 0);
+
 	xTaskCreatePinnedToCore(task_send, "Radio send", configMINIMAL_STACK_SIZE + 4000, 0, 4, &task_s, tskNO_AFFINITY);
+	gpio_isr_handler_add(ITS_PIN_RADIO_DIO1, gpio_isr_handler, (void*) &task_s);
 }

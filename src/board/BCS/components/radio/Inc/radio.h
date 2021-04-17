@@ -42,49 +42,18 @@ typedef uint64_t msg_cookie_t;
 #define MSG_COOKIE_T_PLSHOLDER PRIu64
 
 
-#define log_error(fmt, ...) ESP_LOGE("radio", fmt, ##__VA_ARGS__)
-#define log_trace(fmt, ...) ESP_LOGD("radio", fmt, ##__VA_ARGS__)
-#define log_warn(fmt, ...) ESP_LOGW("radio", fmt, ##__VA_ARGS__)
-#define log_info(fmt, ...) ESP_LOGI("radio", fmt, ##__VA_ARGS__)
 
 
-
-typedef struct server_t
-{
+typedef struct radio_t {
 	sx126x_drv_t dev;
 
-	uint8_t rx_buffer[255];
-	size_t rx_buffer_capacity;
-	size_t rx_buffer_size;
-	msg_cookie_t rx_buffer_cookie;
-	bool rx_crc_valid;
-	int8_t rx_rssi_pkt;
-	int8_t rx_snr_pkt;
-	int8_t rx_signal_rssi_pkt;
-	uint32_t rx_timeout_ms;
-	size_t rx_timedout_cnt;
-	size_t rx_timedout_limit;
-
-	uint32_t rssi_report_period;
-	struct timespec rssi_report_block_deadline;
-
-	uint8_t tx_buffer[255];
-	size_t tx_buffer_capacity;
-	size_t tx_buffer_size;
-	msg_cookie_t tx_cookie_wait;
-	msg_cookie_t tx_cookie_in_progress;
-	msg_cookie_t tx_cookie_sent;
-	msg_cookie_t tx_cookie_dropped;
-	bool tx_cookies_updated;
-	uint32_t tx_timeout_ms;
-
-	uint32_t tx_state_report_period_ms;
-	struct timespec tx_state_report_block_deadline;
+	uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+	uint8_t buf_size;
+	uint8_t buf_index;
 
 	uint8_t mavlink_chan;
-
-} server_t;
-
+	uint32_t msg_count;
+} radio_t;
 
 
 /*
@@ -99,11 +68,5 @@ void radio_send_resume(void);
 
 void radio_send_set_sleep_delay(int64_t sleep_delay);
 
-
-void server_start(server_t *server);
-
-int server_init(server_t * server);
-
-void server_task(void *arg);
 
 #endif /* COMPONENTS_RADIO_INC_RADIO_H_ */
