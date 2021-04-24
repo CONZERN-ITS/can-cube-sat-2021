@@ -228,7 +228,7 @@ void init_basic(void) {
 }
 
 void init_helper(void) {
-	log_collector_init(0);
+	//log_collector_init(0);
 	init_basic();
 	printf("HEELLLO3.5!!!!\n");
 	fflush(stdout);
@@ -298,7 +298,7 @@ void init_helper(void) {
 	shift_reg_load(&hsr);*/
 
 	//xTaskCreate(test_task, "test task", configMINIMAL_STACK_SIZE + 2000, 0, 3, 0);
-	//sensors_init();
+	sensors_init();
 #endif
 
 	ESP_LOGD("SYSTEM", "Start wifi init");

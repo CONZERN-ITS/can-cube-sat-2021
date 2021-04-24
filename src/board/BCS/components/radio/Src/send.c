@@ -10,6 +10,7 @@
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "pinout_cfg.h"
 
@@ -231,8 +232,10 @@ static int is_sleeping(safe_send_t *sst) {
 */
 
 int generate_packet(radio_t * server, uint8_t *buf, size_t size) {
+	log_info("generate");
 	int settled = 0;
 	while (settled < size) {
+		log_info("gen %d %d", settled, size);
 		if (server->buf_size - server->buf_index > 0) {
 			uint8_t *out = server->buf + server->buf_index;
 			int cnt = server->buf_size - server->buf_index;
@@ -241,6 +244,7 @@ int generate_packet(radio_t * server, uint8_t *buf, size_t size) {
 			}
 			memcpy(buf + settled, out, cnt);
 			server->buf_index += cnt;
+			settled += cnt;
 		} else {
 			msg_container *st = 0;
 			st = get_best(server->msg_count);
@@ -405,7 +409,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 				}
 			}
 		} else {
-			log_trace("rx done");
+			log_trace("rx timeout");
 		}
 		uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
 		int size = generate_packet(radio_server, buf, ITS_RADIO_PACKET_SIZE);
@@ -468,14 +472,16 @@ static void task_send(void *arg) {
 	int portion_size = 0;
 
 
+	sx126x_drv_mode_rx(&radio_server->dev, 0);
+
 	while (1) {
-		BaseType_t got = xTaskNotifyWait(0, 0, 0, 200 / portTICK_PERIOD_MS);
-		if (pdTRUE == got) {
-			int rc = sx126x_drv_poll(&radio_server->dev);
-			if (rc) {
-				ESP_LOGE("radio", "poll %d", rc);
-			}
+		xTaskNotifyWait(0, 0, 0, 200 / portTICK_PERIOD_MS);
+		int rc = sx126x_drv_poll(&radio_server->dev);
+
+		if (rc) {
+			ESP_LOGE("radio", "poll %d", rc);
 		}
+
 		mavlink_message_t incoming_msg = {0};
 		while (pdTRUE == xQueueReceive(tid.queue, &incoming_msg, 0))
 		{
@@ -483,26 +489,7 @@ static void task_send(void *arg) {
 			update_msg(&incoming_msg);
 		}
 
-		// Нам есть чего отправлять?
-		if (0 == portion_size)
-		{
-			// Нет, нету. Готовим.
-			msg_container *st = 0;
-			st = get_best(msg_count);
-			if (0 == st)
-			{
-				// Нет сообщений, Пойдем получать следующее
-				ESP_LOGI("radio", "message buffer is empty");
-				continue;
-			}
 
-			portion_size = mavlink_msg_to_send_buffer(out_buf, &st->last_msg);
-			portion = out_buf;
-
-			st->is_updated = 0; // Сообщение внутри контейнера уже не свежее
-			st->last = msg_count;// Запоминаем, когда сообщение было отправленно в последний раз
-			msg_count++;
-		}
 
 		int64_t now = esp_timer_get_time();
 
@@ -575,6 +562,6 @@ void radio_send_init(void) {
 	int rc = _radio_init(&radio_server);
 	assert(rc == 0);
 
-	xTaskCreatePinnedToCore(task_send, "Radio send", configMINIMAL_STACK_SIZE + 4000, 0, 4, &task_s, tskNO_AFFINITY);
+	xTaskCreatePinnedToCore(task_send, "Radio send", configMINIMAL_STACK_SIZE + 4000, &radio_server, 4, &task_s, tskNO_AFFINITY);
 	gpio_isr_handler_add(ITS_PIN_RADIO_DIO1, gpio_isr_handler, (void*) &task_s);
 }
