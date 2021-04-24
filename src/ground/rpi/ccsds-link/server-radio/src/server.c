@@ -164,8 +164,8 @@ static int _zmq_init(server_t * server)
 		goto bad_exit;
 	}
 
-	log_info("connecting sub socket to \"%s\"", pub_ep);
-	rc = zmq_connect(server->sub_socket, pub_ep);
+	log_info("connecting sub socket to \"%s\"", sub_ep);
+	rc = zmq_connect(server->sub_socket, sub_ep);
 	if (rc < 0)
 	{
 		log_error("unable to connect server sub socket: %d, %d: %s", rc, errno, strerror(errno));
@@ -187,8 +187,8 @@ static int _zmq_init(server_t * server)
 		goto bad_exit;
 	}
 
-	log_info("connecting pub socket to \"%s\"", sub_ep);
-	rc = zmq_connect(server->pub_socket, sub_ep);
+	log_info("connecting pub socket to \"%s\"", pub_ep);
+	rc = zmq_connect(server->pub_socket, pub_ep);
 	if (rc < 0)
 	{
 		log_error("unable to connect server pub socket: %d, %d: %s", rc, errno, strerror(errno));
