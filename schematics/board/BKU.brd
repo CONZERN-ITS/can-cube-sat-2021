@@ -4606,8 +4606,8 @@ design rules under a new name.</description>
 <contactref element="U$13" pad="24"/>
 <contactref element="R23" pad="2"/>
 <contactref element="SD" pad="DAT0"/>
-<contactref element="U$21" pad="P$14"/>
-<wire x1="11.75" y1="18.785" x2="-15" y2="-89.35" width="0" layer="19" extent="1-1"/>
+<contactref element="U$21" pad="P$10"/>
+<wire x1="11.75" y1="18.785" x2="-19" y2="-89.35" width="0" layer="19" extent="1-1"/>
 <wire x1="48.35" y1="15.1" x2="11.75" y2="18.785" width="0" layer="19" extent="1-1"/>
 <wire x1="62.2" y1="16.77" x2="48.35" y2="15.1" width="0" layer="19" extent="1-1"/>
 </signal>
@@ -4640,8 +4640,8 @@ design rules under a new name.</description>
 <signal name="IO0-E">
 <contactref element="R6" pad="1"/>
 <contactref element="U$13" pad="25"/>
-<contactref element="U$21" pad="P$13"/>
-<wire x1="15.02" y1="11.94" x2="-16" y2="-89.35" width="0" layer="19" extent="1-1"/>
+<contactref element="U$21" pad="P$9"/>
+<wire x1="15.02" y1="11.94" x2="-20" y2="-89.35" width="0" layer="19" extent="1-1"/>
 <wire x1="12.75" y1="16" x2="15.02" y2="11.94" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="BKU-KHEAT">
@@ -4687,12 +4687,6 @@ design rules under a new name.</description>
 <contactref element="U$19" pad="9"/>
 <contactref element="U$20" pad="14"/>
 <wire x1="76.75" y1="8.15" x2="82.65" y2="23" width="0" layer="19" extent="1-1"/>
-</signal>
-<signal name="TX-R">
-<contactref element="U$21" pad="P$12"/>
-</signal>
-<signal name="RX-R">
-<contactref element="U$21" pad="P$10"/>
 </signal>
 <signal name="IO1">
 <contactref element="R2" pad="1"/>
@@ -4963,13 +4957,13 @@ design rules under a new name.</description>
 </signal>
 <signal name="RX-EN">
 <contactref element="U$13" pad="11"/>
-<contactref element="U$1" pad="7"/>
-<wire x1="0" y1="-36.81" x2="16.56" y2="33" width="0" layer="19" extent="1-1"/>
+<contactref element="U$1" pad="6"/>
+<wire x1="0" y1="-39.35" x2="16.56" y2="33" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="TX-EN">
 <contactref element="U$13" pad="10"/>
-<contactref element="U$1" pad="6"/>
-<wire x1="0" y1="-39.35" x2="17.83" y2="33" width="0" layer="19" extent="1-1"/>
+<contactref element="U$1" pad="7"/>
+<wire x1="0" y1="-36.81" x2="17.83" y2="33" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="CS-SR">
 <contactref element="U$18" pad="12"/>
@@ -5059,8 +5053,6 @@ design rules under a new name.</description>
 <contactref element="R33" pad="2"/>
 <contactref element="U$21" pad="P$5"/>
 <contactref element="U$21" pad="P$7"/>
-<contactref element="U$21" pad="P$9"/>
-<contactref element="U$21" pad="P$11"/>
 <contactref element="BSK2" pad="9"/>
 <contactref element="BSK3" pad="9"/>
 <contactref element="BSK3" pad="14"/>
@@ -5183,9 +5175,7 @@ design rules under a new name.</description>
 <wire x1="-26.6" y1="-108" x2="-29.05" y2="-164.23" width="0" layer="19" extent="1-1"/>
 <wire x1="-24" y1="-89.35" x2="-26.6" y2="-108" width="0" layer="19" extent="1-1"/>
 <wire x1="-22" y1="-89.35" x2="-24" y2="-89.35" width="0" layer="19" extent="1-1"/>
-<wire x1="-20" y1="-89.35" x2="-22" y2="-89.35" width="0" layer="19" extent="1-1"/>
-<wire x1="-18" y1="-89.35" x2="-20" y2="-89.35" width="0" layer="19" extent="1-1"/>
-<wire x1="40.19" y1="-4.1" x2="-18" y2="-89.35" width="0" layer="19" extent="1-1"/>
+<wire x1="40.19" y1="-4.1" x2="-22" y2="-89.35" width="0" layer="19" extent="1-1"/>
 <wire x1="45.27" y1="-4.1" x2="40.19" y2="-4.1" width="0" layer="19" extent="1-1"/>
 <wire x1="111.76" y1="7.18" x2="45.27" y2="-4.1" width="0" layer="19" extent="1-1"/>
 <wire x1="112.7" y1="7.16" x2="111.76" y2="7.18" width="0" layer="19" extent="1-1"/>
