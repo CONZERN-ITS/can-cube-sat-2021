@@ -14,8 +14,8 @@
 #include "util.h"
 #include "time_svc.h"
 
-#include "sensors/int_bme.h"
-#include "sensors/ext_bme.h"
+#include "sensors/its_bme280.h"
+#include "sensors/int_ms5611.h"
 #include "sensors/analog.h"
 #include "sensors/me2o2.h"
 #include "sensors/mics6814.h"
@@ -27,22 +27,25 @@
 #define LED_RESTART_LOCK (1500)
 
 //! Периодичность выдачи BME пакета (в тактах)
-#define PACKET_PERIOD_BME (5)
+#define PACKET_PERIOD_BME (500)//(5)
 #define PACKET_OFFSET_BME (0)
+//! Периодичность выдачи пакета MS5611
+#define PACKET_PERIOD_MS5611 (5)
+#define PACKET_OFFSET_MS5611 (0)
 //! Периодичность выдачи ME202 пакета (в тактах)
-#define PACKET_PERIOD_ME2O2 (5)
+#define PACKET_PERIOD_ME2O2 (500)//(5)
 #define PACKET_OFFSET_ME2O2 (1)
 //! Периодичность выдачи MICS6814 пакета (в тактах)
-#define PACKET_PERIOD_MICS6814 (5)
+#define PACKET_PERIOD_MICS6814 (500)//(5)
 #define PACKET_OFFSET_MICS6814 (2)
 //! Периодичность выдачи данных со встроенных сенсоров (в тактах)
-#define PACKET_PERIOD_INTEGRATED (5)
+#define PACKET_PERIOD_INTEGRATED (500)//(5)
 #define PACKET_OFFSET_INTEGRATED (3)
 //! Периодичность выдачи собственной статистики (в тактах)
-#define PACKET_PERIOD_OWN_STATS (15)
+#define PACKET_PERIOD_OWN_STATS (500)//(15)
 #define PACKET_OFFSET_OWN_STATS (0)
 //! Периодичность выдачи its-link статистики (в тактах)
-#define PACKET_PERIOD_ITS_LINK_STATS (15)
+#define PACKET_PERIOD_ITS_LINK_STATS (500)//(15)
 #define PACKET_OFFSET_ITS_LINK_STATS (7)
 
 
@@ -126,8 +129,10 @@ int app_main()
 	time_svc_init();
 	its_i2c_link_start(&hi2c2);
 
-	_int_bme_op_analysis(int_bme_init());
-	_ext_bme_op_analysis(ext_bme_init());
+	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_EXTERNAL));
+	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
+	int_ms5611_reset();
+	int_ms5611_read_prom();
 	_analog_op_analysis(analog_init());
 	mics6814_init();
 
@@ -173,17 +178,26 @@ int app_main()
 			if (0 == _int_bme_restart_if_need_so())
 			{
 				mavlink_pld_int_bme280_data_t bme_msg = {0};
-				int rc = _int_bme_op_analysis(int_bme_read(&bme_msg));
+				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg));
 				if (0 == rc)
 					mav_main_process_int_bme_message(&bme_msg);
 			}
 			if (0 == _ext_bme_restart_if_need_so())
 			{
 				mavlink_pld_ext_bme280_data_t bme_msg = {0};
-				int rc = _ext_bme_op_analysis(ext_bme_read(&bme_msg));
+				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg));
 				if (0 == rc)
 					mav_main_process_ext_bme_message(&bme_msg);
 			}
+		}
+
+
+		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MICS6814)
+		{
+			mavlink_pld_int_ms5611_data_t data;
+			int rc = int_ms5611_read_and_calculate(&data);
+			printf("rc = %d\n", rc);
+			mav_main_process_ms5611_message(&data);
 		}
 
 
@@ -360,7 +374,7 @@ static int _ext_bme_op_analysis(int rc)
 static int _int_bme_restart_if_need_so(void)
 {
 	if (_status.int_bme_last_error)
-		_int_bme_op_analysis(int_bme_restart());
+		_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
 
 	return _status.int_bme_last_error;
 }
@@ -369,7 +383,7 @@ static int _int_bme_restart_if_need_so(void)
 static int _ext_bme_restart_if_need_so(void)
 {
 	if (_status.ext_bme_last_error)
-		_ext_bme_op_analysis(ext_bme_restart());
+		_ext_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
 
 	return _status.ext_bme_last_error;
 }

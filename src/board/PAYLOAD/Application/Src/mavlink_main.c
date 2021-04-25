@@ -96,6 +96,30 @@ void mav_main_process_ext_bme_message(const mavlink_pld_ext_bme280_data_t * msg)
 }
 
 
+void mav_main_process_ms5611_message(const mavlink_pld_int_ms5611_data_t * msg)
+{
+#ifdef PROCESS_TO_PRINTF
+	printf("int ms5611: t=%fC, p=%fpa\n",
+			(float)msg->temperature, (float)msg->pressure
+	);
+
+	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
+			(uint32_t)(msg->time_s >> 4*8), (uint32_t)(msg->time_s & 0xFFFFFFFF), msg->time_us
+	);
+
+	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+#endif
+
+#ifdef PROCESS_TO_ITSLINK
+    mavlink_message_t ms;
+    mavlink_msg_pld_ext_bme280_data_encode(mavlink_system, COMP_ANY_0, &ms, msg);
+    uint16_t size = mavlink_msg_to_send_buffer(buf, &ms);
+    mav_main_send_to_its_link(MAVLINK_COMM_0, buf, size);
+#endif
+
+}
+
+
 void mav_main_process_me2o2_message(mavlink_pld_me2o2_data_t * msg)
 {
 #ifdef PROCESS_TO_PRINTF

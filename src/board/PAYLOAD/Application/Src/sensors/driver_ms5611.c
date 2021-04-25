@@ -63,7 +63,7 @@ I2C_HandleTypeDef ms5611_i2c = {
 int ms5611_reset(void * handle, uint16_t device_addr)
 {
 	int error = 0;
-	error = HAL_I2C_Master_Transmit(handle, device_addr, &CMD_RESET, sizeof(CMD_RESET), 10);
+	error = HAL_I2C_Master_Transmit(handle, device_addr << 1, &CMD_RESET, sizeof(CMD_RESET), 10);
 	return error;
 }
 
@@ -72,10 +72,10 @@ int ms5611_read_prom_value(void * handle, uint16_t device_addr, uint8_t prom_sta
 {
 	int error = 0;
 	uint8_t prom_addr = prom_start_addr + prom_coef;
-	error = HAL_I2C_Master_Transmit(handle, device_addr, &prom_addr , sizeof(prom_addr), 10);
+	error = HAL_I2C_Master_Transmit(handle, device_addr << 1, &prom_addr , sizeof(prom_addr), 10);
 
 	uint8_t bytes[2] = {0};
-	error = HAL_I2C_Master_Receive(handle, device_addr, bytes, sizeof(bytes), 100);
+	error = HAL_I2C_Master_Receive(handle, device_addr << 1, bytes, sizeof(bytes), 100);
 
 	*prom_value = ((uint16_t)bytes[0] << 1*8) | ((uint16_t)bytes[1] << 0*8);
 
@@ -149,7 +149,7 @@ int ms5611_read_all_prom_data(void * handle, uint16_t device_addr, uint8_t prom_
 int ms5611_initiate_conversion(void * handle, uint16_t device_addr, uint8_t cmd)
 {
 	int error = 0;
-	error = HAL_I2C_Master_Transmit(handle, device_addr, &cmd , sizeof(cmd), 10);
+	error = HAL_I2C_Master_Transmit(handle, device_addr << 1, &cmd , sizeof(cmd), 10);
 	return error;
 }
 
@@ -157,10 +157,10 @@ int ms5611_initiate_conversion(void * handle, uint16_t device_addr, uint8_t cmd)
 int ms5611_read_data(void * handle, uint16_t device_addr, uint32_t * data)
 {
 	int error = 0;
-	error = HAL_I2C_Master_Transmit(handle, device_addr, &CMD_READ_DATA , sizeof(CMD_READ_DATA), 10);
+	error = HAL_I2C_Master_Transmit(handle, device_addr << 1, &CMD_READ_DATA , sizeof(CMD_READ_DATA), 10);
 
 	uint8_t bytes[3];
-	error = HAL_I2C_Master_Receive(handle, device_addr, bytes, sizeof(bytes), 10);
+	error = HAL_I2C_Master_Receive(handle, device_addr << 1, bytes, sizeof(bytes), 10);
 	if (error){
 		// ...
 	}

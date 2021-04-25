@@ -22,10 +22,10 @@
 Размер имеет смысл ставить побольше, чтобы ради него было не стыдно запускать DMA */
 #define I2C_LINK_TX_ZEROS_SIZE	I2C_LINK_PACKET_SIZE //(20)
 
-extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c2;
 
 //! халовский i2c-handle на котором осуществляется обмен
-#define I2C_LINK_BUS_HANDLE (&hi2c1)
+#define I2C_LINK_BUS_HANDLE (&hi2c2)
 
 /*
  * I2C transmit timeout used in hal_slave_transmit
