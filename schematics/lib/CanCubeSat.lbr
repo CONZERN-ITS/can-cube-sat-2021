@@ -4019,6 +4019,7 @@
 <pin name="PC15" x="-22.86" y="7.62" length="middle"/>
 <pin name="VSSA" x="-22.86" y="-33.02" length="middle" direction="pwr"/>
 <pin name="VBAT" x="-22.86" y="-27.94" length="middle" direction="pwr"/>
+<pin name="VDD" x="-22.86" y="-25.4" length="middle"/>
 </symbol>
 <symbol name="PWR_VDD3_VSS3">
 <pin name="VDD@1" x="-5.08" y="17.78" length="middle" direction="pwr" rot="R270"/>
@@ -5516,7 +5517,8 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 <connect gate="MCU" pin="PC14" pad="3"/>
 <connect gate="MCU" pin="PC15" pad="4"/>
 <connect gate="MCU" pin="VBAT" pad="1"/>
-<connect gate="MCU" pin="VDDA" pad="9 24 36 48"/>
+<connect gate="MCU" pin="VDD" pad="24 36 48"/>
+<connect gate="MCU" pin="VDDA" pad="9"/>
 <connect gate="MCU" pin="VSSA" pad="8 23 35 47"/>
 </connects>
 <technologies>
