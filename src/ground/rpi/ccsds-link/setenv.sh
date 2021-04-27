@@ -1,0 +1,2 @@
+export ITS_GBUS_SUB_ENDPOINT="tcp://0.0.0.0:7777"
+export ITS_GBUS_PUB_ENDPOINT="tcp://0.0.0.0:7778"

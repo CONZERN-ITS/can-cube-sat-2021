@@ -3,8 +3,8 @@ import logging
 import os
 
 
-# XSUB_ENDPOINT = "tcp://0.0.0.0:7777"
-# XPUB_ENDPOINT = "tcp://0.0.0.0:7778"
+XSUB_ENDPOINT = "tcp://0.0.0.0:7777"
+XPUB_ENDPOINT = "tcp://0.0.0.0:7778"
 
 
 _log = logging.getLogger(__name__)
@@ -13,8 +13,8 @@ _log = logging.getLogger(__name__)
 def main():
     ctx = zmq.Context()
 
-    bus_sub = os.environ["ITS_GBUS_SUB_ENDPOINT"]
-    bus_pub = os.environ["ITS_GBUS_PUB_ENDPOINT"]
+    bus_sub = XSUB_ENDPOINT
+    bus_pub = XPUB_ENDPOINT
 
     sub_socket, pub_socket = ctx.socket(zmq.XSUB), ctx.socket(zmq.XPUB)
 

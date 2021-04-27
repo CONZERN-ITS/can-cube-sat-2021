@@ -13,7 +13,7 @@ def main():
     bus_pub = os.environ["ITS_GBUS_PUB_ENDPOINT"]
     _log.info("connecting to %s", bus_pub)
     sub_socket.connect(bus_pub)
-    sub_socket.setsockopt_string(zmq.SUBSCRIBE, "radio.uplink_state")
+    sub_socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
     while True:
         msgs = sub_socket.recv_multipart()
