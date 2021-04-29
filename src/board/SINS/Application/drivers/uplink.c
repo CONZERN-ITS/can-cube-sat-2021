@@ -8,13 +8,20 @@
 #include "uplink.h"
 
 #include <stm32f4xx_hal.h>
+#include <its-i2c-link.h>
 
 #include "common.h"
 
+int uplink_init()
+{
+	int error = its_i2c_link_start(I2C_LINK_BUS_HANDLE);
+	return error;
+}
 
 int uplink_write_raw(const void * data, int data_size)
 {
-	return 0;
+	int error = its_i2c_link_write(data, data_size);
+	return error;
 }
 
 
