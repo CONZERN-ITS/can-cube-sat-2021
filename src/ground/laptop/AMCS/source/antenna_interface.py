@@ -13,7 +13,6 @@ import time
 
 class AbstractAntennaInterface(QtCore.QObject):
     send_msg = QtCore.pyqtSignal(PyObject)
-    msg_received = QtCore.pyqtSignal(PyObject)
 
     command_sent = QtCore.pyqtSignal(str)
 
@@ -186,7 +185,7 @@ class MAVITSInterface(AbstractAntennaInterface):
         self.send_message(mavlink2.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [3])))
 
 
-class ZMQitsInterface(MAVITSInterface):
+class ZMQITSInterface(MAVITSInterface):
 
     def msg_reaction(self, msg):
         topic = msg[0].decode('utf-8')
@@ -201,7 +200,7 @@ class ZMQitsInterface(MAVITSInterface):
         multipart = ["antenna.command_packet".encode("utf-8"),
                      bytes(),
                      msg.get_msgbuf()]
-        self.send_msg(msg)
+        self.send_msg(multipart)
         self.command_sent(str(msg))
 
 
