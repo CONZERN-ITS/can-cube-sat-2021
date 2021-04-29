@@ -46,7 +46,6 @@
 #include "errors.h"
 
 #include "mav_packet.h"
-#include "watchdog.h"
 
 #include "state.h"
 
@@ -83,8 +82,6 @@ ADC_HandleTypeDef hadc1;
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
-IWDG_HandleTypeDef hiwdg;
-
 RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart2;
@@ -106,7 +103,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
-static void MX_IWDG_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_RTC_Init(void);
@@ -309,7 +305,7 @@ int UpdateDataAll(void)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			accel_ISC[i] -= state_zero.accel_staticShift[i];
+			accel_ISC[i] -= state_zero.accel_staticShift[i]; //<<---------- TODO: разобраться со сдвигами
 			stateSINS_isc.accel[i] = accel_ISC[i];
 		}
 	}
@@ -403,7 +399,6 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
-  MX_IWDG_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_RTC_Init();
@@ -422,15 +417,15 @@ int main(void)
 
   	dwt_init();
 
-  	if (CALIBRATION_LSM)
+  	/*if (CALIBRATION_LSM)
   		calibration_accel();
 
   	if (CALIBRATION_LIS)
-  		calibration_magn();
+  		calibration_magn();*/
 
 
 
-  	if (check_SINS_state() == 1)
+  	/*if (check_SINS_state() == 1)
   	{
   		backup_sram_enable();
   		backup_sram_erase();
@@ -455,18 +450,19 @@ int main(void)
   		backup_sram_write_zero_state(&state_zero);
 
   	}
-  	else
+  	else*/
   	{
-  		iwdg_init(&transfer_uart_iwdg_handle);
+
+  		//iwdg_init(&transfer_uart_iwdg_handle);
 
   		time_svc_steady_init();
 
-  		backup_sram_enable_after_reset();
-  		backup_sram_read_zero_state(&state_zero);
+  		//backup_sram_enable_after_reset();
+  		//backup_sram_read_zero_state(&state_zero);
 
-  		backup_sram_read_reset_counter(&error_system.reset_counter);
-  		error_system.reset_counter++;
-  		backup_sram_write_reset_counter(&error_system.reset_counter);
+  		//backup_sram_read_reset_counter(&error_system.reset_counter);
+  		//error_system.reset_counter++;
+  		//backup_sram_write_reset_counter(&error_system.reset_counter);
 
   		int error = time_svc_world_preinit_with_rtc();
   		error_system.rtc_error = error;
@@ -476,10 +472,12 @@ int main(void)
   			time_svc_world_init();			//Смогли запустить rtc. Запустим все остальное
 
   		error = 0;
-  		error = uplink_init();
+  		//error = uplink_init(); // <--------------------------------------TODO: Поменять
   		error_system.uart_transfer_init_error = error;
   		if (error != 0)
   			system_reset();				//Если не запустился uart, то мы - кирпич
+
+  		// Настраиваем GPS
 
   		error = 0;
   		error = gps_init(on_gps_packet_main, NULL);
@@ -493,8 +491,7 @@ int main(void)
   			error_system.gps_config_error = error;
   		}
 
-  	//	int rc = gps_init(_on_gps_packet, NULL);
-  	//	trace_printf("configure rc = %d\n", rc);
+  		// Настраиваем аналоговые датчики (пока только внутренний термометр)
 
   		error = 0;
   		error = analog_init();
@@ -505,39 +502,38 @@ int main(void)
   				error_system.analog_sensor_init_error = analog_restart();
   			}
 
+  		// мемсы?
   		sensors_init();
   		error_mems_read();
 
+
+  		// Получаем мировое время (хз зачем)
   		time_svc_world_get_time(&stateSINS_isc_prev.tv);
 
+  		// ???
   		error_system_check();
 
+  		// Берем время в мс со старта (хз зачем)
   		uint32_t prew_time = HAL_GetTick();
   		uint32_t time = 0;
 
+  		// Пашем, работяги
   		for (; ; )
   		{
+  			// подбираем частоту данных (система против потома)
   			for (int u = 0; u < 5; u++)
   			{
-  //				uint32_t x = HAL_GetTick();
   				for (int i = 0; i < 30; i++)
   				{
-
+  					// Кормит маджвик данными
   					UpdateDataAll();
   					SINS_updatePrevData();
   				}
 
-  //				volatile uint32_t z = HAL_GetTick() - x;
-
-  		//		struct timeval tmv;
-  		//		time_svc_world_timers_get_time(&tmv);
-  		//		struct tm * tm = gmtime(&tmv.tv_sec);
-  		//		char buffer[sizeof "2011-10-08T07:07:09Z"] = {0};
-  		//		strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", tm);
-  		//		trace_printf("time is %s\n", buffer);
-
+  				// Оставь, пусть работает
   				gps_poll();
 
+  				// Проверяем процесс конфигурации
   				const int gps_cfg_status = gps_configure_status();
   				if (gps_cfg_status != -EWOULDBLOCK) // конфигурация уже закончилась
   				{
@@ -572,15 +568,19 @@ int main(void)
   					}
   				}
 
+  				// Проверяем инерциалку на ошибки
   				if ((error_system.lsm6ds3_error != 0) && (error_system.lis3mdl_error != 0))
   					continue;
-  				mavlink_sins_isc(&stateSINS_isc);
+  				// Отвравляем данные во внешний мир
+  				mavlink_sins_isc(&stateSINS_isc); //<<---------------TODO: Переписать
 
   			}
   			time = HAL_GetTick();
   			if (time - prew_time < 1000)
   				continue;
   			prew_time = time;
+
+  			// Отправляем всякое почтой России (или нет)
   			mavlink_timestamp();
   			own_temp_packet();
 
@@ -619,11 +619,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
-                              |RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -777,34 +775,6 @@ static void MX_I2C2_Init(void)
 }
 
 /**
-  * @brief IWDG Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_IWDG_Init(void)
-{
-
-  /* USER CODE BEGIN IWDG_Init 0 */
-
-  /* USER CODE END IWDG_Init 0 */
-
-  /* USER CODE BEGIN IWDG_Init 1 */
-
-  /* USER CODE END IWDG_Init 1 */
-  hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_128;
-  hiwdg.Init.Reload = 4095;
-  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN IWDG_Init 2 */
-
-  /* USER CODE END IWDG_Init 2 */
-
-}
-
-/**
   * @brief RTC Initialization Function
   * @param None
   * @retval None
@@ -921,11 +891,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10|GPIO_PIN_11, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, PWR_GPS_Pin|PWR_MEMS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -937,8 +913,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA10 PA11 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
+  /*Configure GPIO pins : PWR_GPS_Pin PWR_MEMS_Pin */
+  GPIO_InitStruct.Pin = PWR_GPS_Pin|PWR_MEMS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

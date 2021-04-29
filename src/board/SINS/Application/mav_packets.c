@@ -24,6 +24,8 @@ int mavlink_sins_isc(stateSINS_isc_t * state_isc)
 		mavlink_sins_isc_t msg_sins_isc;
 		msg_sins_isc.time_s = state_isc->tv.tv_sec;
 		msg_sins_isc.time_us = state_isc->tv.tv_usec;
+		//printf("Accel: %f %f %f \n", state_isc->accel[0], state_isc->accel[1], state_isc->accel[2]);
+		//printf("Mag: %f %f %f \n", state_isc->magn[0], state_isc->magn[1], state_isc->magn[2]);
 
 		for (int i = 0; i < 3; i++)
 		{

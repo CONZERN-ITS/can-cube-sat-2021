@@ -62,6 +62,10 @@ void Error_Handler(void);
 #define GPS_UART_TX_GPIO_Port GPIOA
 #define GPS_UART_RX_Pin GPIO_PIN_3
 #define GPS_UART_RX_GPIO_Port GPIOA
+#define PWR_GPS_Pin GPIO_PIN_11
+#define PWR_GPS_GPIO_Port GPIOA
+#define PWR_MEMS_Pin GPIO_PIN_12
+#define PWR_MEMS_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 #define I2C_INT_Pin GPIO_PIN_7
