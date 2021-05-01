@@ -14676,41 +14676,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </deviceset>
 </devicesets>
 </library>
-<library name="supply2">
-<description>&lt;b&gt;Supply Symbols&lt;/b&gt;&lt;p&gt;
-GND, VCC, 0V, +5V, -5V, etc.&lt;p&gt;
-Please keep in mind, that these devices are necessary for the
-automatic wiring of the supply signals.&lt;p&gt;
-The pin name defined in the symbol is identical to the net which is to be wired automatically.&lt;p&gt;
-In this library the device names are the same as the pin names of the symbols, therefore the correct signal names appear next to the supply symbols in the schematic.&lt;p&gt;
-&lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
-<packages>
-</packages>
-<symbols>
-<symbol name="GND">
-<wire x1="-1.27" y1="0" x2="1.27" y2="0" width="0.254" layer="94"/>
-<wire x1="1.27" y1="0" x2="0" y2="-1.27" width="0.254" layer="94"/>
-<wire x1="0" y1="-1.27" x2="-1.27" y2="0" width="0.254" layer="94"/>
-<text x="-1.905" y="-3.175" size="1.778" layer="96">&gt;VALUE</text>
-<pin name="GND" x="0" y="2.54" visible="off" length="short" direction="sup" rot="R270"/>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="GND" prefix="SUPPLY">
-<description>&lt;b&gt;SUPPLY SYMBOL&lt;/b&gt;</description>
-<gates>
-<gate name="GND" symbol="GND" x="0" y="0"/>
-</gates>
-<devices>
-<device name="">
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="led" urn="urn:adsk.eagle:library:259">
 <description>&lt;b&gt;LEDs&lt;/b&gt;&lt;p&gt;
 &lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;&lt;br&gt;
@@ -21004,7 +20969,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="SD" library="CanCubeSat" deviceset="SD" device=""/>
 <part name="R10" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
 <part name="R11" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
-<part name="SUPPLY9" library="supply2" deviceset="GND" device=""/>
 <part name="C12" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="BSK1" library="pinheadCS" deviceset="PINHD-1X20" device=""/>
 <part name="U$1" library="CanCubeSat" deviceset="E22-400M30S" device=""/>
@@ -21028,7 +20992,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="R19" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R1210" package3d_urn="urn:adsk.eagle:package:23554/2" value="0.5A"/>
 <part name="R20" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="R14" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
-<part name="MP2225" library="CanCubeSat" deviceset="MP2225" device=""/>
+<part name="MP2225-3V3" library="CanCubeSat" deviceset="MP2225" device=""/>
 <part name="C7" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="C8" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="R16" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100k"/>
@@ -21040,7 +21004,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="L_3.3" library="CanCubeSat" deviceset="L_3.3MKH_5X5" device="" value="L_3.3MKH"/>
 <part name="C2" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="22µ"/>
 <part name="C13" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="22µ"/>
-<part name="MP2225-1" library="CanCubeSat" deviceset="MP2225" device=""/>
+<part name="MP2225-5V" library="CanCubeSat" deviceset="MP2225" device=""/>
 <part name="C15" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="C17" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="0,1µ"/>
 <part name="R27" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="100k"/>
@@ -21052,7 +21016,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="L_3.3-1" library="CanCubeSat" deviceset="L_3.3MKH_5X5" device="" value="L_3.3MKH"/>
 <part name="C5" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="22µ"/>
 <part name="C1" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:23618/2" value="22µ"/>
-<part name="U$6" library="CanCubeSat" deviceset="MP1584-B" device=""/>
+<part name="MP1584EN-3V3" library="CanCubeSat" deviceset="MP1584-B" device=""/>
+<part name="MP1584EN-5V" library="CanCubeSat" deviceset="MP1584-B" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -22199,9 +22164,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <attribute name="NAME" x="74.93" y="59.9186" size="1.778" layer="95"/>
 <attribute name="VALUE" x="74.93" y="55.118" size="1.778" layer="96"/>
 </instance>
-<instance part="SUPPLY9" gate="GND" x="27.94" y="228.6" smashed="yes" rot="R270">
-<attribute name="VALUE" x="24.765" y="230.505" size="1.778" layer="96" rot="R270"/>
-</instance>
 <instance part="C12" gate="G$1" x="35.56" y="231.14" smashed="yes" rot="R90">
 <attribute name="NAME" x="34.925" y="232.156" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="39.751" y="232.156" size="1.778" layer="96" rot="R90"/>
@@ -22279,7 +22241,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <attribute name="NAME" x="280.67" y="258.0386" size="1.778" layer="95"/>
 <attribute name="VALUE" x="280.67" y="253.238" size="1.778" layer="96"/>
 </instance>
-<instance part="MP2225" gate="G$1" x="535.94" y="114.3" smashed="yes"/>
+<instance part="MP2225-3V3" gate="G$1" x="535.94" y="114.3" smashed="yes"/>
 <instance part="C7" gate="G$1" x="553.72" y="101.6" smashed="yes" rot="R180">
 <attribute name="NAME" x="552.704" y="100.965" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="552.704" y="105.791" size="1.778" layer="96" rot="R180"/>
@@ -22324,7 +22286,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <attribute name="NAME" x="481.584" y="100.965" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="481.584" y="105.791" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="MP2225-1" gate="G$1" x="538.48" y="43.18" smashed="yes"/>
+<instance part="MP2225-5V" gate="G$1" x="538.48" y="43.18" smashed="yes"/>
 <instance part="C15" gate="G$1" x="556.26" y="30.48" smashed="yes" rot="R180">
 <attribute name="NAME" x="555.244" y="29.845" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="555.244" y="34.671" size="1.778" layer="96" rot="R180"/>
@@ -22369,8 +22331,11 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <attribute name="NAME" x="484.124" y="29.845" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="484.124" y="34.671" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="U$6" gate="G$1" x="523.24" y="154.94" smashed="yes">
-<attribute name="NAME" x="520.7" y="160.02" size="1.27" layer="95"/>
+<instance part="MP1584EN-3V3" gate="G$1" x="523.24" y="154.94" smashed="yes">
+<attribute name="NAME" x="516.89" y="161.798" size="1.27" layer="95"/>
+</instance>
+<instance part="MP1584EN-5V" gate="G$1" x="525.78" y="76.2" smashed="yes">
+<attribute name="NAME" x="519.684" y="82.55" size="1.27" layer="95"/>
 </instance>
 </instances>
 <busses>
@@ -22437,12 +22402,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="104.14" y="30.48" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
-<pinref part="SUPPLY9" gate="GND" pin="GND"/>
-<wire x1="33.02" y1="228.6" x2="30.48" y2="228.6" width="0.1524" layer="91"/>
-<wire x1="33.02" y1="231.14" x2="33.02" y2="228.6" width="0.1524" layer="91"/>
-<pinref part="C12" gate="G$1" pin="1"/>
-</segment>
-<segment>
 <pinref part="U$23" gate="G$1" pin="S"/>
 <wire x1="327.66" y1="149.86" x2="322.58" y2="149.86" width="0.1524" layer="91"/>
 <label x="307.34" y="149.86" size="1.778" layer="95"/>
@@ -22484,11 +22443,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="U$4" gate="G$1" pin="S"/>
 <label x="264.16" y="246.38" size="1.778" layer="95"/>
 <wire x1="284.48" y1="246.38" x2="264.16" y2="246.38" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="R19" gate="G$1" pin="1"/>
-<pinref part="U$1" gate="G$1" pin="GND"/>
-<wire x1="370.84" y1="215.9" x2="370.84" y2="220.98" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="5V" class="0">
@@ -22547,6 +22501,16 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <junction x="485.14" y="35.56"/>
 <junction x="485.14" y="40.64"/>
 <label x="520.7" y="60.96" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="MP1584EN-5V" gate="G$1" pin="OUT+"/>
+<wire x1="538.48" y1="73.66" x2="556.26" y2="73.66" width="0.1524" layer="91"/>
+<label x="551.18" y="73.66" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$21" gate="G$1" pin="11"/>
+<wire x1="353.06" y1="106.68" x2="353.06" y2="86.36" width="0.1524" layer="91"/>
+<label x="353.06" y="86.36" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="1W" class="0">
@@ -22613,9 +22577,44 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="327.66" y="86.36" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
-<pinref part="U$6" gate="G$1" pin="IN+"/>
+<pinref part="MP1584EN-3V3" gate="G$1" pin="IN+"/>
 <wire x1="510.54" y1="152.4" x2="495.3" y2="152.4" width="0.1524" layer="91"/>
 <label x="495.3" y="152.4" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="MP1584EN-5V" gate="G$1" pin="IN+"/>
+<wire x1="513.08" y1="73.66" x2="497.84" y2="73.66" width="0.1524" layer="91"/>
+<label x="497.84" y="73.66" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R16" gate="G$1" pin="1"/>
+<wire x1="530.86" y1="114.3" x2="523.24" y2="114.3" width="0.1524" layer="91"/>
+<pinref part="MP2225-3V3" gate="G$1" pin="IN"/>
+<wire x1="523.24" y1="114.3" x2="523.24" y2="116.84" width="0.1524" layer="91"/>
+<pinref part="C10" gate="G$1" pin="2"/>
+<wire x1="523.24" y1="116.84" x2="505.46" y2="116.84" width="0.1524" layer="91"/>
+<junction x="523.24" y="116.84"/>
+<pinref part="C9" gate="G$1" pin="2"/>
+<wire x1="505.46" y1="116.84" x2="497.84" y2="116.84" width="0.1524" layer="91"/>
+<junction x="505.46" y="116.84"/>
+<wire x1="497.84" y1="116.84" x2="485.14" y2="116.84" width="0.1524" layer="91"/>
+<junction x="497.84" y="116.84"/>
+<label x="485.14" y="116.84" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R27" gate="G$1" pin="1"/>
+<wire x1="533.4" y1="43.18" x2="525.78" y2="43.18" width="0.1524" layer="91"/>
+<pinref part="MP2225-5V" gate="G$1" pin="IN"/>
+<wire x1="525.78" y1="43.18" x2="525.78" y2="45.72" width="0.1524" layer="91"/>
+<pinref part="C14" gate="G$1" pin="2"/>
+<wire x1="525.78" y1="45.72" x2="508" y2="45.72" width="0.1524" layer="91"/>
+<junction x="525.78" y="45.72"/>
+<pinref part="C6" gate="G$1" pin="2"/>
+<wire x1="508" y1="45.72" x2="500.38" y2="45.72" width="0.1524" layer="91"/>
+<junction x="508" y="45.72"/>
+<wire x1="500.38" y1="45.72" x2="487.68" y2="45.72" width="0.1524" layer="91"/>
+<junction x="500.38" y="45.72"/>
+<label x="487.68" y="45.72" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="SCK" class="0">
@@ -23101,7 +23100,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="269.24" y="256.54" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U$6" gate="G$1" pin="OUT+"/>
+<pinref part="MP1584EN-3V3" gate="G$1" pin="OUT+"/>
 <wire x1="535.94" y1="152.4" x2="553.72" y2="152.4" width="0.1524" layer="91"/>
 <label x="548.64" y="152.4" size="1.778" layer="95"/>
 </segment>
@@ -23658,7 +23657,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="220.98" y="93.98" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
-<pinref part="MP2225" gate="G$1" pin="GND"/>
+<pinref part="MP2225-3V3" gate="G$1" pin="GND"/>
 <wire x1="523.24" y1="106.68" x2="510.54" y2="106.68" width="0.1524" layer="91"/>
 <label x="510.54" y="106.68" size="1.778" layer="95"/>
 </segment>
@@ -23668,7 +23667,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="563.88" y="116.84" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="MP2225" gate="G$1" pin="AGND"/>
+<pinref part="MP2225-3V3" gate="G$1" pin="AGND"/>
 <wire x1="523.24" y1="121.92" x2="510.54" y2="121.92" width="0.1524" layer="91"/>
 <label x="510.54" y="121.92" size="1.778" layer="95"/>
 </segment>
@@ -23695,7 +23694,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="485.14" y="83.82" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
-<pinref part="MP2225-1" gate="G$1" pin="GND"/>
+<pinref part="MP2225-5V" gate="G$1" pin="GND"/>
 <wire x1="525.78" y1="35.56" x2="513.08" y2="35.56" width="0.1524" layer="91"/>
 <label x="513.08" y="35.56" size="1.778" layer="95"/>
 </segment>
@@ -23705,7 +23704,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="566.42" y="45.72" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="MP2225-1" gate="G$1" pin="AGND"/>
+<pinref part="MP2225-5V" gate="G$1" pin="AGND"/>
 <wire x1="525.78" y1="50.8" x2="513.08" y2="50.8" width="0.1524" layer="91"/>
 <label x="513.08" y="50.8" size="1.778" layer="95"/>
 </segment>
@@ -23732,14 +23731,24 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <label x="487.68" y="15.24" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
-<pinref part="U$6" gate="G$1" pin="IN-"/>
+<pinref part="MP1584EN-3V3" gate="G$1" pin="IN-"/>
 <wire x1="510.54" y1="157.48" x2="495.3" y2="157.48" width="0.1524" layer="91"/>
 <label x="495.3" y="157.48" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U$6" gate="G$1" pin="OUT-"/>
+<pinref part="MP1584EN-3V3" gate="G$1" pin="OUT-"/>
 <wire x1="535.94" y1="157.48" x2="553.72" y2="157.48" width="0.1524" layer="91"/>
 <label x="543.56" y="157.48" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="MP1584EN-5V" gate="G$1" pin="IN-"/>
+<wire x1="513.08" y1="78.74" x2="497.84" y2="78.74" width="0.1524" layer="91"/>
+<label x="497.84" y="78.74" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="MP1584EN-5V" gate="G$1" pin="OUT-"/>
+<wire x1="538.48" y1="78.74" x2="556.26" y2="78.74" width="0.1524" layer="91"/>
+<label x="546.1" y="78.74" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$5" class="0">
@@ -23748,6 +23757,12 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="SD" gate="G$1" pin="VSS"/>
 <wire x1="66.04" y1="231.14" x2="66.04" y2="233.68" width="0.1524" layer="91"/>
 <pinref part="R15" gate="G$1" pin="2"/>
+<wire x1="81.28" y1="231.14" x2="81.28" y2="256.54" width="0.1524" layer="91"/>
+<junction x="81.28" y="231.14"/>
+<wire x1="81.28" y1="256.54" x2="27.94" y2="256.54" width="0.1524" layer="91"/>
+<wire x1="27.94" y1="256.54" x2="27.94" y2="231.14" width="0.1524" layer="91"/>
+<pinref part="C12" gate="G$1" pin="1"/>
+<wire x1="27.94" y1="231.14" x2="33.02" y2="231.14" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$6" class="0">
@@ -23787,7 +23802,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </net>
 <net name="N$13" class="0">
 <segment>
-<pinref part="MP2225" gate="G$1" pin="BST"/>
+<pinref part="MP2225-3V3" gate="G$1" pin="BST"/>
 <pinref part="C7" gate="G$1" pin="2"/>
 <wire x1="548.64" y1="106.68" x2="553.72" y2="106.68" width="0.1524" layer="91"/>
 </segment>
@@ -23797,7 +23812,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="C7" gate="G$1" pin="1"/>
 <wire x1="553.72" y1="99.06" x2="508" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="508" y1="99.06" x2="508" y2="111.76" width="0.1524" layer="91"/>
-<pinref part="MP2225" gate="G$1" pin="SW"/>
+<pinref part="MP2225-3V3" gate="G$1" pin="SW"/>
 <wire x1="508" y1="111.76" x2="523.24" y2="111.76" width="0.1524" layer="91"/>
 <pinref part="L_3.3" gate="G$1" pin="2"/>
 <wire x1="502.92" y1="111.76" x2="508" y2="111.76" width="0.1524" layer="91"/>
@@ -23806,36 +23821,22 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </net>
 <net name="N$16" class="0">
 <segment>
-<pinref part="MP2225" gate="G$1" pin="VCC"/>
+<pinref part="MP2225-3V3" gate="G$1" pin="VCC"/>
 <pinref part="C8" gate="G$1" pin="2"/>
 <wire x1="548.64" y1="116.84" x2="551.18" y2="116.84" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$15" class="0">
 <segment>
-<pinref part="MP2225" gate="G$1" pin="EN"/>
+<pinref part="MP2225-3V3" gate="G$1" pin="EN"/>
 <wire x1="548.64" y1="111.76" x2="548.64" y2="114.3" width="0.1524" layer="91"/>
 <pinref part="R16" gate="G$1" pin="2"/>
 <wire x1="548.64" y1="114.3" x2="541.02" y2="114.3" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$21" class="0">
-<segment>
-<pinref part="R16" gate="G$1" pin="1"/>
-<wire x1="530.86" y1="114.3" x2="523.24" y2="114.3" width="0.1524" layer="91"/>
-<pinref part="MP2225" gate="G$1" pin="IN"/>
-<wire x1="523.24" y1="114.3" x2="523.24" y2="116.84" width="0.1524" layer="91"/>
-<pinref part="C10" gate="G$1" pin="2"/>
-<wire x1="523.24" y1="116.84" x2="505.46" y2="116.84" width="0.1524" layer="91"/>
-<junction x="523.24" y="116.84"/>
-<pinref part="C9" gate="G$1" pin="2"/>
-<wire x1="505.46" y1="116.84" x2="497.84" y2="116.84" width="0.1524" layer="91"/>
-<junction x="505.46" y="116.84"/>
-</segment>
-</net>
 <net name="N$20" class="0">
 <segment>
-<pinref part="MP2225" gate="G$1" pin="FB"/>
+<pinref part="MP2225-3V3" gate="G$1" pin="FB"/>
 <pinref part="R26" gate="G$1" pin="1"/>
 <wire x1="548.64" y1="121.92" x2="551.18" y2="121.92" width="0.1524" layer="91"/>
 <pinref part="R25" gate="G$1" pin="1"/>
@@ -23848,7 +23849,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </net>
 <net name="N$9" class="0">
 <segment>
-<pinref part="MP2225-1" gate="G$1" pin="BST"/>
+<pinref part="MP2225-5V" gate="G$1" pin="BST"/>
 <pinref part="C15" gate="G$1" pin="2"/>
 <wire x1="551.18" y1="35.56" x2="556.26" y2="35.56" width="0.1524" layer="91"/>
 </segment>
@@ -23858,7 +23859,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <pinref part="C15" gate="G$1" pin="1"/>
 <wire x1="556.26" y1="27.94" x2="510.54" y2="27.94" width="0.1524" layer="91"/>
 <wire x1="510.54" y1="27.94" x2="510.54" y2="40.64" width="0.1524" layer="91"/>
-<pinref part="MP2225-1" gate="G$1" pin="SW"/>
+<pinref part="MP2225-5V" gate="G$1" pin="SW"/>
 <wire x1="510.54" y1="40.64" x2="525.78" y2="40.64" width="0.1524" layer="91"/>
 <pinref part="L_3.3-1" gate="G$1" pin="2"/>
 <wire x1="508" y1="40.64" x2="510.54" y2="40.64" width="0.1524" layer="91"/>
@@ -23867,36 +23868,22 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </net>
 <net name="N$12" class="0">
 <segment>
-<pinref part="MP2225-1" gate="G$1" pin="VCC"/>
+<pinref part="MP2225-5V" gate="G$1" pin="VCC"/>
 <pinref part="C17" gate="G$1" pin="2"/>
 <wire x1="551.18" y1="45.72" x2="553.72" y2="45.72" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$10" class="0">
 <segment>
-<pinref part="MP2225-1" gate="G$1" pin="EN"/>
+<pinref part="MP2225-5V" gate="G$1" pin="EN"/>
 <wire x1="551.18" y1="40.64" x2="551.18" y2="43.18" width="0.1524" layer="91"/>
 <pinref part="R27" gate="G$1" pin="2"/>
 <wire x1="551.18" y1="43.18" x2="543.56" y2="43.18" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$7" class="0">
-<segment>
-<pinref part="R27" gate="G$1" pin="1"/>
-<wire x1="533.4" y1="43.18" x2="525.78" y2="43.18" width="0.1524" layer="91"/>
-<pinref part="MP2225-1" gate="G$1" pin="IN"/>
-<wire x1="525.78" y1="43.18" x2="525.78" y2="45.72" width="0.1524" layer="91"/>
-<pinref part="C14" gate="G$1" pin="2"/>
-<wire x1="525.78" y1="45.72" x2="508" y2="45.72" width="0.1524" layer="91"/>
-<junction x="525.78" y="45.72"/>
-<pinref part="C6" gate="G$1" pin="2"/>
-<wire x1="508" y1="45.72" x2="500.38" y2="45.72" width="0.1524" layer="91"/>
-<junction x="508" y="45.72"/>
-</segment>
-</net>
 <net name="N$22" class="0">
 <segment>
-<pinref part="MP2225-1" gate="G$1" pin="FB"/>
+<pinref part="MP2225-5V" gate="G$1" pin="FB"/>
 <pinref part="R29" gate="G$1" pin="1"/>
 <wire x1="551.18" y1="50.8" x2="553.72" y2="50.8" width="0.1524" layer="91"/>
 <pinref part="R28" gate="G$1" pin="1"/>
@@ -23905,6 +23892,14 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <junction x="563.88" y="50.8"/>
 <pinref part="C16" gate="G$1" pin="2"/>
 <junction x="553.72" y="50.8"/>
+</segment>
+</net>
+<net name="GND1-RADIO" class="0">
+<segment>
+<pinref part="U$1" gate="G$1" pin="GND"/>
+<pinref part="R19" gate="G$1" pin="1"/>
+<wire x1="370.84" y1="220.98" x2="370.84" y2="215.9" width="0.1524" layer="91"/>
+<label x="370.84" y="203.2" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 </nets>

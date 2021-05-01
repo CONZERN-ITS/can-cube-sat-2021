@@ -18663,6 +18663,115 @@ variable-capacitance diode</description>
 </deviceset>
 </devicesets>
 </library>
+<library name="cansat-lib">
+<packages>
+<package name="UNICS-SWITCH" urn="urn:adsk.eagle:footprint:27544/1" locally_modified="yes">
+<description>&lt;b&gt;SLIDING SWITCH&lt;/b&gt;&lt;p&gt;
+distributor Buerklin, 11G810</description>
+<wire x1="-6.4" y1="3.4" x2="6.4" y2="3.4" width="0.1524" layer="21"/>
+<wire x1="6.4" y1="-3.4" x2="6.4" y2="3.4" width="0.1524" layer="21"/>
+<wire x1="6.4" y1="-3.4" x2="-6.4" y2="-3.4" width="0.1524" layer="21"/>
+<wire x1="-6.4" y1="3.4" x2="-6.4" y2="-3.4" width="0.1524" layer="21"/>
+<wire x1="4.7" y1="-1.397" x2="4.7" y2="1.397" width="0.1524" layer="51"/>
+<wire x1="-4.7" y1="1.397" x2="-4.7" y2="-1.397" width="0.1524" layer="51"/>
+<wire x1="-1.057" y1="1.27" x2="-1.057" y2="-1.27" width="0.1524" layer="51"/>
+<wire x1="-1.565" y1="0.762" x2="-1.565" y2="-0.762" width="0.1524" layer="51"/>
+<wire x1="4.7" y1="-1.524" x2="-1.057" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-2.073" y1="1.524" x2="-2.073" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-2.073" y1="1.524" x2="-1.565" y2="1.524" width="0.1524" layer="21"/>
+<wire x1="-2.073" y1="-1.524" x2="-2.581" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-2.581" y1="1.524" x2="-2.581" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-2.581" y1="1.524" x2="-2.073" y2="1.524" width="0.1524" layer="21"/>
+<wire x1="-3.089" y1="1.016" x2="-3.089" y2="-1.016" width="0.1524" layer="51"/>
+<wire x1="-3.597" y1="1.397" x2="-3.597" y2="-1.397" width="0.1524" layer="51"/>
+<wire x1="-4.7" y1="1.524" x2="-3.597" y2="1.524" width="0.1524" layer="21"/>
+<wire x1="-2.581" y1="-1.524" x2="-3.089" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="4.7" y1="-1.524" x2="4.7" y2="-1.397" width="0.1524" layer="21"/>
+<wire x1="4.7" y1="1.524" x2="4.7" y2="1.397" width="0.1524" layer="21"/>
+<wire x1="-1.057" y1="-1.27" x2="-1.057" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-1.057" y1="-1.524" x2="-1.565" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-1.565" y1="-1.524" x2="-1.565" y2="-0.762" width="0.1524" layer="21"/>
+<wire x1="-1.565" y1="-1.524" x2="-2.073" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-3.089" y1="-1.016" x2="-3.089" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-3.089" y1="-1.524" x2="-3.597" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-3.597" y1="-1.397" x2="-3.597" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-3.597" y1="-1.524" x2="-4.7" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-4.7" y1="-1.397" x2="-4.7" y2="-1.524" width="0.1524" layer="21"/>
+<wire x1="-4.7" y1="1.524" x2="-4.7" y2="1.397" width="0.1524" layer="21"/>
+<wire x1="-3.597" y1="1.524" x2="-3.597" y2="1.397" width="0.1524" layer="21"/>
+<wire x1="-3.597" y1="1.524" x2="-3.089" y2="1.524" width="0.1524" layer="21"/>
+<wire x1="-3.089" y1="1.524" x2="-3.089" y2="1.016" width="0.1524" layer="21"/>
+<wire x1="-3.089" y1="1.524" x2="-2.581" y2="1.524" width="0.1524" layer="21"/>
+<wire x1="-1.565" y1="1.524" x2="-1.565" y2="0.762" width="0.1524" layer="21"/>
+<wire x1="-1.565" y1="1.524" x2="-1.057" y2="1.524" width="0.1524" layer="21"/>
+<wire x1="-1.057" y1="1.524" x2="-1.057" y2="1.27" width="0.1524" layer="21"/>
+<wire x1="-1.057" y1="1.524" x2="4.7" y2="1.524" width="0.1524" layer="21"/>
+<pad name="1" x="-4.7" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
+<pad name="2" x="0" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
+<pad name="3" x="4.7" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
+<text x="-6.097" y="-2.794" size="1.27" layer="21" ratio="10">1</text>
+<text x="5.081" y="-2.794" size="1.27" layer="21" ratio="10">2</text>
+<text x="-6.478" y="3.556" size="1.27" layer="25" ratio="10">&gt;NAME</text>
+<text x="0" y="3.556" size="1.27" layer="27" ratio="10">&gt;VALUE</text>
+</package>
+</packages>
+<packages3d>
+<package3d name="255SB" urn="urn:adsk.eagle:package:27679/1" type="box">
+<description>SLIDING SWITCH
+distributor Buerklin, 11G810</description>
+<packageinstances>
+<packageinstance name="UNICS-SWITCH"/>
+</packageinstances>
+</package3d>
+</packages3d>
+<symbols>
+<symbol name="UNICS-SWITCH">
+<wire x1="-3.81" y1="1.905" x2="-3.81" y2="0" width="0.254" layer="94"/>
+<wire x1="-3.81" y1="0" x2="-1.905" y2="0" width="0.1524" layer="94"/>
+<wire x1="-3.81" y1="0" x2="-3.81" y2="-1.905" width="0.254" layer="94"/>
+<wire x1="-1.27" y1="0" x2="-0.762" y2="0" width="0.1524" layer="94"/>
+<wire x1="0.254" y1="0" x2="0.635" y2="0" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="-3.175" x2="2.54" y2="-1.905" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-1.905" x2="0.635" y2="3.175" width="0.254" layer="94"/>
+<wire x1="3.81" y1="2.54" x2="5.08" y2="2.54" width="0.254" layer="94"/>
+<wire x1="5.08" y1="2.54" x2="5.08" y2="3.175" width="0.254" layer="94"/>
+<wire x1="0" y1="2.54" x2="1.27" y2="2.54" width="0.254" layer="94"/>
+<wire x1="0" y1="2.54" x2="0" y2="3.175" width="0.254" layer="94"/>
+<wire x1="1.27" y1="0" x2="1.905" y2="0" width="0.1524" layer="94"/>
+<wire x1="-0.762" y1="0" x2="-0.254" y2="-0.762" width="0.1524" layer="94"/>
+<wire x1="-0.254" y1="-0.762" x2="0.254" y2="0" width="0.1524" layer="94"/>
+<text x="-6.35" y="-1.905" size="1.778" layer="95" rot="R90">&gt;NAME</text>
+<text x="-3.81" y="3.175" size="1.778" layer="96" rot="R90">&gt;VALUE</text>
+<pin name="P" x="2.54" y="-5.08" visible="pad" length="short" direction="pas" rot="R90"/>
+<pin name="S" x="5.08" y="5.08" visible="pad" length="short" direction="pas" rot="R270"/>
+<pin name="O" x="0" y="5.08" visible="pad" length="short" direction="pas" rot="R270"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="UNICS-SWITCH" prefix="S" uservalue="yes">
+<description>&lt;b&gt;SLIDING SWITCH&lt;/b&gt;&lt;p&gt;
+Distributor Buerklin, 11G810</description>
+<gates>
+<gate name="1" symbol="UNICS-SWITCH" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="UNICS-SWITCH">
+<connects>
+<connect gate="1" pin="O" pad="1"/>
+<connect gate="1" pin="P" pad="2"/>
+<connect gate="1" pin="S" pad="3"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:27679/1"/>
+</package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
 </libraries>
 <attributes>
 <attribute name="ESKD_CHECKED" value=""/>
@@ -18701,8 +18810,8 @@ variable-capacitance diode</description>
 <part name="R16" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="R25" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
 <part name="R26" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="5k1"/>
-<part name="LED2" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
-<part name="LED3" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
+<part name="PC12" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
+<part name="PWR" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="R10" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="620R"/>
 <part name="BT1" library="SparkFun-Batteries" deviceset="BATTERY" device="-6.8MM_SMD" value="6.8MM_COIN_CELL"/>
 <part name="C9" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-US" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="2,2µ"/>
@@ -18714,9 +18823,9 @@ variable-capacitance diode</description>
 <part name="C20" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="100nF"/>
 <part name="DS18B20Z1" library="CanCubeSat" deviceset="DS18B20Z" device=""/>
 <part name="U$8" library="CanCubeSat" deviceset="SI2302CDS" device=""/>
-<part name="U$14" library="CanCubeSat" deviceset="EM_HEAT" device=""/>
+<part name="HEATER" library="CanCubeSat" deviceset="EM_HEAT" device=""/>
 <part name="R7" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
-<part name="LED6" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
+<part name="ON" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="R8" library="resistor" deviceset="R-US_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="1M"/>
 <part name="BSK1" library="pinheadCS" deviceset="PINHD-1X8" device=""/>
 <part name="U$18" library="CanCubeSat" deviceset="Q32.768" device=""/>
@@ -18777,6 +18886,8 @@ variable-capacitance diode</description>
 <part name="X1" library="CanCubeSat" deviceset="JST-6" device="A" value="JST-6A"/>
 <part name="U$6" library="CanCubeSat" deviceset="REF3033" device=""/>
 <part name="C3" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0603" package3d_urn="urn:adsk.eagle:package:23616/2" value="470nF"/>
+<part name="U$13" library="CanCubeSat" deviceset="ITS-LOGO" device="PCB-&quot;&quot;" value="PCB &quot;BSK5&quot;"/>
+<part name="S1" library="cansat-lib" deviceset="UNICS-SWITCH" device="" package3d_urn="urn:adsk.eagle:package:27679/1"/>
 </parts>
 <sheets>
 <sheet>
@@ -19916,11 +20027,11 @@ variable-capacitance diode</description>
 <attribute name="NAME" x="387.35" y="110.7186" size="1.778" layer="95"/>
 <attribute name="VALUE" x="387.35" y="105.918" size="1.778" layer="96"/>
 </instance>
-<instance part="LED2" gate="G$1" x="510.54" y="185.42" smashed="yes">
+<instance part="PC12" gate="G$1" x="510.54" y="185.42" smashed="yes">
 <attribute name="NAME" x="514.096" y="180.848" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="516.255" y="180.848" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="LED3" gate="G$1" x="358.14" y="114.3" smashed="yes" rot="R270">
+<instance part="PWR" gate="G$1" x="358.14" y="114.3" smashed="yes" rot="R270">
 <attribute name="NAME" x="353.568" y="110.744" size="1.778" layer="95"/>
 <attribute name="VALUE" x="353.568" y="108.585" size="1.778" layer="96"/>
 </instance>
@@ -19962,12 +20073,12 @@ variable-capacitance diode</description>
 </instance>
 <instance part="DS18B20Z1" gate="G$1" x="525.78" y="350.52" smashed="yes"/>
 <instance part="U$8" gate="G$1" x="205.74" y="266.7" smashed="yes"/>
-<instance part="U$14" gate="G$1" x="218.44" y="299.72" smashed="yes" rot="R270"/>
+<instance part="HEATER" gate="G$1" x="218.44" y="299.72" smashed="yes" rot="R270"/>
 <instance part="R7" gate="G$1" x="236.22" y="289.56" smashed="yes" rot="R270">
 <attribute name="NAME" x="237.7186" y="293.37" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="232.918" y="293.37" size="1.778" layer="96" rot="R270"/>
 </instance>
-<instance part="LED6" gate="G$1" x="236.22" y="299.72" smashed="yes">
+<instance part="ON" gate="G$1" x="236.22" y="299.72" smashed="yes">
 <attribute name="NAME" x="239.776" y="295.148" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="241.935" y="295.148" size="1.778" layer="96" rot="R90"/>
 </instance>
@@ -20183,6 +20294,13 @@ variable-capacitance diode</description>
 <instance part="C3" gate="G$1" x="472.44" y="269.24" smashed="yes" rot="R180">
 <attribute name="NAME" x="470.916" y="268.859" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="470.916" y="273.939" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="U$13" gate="G$1" x="182.88" y="459.74" smashed="yes">
+<attribute name="VALUE" x="309.88" y="459.74" size="12.7" layer="96"/>
+</instance>
+<instance part="S1" gate="1" x="137.16" y="388.62" smashed="yes" rot="R270">
+<attribute name="NAME" x="135.255" y="394.97" size="1.778" layer="95"/>
+<attribute name="VALUE" x="140.335" y="392.43" size="1.778" layer="96"/>
 </instance>
 </instances>
 <busses>
@@ -20462,10 +20580,10 @@ variable-capacitance diode</description>
 </segment>
 <segment>
 <wire x1="223.52" y1="302.26" x2="236.22" y2="302.26" width="0.1524" layer="91"/>
-<pinref part="LED6" gate="G$1" pin="A"/>
+<pinref part="ON" gate="G$1" pin="A"/>
 <wire x1="236.22" y1="302.26" x2="251.46" y2="302.26" width="0.1524" layer="91"/>
 <junction x="236.22" y="302.26"/>
-<pinref part="U$14" gate="G$1" pin="5V"/>
+<pinref part="HEATER" gate="G$1" pin="5V"/>
 <label x="248.92" y="302.26" size="1.778" layer="95"/>
 </segment>
 <segment>
@@ -20682,13 +20800,13 @@ variable-capacitance diode</description>
 <wire x1="347.98" y1="114.3" x2="347.98" y2="104.14" width="0.1524" layer="91"/>
 <wire x1="347.98" y1="104.14" x2="350.52" y2="104.14" width="0.1524" layer="91"/>
 <pinref part="R16" gate="G$1" pin="2"/>
-<pinref part="LED3" gate="G$1" pin="C"/>
+<pinref part="PWR" gate="G$1" pin="C"/>
 </segment>
 </net>
 <net name="N$37" class="0">
 <segment>
 <pinref part="R15" gate="G$1" pin="2"/>
-<pinref part="LED2" gate="G$1" pin="C"/>
+<pinref part="PC12" gate="G$1" pin="C"/>
 <wire x1="510.54" y1="180.34" x2="510.54" y2="177.8" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -20757,7 +20875,7 @@ variable-capacitance diode</description>
 </net>
 <net name="N$33" class="0">
 <segment>
-<pinref part="LED6" gate="G$1" pin="C"/>
+<pinref part="ON" gate="G$1" pin="C"/>
 <pinref part="R7" gate="G$1" pin="1"/>
 </segment>
 </net>
@@ -20791,7 +20909,7 @@ variable-capacitance diode</description>
 <wire x1="386.08" y1="116.84" x2="381" y2="116.84" width="0.1524" layer="91"/>
 <wire x1="381" y1="116.84" x2="381" y2="114.3" width="0.1524" layer="91"/>
 <junction x="381" y="114.3"/>
-<pinref part="LED3" gate="G$1" pin="A"/>
+<pinref part="PWR" gate="G$1" pin="A"/>
 </segment>
 <segment>
 <pinref part="R1" gate="G$1" pin="2"/>
@@ -20799,7 +20917,7 @@ variable-capacitance diode</description>
 <label x="411.48" y="203.2" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
-<pinref part="LED2" gate="G$1" pin="A"/>
+<pinref part="PC12" gate="G$1" pin="A"/>
 <pinref part="U1" gate="G$1" pin="VDD"/>
 <label x="487.68" y="187.96" size="1.778" layer="95"/>
 <wire x1="510.54" y1="187.96" x2="487.68" y2="187.96" width="0.1524" layer="91"/>
@@ -21056,7 +21174,7 @@ variable-capacitance diode</description>
 <segment>
 <pinref part="U$8" gate="G$1" pin="D"/>
 <wire x1="215.9" y1="266.7" x2="228.6" y2="266.7" width="0.1524" layer="91"/>
-<pinref part="U$14" gate="G$1" pin="GND"/>
+<pinref part="HEATER" gate="G$1" pin="GND"/>
 <wire x1="223.52" y1="297.18" x2="228.6" y2="297.18" width="0.1524" layer="91"/>
 <wire x1="228.6" y1="297.18" x2="228.6" y2="284.48" width="0.1524" layer="91"/>
 <pinref part="R7" gate="G$1" pin="2"/>
@@ -21491,6 +21609,20 @@ variable-capacitance diode</description>
 <pinref part="C7" gate="G$1" pin="1"/>
 <wire x1="251.46" y1="27.94" x2="274.32" y2="27.94" width="0.1524" layer="91"/>
 <label x="256.54" y="27.94" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="BUSPLUS_EXTERNAL" class="0">
+<segment>
+<pinref part="S1" gate="1" pin="O"/>
+<wire x1="142.24" y1="388.62" x2="157.48" y2="388.62" width="0.1524" layer="91"/>
+<label x="144.78" y="388.62" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="BUS+_EXTERNAL" class="0">
+<segment>
+<pinref part="S1" gate="1" pin="P"/>
+<wire x1="132.08" y1="386.08" x2="121.92" y2="386.08" width="0.1524" layer="91"/>
+<label x="111.76" y="386.08" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>
