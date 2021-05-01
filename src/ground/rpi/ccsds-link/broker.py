@@ -9,8 +9,8 @@ import zmq
 from its_logfile import LogfileWriter
 
 
-SUB_ENDPOINT = "tcp://0.0.0.0:7777"
-PUB_ENDPOINT = "tcp://0.0.0.0:7778"
+ITS_GBUS_BPCS_ENDPOINT = "tcp://0.0.0.0:7778"
+ITS_GBUS_BSCP_ENDPOINT = "tcp://0.0.0.0:7777"
 
 
 _log = logging.getLogger(__name__)
@@ -32,8 +32,8 @@ def main():
     _log.info("using logfile \"%s\"", logfile_name)
     logfile_writer = LogfileWriter(logfile_name)
 
-    bus_sub = SUB_ENDPOINT
-    bus_pub = PUB_ENDPOINT
+    bus_sub = ITS_GBUS_BSCP_ENDPOINT
+    bus_pub = ITS_GBUS_BPCS_ENDPOINT
 
     sub_socket, pub_socket = ctx.socket(zmq.SUB), ctx.socket(zmq.PUB)
 

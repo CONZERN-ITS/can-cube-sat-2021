@@ -13,8 +13,8 @@
 #include <sx126x_board_rpi.h>
 
 
-#define ITS_GBUS_PUB_ENDPOINT_KEY "ITS_GBUS_PUB_ENDPOINT"
-#define ITS_GBUS_SUB_ENDPOINT_KEY "ITS_GBUS_SUB_ENDPOINT"
+#define ITS_PUB_ENDPOINT_KEY "ITS_GBUS_BSCP_ENDPOINT"
+#define ITS_SUB_ENDPOINT_KEY "ITS_GBUS_BPCS_ENDPOINT"
 
 #define ITS_GBUS_TOPIC_UPLINK_FRAME "radio.uplink_frame"
 #define ITS_GBUS_TOPIC_DOWNLINK_FRAME "radio.downlink_frame"
@@ -129,22 +129,22 @@ static int _zmq_init(server_t * server)
 {
 	int rc;
 
-	const char * pub_ep = getenv(ITS_GBUS_PUB_ENDPOINT_KEY);
+	const char * pub_ep = getenv(ITS_PUB_ENDPOINT_KEY);
 	if (!pub_ep)
 	{
 		log_error("unable to get value of pub endpoint from "
-				ITS_GBUS_PUB_ENDPOINT_KEY
+				ITS_PUB_ENDPOINT_KEY
 				" envvar: %d: %s",
 				errno, strerror(errno)
 		);
 		return -1;
 	}
 
-	const char * sub_ep = getenv(ITS_GBUS_SUB_ENDPOINT_KEY);
+	const char * sub_ep = getenv(ITS_SUB_ENDPOINT_KEY);
 	if (!sub_ep)
 	{
 		log_error("unable to get value of sub endpoint from "
-				ITS_GBUS_PUB_ENDPOINT_KEY
+				ITS_SUB_ENDPOINT_KEY
 				" envvar: %d: %s",
 				errno, strerror(errno)
 		);

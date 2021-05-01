@@ -8,12 +8,12 @@ import json
 _log = logging.getLogger(__name__)
 
 
-bus_sub = os.environ["ITS_GBUS_SUB_ENDPOINT"]
-bus_pub = os.environ["ITS_GBUS_PUB_ENDPOINT"]
+pub_ep = os.environ["ITS_GBUS_BSCP_ENDPOINT"]
+sub_ep = os.environ["ITS_GBUS_BPCS_ENDPOINT"]
 
 ctx = zmq.Context()
 socket = ctx.socket(zmq.PUB)
-socket.connect(bus_sub)
+socket.connect(sub_ep)
 
 time.sleep(1)
 

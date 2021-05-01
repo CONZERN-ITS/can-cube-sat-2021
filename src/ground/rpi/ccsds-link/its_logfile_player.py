@@ -7,7 +7,7 @@ import zmq
 from its_logfile import LogfileReader
 
 
-bus_endpoint = os.environ["ITS_GBUS_SUB_ENDPOINT"]  # мы публикуем, брокер подписывается
+bus_endpoint = os.environ["ITS_GBUS_BSCP_ENDPOINT"]  # мы публикуем, брокер подписывается
 
 
 def main(argv):
