@@ -37,6 +37,9 @@ typedef struct i2c_link_pbuf_queue_t
 //! Состояние i2c линка
 typedef enum i2c_link_state_t
 {
+	//! Покой
+	I2C_LINK_STATE_IDLE,
+
     //! Мы принимаем пакет
     I2C_LINK_STATE_RX,
     //! Мы закончили (а то и никогда не начинали) передавть пакет
@@ -50,7 +53,11 @@ typedef enum i2c_link_state_t
     /*! И все получаемые данные отправляем в помойку */
     I2C_LINK_STATE_TX_DONE,
 
+	//! На шине случилось что-то страшное, нужно её перезапустить
+	I2C_LINK_STATE_ERROR,
+
 } its_i2c_link_state_t;
+
 
 typedef enum i2c_link_cmd_t
 {
@@ -466,27 +473,32 @@ void _antihang(i2c_link_ctx_t * ctx)
     HAL_StatusTypeDef hal_rc;
     I2C_HandleTypeDef * hi2c = I2C_LINK_BUS_HANDLE;
 
-    if (READ_BIT(hi2c->Instance->CR1, I2C_CR1_SWRST))
+    if (ctx->state == I2C_LINK_STATE_ERROR)
     {
-        ctx->stats.restarts_cnt++;
+    	ctx->stats.restarts_cnt++;
 
-        CLEAR_BIT(hi2c->Instance->CR1, I2C_CR1_SWRST);
+    	I2C_LINK_BUS_FORCE_RESET;
+    	HAL_Delay(1);
         __HAL_I2C_RESET_HANDLE_STATE(hi2c);
+        I2C_LINK_BUS_RELEASE_RESET;
 
         hal_rc = HAL_I2C_Init(hi2c);
         assert(HAL_OK == hal_rc);
 
         hal_rc = HAL_I2C_EnableListen_IT(hi2c);
         assert(HAL_OK == hal_rc);
+
+        ctx->state == I2C_LINK_STATE_IDLE;
     }
 }
 
 
-int its_i2c_link_start(I2C_HandleTypeDef *hi2c)
+int its_i2c_link_start()
 {
     i2c_link_ctx_t *  ctx = &_ctx;
     int rc = _ctx_construct(ctx);
-    ctx->iface.hi2c = hi2c;
+    ctx->iface.hi2c = I2C_LINK_BUS_HANDLE;
+    ctx->state = I2C_LINK_STATE_IDLE;
     if (0 != rc)
         return rc;
 
@@ -664,5 +676,12 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
     default:
         // Во все остальных случаях делать вроде как ничего не надо
         break;
+    }
+
+    // AF ошибки пролетают постояннно и это относительная норма
+    // С остальным мы будем жестоко бороться
+    if (error != HAL_I2C_ERROR_AF)
+    {
+    	ctx->state = I2C_LINK_STATE_ERROR;
     }
 }

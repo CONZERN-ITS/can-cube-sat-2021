@@ -494,6 +494,7 @@ int main(void)
   		{
   			error_system.gps_config_error = error;
   		}
+  		printf("gps init error %d", error);
 
   		// Настраиваем аналоговые датчики (пока только внутренний термометр)
 

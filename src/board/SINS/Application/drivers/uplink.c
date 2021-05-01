@@ -14,7 +14,7 @@
 
 int uplink_init()
 {
-	int error = its_i2c_link_start(I2C_LINK_BUS_HANDLE);
+	int error = its_i2c_link_start();
 	return error;
 }
 
