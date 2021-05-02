@@ -119,8 +119,11 @@ int ms5611_read_prom_data(ms5611_t * device, ms5611_prom_data_t * data)
 	}
 
 	// Проверяем контрольную сумму
-	uint8_t crc = _crc4(prom_data);
-	if (0 != crc)
+	// Контрольная сумма как она должна быть
+	const uint8_t refcrc = prom_data[7] >> 12; // Младшие 4 бита
+	// Контрольная сумма как она посчиталась
+	const uint8_t crc = _crc4(prom_data);
+	if (refcrc != crc)
 		return MS5611_ERROR_CHECKSUM;
 
 	// Копируем данные пользователю
