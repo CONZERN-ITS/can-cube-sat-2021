@@ -230,21 +230,24 @@ static int is_sleeping(safe_send_t *sst) {
 	return sst->sleep_state;
 }
 */
-
-int generate_packet(radio_t * server, uint8_t *buf, size_t size) {
-	log_info("generate");
-	int settled = 0;
-	while (settled < size) {
-		log_info("gen %d %d", settled, size);
-		if (server->buf_size - server->buf_index > 0) {
-			uint8_t *out = server->buf + server->buf_index;
-			int cnt = server->buf_size - server->buf_index;
-			if (cnt > size - settled) {
-				cnt = size - settled;
+int fill_packet(radio_t * server) {
+	static int nat = 0;
+	log_info("fill packet");
+	for (; server->radio_buf.index < server->radio_buf.size; server->radio_buf.index++) {
+		server->radio_buf.buf[server->radio_buf.index] = nat++;
+	}
+	while (server->radio_buf.index < server->radio_buf.size) {
+		log_info("gen %d %d", server->radio_buf.index, server->radio_buf.size);
+		if (server->mav_buf.size - server->mav_buf.index > 0) {
+			uint8_t *out = server->mav_buf.buf + server->mav_buf.index;
+			int cnt = server->mav_buf.size - server->mav_buf.index;
+			int diff = server->radio_buf.size - server->radio_buf.index;
+			if (cnt > diff) {
+				cnt = diff;
 			}
-			memcpy(buf + settled, out, cnt);
-			server->buf_index += cnt;
-			settled += cnt;
+			memcpy(server->radio_buf.buf + server->radio_buf.index, out, cnt);
+			server->mav_buf.index += cnt;
+			server->radio_buf.index += cnt;
 		} else {
 			msg_container *st = 0;
 			st = get_best(server->msg_count);
@@ -252,14 +255,14 @@ int generate_packet(radio_t * server, uint8_t *buf, size_t size) {
 				break;
 			}
 
-			server->buf_size = mavlink_msg_to_send_buffer(server->buf, &st->last_msg);
-			server->buf_index = 0;
+			server->mav_buf.size = mavlink_msg_to_send_buffer(server->mav_buf.buf, &st->last_msg);
+			server->mav_buf.index = 0;
 			st->is_updated = 0; // Сообщение внутри контейнера уже не свежее
 			st->last = server->msg_count;// Запоминаем, когда сообщение было отправленно в последний раз
 			server->msg_count++;
 		}
 	}
-	return settled;
+	return server->radio_buf.index == server->radio_buf.size;
 }
 
 
@@ -411,19 +414,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 		} else {
 			log_trace("rx timeout");
 		}
-		uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
-		int size = generate_packet(radio_server, buf, ITS_RADIO_PACKET_SIZE);
-
-		rc = sx126x_drv_payload_write(&radio_server->dev, buf, ITS_RADIO_PACKET_SIZE);
-		if (0 != rc) {
-			log_error("unable to write tx payload to radio: %d. Dropping frame", rc);
-			return;
-		}
-		rc = sx126x_drv_mode_tx(&radio_server->dev, 0);
-		if (0 != rc) {
-			log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
-			return;
-		}
+		radio_server->is_ready_to_send = 1;
 		break;
 
 	case SX126X_EVTKIND_TX_DONE:
@@ -473,15 +464,47 @@ static void task_send(void *arg) {
 
 
 	sx126x_drv_mode_rx(&radio_server->dev, 0);
-
+	static int64_t last_changed = 0;
+	last_changed = esp_timer_get_time();
 	while (1) {
-		xTaskNotifyWait(0, 0, 0, 200 / portTICK_PERIOD_MS);
+		ESP_LOGV("radio", "STEP");
+		uint32_t dummy = 0;
+		xTaskNotifyWait(0, 0, &dummy, 200 / portTICK_PERIOD_MS);
 		int rc = sx126x_drv_poll(&radio_server->dev);
 
+		ESP_LOGV("radio", "poll");
 		if (rc) {
 			ESP_LOGE("radio", "poll %d", rc);
 		}
+		int is_filled = fill_packet(radio_server);
+		ESP_LOGV("radio", "filled");
+		if ((is_filled && radio_server->is_ready_to_send) || esp_timer_get_time() - last_changed > 1000000 * 10) {
+			log_info("out buf: ");
+			for (int i = 0; i < radio_server->radio_buf.size; i++) {
+				printf("0x%02X ", radio_server->radio_buf.buf[i]);
+			}
+			printf("\n");
 
+			rc = sx126x_drv_payload_write(&radio_server->dev, radio_server->radio_buf.buf, ITS_RADIO_PACKET_SIZE);
+			if (0 != rc) {
+				log_error("unable to write tx payload to radio: %d. Dropping frame", rc);
+				return;
+			}
+
+			ESP_LOGV("radio", "writed");
+			rc = sx126x_drv_mode_tx(&radio_server->dev, 0);
+			if (0 != rc) {
+				log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
+				return;
+			}
+
+			ESP_LOGV("radio", "txed");
+			radio_server->is_ready_to_send = 0;
+			radio_server->radio_buf.index = 0;
+			last_changed = esp_timer_get_time();
+		}
+
+		ESP_LOGV("radio", "recieving");
 		mavlink_message_t incoming_msg = {0};
 		while (pdTRUE == xQueueReceive(tid.queue, &incoming_msg, 0))
 		{
@@ -490,6 +513,7 @@ static void task_send(void *arg) {
 		}
 
 
+		ESP_LOGV("radio", "sleep?");
 
 		int64_t now = esp_timer_get_time();
 
@@ -551,13 +575,15 @@ void radio_send_set_sleep_delay(int64_t sleep_delay) {
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
 	TaskHandle_t *handler = arg;
-	uint32_t gpio_num = (uint32_t) arg;
-	xTaskNotify(*handler, 0, 0);
+	xTaskNotify(*handler, 0, eNoAction);
 }
 
 static radio_t radio_server;
 void radio_send_init(void) {
 	radio_server.mavlink_chan = mavlink_claim_channel();
+	radio_server.mav_buf.capacity = MAVLINK_MAX_PACKET_LEN;
+	radio_server.radio_buf.capacity = ITS_RADIO_PACKET_SIZE;
+	radio_server.radio_buf.size = ITS_RADIO_PACKET_SIZE;
 
 	int rc = _radio_init(&radio_server);
 	assert(rc == 0);

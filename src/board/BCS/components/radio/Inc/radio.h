@@ -15,7 +15,8 @@
 	F(0, MAVLINK_MSG_ID_ELECTRICAL_STATE, 15) \
 	F(1, MAVLINK_MSG_ID_OWN_TEMP, 20) \
 	F(2, MAVLINK_MSG_ID_THERMAL_STATE, 15) \
-	F(3, MAVLINK_MSG_ID_PLD_BME280_DATA, 15) \
+	F(3, MAVLINK_MSG_ID_PLD_EXT_BME280_DATA, 15) \
+	F(3, MAVLINK_MSG_ID_PLD_INT_BME280_DATA, 15) \
 	F(4, MAVLINK_MSG_ID_PLD_ME2O2_DATA, 15) \
 	F(5, MAVLINK_MSG_ID_PLD_MICS_6814_DATA, 15) \
 	F(6, MAVLINK_MSG_ID_SINS_isc, 15) \
@@ -42,17 +43,24 @@ typedef uint64_t msg_cookie_t;
 #define MSG_COOKIE_T_PLSHOLDER PRIu64
 
 
-
+typedef struct {
+	uint8_t size;
+	uint8_t index;
+	uint8_t capacity;
+	uint8_t buf[];
+} radio_buf_t;
 
 typedef struct radio_t {
 	sx126x_drv_t dev;
+	radio_buf_t mav_buf;
+	uint8_t _mav_buf[MAVLINK_MAX_PACKET_LEN];
 
-	uint8_t buf[MAVLINK_MAX_PACKET_LEN];
-	uint8_t buf_size;
-	uint8_t buf_index;
+	radio_buf_t radio_buf;
+	uint8_t _radio_buf[ITS_RADIO_PACKET_SIZE];
 
 	uint8_t mavlink_chan;
 	uint32_t msg_count;
+	int is_ready_to_send;
 } radio_t;
 
 
