@@ -488,7 +488,7 @@ void _antihang(i2c_link_ctx_t * ctx)
         hal_rc = HAL_I2C_EnableListen_IT(hi2c);
         assert(HAL_OK == hal_rc);
 
-        ctx->state == I2C_LINK_STATE_IDLE;
+        ctx->state = I2C_LINK_STATE_IDLE;
     }
 }
 
