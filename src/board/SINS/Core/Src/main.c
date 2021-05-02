@@ -577,13 +577,13 @@ int main(void)
   				if ((error_system.lsm6ds3_error != 0) && (error_system.lis3mdl_error != 0))
   					continue;
   				// Отвравляем данные во внешний мир
-  				mavlink_sins_isc(&stateSINS_isc); //<<---------------TODO: Переписать
+//  				mavlink_sins_isc(&stateSINS_isc); //<<---------------TODO: Переписать
 
   			}
-  			time = HAL_GetTick();
-  			if (time - prew_time < 1000)
-  				continue;
-  			prew_time = time;
+//  			time = HAL_GetTick();
+//  			if (time - prew_time < 1000)
+//  				continue;
+//  			prew_time = time;
 
   			// Отправляем всякое почтой России (или нет)
   			mavlink_timestamp();
@@ -841,7 +841,7 @@ static void MX_USART2_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
-
+  __HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
   /* USER CODE END USART2_Init 2 */
 
 }
