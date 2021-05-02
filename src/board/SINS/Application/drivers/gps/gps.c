@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
-#include <stm32f4xx.h>
 
 #include "sins_config.h"
 #include "../common.h"
@@ -21,9 +20,6 @@
 // ==========================================
 // Это для фонового приёма пакетиков
 // ==========================================
-
-//! Хендл для уарта для GPS
-static UART_HandleTypeDef uartGPS;
 
 //! Циклобуфер для входящих байт GPS
 static uint8_t _uart_cycle_buffer[ITS_SINS_GPS_UART_CYCLE_BUFFER_SIZE];
@@ -87,7 +83,7 @@ static gps_cfg_state_t _cfg_state = {0};
 extern const uint8_t * ublox_neo6_cfg_msgs[];
 
 static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * packet_);
-static int _init_uart(void);
+//static int _init_uart(void);
 static void _init_pps(void);
 static void _gps_configure_step(void);
 static int _gps_configure_step_packet(void);
@@ -172,29 +168,29 @@ static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * 
 }
 
 
-//! Настойка уартовой перефирии
-static int _init_uart()
-{
-	uartGPS.Instance = USART2;					//uart для приема GPS
-	uartGPS.Init.BaudRate = 9600;
-	uartGPS.Init.WordLength = UART_WORDLENGTH_8B;
-	uartGPS.Init.StopBits = UART_STOPBITS_1;
-	uartGPS.Init.Parity = UART_PARITY_NONE;
-	uartGPS.Init.Mode = UART_MODE_TX_RX;
-	uartGPS.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	uartGPS.Init.OverSampling = UART_OVERSAMPLING_16;
-
-	HAL_StatusTypeDef hal_error;
-	hal_error = HAL_UART_Init(&uartGPS);
-	if (HAL_OK != hal_error)
-		return sins_hal_status_to_errno(hal_error);
-
-	//Включение прерывания USART: RXNE
-	__HAL_UART_ENABLE_IT(&uartGPS, UART_IT_RXNE);
-
-	// nvic в hal_msp
-	return 0;
-}
+//! Настойка уартовой перефирии производится кубом
+//static int _init_uart()
+//{
+//	GPS_BUS_HANDLE.Instance = USART2;					//uart для приема GPS
+//	GPS_BUS_HANDLE.Init.BaudRate = 9600;
+//	GPS_BUS_HANDLE.Init.WordLength = UART_WORDLENGTH_8B;
+//	GPS_BUS_HANDLE.Init.StopBits = UART_STOPBITS_1;
+//	GPS_BUS_HANDLE.Init.Parity = UART_PARITY_NONE;
+//	GPS_BUS_HANDLE.Init.Mode = UART_MODE_TX_RX;
+//	GPS_BUS_HANDLE.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+//	GPS_BUS_HANDLE.Init.OverSampling = UART_OVERSAMPLING_16;
+//
+//	HAL_StatusTypeDef hal_error;
+//	hal_error = HAL_UART_Init(&GPS_BUS_HANDLE);
+//	if (HAL_OK != hal_error)
+//		return sins_hal_status_to_errno(hal_error);
+//
+//	//Включение прерывания USART: RXNE
+//	__HAL_UART_ENABLE_IT(&GPS_BUS_HANDLE, UART_IT_RXNE);
+//
+//	// nvic в hal_msp
+//	return 0;
+//}
 
 
 //! настройка перфирии для PPS сигнала
@@ -275,17 +271,17 @@ static int _send_conf_packet(const uint8_t * packet)
 
 	// Отправляем синхрослово
 	HAL_StatusTypeDef hal_error;
-	hal_error = HAL_UART_Transmit(&uartGPS, (uint8_t*)syncword, sizeof(syncword), HAL_MAX_DELAY);
+	hal_error = HAL_UART_Transmit(GPS_BUS_HANDLE, (uint8_t*)syncword, sizeof(syncword), HAL_MAX_DELAY);
 	if (hal_error != HAL_OK)
 		return sins_hal_status_to_errno(hal_error);
 
 	// Отправляем сам пакет
-	hal_error = HAL_UART_Transmit(&uartGPS, (uint8_t*)packet, packet_size, HAL_MAX_DELAY);
+	hal_error = HAL_UART_Transmit(GPS_BUS_HANDLE, (uint8_t*)packet, packet_size, HAL_MAX_DELAY);
 	if (hal_error != HAL_OK)
 		return sins_hal_status_to_errno(hal_error);
 
 	// Отправляем его контрольную сумму
-	hal_error = HAL_UART_Transmit(&uartGPS, (uint8_t*)crc_bytes, sizeof(crc_bytes), HAL_MAX_DELAY);
+	hal_error = HAL_UART_Transmit(GPS_BUS_HANDLE, (uint8_t*)crc_bytes, sizeof(crc_bytes), HAL_MAX_DELAY);
 	if (hal_error != HAL_OK)
 		return sins_hal_status_to_errno(hal_error);
 
@@ -405,9 +401,9 @@ int gps_init(
 	_init_pps();
 
 	// Настраиваем уартовое железо
-	int error =_init_uart();
-	if (error != 0)
-		return error;
+//	int error =_init_uart();
+//	if (error != 0)
+//		return error;
 
 	// Все готово! поехали!
 	return 0;

@@ -10,6 +10,13 @@
 
 #include "ubx_stream_parser.h"
 
+#include <stm32f4xx_hal.h>
+
+
+extern UART_HandleTypeDef huart2;
+
+//! Хендл для уарта для GPS
+#define GPS_BUS_HANDLE (&huart2)
 
 //! Колбек для передачи gps сообщений
 /*! Сюда передаются все сообщения, даже ACK NACK конфигурации
