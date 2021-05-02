@@ -1,0 +1,226 @@
+from PyQt5 import QtWidgets, QtGui, QtCore
+
+from source import settings_control
+
+import time
+import math
+
+
+class CommandWidget(QtWidgets.QFrame):
+    send_msg = QtCore.pyqtSignal(list)
+
+
+    class CommandItem(QtWidgets.QFrame):
+        send_msg = send_msg = QtCore.pyqtSignal()
+
+
+        class AbstractCommandField():
+            def __init__(self, name):
+                self.name = name
+                self.layout = QtWidgets.QHBoxLayout()
+                self.layout.addWidget(QtWidgets.QLabel(str(name)))
+
+            def get_name(self):
+                return self.name
+
+            def get_data(self):
+                return None
+
+            def clear(self):
+                pass
+
+            def get_qt_object(self):
+                return self.layout
+
+
+        class CheckBoxCommandField(AbstractCommandField):
+            def __init__(self, name):
+                super(CommandWidget.CommandItem.CheckBoxCommandField, self).__init__(name)
+                self.qt_object = QtWidgets.QCheckBox()
+                self.qt_object.setTristate(false)
+                self.layout.addWidget(self.qt_object)
+
+            def get_data(self):
+                return bool(self.qt_object.checkState())
+
+            def clear(self):
+                self.qt_object.setCheckState(0)
+
+
+        class StrCommandField(AbstractCommandField):
+            def __init__(self, name):
+                super(CommandWidget.CommandItem.StrCommandField, self).__init__(name)
+                self.qt_object = QtWidgets.QLineEdit()
+                self.layout.addWidget(self.qt_object)
+
+            def get_data(self):
+                return self.qt_object.text()
+
+            def clear(self):
+                self.qt_object.setText('')
+
+
+        class IntCommandField(StrCommandField):
+            def __init__(self, name):
+                super(CommandWidget.CommandItem.IntCommandField, self).__init__(name)
+                self.qt_object.setValidator(QtGui.QIntValidator())
+                self.qt_object.setText('0')
+
+            def get_data(self):
+                return int(self.qt_object.text())
+
+
+        class FloatCommandField(StrCommandField):
+            def __init__(self, name):
+                super(CommandWidget.CommandItem.FloatCommandField, self).__init__(name)
+                self.qt_object.setValidator(QtGui.QDoubleValidator())
+                self.qt_object.setText('0')
+
+            def get_data(self):
+                return float(self.qt_object.text())
+
+
+        class TimeSCommandField(AbstractCommandField):
+            def __init__(self, name):
+                super(CommandWidget.CommandItem.TimeSCommandField, self).__init__(name)
+                self.qt_object = QtWidgets.QLCDNumber()
+                self.layout.addWidget(self.qt_object)
+
+            def count_time(self):
+                return int(math.modf(time.time())[1])
+
+            def get_data(self):
+                return self.count_time()
+
+            def update_data(self):
+                self.qt_object.setDigitCount(self.count_time())
+
+            def clear(self):
+                self.qt_object.setDigitCount(0)
+
+
+        class TimeUSCommandField(AbstractCommandField):
+            def __init__(self, name):
+                super(CommandWidget.CommandItem.TimeUSCommandField, self).__init__(name)
+                self.qt_object = QtWidgets.QLCDNumber()
+                self.layout.addWidget(self.qt_object)
+
+            def count_time(self):
+                return int(math.modf(time.time())[0] * 1000000)
+
+            def get_data(self):
+                return self.count_time()
+
+            def update_data(self):
+                self.qt_object.setDigitCount(self.count_time())
+
+            def clear(self):
+                self.qt_object.setDigitCount(0)
+
+
+        def __init__(self, name, msg_name):
+            super(CommandWidget.CommandItem, self).__init__()
+            self.msg_name = msg_name
+            self.item_layout = QtWidgets.QVBoxLayout(self)
+            self.item_layout.addWidget(QtWidgets.QLabel(str(name)))
+            self.fields_layout = QtWidgets.QVBoxLayout()
+            self.item_layout.addLayout(self.fields_layout)
+            self.send_btn = QtWidgets.QPushButton('Send')
+            self.send_btn.clicked.connect(self.send_msg.emit)
+            self.item_layout.addWidget(self.send_btn)
+
+            self.fields = []
+            self.setFrameStyle(QtWidgets.QFrame.Panel|QtWidgets.QFrame.Raised)
+
+        def get_msg_name(self):
+            return self.msg_name
+
+        def add_field(self, name, field_type):
+            if field_type == 'str':
+                self.fields.append(CommandWidget.CommandItem.StrCommandField(name))
+            elif field_type == 'bool':
+                self.fields.append(CommandWidget.CommandItem.CheckBoxCommandField(name))
+            elif field_type == 'int':
+                self.fields.append(CommandWidget.CommandItem.IntCommandField(name))
+            elif field_type == 'float':
+                self.fields.append(CommandWidget.CommandItem.FloatCommandField(name))
+            elif field_type == 'time_s':
+                self.fields.append(CommandWidget.CommandItem.TimeSCommandField(name))
+            elif field_type == 'time_us':
+                self.fields.append(CommandWidget.CommandItem.TimeUSCommandField(name))
+            else:
+                self.fields.append(CommandWidget.CommandItem.AbstractCommandField(name))
+
+            self.fields_layout.addLayout(self.fields[-1].get_qt_object())
+
+        def update_data(self):
+            for field in self.fields:
+                field.update_data()
+
+        def clear(self):
+            for field in self.fields:
+                field.clear()
+
+        def get_data(self):
+            data_list = []
+            for field in self.fields:
+                data_list.append([field.get_name(), field.get_data()])
+
+            return dict(data_list)
+
+
+    def __init__(self):
+        super(CommandWidget, self).__init__()
+        self.settings = settings_control.init_settings()
+
+        self.setup_ui()
+        self.setup_ui_design()
+
+    def setup_ui(self):
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.update)
+        self.layout = QtWidgets.QGridLayout(self)
+        self.commands = []
+
+    def setup_ui_design(self):
+        self.settings.beginGroup("CentralWidget/CommandWidget")
+
+        for command in self.commands:
+            command.send_msg.disconnect(self.send_command)
+            command.deleteLater()
+        self.commands = []
+        print(self.settings.childGroups())
+
+        for group in self.settings.childGroups():
+            self.settings.beginGroup(group)
+            print(group)
+            if self.settings.value("is_on") != False:
+                print('1')
+                self.commands.append(CommandWidget.CommandItem(self.settings.value("name"), self.settings.value("msg_name")))
+                self.layout.addWidget(self.commands[-1], *[int(num) for num in self.settings.value("position")])
+                for group in self.settings.childGroups():
+                    self.settings.beginGroup(group)
+                    name = self.settings.value("name")
+                    if name is None:
+                        name = group
+                    self.commands[-1].add_field(name, self.settings.value("type"))
+                    self.settings.endGroup()
+                self.commands[-1].send_msg.connect(self.send_command)
+            self.settings.endGroup()
+        self.settings.endGroup()
+
+    def update_data(self):
+        for command in self.commands:
+            command.update_data()
+
+    def send_command(self):
+        print('send')
+        sender = self.sender()
+        if isinstance(sender, CommandWidget.CommandItem):
+            sender.get_data()
+            self.send_msg.emit([sender.get_msg_name(), sender.get_data()])
+
+    def clear_data(self):
+        for command in self.commands:
+            command.clear()

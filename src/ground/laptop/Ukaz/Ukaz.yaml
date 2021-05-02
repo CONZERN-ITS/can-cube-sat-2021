@@ -1,0 +1,32 @@
+CentralWidget:
+  CommandWidget:
+    FIRE:
+      name: 'Throw to Hellfire'
+      msg_name: 'AS_SEND_COMMAND'
+      time_s:
+        type: 'time_s'
+      time_us:
+        type: 'time_us'
+      command_id:
+        type: 'int'
+      position:
+        - 0
+        - 0
+        - 1
+        - 1
+      is_on: true
+MainWindow:
+  DataInterface:
+    type: ZMQITS
+  DataSourse:
+    MAVLink:
+      connection_in: udpin:0.0.0.0:14540
+      connection_out: udpout:127.0.0.1:13134
+    ZMQ:
+      bus_bpcs: "tcp://127.0.0.1:7778"
+      bus_bscp: "tcp://127.0.0.1:7777"
+    type: ZMQ
+  size:
+  - 1000
+  - 800
+  update_time: 0.1
