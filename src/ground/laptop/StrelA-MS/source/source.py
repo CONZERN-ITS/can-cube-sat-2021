@@ -120,15 +120,15 @@ class MainWindow(QtWidgets.QMainWindow):
             while not close:
                 try:
                     data = self.data_obj.read_data()
-                #except RuntimeError:
-                #    pass
+                except RuntimeError:
+                    pass
                 except EOFError as e:
                     self.autoclose.emit(str(e))
                     break
-                #except Exception as e:
-                #    print(e)
+                except Exception as e:
+                    print(e)
                 else:
-                    data_buf.append(data)
+                    data_buf.extend(data)
                     if (time.time() - start_time) > self.update_time:
                         if len(data_buf) > 0:
                             last_time = data_buf[-1].get_time()
@@ -234,7 +234,7 @@ class MainWindow(QtWidgets.QMainWindow):
             data = MAVDataSource(connection_str=self.settings.value('MAVLink/connection'),
                                  log_path=LOG_FOLDER_PATH)
         elif sourse == 'ZMQ':
-            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_pub'),
+            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_bpcs'),
                                  topics=self.settings.value('ZMQ/topics'),
                                  log_path=LOG_FOLDER_PATH)
         self.settings.endGroup()

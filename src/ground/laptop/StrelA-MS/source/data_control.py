@@ -60,35 +60,40 @@ class MAVDataSource():
         if msg.get_type() == "BAD_DATA":
           raise TypeError("BAD_DATA message received")
 
-        data = self.get_data(msg)
+        data = self.get_data([msg])
         if data is None:
             raise TypeError("Message type not supported")
 
         return data
 
-    def get_data(self, msg):
-        data = msg.to_dict()
-        data.pop('mavpackettype', None)
-        msg_time = data.pop("time_s", time.time()) + data.pop("time_us", 0)/1000000
+    def get_data(self, msgs):
+        msg_list = []
+        for msg in msgs:
+            if msg.get_type() == "BAD_DATA":
+                continue
+            data = msg.to_dict()
+            data.pop('mavpackettype', None)
+            msg_time = data.pop("time_s", time.time()) + data.pop("time_us", 0)/1000000
 
-        for item in list(data.items()):
-            if isinstance(item[1], list):
-                data.pop(item[0])
-                for i in range(len(item[1])):
-                    data.update([[item[0] + '[' + str(i) + ']', item[1][i]]])
+            for item in list(data.items()):
+                if isinstance(item[1], list):
+                    data.pop(item[0])
+                    for i in range(len(item[1])):
+                        data.update([[item[0] + '[' + str(i) + ']', item[1][i]]])
 
-        if msg.get_type() == "GPS_UBX_NAV_SOL":
-            gps = wgs84_conv(msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100)
-            data.update([['lat', gps[0]], ['lon', gps[1]], ['alt', gps[2]]])
-            data['ecefX'] /= 100
-            data['ecefY'] /= 100
-            data['ecefZ'] /= 100
+            if msg.get_type() == "GPS_UBX_NAV_SOL":
+                gps = wgs84_conv(msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100)
+                data.update([['lat', gps[0]], ['lon', gps[1]], ['alt', gps[2]]])
+                data['ecefX'] /= 100
+                data['ecefY'] /= 100
+                data['ecefZ'] /= 100
 
-        header = msg.get_header()
-        return Message(message_id=msg.get_type(),
-                       source_id=(str(header.srcSystem) + '_' + str(header.srcComponent)),
-                       msg_time=msg_time,
-                       msg_data=data)
+            header = msg.get_header()
+            msg_list.append(Message(message_id=msg.get_type(),
+                                source_id=(str(header.srcSystem) + '_' + str(header.srcComponent)),
+                                msg_time=msg_time,
+                                msg_data=data))
+        return msg_list
 
     def stop(self):
         self.connection.close()
@@ -111,7 +116,7 @@ class MAVLogDataSource():
         if (msg is None):
             raise RuntimeError("No Message")
 
-        data = MAVDataSource.get_data(MAVDataSource, msg)
+        data = MAVDataSource.get_data(MAVDataSource, [msg])
         if data is None:
             raise TypeError("Message type not supported")
 
@@ -160,22 +165,16 @@ class ZMQDataSource():
             self.log.write(struct.pack("<Q", int(time.time() * 1000)))
             self.log.write(msg_buf)
 
-            msg = self.mav.parse_buffer(msg_buf)[0]
+            msg = self.mav.parse_buffer(msg_buf)
+            if msg is None:
+                raise RuntimeError("No Message")
             data = MAVDataSource.get_data(MAVDataSource, msg)
-            if data is None:
-                raise TypeError("Message type not supported")
             return data
         else:
             raise RuntimeError("No Message")
 
     def get_data(self, msgs):
         return msgs[2]
-
-    def parse(input_connection, output_connections, packet_log, raw_log, print_logs, rssi_on):
-        mav = its_mav.MAVLink(file=None)
-        mav.robust_parsing = True
-
-        msgs = mav.parse_buffer(data)
 
     def stop(self):
         self.log
