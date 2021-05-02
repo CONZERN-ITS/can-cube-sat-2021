@@ -76,5 +76,5 @@ class ZMQITSInterface(MAVITSInterface):
             msg.get_header().srcComponent = 3
             multipart = ["antenna.command_packet".encode("utf-8"),
                          bytes(),
-                         msg.get_msgbuf()]#pack(self.mav)]
-            self.send_msg(multipart)
+                         msg.pack(self.mav)]
+            self.send_msg.emit(multipart)
