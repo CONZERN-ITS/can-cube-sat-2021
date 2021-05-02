@@ -65,7 +65,7 @@ static int32_t lis3mdl_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t l
 static stmdev_ctx_t lis3mdl_dev_ctx = {
 		.write_reg = lis3mdl_write,
 		.read_reg = lis3mdl_read,
-		.handle = &hmems_i2c
+		.handle = HMEMS_BUS_HANDLE
 };
 
 

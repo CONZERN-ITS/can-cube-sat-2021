@@ -14,6 +14,17 @@
 #include "lsm6ds3.h"
 #include "lis3mdl.h"
 
+extern I2C_HandleTypeDef hi2c2;
+
+#define HMEMS_BUS_HANDLE (&hi2c2)
+
+#define SCL GPIO_PIN_10
+#define SDA GPIO_PIN_11
+
+#define HMEMS_I2C_FORCE_RESET 	__HAL_RCC_I2C2_FORCE_RESET
+#define HMEMS_I2C_RELEASE_RESET __HAL_RCC_I2C2_RELEASE_RESET
+
+
 
 //! Дескриптор шины на которой сидят MEMS датчики
 extern I2C_HandleTypeDef hmems_i2c;
