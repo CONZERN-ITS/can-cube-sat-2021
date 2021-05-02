@@ -12,7 +12,7 @@ import math
 import time
 
 class AbstractAntennaInterface(QtCore.QObject):
-    send_msg = QtCore.pyqtSignal(PyObject)
+    send_msg = QtCore.pyqtSignal(object)
 
     command_sent = QtCore.pyqtSignal(str)
 

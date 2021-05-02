@@ -134,7 +134,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.mutex.unlock()
 
         def write_data(self, msg):
-            self.data_obj.write_data(msg)
+            self.mutex.lock()
+            if not self.close_flag:
+                self.data_obj.write_data(msg)
+            self.mutex.unlock()
 
         def quit(self):
             self._set_close_flag(True)
@@ -200,9 +203,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.data_obj = self.get_data_object()
-        self.antenna.send_msg.connect(self.data_manager.write_data())
 
         self.data_manager = MainWindow.DataManager(self.data_obj)
+        self.antenna.send_msg.connect(self.data_manager.write_data)
         self.data_thread = QtCore.QThread(self)
         self.data_manager.moveToThread(self.data_thread)
         self.data_thread.started.connect(self.data_manager.start)
@@ -225,8 +228,8 @@ class MainWindow(QtWidgets.QMainWindow):
                                  connection_str_out=self.settings.value('MAVLink/connection_out'),
                                  log_path=LOG_FOLDER_PATH)
         elif sourse == 'ZMQ':
-            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_pub'),
-                                 bus_sub=self.settings.value('ZMQ/bus_sub'),
+            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_bpcs'),
+                                 bus_sub=self.settings.value('ZMQ/bus_bscp'),
                                  topics=self.settings.value('ZMQ/topics'),
                                  log_path=LOG_FOLDER_PATH)
         self.settings.endGroup()
