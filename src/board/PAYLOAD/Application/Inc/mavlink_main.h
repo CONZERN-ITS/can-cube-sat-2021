@@ -35,9 +35,12 @@ int mav_main_get_packet(mavlink_message_t * msg);
 //! Определяем функцию для отправки телеметрии
 #define MAVLINK_SEND_UART_BYTES mav_main_send_to_its_link
 
+// Наконец то подключаем сам мавлинк
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
-// Наконец то подключаем сам мавлинк
+// Тут генерируется множество вот таких сообщений
+// warning: taking address of packed member of 'struct __mavlink_vision_speed_estimate_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
+// Мы доверяем мавлинку в том, что он не сгенерит ничего невыровненого, поэтому давим эти варнинги
 #include <mavlink.h>
 #pragma GCC diagnostic pop
 
