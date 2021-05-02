@@ -66,6 +66,7 @@ class MAVITSInterface(AbstractCommanInterface):
 class ZMQITSInterface(MAVITSInterface):
     def __init__(self):
         super(ZMQITSInterface, self).__init__()
+        self.cookie = (time.time() // 1000) % 1000 
 
     def msg_reaction(self, msg):
         pass
@@ -75,6 +76,7 @@ class ZMQITSInterface(MAVITSInterface):
             msg.get_header().srcSystem = 0
             msg.get_header().srcComponent = 3
             multipart = ["antenna.command_packet".encode("utf-8"),
-                         bytes(),
+                         ("{ cookie: %d }" % self.cookie).encode("utf-8"),
                          msg.pack(self.mav)]
+            self.cookie += 1
             self.send_msg.emit(multipart)
