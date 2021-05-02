@@ -139,6 +139,7 @@ ProjectManager.DeletePrevious=true
 RCC.APB1CLKDivider=RCC_HCLK_DIV4
 PC14-OSC32_IN.Signal=RCC_OSC32_IN
 PB10.Locked=true
+NVIC.USART2_IRQn=true\:0\:0\:false\:false\:false\:true\:false
 USART2.BaudRate=9600
 PA12.GPIO_Label=PWR_MEMS
 RCC.FamilyName=M
