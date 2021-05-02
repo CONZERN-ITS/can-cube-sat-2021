@@ -18,9 +18,11 @@
 #pragma GCC diagnostic pop
 
 
+//! Инициализация
 int uplink_init(void);
 
-int uplink_write_raw(const void * data, int data_size);
+//! Повторные попытки отправки инжектируемых сообщений
+int uplink_flush_injected();
 
 int uplink_write_mav(const mavlink_message_t * msg);
 
