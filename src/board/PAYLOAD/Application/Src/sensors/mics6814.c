@@ -371,8 +371,15 @@ int mics6814_read(mavlink_pld_mics_6814_data_t * msg)
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
 
-	// Теперь опрашиваем все сенсоры
 	int error;
+
+	// Теперь опрашиваем все сенсоры
+#	pragma GCC diagnostic push
+	// Здесь было множество сообщений вида
+	// warning: taking address of packed member of 'struct __mavlink_pld_mics_6814_data_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
+	// Мы доверяем мавлинку в том, что он все выровняет
+#	pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+
 	error = _read_one(MICS6814_SENSOR_CO, &msg->red_sensor_raw, &msg->co_conc);
 	if (0 != error)
 		return error;
@@ -384,6 +391,8 @@ int mics6814_read(mavlink_pld_mics_6814_data_t * msg)
 	error = _read_one(MICS6814_SENSOR_NH3, &msg->nh3_sensor_raw, &msg->nh3_conc);
 	if (0 != error)
 		return error;
+
+#	pragma GCC diagnostic pop
 
 	return 0;
 }

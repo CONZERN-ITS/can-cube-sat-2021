@@ -21,7 +21,6 @@
 // Скидывать сообщения в its_link
 #define PROCESS_TO_ITSLINK
 
-
 #include <../mavlink_types.h>
 
 //! Определяем идентификаторы системы
@@ -36,11 +35,13 @@ int mav_main_get_packet(mavlink_message_t * msg);
 //! Определяем функцию для отправки телеметрии
 #define MAVLINK_SEND_UART_BYTES mav_main_send_to_its_link
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 // Наконец то подключаем сам мавлинк
 #include <mavlink.h>
+#pragma GCC diagnostic pop
 
 void mav_main_process_int_bme_message(const mavlink_pld_int_bme280_data_t * msg);
-void mav_main_process_ext_bme_message(const mavlink_pld_ext_bme280_data_t * msg);
 void mav_main_process_ms5611_message(const mavlink_pld_int_ms5611_data_t * msg);
 void mav_main_process_me2o2_message(mavlink_pld_me2o2_data_t * msg);
 void mav_main_process_mics_message(mavlink_pld_mics_6814_data_t * msg);

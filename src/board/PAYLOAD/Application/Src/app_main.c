@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <led.h>
+#include <sensors/its_ms5611.h>
 
 #include <stm32f4xx_hal.h>
 
@@ -15,7 +16,6 @@
 #include "time_svc.h"
 
 #include "sensors/its_bme280.h"
-#include "sensors/int_ms5611.h"
 #include "sensors/analog.h"
 #include "sensors/me2o2.h"
 #include "sensors/mics6814.h"
@@ -131,8 +131,8 @@ int app_main()
 
 	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_EXTERNAL));
 	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
-	int_ms5611_reset();
-	int_ms5611_read_prom();
+	int_ms5611_reinit(ITS_MS_EXTERNAL);
+	int_ms5611_reinit(ITS_MS_INTERNAL);
 	_analog_op_analysis(analog_init());
 	mics6814_init();
 
@@ -184,10 +184,10 @@ int app_main()
 			}
 			if (0 == _ext_bme_restart_if_need_so())
 			{
-				mavlink_pld_ext_bme280_data_t bme_msg = {0};
+				mavlink_pld_int_bme280_data_t bme_msg = {0};
 				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg));
 				if (0 == rc)
-					mav_main_process_ext_bme_message(&bme_msg);
+					mav_main_process_int_bme_message(&bme_msg);
 			}
 		}
 
@@ -195,7 +195,8 @@ int app_main()
 		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MICS6814)
 		{
 			mavlink_pld_int_ms5611_data_t data;
-			int rc = int_ms5611_read_and_calculate(&data);
+			// int rc = int_ms5611_read_and_calculate(&data);
+			int rc = 0;
 			printf("rc = %d\n", rc);
 			mav_main_process_ms5611_message(&data);
 		}
