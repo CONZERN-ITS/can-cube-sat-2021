@@ -146,11 +146,6 @@ void init_basic(void) {
 	i2c_param_config(ITS_I2CTM_PORT, &init_pin_i2c_tm);
 	i2c_driver_install(ITS_I2CTM_PORT, I2C_MODE_MASTER, 0, 0, 0);
 
-	//esp - stm32f4
-	uart_param_config(ITS_UARTE_PORT, &init_pin_uart);
-	uart_driver_install(ITS_UARTE_PORT, ITS_UARTE_RX_BUF_SIZE, ITS_UARTE_TX_BUF_SIZE, ITS_UARTE_QUEUE_SIZE, &quart, 0);
-	//uart_set_pin(ITS_UARTE_PORT, UART_PIN_NO_CHANGE, ITS_PIN_UARTE_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-
 	//esp - radio
 	uart_param_config(ITS_UARTR_PORT, &init_pin_uart0);
 	uart_driver_install(ITS_UARTR_PORT, ITS_UARTR_RX_BUF_SIZE, ITS_UARTR_TX_BUF_SIZE, 0, 0, 0);
@@ -165,9 +160,9 @@ void init_basic(void) {
 
 	printf("HEELLLO2!!!!\n");
 	fflush(stdout);
-	vTaskDelay(200);
+	vTaskDelay(20);
 	//time sync
-	gpio_config(&init_pin_time);
+	//gpio_config(&init_pin_time);
 	//gpio_config(&init_pin_pl_kvcc);
 	gpio_install_isr_service(0);
 
@@ -232,26 +227,28 @@ void init_helper(void) {
 	init_basic();
 	printf("HEELLLO3.5!!!!\n");
 	fflush(stdout);
-	vTaskDelay(200);
+	vTaskDelay(20);
 	printf("HEELLLO4!!!!\n");
 	fflush(stdout);
-	vTaskDelay(200);
+	vTaskDelay(20);
 	printf("HEELLLO5!!!!\n");
 	fflush(stdout);
-	vTaskDelay(200);
+	vTaskDelay(20);
 	//imi_init();
 
 	//Связь со всеми уст-ми на imi
-	//i2c_chan = mavlink_claim_channel();
-	//imi_install(&imi_config, ITS_IMI_PORT);
-	//imi_add_address(ITS_IMI_PORT, ITS_ARK_ADDRESS);
-	//imi_add_address(ITS_IMI_PORT, ITS_PLD_ADDRESS);
-	//imi_start(ITS_IMI_PORT);
+	i2c_chan = mavlink_claim_channel();
+	imi_install(&imi_config, ITS_IMI_PORT);
+	imi_add_address(ITS_IMI_PORT, ITS_ARK_ADDRESS);
+	imi_add_address(ITS_IMI_PORT, ITS_PLD_ADDRESS);
+	imi_add_address(ITS_IMI_PORT, ITS_SINS_ADDRESS);
+	imi_start(ITS_IMI_PORT);
 
+	printf("HEELLLO6!!!!\n");
 	//Связь с SINS
 	//uart_mavlink_install(ITS_UARTE_PORT, quart);
 #ifndef ITS_ESP_DEBUG
-	//shift_reg_init_spi(&hsr, ITS_SPISR_PORT, ITS_BSK_COUNT * ITS_SR_PACK_SIZE, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_SS);
+	/////shift_reg_init_spi(&hsr, ITS_SPISR_PORT, 16, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_CS_SR);
 	ESP_LOGD("SYSTEM", "Shift reg inited");
 /*
 	control_vcc_init(&hsr, 0, ITS_PIN_PL_VCC);
@@ -303,8 +300,8 @@ void init_helper(void) {
 
 	ESP_LOGD("SYSTEM", "Start wifi init");
 	static ts_sync ts = {0};
-	//ts.pin = ITS_PIN_UARTE_INT;
-	//time_sync_from_sins_install(&ts);
+	ts.pin = ITS_PIN_TIME;
+	time_sync_from_sins_install(&ts);
 	radio_send_init();
 	/*
 	vTaskDelay(1000 / portTICK_PERIOD_MS);

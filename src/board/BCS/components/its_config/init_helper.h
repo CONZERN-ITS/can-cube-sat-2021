@@ -50,9 +50,10 @@
 #endif
 
 
-#define ITS_I2CTM_DEV_COUNT			2
+#define ITS_I2CTM_DEV_COUNT			3
 #define ITS_ARK_ADDRESS 			0x68
 #define ITS_PLD_ADDRESS 			0x69
+#define ITS_SINS_ADDRESS 			0x7A
 
 #define ITS_I2CTM_FREQ 				100000
 #define ITS_I2CTM_PORT 				I2C_NUM_0

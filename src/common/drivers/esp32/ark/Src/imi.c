@@ -30,6 +30,7 @@
 #include "imi.h"
 #include "pinout_cfg.h"
 
+#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -182,6 +183,7 @@ static void IRAM_ATTR imi_i2c_int_isr_handler(void *arg) {
  * в imi_handler_t *h. Сообщения сохраяняются через h->cfg.save.
  */
 static void _imi_recv_all(imi_handler_t *h) {
+	ESP_LOGV(TAG, "_imi_recv_all");
 
 	for (int i = 0; i < h->add_count; i++) {
 
@@ -200,10 +202,12 @@ static void _imi_recv_all(imi_handler_t *h) {
 				.timeout = h->cfg.ticksToWaitForOne
 			};
 			int rc = imi_get_packet_size(&himi, &size);
+			ESP_LOGV(TAG, "get size from 0x%02X: %d %d", himi.address, rc, size);
 			if (rc || size == 0) {
 				isAny = 0;
 				continue;
 			}
+
 			//Get space for paket
 			uint8_t *pointer = (*h->cfg.alloc)(size);
 			if (!pointer) {
@@ -232,7 +236,7 @@ static void _imi_task_recv(void *arg) {
 	while (1) {
 		//If line is pulled, take semaphore to wait for the moment when line is pulled
 		//Also we try to test line every IMI_WAIT_DELAY to verify we haven't pass line pulling
-		while (gpio_get_level(h->cfg.i2c_int)) {
+		while (h->cfg.i2c_int >= 0 && gpio_get_level(h->cfg.i2c_int)) {
 			ulTaskNotifyTake(pdFALSE, IMI_WAIT_DELAY / portTICK_RATE_MS);
 		}
 		//ESP_LOGI(TAG, "Trying to read");
@@ -249,6 +253,7 @@ static void _imi_task_recv(void *arg) {
  * Установка imi линии
  */
 void imi_install(imi_config_t *cfg, imi_port_t port) {
+	ESP_LOGV(TAG, "imi_install");
 	assert(port < IMI_COUNT);
 	imi_handler_t *h = &imi_device[port];
 	assert(h->state == IMI_STATE_STOPED);
@@ -262,6 +267,7 @@ void imi_install(imi_config_t *cfg, imi_port_t port) {
 	h->state = IMI_STATE_INSTALLED;
 }
 void imi_install_static(imi_config_t *cfg, imi_port_t port, uint8_t *addrs) {
+	ESP_LOGV(TAG, "imi_install_static");
 	assert(port < IMI_COUNT);
 	imi_handler_t *h = &imi_device[port];
 	assert(h->state == IMI_STATE_STOPED);
@@ -276,6 +282,7 @@ void imi_install_static(imi_config_t *cfg, imi_port_t port, uint8_t *addrs) {
  * Запуск imi линии.
  */
 void imi_start(imi_port_t port) {
+	ESP_LOGV(TAG, "imi_start");
 	assert(port < IMI_COUNT);
 	imi_handler_t *h = &imi_device[port];
 	assert(h->state == IMI_STATE_INSTALLED);
@@ -283,16 +290,18 @@ void imi_start(imi_port_t port) {
 	snprintf(str, sizeof(str), "IMI %d recv task", port);
 	xTaskCreate(_imi_task_recv, str, 4048, h, 1, &h->taskRecv);
 
-	gpio_config_t init_pin_i2c_int = {
-		.mode = GPIO_MODE_INPUT,
-		.pull_up_en = GPIO_PULLUP_ENABLE,
-		.pull_down_en = GPIO_PULLDOWN_DISABLE,
-		.intr_type = GPIO_INTR_NEGEDGE,
-		.pin_bit_mask = 1ULL << h->cfg.i2c_int
-	};
+	if (h->cfg.i2c_int >= 0) {
+		gpio_config_t init_pin_i2c_int = {
+			.mode = GPIO_MODE_INPUT,
+			.pull_up_en = GPIO_PULLUP_ENABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_NEGEDGE,
+			.pin_bit_mask = 1ULL << h->cfg.i2c_int
+		};
 
-	gpio_config(&init_pin_i2c_int);
-	gpio_isr_handler_add(h->cfg.i2c_int, imi_i2c_int_isr_handler, h);
+		gpio_config(&init_pin_i2c_int);
+		gpio_isr_handler_add(h->cfg.i2c_int, imi_i2c_int_isr_handler, h);
+	}
 	h->state = IMI_STATE_STARTED;
 }
 
@@ -300,6 +309,7 @@ void imi_start(imi_port_t port) {
  * Отправляет сообщение по указанному адресу.
  */
 int imi_send(imi_port_t port, uint8_t address, uint8_t *data, uint16_t size, TickType_t ticksToWait) {
+	ESP_LOGV(TAG, "imi_send");
 	int rc = 0;
 	imi_handler_t *h;
 
@@ -324,6 +334,7 @@ int imi_send(imi_port_t port, uint8_t address, uint8_t *data, uint16_t size, Tic
  * Отправляет сообщение по всем адресам.
  */
 int imi_send_all(imi_port_t port, uint8_t *data, uint16_t size, TickType_t ticksToWaitForOne) {
+	ESP_LOGV(TAG, "imi_send_all");
 	int rc = 0;
 	imi_handler_t *h;
 
@@ -352,6 +363,7 @@ int imi_send_all(imi_port_t port, uint8_t *data, uint16_t size, TickType_t ticks
  * массива.
  */
 void imi_add_address(int port, uint8_t address) {
+	ESP_LOGV(TAG, "imi_add_address 0x%02X", address);
 	imi_handler_t *h;
 
 	assert(port < IMI_COUNT);
