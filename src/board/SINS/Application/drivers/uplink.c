@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <stm32f4xx_hal.h>
 #include <its-i2c-link.h>
@@ -19,11 +20,13 @@
 typedef struct its_injected_message_t
 {
 	// Идентификатор сообщения
-	const uint16_t msgid;
+	const uint32_t msgid;
 	//! Пуст буфер или полон
 	bool have_data;
 	//! Сам сообщение
-	mavlink_message_t message;
+	uint8_t message[MAVLINK_MAX_PACKET_LEN];
+	//! Длина сообщения
+	uint8_t len;
 } its_injected_message_t;
 
 
@@ -40,43 +43,22 @@ static its_injected_message_t _injected_msgs[] =
 
 //! Сохраняет сообщение, если оно иженктируемое и под него есть место
 /*! Возвращает true если сообщение было сохранено */
-static bool _store_message_if_injected(const mavlink_message_t * msg)
+static bool _store_message_if_injected(const uint8_t * msg, uint32_t msgid, uint8_t len)
 {
-	const uint32_t msgid = msg->msgid;
-
-	for (size_t i = 0; i < sizeof(_injected_msgs)/sizeof(*_injected_msgs); i++)
+	for (size_t i = 0; i < sizeof(_injected_msgs)/sizeof(_injected_msgs[0]); i++)
 	{
 		its_injected_message_t * record = &_injected_msgs[i];
-		if (record->msgid == msgid && !record->have_data)
+		if (record->msgid == msgid)
 		{
 			// У нас есть ячейка под такие сообщения
-			record->message = *msg;
+			memcpy(record->message, msg, len);
 			record->have_data = true;
+			record->len = len;
 			return true;
 		}
 	}
 
 	return false;
-}
-
-
-//! Отправка пакета наружу
-static int _do_write_mav(const mavlink_message_t * msg)
-{
-	static uint8_t msg_buffer[MAVLINK_MAX_PACKET_LEN];
-
-	uint16_t len = mavlink_msg_to_send_buffer(msg_buffer, msg);
-	int error = its_i2c_link_write(msg_buffer, len);
-	if (error < 0)
-		return error;
-
-	// FIXME: Возможно iwdg стоит перезапускать при успешной отправке сообщения?
-	// Например добавить if (0 == error)
-	//iwdg_reload(&transfer_uart_iwdg_handle);
-
-	// its_i2c_link_write возвращает количество байт в случае успеха. Нам тут это не надо
-	// Сводим ответ до 0 в случае успеха
-	return 0;
 }
 
 
@@ -95,8 +77,9 @@ int uplink_flush_injected()
 		if (record->have_data)
 		{
 			// О, такое сообщение у нас есть
-			int error = _do_write_mav(&record->message);
-			if (0 != error)
+			int error = its_i2c_link_write(record->message, record->len);
+			printf("msgid %d\n", (int)record->msgid);
+			if (0 > error)
 				return error;
 
 			// Если оно отправилось
@@ -115,8 +98,10 @@ int uplink_write_mav(const mavlink_message_t * msg)
 {
 	int error = 0;
 
+
 	// Сперва флашим инжектируемые
 	error = uplink_flush_injected();
+//	printf("error %d\n", error);
 	if (error == -EAGAIN)
 	{
 		// Ну если мы получили такую ошибку
@@ -124,15 +109,26 @@ int uplink_write_mav(const mavlink_message_t * msg)
 		return -EAGAIN;
 	}
 
+
 	// После инжектируемых пробуем себя
-	error = _do_write_mav(msg);
+	uint8_t msg_buffer[MAVLINK_MAX_PACKET_LEN];
+
+	uint16_t len = mavlink_msg_to_send_buffer(msg_buffer, msg);
+	error = its_i2c_link_write(msg_buffer, len);
+	printf("msgid %d\n", msg->msgid);
 	if (error == -EAGAIN)
 	{
 		// Если не удалось отправить сообщение
 		// потому что буфер переполнен
 		// откладываем сообщение на потом
-		_store_message_if_injected(msg);
+		_store_message_if_injected(msg_buffer, msg->msgid, len);
 	}
+	// FIXME: Возможно iwdg стоит перезапускать при успешной отправке сообщения?
+	// Например добавить if (0 == error)
+	//iwdg_reload(&transfer_uart_iwdg_handle);
+
+	// its_i2c_link_write возвращает количество байт в случае успеха. Нам тут это не надо
+	// Сводим ответ до 0 в случае успеха
 
 	if (error)
 		return error;
