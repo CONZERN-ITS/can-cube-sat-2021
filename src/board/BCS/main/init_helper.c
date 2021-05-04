@@ -301,6 +301,7 @@ void init_helper(void) {
 	ESP_LOGD("SYSTEM", "Start wifi init");
 	static ts_sync ts = {0};
 	ts.pin = ITS_PIN_TIME;
+	ts.period = 10 * 1000000;
 	time_sync_from_sins_install(&ts);
 	radio_send_init();
 	/*

@@ -43,6 +43,7 @@ void sntp_notify(struct timeval *tv);
 static void time_sync_task(void *arg) {
 	ts_sync *ts = (ts_sync *)arg;
 
+
 	its_rt_task_identifier id = {
 			.name = "time_sync"
 	};
@@ -80,24 +81,30 @@ static void time_sync_task(void *arg) {
 				.tv_sec = there.tv_sec - ts->here.tv_sec,
 				.tv_usec = 0 - ts->here.tv_usec
 		};
+		ts->diff_total += delta.tv_sec * 1000000 + delta.tv_usec;
+		ts->cnt++;
 
 		ESP_LOGV("TIME", "from sinc: %d.%06d\n", (int)there.tv_sec, (int)there.tv_usec);
 		ESP_LOGV("TIME", "here:      %d.%06d\n", (int)ts->here.tv_sec, (int)ts->here.tv_usec);
+
 		/*
-		 * Если разница слишком большая, то ставим время мгновенно.
-		 * Если нет, то пытаемся приблизить время без больших
-		 * скачков
+		 * Мы хотим менять время лишь в четко заданные интервалы времени. Если период 5 минут, то мы хотим, чтобы
+		 * время менялось в момент, кратный 5 минутам. Поэтому задаем интервал, когда время может меняться.
+		 * Также ставим ограниение на разницу по времени между изменениями, чтобы время не менялось несколько раз
+		 * за один интервал.
 		 */
-		if (abs(delta.tv_sec) > TIME_SYNC_SMOOTH_THREASHOLD) {
-			ESP_LOGI("TIME SYNC","Too big diff. Immidiate sync!");
-			struct timeval t;
-			gettimeofday(&t, 0);
-			t.tv_sec += delta.tv_sec;
-			t.tv_usec += delta.tv_usec;
+		struct timeval t;
+		gettimeofday(&t, 0);
+		int64_t now = t.tv_sec * 1000000 + t.tv_usec;
+		if (ts->cnt > 2 &&
+				now - ts->last_changed > ts->period / 2 &&
+				now < ((int)(now / ts->period)) * ts->period + 0.03 * ts->period) {
+			int64_t estimated = now + ts->diff_total / ts->cnt;
+			t.tv_sec = estimated / 1000000;
+			t.tv_usec = estimated % 1000000;
 			settimeofday(&t, 0);
-		} else {
-			ESP_LOGI("TIME SYNC","Small diff. smooth sync!");
-			adjtime(&delta, 0);
+			ts->last_changed = now;
+			ts->cnt = 0;
 		}
 		ts->is_updated = 0;
 	}

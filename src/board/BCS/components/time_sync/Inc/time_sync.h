@@ -19,8 +19,15 @@
 
 typedef struct {
 	gpio_num_t pin;
+	int coef;
+	int period;
+
 	struct timeval here;
 	int is_updated;
+	int64_t diff_total;
+	int cnt;
+	int64_t last_changed;
+
 } ts_sync;
 
 void time_sync_from_sins_install(ts_sync *cfg);
