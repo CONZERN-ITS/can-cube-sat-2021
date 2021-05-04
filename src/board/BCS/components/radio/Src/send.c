@@ -10,7 +10,7 @@
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
 #include "pinout_cfg.h"
 
@@ -231,11 +231,11 @@ static int is_sleeping(safe_send_t *sst) {
 }
 */
 int fill_packet(radio_t * server) {
-	static int nat = 0;
+/*	static int nat = 0;
 	log_info("fill packet");
 	for (; server->radio_buf.index < server->radio_buf.size; server->radio_buf.index++) {
 		server->radio_buf.buf[server->radio_buf.index] = nat++;
-	}
+	}*/
 	while (server->radio_buf.index < server->radio_buf.size) {
 		log_info("gen %d %d", server->radio_buf.index, server->radio_buf.size);
 		if (server->mav_buf.size - server->mav_buf.index > 0) {
