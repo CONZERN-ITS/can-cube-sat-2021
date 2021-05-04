@@ -141,7 +141,6 @@ int own_temp_packet(void)
 
 int mavlink_errors_packet(void)
 {
-	int error = 0;
 
 	struct timeval tv;
 	time_svc_world_get_time(&tv);
