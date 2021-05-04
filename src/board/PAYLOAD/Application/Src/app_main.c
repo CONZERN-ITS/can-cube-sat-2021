@@ -127,7 +127,7 @@ int app_main()
 	// Включаем все
 	led_init();
 	time_svc_init();
-	its_i2c_link_start(&hi2c2);
+	its_i2c_link_start();
 
 	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_EXTERNAL));
 	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
