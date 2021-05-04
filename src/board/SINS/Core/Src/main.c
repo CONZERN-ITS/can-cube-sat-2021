@@ -522,6 +522,7 @@ int main(void)
   		uint32_t prew_time = HAL_GetTick();
   		uint32_t time = 0;
 
+
   		// Пашем, работяги
   		for (; ; )
   		{
@@ -577,13 +578,13 @@ int main(void)
   				if ((error_system.lsm6ds3_error != 0) && (error_system.lis3mdl_error != 0))
   					continue;
   				// Отвравляем данные во внешний мир
-//  				mavlink_sins_isc(&stateSINS_isc); //<<---------------TODO: Переписать
+  				mavlink_sins_isc(&stateSINS_isc); //<<---------------TODO: Переписать
 
   			}
-//  			time = HAL_GetTick();
-//  			if (time - prew_time < 1000)
-//  				continue;
-//  			prew_time = time;
+  			time = HAL_GetTick();
+  			if (time - prew_time < 1000)
+  				continue;
+  			prew_time = time;
 
   			// Отправляем всякое почтой России (или нет)
   			mavlink_timestamp();
@@ -915,7 +916,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, PWR_GPS_Pin|PWR_MEMS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, PWR_MEMS_Pin|PWR_GPS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
@@ -937,8 +938,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PWR_GPS_Pin PWR_MEMS_Pin */
-  GPIO_InitStruct.Pin = PWR_GPS_Pin|PWR_MEMS_Pin;
+  /*Configure GPIO pins : PWR_MEMS_Pin PWR_GPS_Pin */
+  GPIO_InitStruct.Pin = PWR_MEMS_Pin|PWR_GPS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
