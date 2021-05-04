@@ -76,7 +76,7 @@ class ZMQITSInterface(MAVITSInterface):
             msg.get_header().srcSystem = 0
             msg.get_header().srcComponent = 3
             multipart = ["antenna.command_packet".encode("utf-8"),
-                         ("{ cookie: %d }" % self.cookie).encode("utf-8"),
+                         ('{ "cookie": %d }' % self.cookie).encode("utf-8"),
                          msg.pack(self.mav)]
             self.cookie += 1
             self.send_msg.emit(multipart)
