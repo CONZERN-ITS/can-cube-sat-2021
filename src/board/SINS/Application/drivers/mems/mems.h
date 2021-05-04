@@ -13,6 +13,7 @@
 
 #include "lsm6ds3.h"
 #include "lis3mdl.h"
+#include "main.h"
 
 extern I2C_HandleTypeDef hi2c2;
 

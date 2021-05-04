@@ -17,7 +17,7 @@
 #include "vector.h"
 
 
-#define LSM_TIMEOUT	1000
+#define LSM_TIMEOUT	3
 #define MG_TO_MPS2	9.80665 / 1000
 #define MDPS_TO_RAD	M_PI / 180 / 1000
 

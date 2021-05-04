@@ -31,6 +31,18 @@
 //};
 
 
+void mems_power_off()
+{
+	HAL_GPIO_WritePin(PWR_MEMS_GPIO_Port, PWR_MEMS_Pin, RESET);
+}
+
+
+void mems_power_on()
+{
+	HAL_GPIO_WritePin(PWR_MEMS_GPIO_Port, PWR_MEMS_Pin, SET);
+}
+
+
 int mems_init_bus()
 {
 	//	SET_BIT(hmems_i2c.Instance->CR2, I2C_CR1_SWRST);
@@ -61,7 +73,12 @@ int mems_init_bus()
 	HMEMS_I2C_FORCE_RESET();
 	HMEMS_I2C_RELEASE_RESET();
 
-	//HAL_I2C_DeInit(HMEMS_BUS_HANDLE);
+	HAL_I2C_MspDeInit(HMEMS_BUS_HANDLE);
+	mems_power_off();
+	HAL_Delay(10);
+	mems_power_on();
+	HAL_Delay(10);
+	HAL_I2C_MspInit(HMEMS_BUS_HANDLE);
 	__HAL_I2C_RESET_HANDLE_STATE(HMEMS_BUS_HANDLE);
 
 	HAL_StatusTypeDef hal_status =  HAL_I2C_Init(HMEMS_BUS_HANDLE);

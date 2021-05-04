@@ -21,7 +21,7 @@
 
 
 
-#define LSM_TIMEOUT	1000
+#define LSM_TIMEOUT	3
 #define MDPS_TO_RAD	M_PI / 180 / 1000
 
 //	Magnetometer bias & transform matrix
