@@ -223,7 +223,7 @@ class EventWidget(QtWidgets.QWidget):
             return len(self.event_list)
 
         def columnCount(self, parent=QtCore.QModelIndex()):
-            return 4
+            return 3
 
         def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
             if orientation != QtCore.Qt.Horizontal:
@@ -237,10 +237,7 @@ class EventWidget(QtWidgets.QWidget):
                     return QtCore.QVariant("Name")
 
                 elif section == 2:
-                    return QtCore.QVariant("Start time")
-
-                elif section == 3:
-                    return QtCore.QVariant("Stop time")
+                    return QtCore.QVariant("Start time\nStop time")
             return QtCore.QVariant()
 
         def data(self, index, role):
@@ -273,7 +270,9 @@ class EventWidget(QtWidgets.QWidget):
             self.endResetModel()
 
         def add_event(self, event):
+            self.beginReset()
             self.event_list.append(event)
+            self.endReset()
             return len(self.event_list) - 1
 
         def get_event_list(self):
