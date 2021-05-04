@@ -14,6 +14,13 @@ import time
 class AbstractCommanInterface(QtCore.QObject):
     send_msg = QtCore.pyqtSignal(object)
 
+    command_ststus_changed = QtCore.pyqtSignal(list)
+
+    STATUS_UNKNOWN = 0
+    STATUS_PROCESSING = 1
+    STATUS_SUCCSESS = 2
+    STATUS_FAILURE = 3
+
     def __init__(self):
         super(AbstractCommanInterface, self).__init__()
 
@@ -69,7 +76,24 @@ class ZMQITSInterface(MAVITSInterface):
         self.cookie = (time.time() // 1000) % 1000 
 
     def msg_reaction(self, msg):
-        pass
+        data = json.loads(msg.decode("utf-8"))
+        cookie = data.get('cookie', None)
+        status = data.get('event', None)
+        if (cookie is not None) and (status is not None):
+            if status == 'rejected':
+                status_type = STATUS_FAILURE
+            elif status == 'accepted':
+                status_type = STATUS_PROCESSING
+            elif status == 'emitted':
+                status_type = STATUS_PROCESSING
+            elif status == 'delivered':
+                status_type = STATUS_SUCCSESS
+            elif status == 'undelivered':
+                status_type = STATUS_FAILURE
+            else:
+                status_type = STATUS_UNKNOWN
+            self.command_ststus_changed.emit([cookie, status, status_type])
+        
 
     def send_command(self, msg):
         if msg is not None:
