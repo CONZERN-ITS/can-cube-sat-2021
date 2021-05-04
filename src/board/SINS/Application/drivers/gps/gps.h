@@ -12,6 +12,8 @@
 
 #include <stm32f4xx_hal.h>
 
+#include "main.h"
+
 
 extern UART_HandleTypeDef huart2;
 

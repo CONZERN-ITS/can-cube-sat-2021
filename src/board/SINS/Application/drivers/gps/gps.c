@@ -91,6 +91,16 @@ static int _gps_configure_step_packet(void);
 
 void NONHAL_PPS_MspInit(void);
 
+void gps_power_off()
+{
+	HAL_GPIO_WritePin(PWR_GPS_GPIO_Port, PWR_GPS_Pin, RESET);
+}
+
+void gps_power_on()
+{
+	HAL_GPIO_WritePin(PWR_GPS_GPIO_Port, PWR_GPS_Pin, SET);
+}
+
 
 //! Колбек для входящих GPS пакетов.
 /*! Некоторые мы будем перехватывать для уточнения службы времени
@@ -238,13 +248,6 @@ void EXTI0_IRQHandler()
 	// Правим службу времени
 	if (_next_pps_time > 0)
 		time_svc_world_set_time(_next_pps_time, TIME_SVC_TIMEBASE__GPS);
-
-
-	HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_9);
-//	if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_9))
-//		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, RESET);
-//	else
-//		HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, SET);
 
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
 }
