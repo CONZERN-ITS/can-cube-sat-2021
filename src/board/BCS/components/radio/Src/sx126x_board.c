@@ -30,7 +30,7 @@
 
 struct sx126x_board_t {
 	spi_device_handle_t hspi;
-
+	uint32_t timeout;
 };
 
 static sx126x_board_t _brd;
@@ -56,6 +56,7 @@ int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg) {
 	if (ret != ESP_OK) {
 		return ret;
 	}
+	_brd.timeout = 100; //ms
 
 	gpio_set_level(ITS_PIN_RADIO_RESET, 1);
 	gpio_set_level(ITS_PIN_RADIO_TX_EN, 0);
@@ -69,7 +70,7 @@ void sx126x_brd_dtor(sx126x_board_t * brd) {
 }
 
 int sx126x_brd_get_time(sx126x_board_t * brd, uint32_t * value) {
-	return esp_timer_get_time() / 1000; //ms or us?
+	return esp_timer_get_time() / 1000;
 }
 
 int sx126x_brd_get_chip_type(sx126x_board_t * brd, sx126x_chip_type_t * chip_type) {
@@ -86,15 +87,20 @@ int sx126x_brd_reset(sx126x_board_t * brd) {
 }
 
 int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout) {
-	
-
-	for (TickType_t counter = 0; counter < (timeout / portTICK_PERIOD_MS); counter++ )
-	{
-		if (gpio_get_level(ITS_PIN_RADIO_BUSY) == 0)
-			return 0;
+	int64_t start = esp_timer_get_time();
+	int ret = 0;
+	while (1) {
+		if (gpio_get_level(ITS_PIN_RADIO_BUSY) == 0) {
+			ret = 0;
+			break;
+		}
+		if (esp_timer_get_time() - start >= brd->timeout * 1000) {
+			ret = -1;
+			break;
+		}
+		vTaskDelay(1);
 	}
-
-	return SX126X_ERROR_TIMEOUT;
+	return 0;
 }
 
 int sx126x_brd_cleanup_irq(sx126x_board_t * brd) {
