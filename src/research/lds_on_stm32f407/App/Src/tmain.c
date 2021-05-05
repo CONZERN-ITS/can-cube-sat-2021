@@ -35,34 +35,7 @@ int _write(int file, char *ptr, int len)
     }
 }
 
-#define LDS_COUNT 3
-#define LDS_DIM 3
 
-float Arr[3][LDS_COUNT] = {
-        {1.00000, 0.00000, 0.00000 },
-        {-1.00000, 0.75249, 0.75249 },
-        {0.00000, -1.46190, 1.46190 }
-};
-
-
-void lds_find(float x[3], float b[LDS_COUNT]) {
-    for (int i = 0; i < 3; i++) {
-        x[i] = 0;
-        for (int j = 0; j < LDS_COUNT; j++) {
-            x[i] += Arr[i][j] * b[j];
-        }
-    }
-}
-
-void dekart_to_euler(float x[3], float sph[3]) {
-    sph[0] = sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
-    sph[1] = acos(x[2] / sph[0]);
-    sph[2] = atan(x[1] / x[0]);
-}
-
-float degrees(float a) {
-    return a * 180 / M_PI;
-}
 
 int tmain() {
     float x[3];
