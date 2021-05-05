@@ -1,6 +1,0 @@
-../App/Src/tmain.c:20:5:_read	24	static
-../App/Src/tmain.c:29:5:_write	24	static
-../App/Src/tmain.c:48:6:lds_find	24	static
-../App/Src/tmain.c:57:6:dekart_to_euler	24	static
-../App/Src/tmain.c:63:7:degrees	16	static
-../App/Src/tmain.c:67:5:tmain	96	static
