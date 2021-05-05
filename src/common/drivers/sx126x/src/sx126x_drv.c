@@ -6,6 +6,7 @@
 
 
 #define SX126X_TCXO_STARTUP_TIMEOUT_MS (10)
+#define SX126X_WAIT_BUSY_DEFAULT_TIMEOUT (100)
 
 #define SX126X_RETURN_IF_NONZERO(rc) if (0 != rc) return rc
 #define SX126X_BREAK_IF_NONZERO(rc) if (0 != rc) break
@@ -42,7 +43,7 @@ static void _default_evt_handler(
 //! Удобный шорткат для ожидания busy состояния чипа
 inline static int _wait_busy(sx126x_drv_t * drv)
 {
-	return sx126x_brd_wait_on_busy(drv->api.board);
+	return sx126x_brd_wait_on_busy(drv->api.board, SX126X_WAIT_BUSY_DEFAULT_TIMEOUT);
 }
 
 

@@ -85,11 +85,16 @@ int sx126x_brd_reset(sx126x_board_t * brd) {
 	return 0;
 }
 
-int sx126x_brd_wait_on_busy(sx126x_board_t * brd) {
-	while (gpio_get_level(ITS_PIN_RADIO_BUSY) != 0) {
-		vTaskDelay(1);
+int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout) {
+	
+
+	for (TickType_t counter = 0; counter < (timeout / portTICK_PERIOD_MS); counter++ )
+	{
+		if (gpio_get_level(ITS_PIN_RADIO_BUSY) == 0)
+			return 0;
 	}
-	return 0;
+
+	return SX126X_ERROR_TIMEOUT;
 }
 
 int sx126x_brd_cleanup_irq(sx126x_board_t * brd) {

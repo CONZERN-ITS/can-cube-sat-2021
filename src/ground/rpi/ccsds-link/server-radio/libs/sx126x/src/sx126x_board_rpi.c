@@ -264,14 +264,30 @@ int sx126x_brd_reset(sx126x_board_t * brd)
 }
 
 
-int sx126x_brd_wait_on_busy(sx126x_board_t * brd)
+int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 {
 	int rc;
+
+	// Замеряем время, когдна мы начали ждать
+	uint32_t start;
+	rc = sx126x_brd_get_time(brd, &start);
+	if (0 != rc)
+		return SX126X_ERROR_BOARD;
+
 	do
 	{
 		rc = gpiod_line_get_value(brd->line_busy);
 		if (rc < 0)
 			return SX126X_ERROR_BOARD;
+
+		usleep(500); // Чуточку спим
+
+		// Смотрим не прошел ли таймаут
+		uint32_t now;
+		rc = sx126x_brd_get_time(brd, &now);
+
+		if (now - start > timeout)
+			return SX126X_ERROR_TIMEOUT;
 
 	} while(rc != 0);
 
