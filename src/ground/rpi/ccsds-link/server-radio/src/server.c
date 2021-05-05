@@ -789,7 +789,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 }
 
 
-void _server_sync_rssi(server_t * server)
+static void _server_sync_rssi(server_t * server)
 {
 	struct timespec now;
 	int rc = clock_gettime(CLOCK_MONOTONIC, &now);
@@ -813,7 +813,7 @@ void _server_sync_rssi(server_t * server)
 }
 
 
-void _server_sync_tx_state(server_t * server)
+static void _server_sync_tx_state(server_t * server)
 {
 	struct timespec now;
 	int rc = clock_gettime(CLOCK_MONOTONIC, &now);
@@ -828,7 +828,7 @@ void _server_sync_tx_state(server_t * server)
 }
 
 
-void _server_sync_rx_data(server_t * server)
+static void _server_sync_rx_data(server_t * server)
 {
 	if (!server->rx_buffer_size)
 		return;
