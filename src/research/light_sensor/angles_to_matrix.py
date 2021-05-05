@@ -53,25 +53,40 @@ fin.close()
 A = np.matrix(m)
 B = np.linalg.inv(A.transpose() * A) * A.transpose()
 
+fout.write('{\n')
 for a in m:
+    fout.write('{')
     for x in a:
-        fout.write('{:0.5f} '.format(x))
+        fout.write('{:0.5f}, '.format(x))
+    fout.write('},')
     fout.write('\n')
+fout.write('}\n')
 
-
+fout.write('{\n')
 for a in A.transpose().tolist():
+    fout.write('{')
     for x in a:
-        fout.write('{:0.5f} '.format(x))
+        fout.write('{:0.5f}, '.format(x))
+    fout.write('},')
     fout.write('\n')
-    
-for a in (A.transpose() * A).tolist():
-    for x in a:
-        fout.write('{:0.5f} '.format(x))
-    fout.write('\n')
+fout.write('}\n')
 
-for a in B.tolist():
+fout.write('{\n')
+for a in (A.transpose() * A).tolist():
+    fout.write('{')
     for x in a:
-        fout.write('{:0.5f} '.format(x))
+        fout.write('{:0.5f}, '.format(x))
+    fout.write('},')
     fout.write('\n')
+fout.write('}\n')
+
+fout.write('{\n')
+for a in B.tolist():
+    fout.write('{')
+    for x in a:
+        fout.write('{:0.5f}, '.format(x))
+    fout.write('},')
+    fout.write('\n')
+fout.write('}\n')
 
 fout.close()
