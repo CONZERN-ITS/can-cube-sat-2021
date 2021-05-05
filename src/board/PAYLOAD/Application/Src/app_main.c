@@ -129,9 +129,9 @@ int app_main()
 	time_svc_init();
 	its_i2c_link_start();
 
-	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_EXTERNAL));
-	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
-	int_ms5611_reinit(ITS_MS_EXTERNAL);
+//	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_EXTERNAL));
+//	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
+//	int_ms5611_reinit(ITS_MS_EXTERNAL);
 	int_ms5611_reinit(ITS_MS_INTERNAL);
 	_analog_op_analysis(analog_init());
 	mics6814_init();
@@ -173,32 +173,44 @@ int app_main()
 		// Проверяем входящие пакеты
 		_process_input_packets();
 
-		if (tock % PACKET_PERIOD_BME == PACKET_OFFSET_BME)
-		{
-			if (0 == _int_bme_restart_if_need_so())
-			{
-				mavlink_pld_int_bme280_data_t bme_msg = {0};
-				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg));
-				if (0 == rc)
-					mav_main_process_int_bme_message(&bme_msg);
-			}
-			if (0 == _ext_bme_restart_if_need_so())
-			{
-				mavlink_pld_int_bme280_data_t bme_msg = {0};
-				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg));
-				if (0 == rc)
-					mav_main_process_int_bme_message(&bme_msg);
-			}
-		}
+//		if (tock % PACKET_PERIOD_BME == PACKET_OFFSET_BME)
+//		{
+//			if (0 == _int_bme_restart_if_need_so())
+//			{
+//				mavlink_pld_int_bme280_data_t bme_msg = {0};
+//				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg));
+//				if (0 == rc)
+//					mav_main_process_int_bme_message(&bme_msg);
+//			}
+//			if (0 == _ext_bme_restart_if_need_so())
+//			{
+//				mavlink_pld_int_bme280_data_t bme_msg = {0};
+//				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg));
+//				if (0 == rc)
+//					mav_main_process_int_bme_message(&bme_msg);
+//			}
+//		}
 
 
-		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MICS6814)
+		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MS5611)
 		{
-			mavlink_pld_int_ms5611_data_t data;
-			// int rc = int_ms5611_read_and_calculate(&data);
+			mavlink_pld_int_ms5611_data_t data = {0};
+//			int rc = int_ms5611_read_and_calculate(ITS_MS_EXTERNAL, &data);
+//			printf("rc = %d\n", rc);
+//			if (rc == 0)
+//				mav_main_process_ms5611_message(&data);
+//			else
+//				int_ms5611_reinit(ITS_MS_EXTERNAL);
+
+			memset(&data, 0, sizeof(data));
 			int rc = 0;
+			rc = int_ms5611_read_and_calculate(ITS_MS_INTERNAL, &data);
 			printf("rc = %d\n", rc);
-			mav_main_process_ms5611_message(&data);
+			if (rc == 0)
+				mav_main_process_ms5611_message(&data);
+			else
+				int_ms5611_reinit(ITS_MS_INTERNAL);
+
 		}
 
 

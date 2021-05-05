@@ -139,8 +139,6 @@ static its_ms5611_t * _dev_by_id(its_ms5611_id_t devid)
 }
 
 
-
-
 int int_ms5611_reinit(its_ms5611_id_t id)
 {
 	its_ms5611_t * const dev = _dev_by_id(id);
@@ -150,6 +148,7 @@ int int_ms5611_reinit(its_ms5611_id_t id)
 	if (0 != rc)
 		return rc;
 
+	HAL_Delay(10);
 	// Загрузка калиброви
 	rc = ms5611_read_prom_data(&dev->driver, &dev->prom);
 	if (0 != rc)

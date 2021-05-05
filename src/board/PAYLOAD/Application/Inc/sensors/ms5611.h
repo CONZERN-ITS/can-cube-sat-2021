@@ -41,9 +41,9 @@ typedef enum ms5611_error_t
 typedef enum ms5611_sensor_t
 {
 	//! Термометр
-	MS5611_SENSOR_TEMPERATURE  = 0x40,
+	MS5611_SENSOR_TEMPERATURE  = 0x50,
 	//! Манометр
-	MS5611_SENSOR_PRESSURE     = 0x50,
+	MS5611_SENSOR_PRESSURE     = 0x40,
 } ms5611_sensor_t;
 
 

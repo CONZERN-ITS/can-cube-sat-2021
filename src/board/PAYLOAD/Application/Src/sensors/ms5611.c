@@ -101,7 +101,7 @@ int ms5611_reset(ms5611_t * device)
 int ms5611_read_prom_data(ms5611_t * device, ms5611_prom_data_t * data)
 {
 	uint16_t prom_data[8]; // Шесть регистров prom + резервированный байт в начале + crc в конце
-	for (int i = 0; i < sizeof(prom_data); i++) // 6 регистров в проме + crc
+	for (int i = 0; i < sizeof(prom_data)/sizeof(prom_data[0]); i++) // 6 регистров в проме + crc
 	{
 		// Адрес регистра тут нужно сдвигать на 1
 		// т.к. для адреса регистра используются биты 4 5 6 (считая со старшего) и не используется бит 7
@@ -141,7 +141,7 @@ int ms5611_read_prom_data(ms5611_t * device, ms5611_prom_data_t * data)
 
 int ms5611_initiate_conversion(ms5611_t * device, ms5611_sensor_t sensor, ms5611_osr_t osr)
 {
-	uint8_t byte = ((uint8_t)sensor << 4) | ((uint8_t)osr << 0);
+	uint8_t byte = ((uint8_t)sensor << 0) | ((uint8_t)osr << 0);
 	int io_error = device->_write(device->_user_arg, byte);
 	if (io_error != 0)
 		return MS5611_ERROR_IO;
@@ -175,8 +175,11 @@ uint32_t ms5611_conversion_duration_for_osr(ms5611_osr_t osr)
 
 int ms5611_read_data(ms5611_t * device, uint32_t * data)
 {
+	// Засылаем датчику команду на чтение
+	int io_error = device->_write(device->_user_arg, 0);
+
 	uint8_t bytes[3];
-	int io_error = device->_read(device, bytes, sizeof(bytes));
+	io_error = device->_read(device->_user_arg, bytes, sizeof(bytes));
 	if (io_error != 0)
 		return MS5611_ERROR_IO;
 
@@ -229,6 +232,7 @@ int ms5611_read_compensated(ms5611_t * device, const ms5611_prom_data_t * prom,
 		int32_t * temp, int32_t * pres
 )
 {
+
 	// Меряем температуру
 	int io_error = ms5611_initiate_conversion(device, MS5611_SENSOR_TEMPERATURE, temp_osr);
 	if (io_error != 0)
@@ -256,7 +260,6 @@ int ms5611_read_compensated(ms5611_t * device, const ms5611_prom_data_t * prom,
 	io_error = ms5611_read_data(device, &raw_pres);
 	if (io_error != 0)
 		return io_error;
-
 
 	// Считаем
 	ms5611_calculate_temp_and_pressure(prom, raw_temp, raw_pres, temp, pres);
