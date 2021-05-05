@@ -6,9 +6,9 @@
 
 
 // Напряжение со встроенного термистра при 25 градусах (в милливольта)
-#define INTERNAL_TEMP_V25 (1430.0f)
-// Коэффициент k внутренного термистра (мВ/C
-#define INTERNAL_TEMP_AVG_SLOPE (4.3f)
+#define INTERNAL_TEMP_V25 (760.0f)
+// Коэффициент k внутренного термистра (мВ/C)
+#define INTERNAL_TEMP_AVG_SLOPE (2.5f)
 
 
 int integrated_read(mavlink_own_temp_t * msg)
