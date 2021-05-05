@@ -1,5 +1,8 @@
+"App/Src/ahrc.o"
 "App/Src/lds.o"
+"App/Src/madgwick.o"
 "App/Src/matrix.o"
+"App/Src/quaternion.o"
 "App/Src/tmain.o"
 "Core/Src/main.o"
 "Core/Src/stm32f4xx_hal_msp.o"

@@ -35,7 +35,7 @@ Archive member included to satisfy reference by file (symbol)
 /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc_nano.a(lib_a-nano-vfprintf.o)
                               /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc_nano.a(lib_a-fprintf.o) (_vfprintf_r)
 /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc_nano.a(lib_a-printf.o)
-                              App/Src/tmain.o (printf)
+                              App/Src/quaternion.o (printf)
 /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc_nano.a(lib_a-putchar.o)
                               App/Src/tmain.o (putchar)
 /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc_nano.a(lib_a-putc.o)
@@ -135,11 +135,11 @@ Archive member included to satisfy reference by file (symbol)
 /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libm.a(lib_a-s_nan.o)
                               /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libm.a(lib_a-w_acos.o) (nan)
 /usr/lib/gcc/arm-none-eabi/10.2.0/thumb/v7e-m+fp/hard/libgcc.a(_arm_muldf3.o)
-                              App/Src/matrix.o (__aeabi_dmul)
+                              App/Src/madgwick.o (__aeabi_dmul)
 /usr/lib/gcc/arm-none-eabi/10.2.0/thumb/v7e-m+fp/hard/libgcc.a(_arm_addsubdf3.o)
-                              /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc_nano.a(lib_a-dtoa.o) (__aeabi_dsub)
+                              App/Src/madgwick.o (__aeabi_dsub)
 /usr/lib/gcc/arm-none-eabi/10.2.0/thumb/v7e-m+fp/hard/libgcc.a(_arm_muldivdf3.o)
-                              App/Src/tmain.o (__aeabi_ddiv)
+                              App/Src/quaternion.o (__aeabi_ddiv)
 /usr/lib/gcc/arm-none-eabi/10.2.0/thumb/v7e-m+fp/hard/libgcc.a(_arm_cmpdf2.o)
                               /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc_nano.a(lib_a-nano-vfprintf_float.o) (__aeabi_dcmpeq)
 /usr/lib/gcc/arm-none-eabi/10.2.0/thumb/v7e-m+fp/hard/libgcc.a(_arm_unorddf2.o)
@@ -172,6 +172,47 @@ Discarded input sections
  .ARM.exidx     0x0000000000000000       0x10 /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/crt0.o
  .ARM.attributes
                 0x0000000000000000       0x1c /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/crt0.o
+ .group         0x0000000000000000        0xc App/Src/ahrc.o
+ .text          0x0000000000000000        0x0 App/Src/ahrc.o
+ .data          0x0000000000000000        0x0 App/Src/ahrc.o
+ .bss           0x0000000000000000        0x0 App/Src/ahrc.o
+ .bss.ahrs_parametres
+                0x0000000000000000       0xe8 App/Src/ahrc.o
+ .text.ahrs_init
+                0x0000000000000000       0xd0 App/Src/ahrc.o
+ .text.ahrs_deinit
+                0x0000000000000000        0xe App/Src/ahrc.o
+ .text.ahrs_setKoefB
+                0x0000000000000000       0x20 App/Src/ahrc.o
+ .text.ahrs_vectorActivate
+                0x0000000000000000       0x2c App/Src/ahrc.o
+ .text.ahrs_updateVecMeasured
+                0x0000000000000000       0x5c App/Src/ahrc.o
+ .text.ahrs_updateVecReal
+                0x0000000000000000       0x5c App/Src/ahrc.o
+ .text.ahrs_updateVecPortion
+                0x0000000000000000       0x2c App/Src/ahrc.o
+ .text.ahrs_getOrientation
+                0x0000000000000000       0x6c App/Src/ahrc.o
+ .text.ahrs_calculateOrientation
+                0x0000000000000000      0x15c App/Src/ahrc.o
+ .text.ahrs_updateError
+                0x0000000000000000       0x10 App/Src/ahrc.o
+ .text.ahrs_updateGyroData
+                0x0000000000000000       0x4c App/Src/ahrc.o
+ .debug_info    0x0000000000000000      0x3ec App/Src/ahrc.o
+ .debug_abbrev  0x0000000000000000      0x193 App/Src/ahrc.o
+ .debug_aranges
+                0x0000000000000000       0x70 App/Src/ahrc.o
+ .debug_ranges  0x0000000000000000       0x60 App/Src/ahrc.o
+ .debug_macro   0x0000000000000000       0x3f App/Src/ahrc.o
+ .debug_macro   0x0000000000000000      0xa78 App/Src/ahrc.o
+ .debug_line    0x0000000000000000      0x1fb App/Src/ahrc.o
+ .debug_str     0x0000000000000000     0x2ed8 App/Src/ahrc.o
+ .comment       0x0000000000000000       0x1f App/Src/ahrc.o
+ .debug_frame   0x0000000000000000      0x1d4 App/Src/ahrc.o
+ .ARM.attributes
+                0x0000000000000000       0x34 App/Src/ahrc.o
  .group         0x0000000000000000        0xc App/Src/lds.o
  .group         0x0000000000000000        0xc App/Src/lds.o
  .group         0x0000000000000000        0xc App/Src/lds.o
@@ -258,6 +299,33 @@ Discarded input sections
  .debug_frame   0x0000000000000000       0x9c App/Src/lds.o
  .ARM.attributes
                 0x0000000000000000       0x34 App/Src/lds.o
+ .group         0x0000000000000000        0xc App/Src/madgwick.o
+ .text          0x0000000000000000        0x0 App/Src/madgwick.o
+ .data          0x0000000000000000        0x0 App/Src/madgwick.o
+ .bss           0x0000000000000000        0x0 App/Src/madgwick.o
+ .text.madgwick_getGyroDerOri
+                0x0000000000000000       0xe0 App/Src/madgwick.o
+ .text.madgwick_getErrorOri
+                0x0000000000000000      0x13e App/Src/madgwick.o
+ .text.madgwick_aproachVector
+                0x0000000000000000      0x420 App/Src/madgwick.o
+ .text.madgwick_jacobianAproachVector
+                0x0000000000000000      0x354 App/Src/madgwick.o
+ .text.madgwick_getEstimatedOri
+                0x0000000000000000       0xc8 App/Src/madgwick.o
+ .debug_info    0x0000000000000000      0x45c App/Src/madgwick.o
+ .debug_abbrev  0x0000000000000000      0x119 App/Src/madgwick.o
+ .debug_aranges
+                0x0000000000000000       0x40 App/Src/madgwick.o
+ .debug_ranges  0x0000000000000000       0x30 App/Src/madgwick.o
+ .debug_macro   0x0000000000000000       0x37 App/Src/madgwick.o
+ .debug_macro   0x0000000000000000      0xa78 App/Src/madgwick.o
+ .debug_line    0x0000000000000000      0x3b3 App/Src/madgwick.o
+ .debug_str     0x0000000000000000     0x2e22 App/Src/madgwick.o
+ .comment       0x0000000000000000       0x1f App/Src/madgwick.o
+ .debug_frame   0x0000000000000000       0xe8 App/Src/madgwick.o
+ .ARM.attributes
+                0x0000000000000000       0x34 App/Src/madgwick.o
  .group         0x0000000000000000        0xc App/Src/matrix.o
  .group         0x0000000000000000        0xc App/Src/matrix.o
  .group         0x0000000000000000        0xc App/Src/matrix.o
@@ -333,7 +401,7 @@ Discarded input sections
  .text.matrix_transpose
                 0x0000000000000000       0xe6 App/Src/matrix.o
  .text.matrix_inverse_and_multiplicate_left
-                0x0000000000000000      0x204 App/Src/matrix.o
+                0x0000000000000000      0x1fc App/Src/matrix.o
  .text.matrix_copy
                 0x0000000000000000       0xac App/Src/matrix.o
  .text.matrix_setSize
@@ -406,6 +474,130 @@ Discarded input sections
  .debug_frame   0x0000000000000000      0x3d8 App/Src/matrix.o
  .ARM.attributes
                 0x0000000000000000       0x34 App/Src/matrix.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .group         0x0000000000000000        0xc App/Src/quaternion.o
+ .text          0x0000000000000000        0x0 App/Src/quaternion.o
+ .data          0x0000000000000000        0x0 App/Src/quaternion.o
+ .bss           0x0000000000000000        0x0 App/Src/quaternion.o
+ .text.quat_mulByNum
+                0x0000000000000000       0xc2 App/Src/quaternion.o
+ .text.quat_sum
+                0x0000000000000000       0xc8 App/Src/quaternion.o
+ .text.quat_add
+                0x0000000000000000       0x7a App/Src/quaternion.o
+ .text.quat_sub
+                0x0000000000000000       0x7a App/Src/quaternion.o
+ .text.quat_getNorm
+                0x0000000000000000       0xae App/Src/quaternion.o
+ .text.quat_normalize
+                0x0000000000000000       0x70 App/Src/quaternion.o
+ .text.quat_getConj
+                0x0000000000000000       0xa2 App/Src/quaternion.o
+ .text.quat_getInverted
+                0x0000000000000000       0xf4 App/Src/quaternion.o
+ .text.quat_mulByQuat
+                0x0000000000000000      0x278 App/Src/quaternion.o
+ .text.quat_mulByVec
+                0x0000000000000000       0xba App/Src/quaternion.o
+ .text.vec_rotate
+                0x0000000000000000      0x136 App/Src/quaternion.o
+ .rodata        0x0000000000000000       0x71 App/Src/quaternion.o
+ .text.vecToMatrix
+                0x0000000000000000       0x9c App/Src/quaternion.o
+ .text.quatToMatrix
+                0x0000000000000000       0xbc App/Src/quaternion.o
+ .text.vecToQuat
+                0x0000000000000000       0x92 App/Src/quaternion.o
+ .text.matrixToQuat
+                0x0000000000000000       0xbc App/Src/quaternion.o
+ .text.quat_init
+                0x0000000000000000       0x96 App/Src/quaternion.o
+ .text.quat_zero
+                0x0000000000000000       0xa0 App/Src/quaternion.o
+ .text.vec_init
+                0x0000000000000000       0x76 App/Src/quaternion.o
+ .text.vec_zero
+                0x0000000000000000       0x78 App/Src/quaternion.o
+ .text.quat_print
+                0x0000000000000000       0x48 App/Src/quaternion.o
+ .debug_info    0x0000000000000000      0xd92 App/Src/quaternion.o
+ .debug_abbrev  0x0000000000000000      0x231 App/Src/quaternion.o
+ .debug_aranges
+                0x0000000000000000       0xb8 App/Src/quaternion.o
+ .debug_ranges  0x0000000000000000       0xa8 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000      0x1c0 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000      0xa78 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x22 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x4c App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x1e App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x94 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x3c App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x34 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000      0x174 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x16 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x43 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x57 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x34 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x10 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x58 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x71 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x1c App/Src/quaternion.o
+ .debug_macro   0x0000000000000000      0x12a App/Src/quaternion.o
+ .debug_macro   0x0000000000000000      0x341 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000      0x19b App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x1c App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x35 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x10 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x10 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x6a App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x1c App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x52 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x22 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x10 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x52 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0xd5 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x1c App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x3d App/Src/quaternion.o
+ .debug_macro   0x0000000000000000       0x16 App/Src/quaternion.o
+ .debug_macro   0x0000000000000000      0x145 App/Src/quaternion.o
+ .debug_line    0x0000000000000000      0x71d App/Src/quaternion.o
+ .debug_str     0x0000000000000000     0x7faf App/Src/quaternion.o
+ .comment       0x0000000000000000       0x1f App/Src/quaternion.o
+ .debug_frame   0x0000000000000000      0x384 App/Src/quaternion.o
+ .ARM.attributes
+                0x0000000000000000       0x34 App/Src/quaternion.o
  .group         0x0000000000000000        0xc App/Src/tmain.o
  .group         0x0000000000000000        0xc App/Src/tmain.o
  .group         0x0000000000000000        0xc App/Src/tmain.o
@@ -3602,8 +3794,11 @@ Linker script and memory map
 LOAD /usr/lib/gcc/arm-none-eabi/10.2.0/thumb/v7e-m+fp/hard/crti.o
 LOAD /usr/lib/gcc/arm-none-eabi/10.2.0/thumb/v7e-m+fp/hard/crtbegin.o
 LOAD /usr/lib/gcc/arm-none-eabi/10.2.0/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/crt0.o
+LOAD App/Src/ahrc.o
 LOAD App/Src/lds.o
+LOAD App/Src/madgwick.o
 LOAD App/Src/matrix.o
+LOAD App/Src/quaternion.o
 LOAD App/Src/tmain.o
 LOAD Core/Src/main.o
 LOAD Core/Src/stm32f4xx_hal_msp.o
