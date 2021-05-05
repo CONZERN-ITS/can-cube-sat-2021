@@ -453,6 +453,11 @@ void gps_configure_begin()
 	if (state->enabled)
 		return; // Мы уже конфигурируемся
 
+	gps_power_off();
+	HAL_Delay(100);
+	gps_power_on();
+	HAL_Delay(10);
+
 	state->packet_ptr = ublox_neo6_cfg_msgs;
 	state->sent_packet_ack_status = GPS_CFG_ACK_STATUS_IDLE;
 
