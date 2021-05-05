@@ -121,9 +121,6 @@ typedef struct sx126x_drv_t
 	sx126x_api_t api;
 	sx126x_drv_state_t state;
 
-	uint32_t _sw_timeout_offset;
-	uint32_t _sw_timeout_limit;
-
 	sx126x_standby_mode_t _default_standby;
 	bool _infinite_rx;
 
@@ -159,10 +156,6 @@ void sx126x_drv_dtor(sx126x_drv_t * drv);
 
 //! Регистрация обработчика событий драйвера
 int sx126x_drv_register_event_handler(sx126x_drv_t * drv, sx126x_evt_handler_t handler, void * cb_user_arg);
-
-//! Установка программного таймаута на RX/TX/CAD операции
-/*! Ноль - отсутствие таймаута */
-int sx126x_drv_set_sw_timeout(sx126x_drv_t * drv, uint32_t sw_timeout_ms);
 
 //! Сброс чипа через RST пин и состояния драйвера
 int sx126x_drv_reset(sx126x_drv_t * drv);

@@ -555,10 +555,6 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms)
 	if (0xFFFF == timeout_ms)
 		drv->_infinite_rx = true;
 
-	// Запоминаем когда мы начали для программного таймаута
-	int rc = sx126x_brd_get_time(drv->api.board, drv->_sw_timeout_offset);
-	SX126X_RETURN_IF_NONZERO(rc);
-
 	return 0;
 }
 
@@ -589,10 +585,6 @@ int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms)
 	rc = _switch_state(drv, SX126X_DRVSTATE_TX);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	// Запоминаем когда мы начали для программного таймаута
-	int rc = sx126x_brd_get_time(drv->api.board, drv->_sw_timeout_offset);
-	SX126X_RETURN_IF_NONZERO(rc);
-
 	return 0;
 }
 
@@ -609,10 +601,6 @@ int sx126x_drv_mode_cad(sx126x_drv_t * drv)
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	rc = _switch_state(drv, SX126X_DRVSTATE_CAD);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Запоминаем когда мы начали для программного таймаута
-	int rc = sx126x_brd_get_time(drv->api.board, drv->_sw_timeout_offset);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;
@@ -892,17 +880,6 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 
 			evt_arg.rx_done.timed_out = true;
 			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_RX_DONE, &evt_arg);
-		}
-		// Никаких RX событий не происходит, что там у нас с программным таймаутом
-		else if (drv->_sw_timeout_limit != 0) // если он настроен
-		{
-			uint32_t now;
-			rc = sx126x_brd_get_time(drv->api.board, &now);
-			if (now > drv->_sw_timeout_offset + drv->_sw_timeout_limit)
-			{
-				// Случился программный таймаут!
-				// И... что делать в такой ситуации?
-			}
 		}
 		break;
 
