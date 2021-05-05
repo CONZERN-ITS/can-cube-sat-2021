@@ -15,6 +15,11 @@ CentralWidget:
         - 1
         - 1
       is_on: true
+  StatusWidget:
+    background_color: '#888888'
+    succsess_color: g
+    processing_color: b
+    failure_color: r
 MainWindow:
   DataInterface:
     type: ZMQITS

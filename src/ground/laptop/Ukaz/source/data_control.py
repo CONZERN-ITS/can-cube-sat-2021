@@ -10,8 +10,6 @@ import numpy as NumPy
 import struct
 import zmq
 
-from source.functions.wgs84 import wgs84_xyz_to_latlonh as wgs84_conv
-
 def generate_log_file_name(log_type='tlm'):
     if log_type == 'tlm':
         prefix = 'telemetry_'
@@ -82,7 +80,6 @@ class ZMQDataSource():
 
     def write_data(self, msg):
         self.pub_socket.send_multipart(msg)
-        print(msg)
 
     def stop(self):
         print('1')

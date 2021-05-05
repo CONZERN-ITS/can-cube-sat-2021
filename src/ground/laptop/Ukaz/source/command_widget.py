@@ -183,6 +183,8 @@ class CommandWidget(QtWidgets.QFrame):
         self.layout = QtWidgets.QGridLayout(self)
         self.commands = []
 
+        self.cookie = (time.time() // 1000) % 1000 
+
     def setup_ui_design(self):
         self.settings.beginGroup("CentralWidget/CommandWidget")
 
@@ -190,13 +192,10 @@ class CommandWidget(QtWidgets.QFrame):
             command.send_msg.disconnect(self.send_command)
             command.deleteLater()
         self.commands = []
-        print(self.settings.childGroups())
 
         for group in self.settings.childGroups():
             self.settings.beginGroup(group)
-            print(group)
             if self.settings.value("is_on") != False:
-                print('1')
                 self.commands.append(CommandWidget.CommandItem(self.settings.value("name"), self.settings.value("msg_name")))
                 self.layout.addWidget(self.commands[-1], *[int(num) for num in self.settings.value("position")])
                 for group in self.settings.childGroups():
@@ -215,11 +214,11 @@ class CommandWidget(QtWidgets.QFrame):
             command.update_data()
 
     def send_command(self):
-        print('send')
         sender = self.sender()
         if isinstance(sender, CommandWidget.CommandItem):
             sender.get_data()
-            self.send_msg.emit([sender.get_msg_name(), sender.get_data()])
+            self.send_msg.emit([sender.get_msg_name(), sender.get_data(), self.cookie])
+            self.cookie += 1
 
     def clear_data(self):
         for command in self.commands:

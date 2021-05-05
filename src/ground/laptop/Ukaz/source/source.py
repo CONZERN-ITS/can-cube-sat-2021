@@ -22,6 +22,8 @@ class CentralWidget(QtWidgets.QWidget):
     def setup_ui(self):
         self.layout = QtWidgets.QHBoxLayout(self)
 
+        self.status_widget = status_widget.StatusWidget()
+        self.layout.addWidget(self.status_widget)
         self.command_widget = command_widget.CommandWidget()
         self.layout.addWidget(self.command_widget)
 
@@ -121,6 +123,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.interface = self.get_data_interface()
+        self.interface.command_ststus_changed.connect(self.central_widget.status_widget.new_msg_reaction)
 
         self.data_obj = self.get_data_object()
         self.central_widget.command_widget.send_msg.connect(self.send_msg)
@@ -143,12 +146,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_msg(self, data):
         print('msg')
-        msg = self.interface.generate_message(*data)
+        msg = self.interface.generate_message(*data[:2])
         if msg is not None:
             self.msg_box.setDetailedText(str(msg))
             if self.msg_box.exec() == QtWidgets.QMessageBox.Yes:
                 print(msg)
-                self.interface.send_command(msg)
+                self.interface.send_command(msg, data[2])
+                self.central_widget.status_widget.add_command(data[0], data[2])
 
     def get_data_object(self):
         self.settings.beginGroup('MainWindow/DataSourse')

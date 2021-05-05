@@ -7,69 +7,71 @@ import os
 
 
 class StatusWidget(QtWidgets.QWidget):
-          
-
-    class Command():
-        STATUS_UNKNOWN = 0
-        STATUS_PROCESSING = 1
-        STATUS_SUCCSESS = 2
-        STATUS_FAILURE = 3
-
-        def __init__(self, cookie, name, status='Undefined', status_type=STATUS_UNKNOWN):
-            self.name = name
-            self.cookie = cookie
-            self.status = status
-            self.set_enabled(True)
-            self.set_is_viewed(False)
-            self.set_status(status)
-            self.set_status_type(status_type)
-
-        def get_name(self):
-            return self.name
-
-        def get_cookie(self):
-            return self.cookie
-
-        def get_status(self):
-            return self.status
-
-        def set_status(self, status='Undefined'):
-            self.status = status
-
-        def get_status_type(self):
-            return self.status_type
-
-        def set_status_type(self, status_type=STATUS_UNKNOWN):
-            self.status_type = status_type
-
-        def set_is_viewed(self, is_viewed=False):
-            self.is_viewed = is_viewed
-
-        def get_is_viewed(self):
-            return self.is_viewed
-
-        def set_enabled(self, enabled=True):
-            self.enabled = enabled
-            if enabled:
-                self.start_time = time.time()
-                self.stop_time = 0
-            else:
-                self.stop_time = time.time()
-
-        def get_enabled(self):
-            return self.enabled
-
-        def get_start_time(self):
-            return self.start_time
-
-        def get_stop_time(self):
-            return self.stop_time
 
 
     class StatusModel(QtCore.QAbstractTableModel):
-        def __init__(self, command_list=[]):
+
+
+        class Command():
+            STATUS_UNKNOWN = 0
+            STATUS_PROCESSING = 1
+            STATUS_SUCCSESS = 2
+            STATUS_FAILURE = 3
+
+            def __init__(self, cookie, name, status='Undefined', status_type=STATUS_UNKNOWN):
+                self.name = name
+                self.cookie = cookie
+                self.status = status
+                self.set_enabled(True)
+                self.set_is_viewed(False)
+                self.set_status(status)
+                self.set_status_type(status_type)
+
+            def get_name(self):
+                return self.name
+
+            def get_cookie(self):
+                return self.cookie
+
+            def get_status(self):
+                return self.status
+
+            def set_status(self, status='Undefined'):
+                self.status = status
+
+            def get_status_type(self):
+                return self.status_type
+
+            def set_status_type(self, status_type=STATUS_UNKNOWN):
+                self.status_type = status_type
+
+            def set_is_viewed(self, is_viewed=False):
+                self.is_viewed = is_viewed
+
+            def get_is_viewed(self):
+                return self.is_viewed
+
+            def set_enabled(self, enabled=True):
+                self.enabled = enabled
+                if enabled:
+                    self.start_time = time.time()
+                    self.stop_time = 0
+                else:
+                    self.stop_time = time.time()
+
+            def get_enabled(self):
+                return self.enabled
+
+            def get_start_time(self):
+                return self.start_time
+
+            def get_stop_time(self):
+                return self.stop_time
+
+
+        def __init__(self, cmd_list=[]):
             super(StatusWidget.StatusModel, self).__init__()
-            self.command_list = command_list
+            self.cmd_list = cmd_list
 
         def set_background_color(self, color):
             self.background_brush = QtGui.QBrush(color)
@@ -84,10 +86,13 @@ class StatusWidget(QtWidgets.QWidget):
             self.background_failure_brush = QtGui.QBrush(color)
 
         def is_event_enabled(self, row):
-            return self.command_list[row].get_enabled()
+            return self.cmd_list[row].get_enabled()
+
+        def is_event_viewed(self, row):
+            return self.cmd_list[row].get_is_viewed()
 
         def rowCount(self, parent=QtCore.QModelIndex()):
-            return len(self.command_list)
+            return len(self.cmd_list)
 
         def columnCount(self, parent=QtCore.QModelIndex()):
             return 5
@@ -115,30 +120,30 @@ class StatusWidget(QtWidgets.QWidget):
 
         def data(self, index, role):
             if role == QtCore.Qt.DisplayRole:
-                command = self.command_list[index.row()]
+                cmd = self.cmd_list[index.row()]
                 if index.column() == 0:
-                    return QtCore.QVariant(command.get_cookie())
+                    return QtCore.QVariant(cmd.get_cookie())
 
                 elif index.column() == 1:
-                    return QtCore.QVariant(command.get_name())
+                    return QtCore.QVariant(cmd.get_name())
 
                 elif index.column() == 2:
-                    return QtCore.QVariant(command.get_status())
+                    return QtCore.QVariant(cmd.get_status())
 
                 elif index.column() == 3:
-                    return QtCore.QVariant(self.get_command_time_str(command.get_start_time()))
+                    return QtCore.QVariant(self.get_cmd_time_str(cmd.get_start_time()))
 
                 elif index.column() == 4:
-                    return QtCore.QVariant(self.get_command_time_str(command.get_stop_time()))
+                    return QtCore.QVariant(self.get_cmd_time_str(cmd.get_stop_time()))
 
             elif role == QtCore.Qt.BackgroundRole:
-                command = self.command_list[index.row()]
-                status_type = command.status_type()
-                if status_type == STATUS_PROCESSING:
+                cmd = self.cmd_list[index.row()]
+                status_type = cmd.get_status_type()
+                if status_type == StatusWidget.StatusModel.Command.STATUS_PROCESSING:
                     return self.background_processing_brush
-                elif status_type == STATUS_SUCCSESS:
+                elif status_type == StatusWidget.StatusModel.Command.STATUS_SUCCSESS:
                     return self.background_success_brush
-                elif status_type == STATUS_FAILURE:
+                elif status_type == StatusWidget.StatusModel.Command.STATUS_FAILURE:
                     return self.background_failure_brush
                 else:
                     return self.background_brush
@@ -151,194 +156,109 @@ class StatusWidget(QtWidgets.QWidget):
         def endReset(self):
             self.endResetModel()
 
-        def update_command(self, cookie, status, status_type):
-            self.event_list.append(event)
-            return len(self.event_list) - 1
+        def update_cmd(self, cookie, status, status_type):
+            for cmd in self.cmd_list:
+                if cmd.get_cookie() == cookie:
+                    self.beginReset()
+                    cmd.set_status_type(status_type)
+                    cmd.set_status(status)
+                    if (status_type == StatusWidget.StatusModel.Command.STATUS_FAILURE) or (status_type == StatusWidget.StatusModel.Command.STATUS_SUCCSESS):
+                        cmd.set_enabled(False)
+                    self.endReset()
+                    return
+            self.add_command(cookie, status, status_type, name='Undefined')
 
-        def add_command(self, cookie, status, status_type, name=''):
-            command = Command(name=name,
+        def add_command(self, cookie, status='Undefined', status_type=Command.STATUS_UNKNOWN, name=''):
+            cmd = StatusWidget.StatusModel.Command(name=name,
                               cookie=cookie,
                               status=status,
                               status_type=status_type)
 
             self.beginReset()
-            self.command_list.append(command)
+            self.cmd_list.append(cmd)
             self.endReset()
 
-        def get_command_list(self):
-            return self.command_list
+        def get_cmd_list(self):
+            return self.cmd_list
 
-        def get_command_time_str(self, command_time):
-            if command_time > 0:
-                return time.strftime("%H-%M-%S", time.gmtime(command_time))
+        def get_cmd_time_str(self, cmd_time):
+            if cmd_time > 0:
+                return time.strftime("%H-%M-%S", time.gmtime(cmd_time))
             else:
                 return '..-..-..'
 
         def clear(self):
             self.beginReset()
-            self.command_list = []
+            self.cmd_list = []
             self.endReset()
 
 
-    class SortFilterProxyEventModel(QtCore.QSortFilterProxyModel):
+    class SortFilterProxyStatusModel(QtCore.QSortFilterProxyModel):
 
         def filterAcceptsRow(self, sourceRow, sourceParent):
-            return self.sourceModel().is_event_enabled(sourceRow)
+            return self.sourceModel().is_event_enabled(sourceRow) or self.sourceModel().is_event_enabled(sourceRow)
 
 
     def __init__(self):
-        super(EventWidget, self).__init__()
+        super(StatusWidget, self).__init__()
         self.settings = settings_control.init_settings()
 
         self.setup_ui()
         self.setup_ui_design()
-        self.update_current_values()
 
     def setup_ui(self):
         self.layout = QtWidgets.QVBoxLayout(self)
 
-        self.events = EventWidget.EventModel()
-        self.active_events = EventWidget.SortFilterProxyEventModel()
-        self.active_events.setSourceModel(self.events)
+        self.cmds = StatusWidget.StatusModel()
+        self.processing_cmds = StatusWidget.SortFilterProxyStatusModel()
+        self.processing_cmds.setSourceModel(self.cmds)
 
-        self.events_tree = QtWidgets.QTreeView()
-        self.layout.addWidget(self.events_tree)
-        self.events_tree.setModel(self.events)
+        self.cmds_tree = QtWidgets.QTreeView()
+        self.layout.addWidget(self.cmds_tree)
+        self.cmds_tree.setModel(self.cmds)
 
-        self.active_events_tree = QtWidgets.QTreeView()
-        self.layout.addWidget(self.active_events_tree)
-        self.active_events_tree.setModel(self.active_events)
+        self.processing_cmds_tree = QtWidgets.QTreeView()
+        self.layout.addWidget(self.processing_cmds_tree)
+        self.processing_cmds_tree.setModel(self.processing_cmds)
 
         self.viewed_btn = QtWidgets.QPushButton('Viewed')
         self.layout.addWidget(self.viewed_btn)
 
-        self.player = QtMultimedia.QMediaPlayer()
-        self.player.setVolume(50)
-
-    def init_event(self, identifier, *args, **kwargs):
-        if identifier == 'OutOfRange':
-            return EventWidget.OutOfRangeEvent(*args, **kwargs)
-        elif identifier == 'UnderRange':
-            return EventWidget.UnderRangeEvent(*args, **kwargs)
-        elif identifier == 'OverRange':
-            return EventWidget.OverRangeEvent(*args, **kwargs)
-        elif identifier == 'EqualTo':
-            return EventWidget.EqualToEvent(*args, **kwargs)
-        else:
-            return EventWidget.AbstractEvent(*args, **kwargs)
-
     def setup_ui_design(self):
-        self.settings.beginGroup("CentralWidget/EventWidget")
+        self.settings.beginGroup("CentralWidget/StatusWidget")
         self.background_color = QtGui.QColor(self.settings.value("background_color"))
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Base, self.background_color)
-        self.attention_color = QtGui.QColor(self.settings.value("attention_color"))
 
-        self.events.clear()
-        self.events.set_background_color(self.background_color)
-        self.events.set_background_attention_color(self.attention_color)
+        self.cmds.clear()
+        self.cmds.set_background_color(self.background_color)
+        self.cmds.set_background_success_color(QtGui.QColor(self.settings.value("succsess_color")))
+        self.cmds.set_background_processing_color(QtGui.QColor(self.settings.value("processing_color")))
+        self.cmds.set_background_failure_color(QtGui.QColor(self.settings.value("failure_color")))
 
-        self.playlist = QtMultimedia.QMediaPlaylist()
-        self.playlist.setPlaybackMode(QtMultimedia.QMediaPlaylist.CurrentItemInLoop)
-        self.player.setPlaylist(self.playlist)
-        self.playlist.insertMedia(0, DEFAULT_ALARM)
-        self.player.stop()
-
-        for tree in [self.active_events_tree, self.events_tree]:
+        for tree in [self.processing_cmds_tree, self.cmds_tree]:
             tree.setPalette(palette)
             tree.setStyleSheet("QHeaderView::section { background-color:" + self.settings.value("background_color") + '}') 
             for i in range(5):
                 tree.resizeColumnToContents(i)
 
-        self.event_list = []
-        self.settings.beginGroup("Event")
-        def_time_limit = self.settings.value("def_time_limit")
-        if def_time_limit is None:
-            def_time_limit = 1
-        for group in self.settings.childGroups():
-            self.settings.beginGroup(group)
-            time_limit = self.settings.value("time_limit")
-            if time_limit is None:
-                time_limit = def_time_limit
-            self.event_list.append(self.init_event(self.settings.value("identifier"),
-                                                   self.settings.value("name"),
-                                                   [self.settings.value("sourse_id"), self.settings.value("message_id")],
-                                                   self.settings.value("field_id"),
-                                                   self.settings.value("trigger_value"),
-                                                   time_limit,
-                                                   event_type=self.settings.value("event_type"),
-                                                   priority=self.settings.value("priority")))
-            if self.settings.value('audio') is not None:
-                audio = QtMultimedia.QMediaContent(QtCore.QUrl.fromLocalFile(self.settings.value('audio')))
-            else:
-                audio = DEFAULT_ALARM
-            self.event_list[-1].set_playlist_index(self.playlist.mediaCount())
-            self.playlist.insertMedia(self.playlist.mediaCount(), audio)
-            self.playlist_priority = 0
-            self.event_list[-1].event_begin.connect(self.setup_event_item)
-            self.event_list[-1].event_end.connect(self.archive_item)
-            self.event_list[-1].relevance_changed.connect(self.change_item_relevance)
-            self.settings.endGroup()
         self.viewed_btn.clicked.connect(self.viewed_btn_action)
         self.settings.endGroup()
-        self.settings.endGroup()
+
+    def add_command(self, name, cookie):
+        self.cmds.add_command(cookie=cookie,
+                                  name=name)
 
     def viewed_btn_action(self):
-        for event in self.event_list:
-            self.events.beginReset()
-            if event.get_event_index() is not None:
-                self.events.get_event_list()[event.get_event_index()].set_is_viewed(True)
-            self.events.endReset()
+        self.cmds.beginReset()
+        for cmd in self.cmds.get_cmd_list():
+            if not cmd.is_viewed():
+                cmds.set_is_viewed(True)
+        self.cmds.endReset()
 
-        self.playlist_priority = 0
-        self.player.stop()
-
-    def archive_item(self):
-        sender = self.sender()
-        if isinstance(sender, EventWidget.AbstractEvent):
-            if sender.get_event_index() is not None:
-                self.events.beginReset()
-                self.events.get_event_list()[sender.get_event_index()].set_enabled(False)
-                sender.set_event_index()
-                self.events.endReset()
-
-    def setup_event_item(self):
-        sender = self.sender()
-        if isinstance(sender, EventWidget.AbstractEvent):
-            self.events.beginReset()
-            event = EventWidget.Event(sender.get_name(), event_type=sender.get_event_type())
-            sender.set_event_index(self.events.add_event(event))
-            self.events.endReset()
-            if self.playlist_priority < sender.get_priority():
-                self.playlist.setCurrentIndex(sender.get_playlist_index())
-            self.player.play()
-
-    def change_item_relevance(self, relevance):
-        sender = self.sender()
-        if isinstance(sender, EventWidget.AbstractEvent):
-            if sender.get_event_index() is not None:
-                self.events.beginReset()
-                self.events.get_event_list()[sender.get_event_index()].set_relevance(relevance)
-                self.events.endReset()
-
-    def update_current_values (self):
-        pass
-
-    def new_data_reaction(self, data):
-        for event in self.event_list:
-            packet_id = event.get_packet_id()
-            last_msg = None
-            for msg in data[::-1]:
-                if (msg.get_source_id() == packet_id[0]) and (msg.get_message_id() == packet_id[1]):
-                    last_msg = msg
-                    break
-            if last_msg is not None:
-                event.check(msg)
+    def new_msg_reaction(self, data):
+        self.cmds.update_cmd(*data)
 
     def clear_data(self):
-        self.events.clear()
-        for event in self.event_list:
-            event.clear()
-
-        self.player.stop()
+        self.cmds.clear()
 
