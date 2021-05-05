@@ -1,0 +1,497 @@
+CentralWidget:
+  DataWidget:
+    Data_table:
+      CUBE_1_SINS_ERRORS:
+        is_on: true
+        name: 11_0_SINS_ERRORS
+        sourse_id: '11_0'
+        message_id: 'SINS_ERRORS'
+        time_limit: 20
+      CUBE_1_SINS_Height:
+        is_on: true
+        name: 11_0_GPS_UBX_NAV_SOL
+        sourse_id: '11_0'
+        message_id: 'GPS_UBX_NAV_SOL'
+        time_limit: 2
+      CUBE_1_SINS_OWN_TEMP:
+        is_on: true
+        name: 11_0_OWN_TEMP
+        sourse_id: '11_0'
+        message_id: 'OWN_TEMP'
+        range:
+        - - -40
+          - 70
+        time_limit: 20
+      CUBE_1_SINS_acceleration:
+        is_on: true
+        name: 11_0_SINS_ISC
+        sourse_id: '11_0'
+        message_id: 'SINS_ISC'
+        time_limit: 20
+      is_on: true
+      def_time_limit: 20
+    Packet_table:
+      CUBE_1_BCU_STATS:
+        is_on: true
+        name: 'cube 1 BCU BCU_STATS'
+        sourse_id: '10_0'
+        message_id: 'BCU_STATS'
+      CUBE_1_BCU_TEMP_COMP_0:
+        is_on: true
+        name: cube 1 BCU comp 0 THERMAL_STATE
+        sourse_id: '10_0'
+        message_id: THERMAL_STATE
+      CUBE_1_BCU_TEMP_COMP_1:
+        is_on: true
+        name: cube 1 BCU comp 1 THERMAL_STATE
+        sourse_id: '10_1'
+        message_id: THERMAL_STATE
+      CUBE_1_BCU_TEMP_COMP_2:
+        is_on: true
+        name: cube 1 BCU comp 2 THERMAL_STATE
+        sourse_id: '10_2'
+        message_id: THERMAL_STATE
+      CUBE_1_BCU_TEMP_COMP_3:
+        is_on: true
+        name: cube 1 BCU comp 3 THERMAL_STATE
+        sourse_id: '10_3'
+        message_id: THERMAL_STATE
+      CUBE_1_BCU_TEMP_COMP_4:
+        is_on: true
+        name: cube 1 BCU comp 4 THERMAL_STATE
+        sourse_id: '10_4'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_OWN_TEMP:
+        is_on: true
+        name: cube 1 PCU OWN_TEMP
+        sourse_id: '12_0'
+        message_id: OWN_TEMP
+      CUBE_1_PCU_TEMP_COMP_0:
+        is_on: true
+        name: cube 1 PCU comp 0 THERMAL_STATE
+        sourse_id: '12_0'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_TEMP_COMP_1:
+        is_on: true
+        name: cube 1 PCU comp 1 THERMAL_STATE
+        sourse_id: '12_1'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_TEMP_COMP_2:
+        is_on: true
+        name: cube 1 PCU comp 2 THERMAL_STATE
+        sourse_id: '12_2'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_TEMP_COMP_3:
+        is_on: true
+        name: cube 1 PCU comp 3 THERMAL_STATE
+        sourse_id: '12_3'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_VOLT_COMP_0:
+        is_on: true
+        name: cube 1 PCU comp 0 ELECTRICAL_STATE
+        sourse_id: '12_0'
+        message_id: ELECTRICAL_STATE
+      CUBE_1_PL_BME280_TEMP:
+        is_on: true
+        name: cube 1 PL PLD_BME280_DATA
+        sourse_id: '13_0'
+        message_id: PLD_BME280_DATA
+      CUBE_1_PL_I2C_LINK_STATS:
+        is_on: true
+        name: cube 1 PL I2C_LINK_STATS
+        sourse_id: '13_0'
+        message_id: I2C_LINK_STATS
+      CUBE_1_PL_ME2O2:
+        is_on: true
+        name: cube 1 PL ME2O2
+        sourse_id: '13_0'
+        message_id: ME2O2
+      CUBE_1_PL_MICS_6814_CO:
+        is_on: true
+        name: cube 1 PL PLD_MICS_6814_DATA
+        sourse_id: '13_0'
+        message_id: PLD_MICS_6814_DATA
+      CUBE_1_PL_OWN_TEMP:
+        is_on: true
+        name: cube 1 PL OWN_TEMP
+        sourse_id: '13_0'
+        message_id: OWN_TEMP
+      CUBE_1_PL_STATS:
+        is_on: true
+        name: cube 1 PL PLD_STATS
+        sourse_id: '13_0'
+        message_id: PLD_STATS
+      CUBE_1_SINS_ERRORS:
+        is_on: true
+        name: cube 1 SINS SINS_ERRORS
+        sourse_id: '11_0'
+        message_id: SINS_ERRORS
+      CUBE_1_SINS_GPS_UBX_NAV_SOL:
+        is_on: true
+        name: cube 1 SINS GPS_UBX_NAV_SOL
+        sourse_id: '11_0'
+        message_id: GPS_UBX_NAV_SOL
+      CUBE_1_SINS_ISC:
+        is_on: true
+        name: cube 1 SINS SINS_ISC
+        sourse_id: '11_0'
+        message_id: SINS_ISC
+      CUBE_1_SINS_OWN_TEMP:
+        is_on: true
+        name: cube 1 SINS OWN_TEMP
+        sourse_id: '11_0'
+        message_id: OWN_TEMP
+      CUBE_2_PCU_OWN_TEMP:
+        is_on: true
+        name: cube 2 PCU OWN_TEMP
+        sourse_id: '21_0'
+        message_id: OWN_TEMP
+      CUBE_2_PCU_TEMP_COMP_0:
+        is_on: true
+        name: cube 2 PCU comp 0 THERMAL_STATE
+        sourse_id: '21_0'
+        message_id: THERMAL_STATE
+      CUBE_2_PCU_TEMP_COMP_1:
+        is_on: true
+        name: cube 2 PCU comp 1 THERMAL_STATE
+        sourse_id: '21_1'
+        message_id: THERMAL_STATE
+      CUBE_2_PCU_TEMP_COMP_2:
+        is_on: true
+        name: cube 2 PCU comp 2 THERMAL_STATE
+        sourse_id: '21_2'
+        message_id: THERMAL_STATE
+      CUBE_2_PCU_TEMP_COMP_3:
+        is_on: true
+        name: cube 2 PCU comp 3 THERMAL_STATE
+        sourse_id: '21_3'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_STATS:
+        is_on: true
+        name: cube 1 BCU BCU_STATS
+        sourse_id: '20_0'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_0:
+        is_on: true
+        name: cube 2 PFU comp 0 THERMAL_STATE
+        sourse_id: '20_0'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_1:
+        is_on: true
+        name: cube 2 PFU comp 1 THERMAL_STATE
+        sourse_id: '20_1'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_2:
+        is_on: true
+        name: cube 2 PFU comp 2 THERMAL_STATE
+        sourse_id: '20_2'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_3:
+        is_on: true
+        name: cube 2 PFU comp 3 THERMAL_STATE
+        sourse_id: '20_3'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_4:
+        is_on: true
+        name: cube 2 PFU comp 4 THERMAL_STATE
+        sourse_id: '20_4'
+        message_id: THERMAL_STATE
+      GCS_RADIO:
+        is_on: true
+        name: GCS RADIO RSSI
+        sourse_id: '1_0'
+        message_id: RSSI
+      is_on: true
+    Time_table:
+      CUBE_1_BCU:
+        is_on: true
+        system_name: cube 1 BCU time
+        sourse_id:
+        - '10_0'
+        - '10_1'
+        - '10_2'
+        - '10_3'
+        - '10_4'
+        time_limit: 20
+      CUBE_1_PCU:
+        is_on: true
+        system_name: cube 1 PCU time
+        sourse_id:
+        - '12_0'
+        - '12_1'
+        - '12_2'
+        - '12_3'
+        time_limit: 20
+      CUBE_1_PL:
+        is_on: true
+        system_name: cube 1 PL time
+        sourse_id:
+        - '13_0'
+        time_limit: 20
+      CUBE_1_SINS:
+        is_on: true
+        system_name: cube 1 SINS time
+        sourse_id:
+        - '11_0'
+        time_limit: 20
+      CUBE_2_PCU:
+        is_on: true
+        system_name: cube 2 PCU time
+        sourse_id:
+        - '21_0'
+        - '21_1'
+        - '21_2'
+        - '21_3'
+        time_limit: 20
+      CUBE_2_PFU:
+        is_on: true
+        system_name: cube 2 PFU time
+        sourse_id:
+        - '20_0'
+        - '20_1'
+        - '20_2'
+        - '20_3'
+        - '20_4'
+        time_limit: 20
+      GCS_RADIO:
+        is_on: true
+        system_name: GCS RADIO time
+        sourse_id:
+        - '1_0'
+        time_limit: 20
+      is_on: true
+      def_time_limit: 20
+    background_color: '#888888'
+    colors:
+    - '#0000FF'
+    - '#FF0000'
+    - '#FFFF00'
+    is_on: true
+    position:
+    - 0
+    - 2
+    - 2
+    - 1
+  GraphWidget:
+    Graph:
+      Accel:
+        Packets:
+          11_0_SINS_ACCEL:
+            sourse_id: '11_0'
+            message_id: SINS_ISC
+            field_id:
+            - accel[0]
+            - accel[1]
+            - accel[2]
+            field_name:
+            - x
+            - y
+            - z
+            color:
+            - r
+            - g
+            - b
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        name: Acceleration
+        position:
+        - 0
+        - 0
+        - 1
+        - 1
+        units: g
+      Compass:
+        legend_is_on: true
+        Packets:
+          11_0_SINS_COMPASS:
+            field_id:
+            - compass[0]
+            - compass[1]
+            - compass[2]
+            field_name:
+            - x
+            - y
+            - z
+            color:
+            - r
+            - g
+            - b
+            sourse_id: '11_0'
+            message_id: SINS_ISC
+        name: Compass
+        is_on: true
+        max_data_length: 100
+        position:
+        - 1
+        - 0
+        - 1
+        - 1
+        units: G
+      Height:
+        legend_is_on: false
+        Packets:
+          11_0_GPS_ALTITUDE:
+            field_id:
+            - alt
+            field_name:
+            - height
+            color:
+            - r
+            sourse_id: '11_0'
+            message_id: GPS_UBX_NAV_SOL
+        is_on: true
+        max_data_length: 100
+        name: Altitude
+        position:
+        - 2
+        - 0
+        - 1
+        - 1
+        units: m
+    is_on: true
+    position:
+    - 0
+    - 0
+    - 2
+    - 1
+    time_units: s
+  MapWidget:
+    center:
+    - 55.9
+    - 37.8
+    follow: true
+    is_on: true
+    max_data_length: 40
+    sourse_id: '11_0'
+    message_id: 'GPS_UBX_NAV_SOL'
+    field_lat_id: lat
+    field_lon_id: lon
+    position:
+    - 0
+    - 1
+    - 2
+    - 1
+    zoom: 4
+  ModelWidget:
+    Axis:
+      is_on: false
+      scale:
+      - 6.5
+      - 6.5
+      - 7
+      translate:
+      - 0
+      - 0
+      - -5
+    Camera:
+      azimuth: 0
+      distance: 470
+      elevation: 35
+      pan:
+      - 0
+      - 0
+      - 30
+    Grid:
+      is_on: true
+      scale:
+      - 3
+      - 3
+      - 3
+      translate:
+      - 0
+      - 0
+      - -10
+    Mesh:
+      Colors:
+        is_on: true
+        path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS_color.mfcl
+      compute_normals: true
+      draw_edges: false
+      draw_faces: true
+      path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS.stl
+      shader: edgeHilight
+      smooth: false
+    Scene:
+      Colors:
+        is_on: true
+        path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/axis.mfcl
+      compute_normals: true
+      draw_edges: false
+      draw_faces: true
+      is_on: true
+      path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/axis.stl
+      shader: balloon
+      smooth: false
+    background_color: '#323232'
+    is_on: true
+    sourse_id: '11_0'
+    message_id: 'SINS_ISC'
+    quat_field_id: 
+    - quaternion[0]
+    - quaternion[1]
+    - quaternion[2]
+    - quaternion[3]
+    position:
+    - 1
+    - 1
+    - 1
+    - 1
+  EventWidget:
+    Event:
+      SINS_UNDERTEMP_H:
+        name: cube 1 SINS overcooling threat
+        sourse_id: '11_0'
+        message_id: 'OWN_TEMPERATURE 2'
+        field_id: 
+        - TEMP
+        identifier: UnderRange
+        trigger_value: 35
+        index: 1
+        time_limit: 2
+        event_type: 'Error'
+        priority: 3
+        audio: 'D:\My_Programs\smartgit-portable-18_2_9\git\can-cube-sat-2021\src\ground\laptop\StrelA-MS\source\images\alarm2.mp3'
+      SINS_UNDERTEMP_L:
+        name: cube 1 SINS overcooling
+        sourse_id: '11_0'
+        message_id: 'OWN_TEMPERATURE 2'
+        field_id: 
+        - TEMP
+        identifier: UnderRange
+        trigger_value: 40
+        index: 1
+        time_limit: 2
+        event_type: 'Warning'
+        priority: 2
+    background_color: '#888888'
+    attention_color: '#0000FF'
+    is_on: true
+    position:
+    - 0
+    - 3
+    - 2
+    - 1
+CurrentValues:
+  time_shift: 1601731871.944
+DefaultValues:
+  time_shift: false
+MainWindow:
+  DataSourse:
+    Log:
+      path: ./log/its_packet_log__20201002T202411.mav
+      real_time: false
+      time_delay: 0.0005
+      type: MAV
+    MAVLink:
+      connection: udpin:0.0.0.0:14540
+    ZMQ:
+      bus_bpcs: "tcp://192.168.1.223:7778"
+      topics:
+      - "its.telemetry_packet"
+      - "radio.downlink_frame"
+    type: ZMQ
+  size:
+  - 1000
+  - 800
+  update_time: 0.1
