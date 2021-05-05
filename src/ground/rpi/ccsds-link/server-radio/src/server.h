@@ -13,6 +13,7 @@
 #define RADIO_TX_TIMEOUT_MS (5000)
 #define RADIO_RX_TIMEOUT_MS (5000)
 #define RADIO_RSSI_PERIOD_MS (500)
+#define RADIO_WATCHDOG_TIMEOUT_MS (5000)
 #define SERVER_TX_STATE_PERIOD_MS (500)
 #define SERVER_POLL_TIMEOUT_MS (1000)
 
@@ -51,6 +52,9 @@ typedef struct server_t
 
 	uint32_t tx_state_report_period_ms;
 	struct timespec tx_state_report_block_deadline;
+
+	struct timespec radio_watchdog_start_time;
+	struct timespec radio_last_poll_time;
 
 	void * zmq;
 	void * sub_socket;

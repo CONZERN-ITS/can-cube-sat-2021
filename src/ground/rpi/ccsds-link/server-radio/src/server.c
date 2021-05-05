@@ -561,7 +561,7 @@ static void _radio_deinit(server_t * server)
 }
 
 
-static int _radio_init(server_t * server)
+static int _radio_configure(server_t * server)
 {
 	sx126x_drv_t * const radio = &server->dev;
 	int rc;
@@ -609,15 +609,6 @@ static int _radio_init(server_t * server)
 			.lora_symb_timeout = 100
 	};
 
-
-	rc = sx126x_drv_ctor(radio, NULL);
-	if (0 != rc)
-		goto bad_exit;
-
-	rc = sx126x_drv_register_event_handler(radio, _radio_event_handler, server);
-	if (0 != rc)
-		goto bad_exit;
-
 	rc = sx126x_drv_reset(radio);
 	if (0 != rc)
 		goto bad_exit;
@@ -647,6 +638,26 @@ static int _radio_init(server_t * server)
 		goto bad_exit;
 
 	return 0;
+
+bad_exit:
+	return rc;
+}
+
+
+static int _radio_init(server_t * server)
+{
+	sx126x_drv_t * const radio = &server->dev;
+	int rc;
+
+	rc = sx126x_drv_ctor(radio, NULL);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_register_event_handler(radio, _radio_event_handler, server);
+	if (0 != rc)
+		goto bad_exit;
+
+	_radio_configure(server);
 
 bad_exit:
 	_radio_deinit(server);
@@ -699,6 +710,29 @@ static void _radio_go_rx(server_t * server)
 }
 
 
+static void _radio_watchdog_reset(server_t * server)
+{
+	int rc;
+	struct timespec now;
+	rc = clock_gettime(CLOCK_MONOTONIC, &now);
+	assert(0 == rc);
+
+	server->radio_watchdog_start_time = now;
+}
+
+
+static bool _radio_watchdog_is_expired(server_t * server)
+{
+	int rc;
+	struct timespec now;
+	rc = clock_gettime(CLOCK_MONOTONIC, &now);
+	assert(0 == rc);
+
+	uint32_t diff = _timespec_diff_ms(&server->radio_watchdog_start_time, &now);
+	return (diff > RADIO_WATCHDOG_TIMEOUT_MS);
+}
+
+
 static void _radio_fetch_rx(server_t * server, bool crc_valid)
 {
 	int rc;
@@ -724,6 +758,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 )
 {
 	server_t * server = (server_t*)user_arg;
+	_radio_watchdog_reset(server);
 
 	bool went_tx = false;
 	switch (kind)
@@ -867,10 +902,18 @@ int server_init(server_t * server)
 
 void server_run(server_t * server)
 {
+	int rc;
+	int radio_fd = sx126x_brd_rpi_get_event_fd(server->dev.api.board);
+
 	// Запускам цикл радио
 	_radio_go_rx(server);
 
-	int radio_fd = sx126x_brd_rpi_get_event_fd(server->dev.api.board);
+	// Запускаем вотчдог радио
+	_radio_watchdog_reset(server);
+
+	// Отмечаем время последнего пола
+	rc = clock_gettime(CLOCK_MONOTONIC, &server->radio_last_poll_time);
+	assert(0 == rc);
 
 	zmq_pollitem_t pollitems[2] = {0};
 	pollitems[0].fd = radio_fd;
@@ -881,16 +924,35 @@ void server_run(server_t * server)
 
 	while (1)
 	{
-		int rc = zmq_poll(pollitems, sizeof(pollitems)/sizeof(*pollitems), SERVER_POLL_TIMEOUT_MS);
+		if (_radio_watchdog_is_expired(server))
+		{
+			// Перезапускаем радио
+			log_error("radio watchdog expired. Reconfiguring and restarting radio");
+			_radio_configure(server);
+			_radio_go_rx(server);
+			_radio_watchdog_reset(server);
+		}
+
+		rc = zmq_poll(pollitems, sizeof(pollitems)/sizeof(*pollitems), SERVER_POLL_TIMEOUT_MS);
 		if (rc < 0)
 		{
 			perror("zmq poll error");
 			break;
 		}
 
-		if (pollitems[0].revents)
+		struct timespec now;
+		rc = clock_gettime(CLOCK_MONOTONIC, &now);
+		assert(rc);
+		uint32_t since_last_radio_poll_ms = _timespec_diff_ms(&server->radio_last_poll_time, &now);
+
+		if (pollitems[0].revents || since_last_radio_poll_ms > SERVER_POLL_TIMEOUT_MS)
 		{
+			// Это довольно тонкое место..
+			// Если мы слишком давно не ходили сюда, то возможно у нас что-то с прерываниями?
+			// Сходим еще раз, ну малоли что
+
 			log_trace("radio event: %d", pollitems[0].revents);
+			server->radio_last_poll_time = now;
 
 			// Ага, что-то прозошло с радио
 			rc = sx126x_drv_poll(&server->dev);
@@ -900,6 +962,7 @@ void server_run(server_t * server)
 
 		if (pollitems[1].revents)
 		{
+			// Союда ходим только по явному наличию события
 			log_trace("zmq_event %d", pollitems[1].revents);
 
 			// Что-то пришло, что хотят отправить на верх
