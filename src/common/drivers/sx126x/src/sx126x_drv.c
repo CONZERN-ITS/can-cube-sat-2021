@@ -851,8 +851,11 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 	case SX126X_DRVSTATE_RX:
 		if (irq_status & (SX126X_IRQ_RX_DONE))
 		{
-			rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
-			SX126X_RETURN_IF_NONZERO(rc);
+			if (!drv->_infinite_rx)
+			{
+				rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+				SX126X_RETURN_IF_NONZERO(rc);
+			}
 
 			evt_arg.rx_done.timed_out = false;
 			evt_arg.rx_done.crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
@@ -907,7 +910,7 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 			if (drv->_modem_state.lora.cad_exit_mode == SX126X_LORA_CAD_RX)
 				next_state = SX126X_DRVSTATE_RX;
 			else
-				next_state= SX126X_DRVSTATE_STANDBY_DEFAULT;
+				next_state = SX126X_DRVSTATE_STANDBY_DEFAULT;
 
 			rc = _switch_state(drv, next_state);
 			SX126X_RETURN_IF_NONZERO(rc);
