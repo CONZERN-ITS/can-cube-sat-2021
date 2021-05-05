@@ -234,7 +234,7 @@ int matrix_inverse_and_multiplicate_left(Matrixf *matrix, Matrixf *result) {
             fprintf(stderr, "Determinant is 0\n");
             return DET_IS_ZERO;
         }
-        matrix_swapRows(&result, x, i1);
+        matrix_swapRows(result, x, i1);
         matrix_swapRows(matrix, x, i1);
 
         float k = -1 / *matrix_at(matrix, x, x);
@@ -243,19 +243,19 @@ int matrix_inverse_and_multiplicate_left(Matrixf *matrix, Matrixf *result) {
         {
             float t = k * *matrix_at(matrix, i, x);
             matrix_addRow(matrix, x, i, t);
-            matrix_addRow(&result, x, i, t);
+            matrix_addRow(result, x, i, t);
         }
     }
     for (int i = matrix->width - 1; i >= 0; i--)
     {
-        matrix_mulRowNum(&result, i, 1 / *matrix_at(matrix, i, i));
+        matrix_mulRowNum(result, i, 1 / *matrix_at(matrix, i, i));
         *matrix_at(matrix, i, i) = 1;
 
         for (int j = i - 1; j >= 0; j--)
         {
             float t = -*matrix_at(matrix, j, i);
             matrix_addRow(matrix, i, j, t);
-            matrix_addRow(&result, i, j, t);
+            matrix_addRow(result, i, j, t);
         }
     }
     return 0;
