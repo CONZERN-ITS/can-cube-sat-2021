@@ -1,0 +1,4 @@
+../App/Src/tmain.c:20:5:_read	24	static
+../App/Src/tmain.c:29:5:_write	24	static
+../App/Src/tmain.c:47:7:degrees	16	static
+../App/Src/tmain.c:51:5:tmain	184	static
