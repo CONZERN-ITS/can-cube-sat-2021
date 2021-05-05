@@ -70,8 +70,8 @@ quaternion_t ahrs_getOrientation()
 }
 int ahrs_calculateOrientation(float dt)
 {
-	vector_t *measured[MAX_COUNT];
-	vector_t *real[MAX_COUNT];
+	const vector_t *measured[MAX_COUNT];
+	const vector_t *real[MAX_COUNT];
 	float portions[MAX_COUNT];
 	int size = 0;
 	for(int i = 0; i < MAX_COUNT; i++)

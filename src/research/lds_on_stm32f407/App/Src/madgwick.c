@@ -11,14 +11,14 @@
 #include "quaternion.h"
 
 
-static int madgwick_aproachVector(Matrixf* result, vector_t *real, vector_t *measured, quaternion_t *expected);
-static int madgwick_jacobianAproachVector(Matrixf*result, vector_t *real, quaternion_t *expected);
+static int madgwick_aproachVector(Matrixf *result, const vector_t *real, const vector_t *measured, const quaternion_t *expected);
+static int madgwick_jacobianAproachVector(Matrixf *result, const vector_t *real, const quaternion_t *expected);
 
 /*
  * Считает производную кватерниона ориентации СО Земли по отношению к СО аппарата. Эта проиводная
  * определяет скорость поворота на основании показаний гироскопа
  */
-int madgwick_getGyroDerOri(quaternion_t *result, vector_t *gyro_data, float dt, quaternion_t *previous)
+int madgwick_getGyroDerOri(quaternion_t *result, const vector_t *gyro_data, float dt, const quaternion_t *previous)
 {
 	quaternion_t S = vecToQuat(gyro_data);
 
@@ -36,7 +36,7 @@ int madgwick_getGyroDerOri(quaternion_t *result, vector_t *gyro_data, float dt, 
  *
  * Использует метод градиентного спуска
  */
-int madgwick_getErrorOri(quaternion_t *result, vector_t *real[], vector_t *measured[], float portions[], int count, quaternion_t *previous)
+int madgwick_getErrorOri(quaternion_t *result, const vector_t * const real[], const vector_t * const measured[], const float portions[], int count, const quaternion_t *previous)
 {
 	Matrixf _result = matrix_create(4, 1);
 	matrix_make_zero(&_result);
@@ -72,7 +72,7 @@ int madgwick_getErrorOri(quaternion_t *result, vector_t *real[], vector_t *measu
 /*
  * Определяем расхождение между векторами (с учетом ориентации СО Земли относительно СО аппарата)
  */
-static int madgwick_aproachVector(Matrixf* result, vector_t *real, vector_t *measured, quaternion_t *expected)
+static int madgwick_aproachVector(Matrixf* result, const vector_t *real, const vector_t *measured, const quaternion_t *expected)
 {
 	float q1 = expected->w;
 	float q2 = expected->x;
@@ -96,7 +96,7 @@ static int madgwick_aproachVector(Matrixf* result, vector_t *real, vector_t *mea
 /*
  * Якобиан фукнкции madgwick_aproachVector относительно параметра madgwick_aproachVector
  */
-static int madgwick_jacobianAproachVector(Matrixf*result, vector_t *real, quaternion_t *expected)
+static int madgwick_jacobianAproachVector(Matrixf *result, const vector_t *real, const quaternion_t *expected)
 {
 	float q1 = expected->w;
 	float q2 = expected->x;
@@ -133,7 +133,7 @@ static int madgwick_jacobianAproachVector(Matrixf*result, vector_t *real, quater
  * Объединяем их с использованием доверительного коэфициента float koef_B.
  * Интегруем показания - получаем искомы кватернион
  */
-int madgwick_getEstimatedOri(quaternion_t *result, quaternion_t *gyroDerOri, quaternion_t *error, float dt, float koef_B, quaternion_t *previous)
+int madgwick_getEstimatedOri(quaternion_t *result, const quaternion_t *gyroDerOri, const quaternion_t *error, float dt, float koef_B, const quaternion_t *previous)
 {
 	*result = quat_mulByNum(error, -koef_B);
 	quat_add(result, gyroDerOri);

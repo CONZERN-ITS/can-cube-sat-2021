@@ -10,7 +10,7 @@
 #include <math.h>
 #include <stdio.h>
 
-quaternion_t quat_mulByNum(quaternion_t * a, double k) {
+quaternion_t quat_mulByNum(const quaternion_t * a, double k) {
 
 	quaternion_t result;
 
@@ -22,7 +22,7 @@ quaternion_t quat_mulByNum(quaternion_t * a, double k) {
 	return result;
 }
 
-quaternion_t quat_sum(quaternion_t *a, quaternion_t *b)
+quaternion_t quat_sum(const quaternion_t *a, const quaternion_t *b)
 {
 	quaternion_t result;
 	result.w = a->w + b->w;
@@ -31,14 +31,14 @@ quaternion_t quat_sum(quaternion_t *a, quaternion_t *b)
 	result.z = a->z + b->z;
 	return result;
 }
-void quat_add(quaternion_t *left, quaternion_t *right)
+void quat_add(quaternion_t *left, const quaternion_t *right)
 {
 	left->w += right->w;
 	left->x += right->x;
 	left->y += right->y;
 	left->z += right->z;
 }
-void quat_sub(quaternion_t *left, quaternion_t *right)
+void quat_sub(quaternion_t *left, const quaternion_t *right)
 {
 	left->w -= right->w;
 	left->x -= right->x;
@@ -46,7 +46,7 @@ void quat_sub(quaternion_t *left, quaternion_t *right)
 	left->z -= right->z;
 }
 
-double quat_getNorm(quaternion_t * a) {
+double quat_getNorm(const quaternion_t * a) {
 	double t = a->w * a->w + a->x * a->x + a->y * a->y + a->z * a->z;
 	t = sqrt(t);
 	return t;
@@ -57,7 +57,7 @@ void quat_normalize(quaternion_t * a) {
 	*a = quat_mulByNum(a, 1 / quat_getNorm(a) );
 }
 
-quaternion_t quat_getConj(quaternion_t *a)
+quaternion_t quat_getConj(const quaternion_t *a)
 {
 
 	quaternion_t result;
@@ -71,7 +71,7 @@ quaternion_t quat_getConj(quaternion_t *a)
 	return result;
 }
 
-quaternion_t quat_getInverted(quaternion_t * a) {
+quaternion_t quat_getInverted(const quaternion_t * a) {
 
 	quaternion_t result = quat_getConj(a);
 
@@ -80,7 +80,7 @@ quaternion_t quat_getInverted(quaternion_t * a) {
 	return quat_mulByNum(&result, 1 / (k * k));
 }
 
-quaternion_t quat_mulByQuat(quaternion_t * a, quaternion_t * b) {
+quaternion_t quat_mulByQuat(const quaternion_t * a, const quaternion_t * b) {
 
 	quaternion_t result;
 
@@ -92,14 +92,14 @@ quaternion_t quat_mulByQuat(quaternion_t * a, quaternion_t * b) {
 	return result;
 }
 
-quaternion_t quat_mulByVec(quaternion_t * a, vector_t * b) {
+quaternion_t quat_mulByVec(const quaternion_t * a, const vector_t * b) {
 
 	quaternion_t vectQuat = {0, b->x, b->y, b->z};
 
 	return quat_mulByQuat(a, &vectQuat);
 }
 
-vector_t vec_rotate(vector_t * vect, quaternion_t * rotation) {
+vector_t vec_rotate(const vector_t * vect, const quaternion_t * rotation) {
 	quaternion_t rot_normal = *rotation;//quat_normalize(rotation);
 
 	quaternion_t tmp = quat_mulByVec(&rot_normal, vect);
@@ -115,13 +115,9 @@ vector_t vec_rotate(vector_t * vect, quaternion_t * rotation) {
 }
 
 
-int vecToMatrix(Matrixf *result, vector_t *vec)
+int vecToMatrix(Matrixf *result, const vector_t *vec)
 {
-	if(!matrix_isThatSize(result, 3, 1))
-	{
-		fprintf(stderr, "Bad sizes: vec -> matrix\n");
-		return -1;
-	}
+	assert(matrix_checkSize(result, 3, 1));
 	*matrix_at(result, 0, 0) = vec->x;
 	*matrix_at(result, 1, 0) = vec->y;
 	*matrix_at(result, 2, 0) = vec->z;
@@ -129,13 +125,9 @@ int vecToMatrix(Matrixf *result, vector_t *vec)
 
 	return 0;
 }
-int quatToMatrix(Matrixf *result, quaternion_t *quat)
+int quatToMatrix(Matrixf *result, const quaternion_t *quat)
 {
-	if(!matrix_isThatSize(result, 4, 1))
-	{
-		fprintf(stderr, "Bad sizes: quat -> matrix\n");
-		return -1;
-	}
+	assert(matrix_checkSize(result, 4, 1));
 	*matrix_at(result, 0, 0) = quat->w;
 	*matrix_at(result, 1, 0) = quat->x;
 	*matrix_at(result, 2, 0) = quat->y;
@@ -145,7 +137,7 @@ int quatToMatrix(Matrixf *result, quaternion_t *quat)
 	return 0;
 }
 
-quaternion_t vecToQuat(vector_t *vec)
+quaternion_t vecToQuat(const vector_t *vec)
 {
 	quaternion_t result;
 	result.w = 0;
@@ -155,13 +147,9 @@ quaternion_t vecToQuat(vector_t *vec)
 	return result;
 }
 
-int matrixToQuat(quaternion_t *result, Matrixf *m)
+int matrixToQuat(quaternion_t *result, const Matrixf *m)
 {
-	if(!matrix_isThatSize(m, 4, 1))
-	{
-		fprintf(stderr, "Bad sizes: matrix -> quat\n");
-		return -1;
-	}
+    assert(matrix_checkSize(m, 4, 1));
 	result->w = *matrix_at(m, 0, 0);
 	result->x = *matrix_at(m, 1, 0);
 	result->y = *matrix_at(m, 2, 0);
@@ -191,7 +179,7 @@ vector_t vec_zero()
 	return vec_init(0,0,0);
 }
 
-void quat_print(quaternion_t *a)
+void quat_print(const quaternion_t *a)
 {
 	printf("%2.3lf %2.3lf %2.3lf %2.3lf\n", a->w, a->x, a->y, a->z);
 }

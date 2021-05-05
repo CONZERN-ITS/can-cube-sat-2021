@@ -1,5 +1,5 @@
-../App/Src/madgwick.c:80:5:madgwick_getGyroDerOri	56	static
-../App/Src/madgwick.c:148:5:madgwick_getErrorOri	96	static
-../App/Src/madgwick.c:180:12:madgwick_aproachVector	88	static
-../App/Src/madgwick.c:200:12:madgwick_jacobianAproachVector	64	static
-../App/Src/madgwick.c:230:5:madgwick_getEstimatedOri	32	static
+../App/Src/madgwick.c:21:5:madgwick_getGyroDerOri	56	static
+../App/Src/madgwick.c:39:5:madgwick_getErrorOri	96	static
+../App/Src/madgwick.c:75:12:madgwick_aproachVector	88	static
+../App/Src/madgwick.c:99:12:madgwick_jacobianAproachVector	64	static
+../App/Src/madgwick.c:136:5:madgwick_getEstimatedOri	32	static
