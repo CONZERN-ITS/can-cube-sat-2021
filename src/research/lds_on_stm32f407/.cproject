@@ -98,6 +98,8 @@
                                     <listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
                                     									
                                     <listOptionValue builtIn="false" value="../App/Inc"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="../Drivers/madgwick_lds/Inc"/>
                                     								
                                 </option>
                                 								
