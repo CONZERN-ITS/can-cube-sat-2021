@@ -29,6 +29,17 @@ Matrixf matrix_create(int height, int width)
 	return result;
 }
 
+Matrixf matrix_create_static(int height, int width, float *arr, size_t size)
+{
+    assert(height * width < size);
+    Matrixf result;
+    result.height = height;
+    result.width = width;
+    result.reserved = size;
+    result.arr = arr;
+    return result;
+}
+
 void matrix_delete(Matrixf *matrix)
 {
 	free(matrix->arr);

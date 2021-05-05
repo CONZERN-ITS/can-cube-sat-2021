@@ -10,6 +10,34 @@
 #include "matrix.h"
 #include "quaternion.h"
 
+static float __arr_result_4x1[4 * 1];
+static float __arr_temp_4x1[4 * 1];
+static float __arr_F_3x1[3 * 1];
+static float __arr_J_4x3[4 * 3];
+static Matrixf __result = {
+        .arr = __arr_result_4x1,
+        .height = 4,
+        .width = 1,
+        .reserved = 4 * 1
+};
+static Matrixf __temp = {
+        .arr = __arr_temp_4x1,
+        .height = 4,
+        .width = 1,
+        .reserved = 4 * 1
+};
+static Matrixf __F = {
+        .arr = __arr_F_3x1,
+        .height = 3,
+        .width = 1,
+        .reserved = 3 * 1
+};
+static Matrixf __J = {
+        .arr = __arr_J_4x3,
+        .height = 4,
+        .width = 3,
+        .reserved = 4 * 3
+};
 
 static int madgwick_aproachVector(Matrixf *result, const vector_t *real, const vector_t *measured, const quaternion_t *expected);
 static int madgwick_jacobianAproachVector(Matrixf *result, const vector_t *real, const quaternion_t *expected);
@@ -38,34 +66,31 @@ int madgwick_getGyroDerOri(quaternion_t *result, const vector_t *gyro_data, floa
  */
 int madgwick_getErrorOri(quaternion_t *result, const vector_t * const real[], const vector_t * const measured[], const float portions[], int count, const quaternion_t *previous)
 {
-	Matrixf _result = matrix_create(4, 1);
-	matrix_make_zero(&_result);
-	Matrixf temp = matrix_create(4, 1);
-	Matrixf F = matrix_create(3, 1);
-	Matrixf J = matrix_create(4, 3);
+
+	Matrixf *_result = &__result;
+	matrix_make_zero(_result);
+	Matrixf *temp = &__temp;
+	Matrixf *F = &__F;
+	Matrixf *J = &__J;
 
 
 	for(int i = 0; i < count; i++)
 	{
-		madgwick_aproachVector(&F, real[i],measured[i],previous);
-		madgwick_jacobianAproachVector(&J, real[i], previous);
+		madgwick_aproachVector(F, real[i],measured[i],previous);
+		madgwick_jacobianAproachVector(J, real[i], previous);
 
-		matrix_multiplicate(&J, &F, &temp);
-		matrix_mulNumber(&temp, portions[i]);
+		matrix_multiplicate(J, F, temp);
+		matrix_mulNumber(temp, portions[i]);
 
-		matrix_add(&_result, &temp);
+		matrix_add(_result, temp);
 		//matrix_print(&F);
 		//matrix_print(&J);
 	}
-	float n = matrix_norm(&_result);
+	float n = matrix_norm(_result);
 	if(n != 0)
-		matrix_mulNumber(&_result, 1 / n);
+		matrix_mulNumber(_result, 1 / n);
 
-	matrixToQuat(result, &_result);
-
-	matrix_delete(&temp);
-	matrix_delete(&F);
-	matrix_delete(&J);
+	matrixToQuat(result, _result);
 	return 0;
 }
 

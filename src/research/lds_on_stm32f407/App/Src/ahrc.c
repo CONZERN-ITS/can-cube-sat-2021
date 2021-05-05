@@ -11,7 +11,7 @@
 #include "madgwick.h"
 
 #define MAX_COUNT 3
-struct{
+static struct{
 	float koef_B;
 	quaternion_t orientation;
 
@@ -24,7 +24,7 @@ struct{
 	int is_vector_used[MAX_COUNT];
 
 
-}ahrs_parametres;
+} ahrs_parametres;
 
 void ahrs_init()
 {

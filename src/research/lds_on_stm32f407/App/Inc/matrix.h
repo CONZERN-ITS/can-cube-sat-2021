@@ -8,6 +8,8 @@
 #ifndef MATRIX_H_
 #define MATRIX_H_
 
+#include <stddef.h>
+
 typedef struct
 {
 	int height;
@@ -20,6 +22,8 @@ typedef struct
 
 ///////Basic
 Matrixf matrix_create(int height, int width);
+
+Matrixf matrix_create_static(int height, int width, float *arr, size_t size);
 
 void matrix_delete(Matrixf *matrix);
 

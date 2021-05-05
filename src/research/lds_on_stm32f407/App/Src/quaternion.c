@@ -150,11 +150,20 @@ quaternion_t vecToQuat(const vector_t *vec)
 int matrixToQuat(quaternion_t *result, const Matrixf *m)
 {
     assert(matrix_checkSize(m, 4, 1));
-	result->w = *matrix_at(m, 0, 0);
-	result->x = *matrix_at(m, 1, 0);
-	result->y = *matrix_at(m, 2, 0);
-	result->z = *matrix_at(m, 3, 0);
-	return 0;
+    result->w = *matrix_at(m, 0, 0);
+    result->x = *matrix_at(m, 1, 0);
+    result->y = *matrix_at(m, 2, 0);
+    result->z = *matrix_at(m, 3, 0);
+    return 0;
+}
+
+vector_t arrToVec(const float arr[3])
+{
+    vector_t a;
+    a.x = arr[0];
+    a.y = arr[1];
+    a.z = arr[2];
+    return a;
 }
 
 quaternion_t quat_init(double w, double x, double y, double z)
