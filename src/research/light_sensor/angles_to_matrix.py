@@ -51,7 +51,7 @@ for line in fin:
 fin.close()
 
 A = np.matrix(m)
-B = np.linalg.inv(np.matmul(A.transpose(), A))
+B = np.linalg.inv(A.transpose() * A) * A.transpose()
 
 for a in m:
     for x in a:
