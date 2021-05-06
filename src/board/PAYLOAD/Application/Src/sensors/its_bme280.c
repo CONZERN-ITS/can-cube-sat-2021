@@ -5,8 +5,9 @@
 
 #include <stm32f4xx_hal.h>
 
-#include "bme280.h"
+#include "icao_table_calc.h"
 
+#include "bme280.h"
 #include "util.h"
 #include "time_svc.h"
 
@@ -191,7 +192,7 @@ int its_bme280_read(its_bme280_id_t id, mavlink_pld_int_bme280_data_t * data)
 	data->pressure = bme280_data.pressure;
 	data->temperature = bme280_data.temperature;
 	data->humidity = bme280_data.humidity;
-	data->altitude = 0; // TODO: ...
+	data->altitude = icao_table_alt_for_pressure((float)bme280_data.pressure);
 	return 0;
 }
 
