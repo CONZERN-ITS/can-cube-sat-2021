@@ -1,11 +1,8 @@
 #include <sensors/its_ms5611.h>
-
 #include <assert.h>
 
 #include <time_svc.h>
 #include <util.h>
-
-#include <stm32f4xx_hal.h>
 
 #include <sensors/ms5611.h>
 
@@ -43,6 +40,24 @@ struct its_ms5611_t
 	//! Код последней ошибки функций обмена
 	HAL_StatusTypeDef last_error;
 };
+
+
+void ms_power_on(its_ms5611_id_t devid)
+{
+	if (ITS_MS_EXTERNAL == devid)
+		HAL_GPIO_WritePin(MS_EXT_PWR_GPIO_Port, MS_EXT_PWR_Pin, SET);
+	if (ITS_MS_INTERNAL == devid)
+		HAL_GPIO_WritePin(MS_INT_PWR_GPIO_Port, MS_INT_PWR_Pin, SET);
+}
+
+
+void ms_power_off(its_ms5611_id_t devid)
+{
+	if (ITS_MS_EXTERNAL == devid)
+		HAL_GPIO_WritePin(MS_EXT_PWR_GPIO_Port, MS_EXT_PWR_Pin, RESET);
+	if (ITS_MS_INTERNAL == devid)
+		HAL_GPIO_WritePin(MS_INT_PWR_GPIO_Port, MS_INT_PWR_Pin, RESET);
+}
 
 
 static its_ms5611_t * _dev_by_id(its_ms5611_id_t devid);

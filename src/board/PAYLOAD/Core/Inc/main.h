@@ -69,8 +69,42 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define BME_EXT_PWR_Pin GPIO_PIN_0
+#define BME_EXT_PWR_GPIO_Port GPIOC
+#define MS_EXT_PWR_Pin GPIO_PIN_1
+#define MS_EXT_PWR_GPIO_Port GPIOC
+#define DOSIM_PWR_Pin GPIO_PIN_2
+#define DOSIM_PWR_GPIO_Port GPIOC
+#define HEATER_PWR_Pin GPIO_PIN_3
+#define HEATER_PWR_GPIO_Port GPIOC
+#define SENS_CTRL_NO2_2_Pin GPIO_PIN_6
+#define SENS_CTRL_NO2_2_GPIO_Port GPIOA
+#define SENS_CTRL_NO2_1_Pin GPIO_PIN_7
+#define SENS_CTRL_NO2_1_GPIO_Port GPIOA
+#define MS_INT_PWR_Pin GPIO_PIN_0
+#define MS_INT_PWR_GPIO_Port GPIOB
+#define BME_INT_PWR_Pin GPIO_PIN_1
+#define BME_INT_PWR_GPIO_Port GPIOB
+#define SENS_CTRL_NH3_1_Pin GPIO_PIN_12
+#define SENS_CTRL_NH3_1_GPIO_Port GPIOB
+#define SENS_CTRL_NH3_2_Pin GPIO_PIN_13
+#define SENS_CTRL_NH3_2_GPIO_Port GPIOB
+#define SENS_CTRL_CO_1_Pin GPIO_PIN_14
+#define SENS_CTRL_CO_1_GPIO_Port GPIOB
+#define SENS_CTRL_CO_2_Pin GPIO_PIN_9
+#define SENS_CTRL_CO_2_GPIO_Port GPIOA
+#define MICS_PWR_Pin GPIO_PIN_11
+#define MICS_PWR_GPIO_Port GPIOA
+#define O2_PWR_Pin GPIO_PIN_12
+#define O2_PWR_GPIO_Port GPIOA
+#define PPS_Input_Pin GPIO_PIN_15
+#define PPS_Input_GPIO_Port GPIOA
 #define LED_Pin_Pin GPIO_PIN_12
 #define LED_Pin_GPIO_Port GPIOC
+#define COMPR_ON_Pin GPIO_PIN_5
+#define COMPR_ON_GPIO_Port GPIOB
+#define VALVE_ON_Pin GPIO_PIN_8
+#define VALVE_ON_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 #define I2C_INT_Pin GPIO_PIN_7

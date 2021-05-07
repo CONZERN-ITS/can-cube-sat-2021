@@ -152,6 +152,18 @@ typedef enum mics6814_divider_upper_half_mode_t {
 } mics6814_divider_upper_half_mode_t;
 
 
+void mics6814_power_on()
+{
+	HAL_GPIO_WritePin(MICS_PWR_GPIO_Port, MICS_PWR_Pin, SET);
+}
+
+
+void mics6814_power_off()
+{
+	HAL_GPIO_WritePin(MICS_PWR_GPIO_Port, MICS_PWR_Pin, RESET);
+}
+
+
 // Перевод пина в input и highz состояние
 static void _pin_to_input_mode(GPIO_TypeDef * port, uint32_t pin)
 {

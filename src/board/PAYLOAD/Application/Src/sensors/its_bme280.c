@@ -86,6 +86,32 @@ static its_bme280_t _devices[2] = {
 };
 
 
+void bme_pwr_on(its_bme280_id_t id)
+{
+	if (ITS_BME_LOCATION_EXTERNAL == id)
+	{
+		HAL_GPIO_WritePin(BME_EXT_PWR_GPIO_Port, BME_EXT_PWR_Pin, SET);
+	}
+	if (ITS_BME_LOCATION_INTERNAL == id)
+	{
+		HAL_GPIO_WritePin(BME_INT_PWR_GPIO_Port, BME_EXT_PWR_Pin, SET);
+	}
+}
+
+
+void bme_pwr_off(its_bme280_id_t id)
+{
+	if (ITS_BME_LOCATION_EXTERNAL == id)
+	{
+		HAL_GPIO_WritePin(BME_EXT_PWR_GPIO_Port, BME_EXT_PWR_Pin, RESET);
+	}
+	if (ITS_BME_LOCATION_INTERNAL == id)
+	{
+		HAL_GPIO_WritePin(BME_INT_PWR_GPIO_Port, BME_EXT_PWR_Pin, RESET);
+	}
+}
+
+
 static its_bme280_t * _dev_by_id(its_bme280_id_t id)
 {
 	assert(id >= 0 && id < 2);

@@ -25,6 +25,18 @@
 #define ME2O2_COEFF_B (0.0)
 
 
+void o2_sensor_power_on()
+{
+	HAL_GPIO_WritePin(O2_PWR_GPIO_Port, O2_PWR_Pin, SET);
+}
+
+
+void o2_sensor_power_off()
+{
+	HAL_GPIO_WritePin(O2_PWR_GPIO_Port, O2_PWR_Pin, RESET);
+}
+
+
 #ifndef ITS_IMITATOR
 // Добывает значение через АЦП и пересчитывает его проценты концентрации
 static int _read(float * value)
