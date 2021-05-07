@@ -89,4 +89,17 @@ for a in B.tolist():
     fout.write('\n')
 fout.write('}\n')
 
+s = 0
+for a in B.tolist():
+    for x in a:
+        s += x * x
+s = sqrt(s)
+fout.write('{:0.5f}\n'.format(s))
+
+s = 0
+for a in A.tolist():
+    for x in a:
+        s += x * x
+s = sqrt(s)
+fout.write('{:0.5f}\n'.format(s))
 fout.close()
