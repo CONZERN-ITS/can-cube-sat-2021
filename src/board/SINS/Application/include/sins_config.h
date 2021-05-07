@@ -60,5 +60,6 @@
 
 #define ITS_SINS_USE_LDS 1
 #define ITS_SINS_USE_MAG 0
+#define ITS_SINS_LDS_COUNT 3
 
 #endif /* INC_SINS_CONFIG_H_*/

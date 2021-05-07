@@ -131,6 +131,8 @@
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Application/drivers}&quot;"/>
                                     									
+                                    <listOptionValue builtIn="false" value="../Drivers/madgwick_lds/Inc"/>
+                                    									
                                     <listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
                                     									
                                     <listOptionValue builtIn="false" value="../Core/Inc"/>
@@ -140,8 +142,6 @@
                                     <listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
                                     									
                                     <listOptionValue builtIn="false" value="../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="../Drivers/madgwick_lds/Inc"/>
                                     								
                                 </option>
                                 								

@@ -10,9 +10,11 @@
 
 #include <math.h>
 
-#define LDS_COUNT 3
+#define LDS_COUNT ITS_SINS_LDS_COUNT
 #define LDS_DIM 3
 
+
+static const float __lds_number = 2.72154 * 1.73205;
 static const float __lds_array_inv[LDS_DIM][LDS_COUNT] = {
         {1.00000, 0.00000, 0.00000 },
         {-1.00000, 0.75249, 0.75249 },
@@ -45,7 +47,11 @@ static float lds_get_error(const float x[LDS_DIM], const float b[LDS_COUNT]) {
         float d = b0i - b[i];
         sumsq += d * d;
     }
-    return sqrt(sumsq);
+    int sumb = 0;
+    for (int i = 0; i < LDS_COUNT; i++) {
+        sumb += b[i] * b[i];
+    }
+    return sqrt(sumsq / sumb) * __lds_number;
 }
 __attribute__((unused))
 static void dekart_to_euler(const float x[3], float sph[3]) {

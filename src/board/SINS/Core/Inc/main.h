@@ -58,10 +58,31 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define ADC_TIMEOUT 100
+#define LDiod7_Pin GPIO_PIN_0
+#define LDiod7_GPIO_Port GPIOC
+#define LDiod8_Pin GPIO_PIN_1
+#define LDiod8_GPIO_Port GPIOC
+#define LDiod4_Pin GPIO_PIN_2
+#define LDiod4_GPIO_Port GPIOC
+#define LDiod1_Pin GPIO_PIN_1
+#define LDiod1_GPIO_Port GPIOA
 #define GPS_UART_TX_Pin GPIO_PIN_2
 #define GPS_UART_TX_GPIO_Port GPIOA
 #define GPS_UART_RX_Pin GPIO_PIN_3
 #define GPS_UART_RX_GPIO_Port GPIOA
+#define LDiod2_Pin GPIO_PIN_4
+#define LDiod2_GPIO_Port GPIOA
+#define LDiod3_Pin GPIO_PIN_5
+#define LDiod3_GPIO_Port GPIOA
+#define LDiod9_Pin GPIO_PIN_4
+#define LDiod9_GPIO_Port GPIOC
+#define LDiod10_Pin GPIO_PIN_5
+#define LDiod10_GPIO_Port GPIOC
+#define LDiod5_Pin GPIO_PIN_0
+#define LDiod5_GPIO_Port GPIOB
+#define LDiod6_Pin GPIO_PIN_1
+#define LDiod6_GPIO_Port GPIOB
 #define PWR_MEMS_Pin GPIO_PIN_11
 #define PWR_MEMS_GPIO_Port GPIOA
 #define PWR_GPS_Pin GPIO_PIN_12
