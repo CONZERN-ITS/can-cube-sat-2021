@@ -263,7 +263,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.ClockSpeed = 200000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -297,7 +297,7 @@ static void MX_I2C2_Init(void)
 
   /* USER CODE END I2C2_Init 1 */
   hi2c2.Instance = I2C2;
-  hi2c2.Init.ClockSpeed = 400000;
+  hi2c2.Init.ClockSpeed = 200000;
   hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -331,7 +331,7 @@ static void MX_I2C3_Init(void)
 
   /* USER CODE END I2C3_Init 1 */
   hi2c3.Instance = I2C3;
-  hi2c3.Init.ClockSpeed = 400000;
+  hi2c3.Init.ClockSpeed = 200000;
   hi2c3.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c3.Init.OwnAddress1 = 0;
   hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -601,43 +601,52 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, BME_EXT_PWR_Pin|MS_EXT_PWR_Pin|DOSIM_PWR_Pin|HEATER_PWR_Pin
+                          |LED_Pin_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_9, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, SENS_CTRL_NO2_2_Pin|SENS_CTRL_NO2_1_Pin|SENS_CTRL_CO_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_5|GPIO_PIN_8, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, MS_INT_PWR_Pin|BME_INT_PWR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_Pin_GPIO_Port, LED_Pin_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, SENS_CTRL_NH3_1_Pin|SENS_CTRL_NH3_2_Pin|SENS_CTRL_CO_1_Pin|COMPR_ON_Pin
+                          |VALVE_ON_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC2 PC3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, MICS_PWR_Pin|O2_PWR_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pins : BME_EXT_PWR_Pin MS_EXT_PWR_Pin DOSIM_PWR_Pin HEATER_PWR_Pin */
+  GPIO_InitStruct.Pin = BME_EXT_PWR_Pin|MS_EXT_PWR_Pin|DOSIM_PWR_Pin|HEATER_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA6 PA7 PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_9;
+  /*Configure GPIO pins : SENS_CTRL_NO2_2_Pin SENS_CTRL_NO2_1_Pin SENS_CTRL_CO_2_Pin MICS_PWR_Pin
+                           O2_PWR_Pin */
+  GPIO_InitStruct.Pin = SENS_CTRL_NO2_2_Pin|SENS_CTRL_NO2_1_Pin|SENS_CTRL_CO_2_Pin|MICS_PWR_Pin
+                          |O2_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB1 PB5 PB8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_5|GPIO_PIN_8;
+  /*Configure GPIO pins : MS_INT_PWR_Pin BME_INT_PWR_Pin SENS_CTRL_NH3_1_Pin SENS_CTRL_NH3_2_Pin
+                           SENS_CTRL_CO_1_Pin COMPR_ON_Pin VALVE_ON_Pin */
+  GPIO_InitStruct.Pin = MS_INT_PWR_Pin|BME_INT_PWR_Pin|SENS_CTRL_NH3_1_Pin|SENS_CTRL_NH3_2_Pin
+                          |SENS_CTRL_CO_1_Pin|COMPR_ON_Pin|VALVE_ON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  /*Configure GPIO pin : PPS_Input_Pin */
+  GPIO_InitStruct.Pin = PPS_Input_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(PPS_Input_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED_Pin_Pin */
   GPIO_InitStruct.Pin = LED_Pin_Pin;
