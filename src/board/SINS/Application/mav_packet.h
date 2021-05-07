@@ -24,5 +24,7 @@ int mavlink_timestamp(void);
 void on_gps_packet(void * arg, const ubx_any_packet_t * packet);
 int own_temp_packet(void);
 int mavlink_errors_packet(void);
+int mavlink_lds_dir(stateSINS_lds_t * state);
+int mavlink_light_diode(stateSINS_lds_t * state);
 
 #endif /* MAV_PACKET_H_ */

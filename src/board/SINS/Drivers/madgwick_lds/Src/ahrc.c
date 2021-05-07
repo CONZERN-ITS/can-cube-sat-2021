@@ -32,7 +32,8 @@ void ahrs_init()
 {
 	ahrs_parametres.gyro_data = vec_zero();
 	ahrs_parametres.gyro_bias = vec_zero();
-	ahrs_parametres.koef_B = 0.3;
+    ahrs_parametres.koef_B = 0.3;
+    ahrs_parametres.koef_M = 0.01;
 	ahrs_parametres.orientation = quat_init(1,0,0,0);
 
 	for(int i = 0; i < MAX_COUNT; i++)
@@ -71,7 +72,7 @@ quaternion_t ahrs_getOrientation()
 {
 	return ahrs_parametres.orientation;
 }
-int ahrs_calculateOrientation(float dt)
+void ahrs_calculateOrientation(float dt)
 {
 	const vector_t *measured[MAX_COUNT];
 	const vector_t *real[MAX_COUNT];
@@ -93,6 +94,9 @@ int ahrs_calculateOrientation(float dt)
 
 	int err = 0;
 	err |= madgwick_getErrorOri(&error, real, measured, portions, size, &ahrs_parametres.orientation);
+    if (isnanf(error.w) || isnanf(error.x) || isnanf(error.y) || isnanf(error.z)) {
+        return;
+    }
 
     quaternion_t t = quat_getConj(&ahrs_parametres.orientation);
     t = quat_mulByQuat(&t, &error);
@@ -109,7 +113,9 @@ int ahrs_calculateOrientation(float dt)
 	quat_normalize(&result);
 
 
-
+    if (isnanf(result.w) || isnanf(result.x) || isnanf(result.y) || isnanf(result.z)) {
+        return;
+    }
 	ahrs_parametres.orientation = result;
 
 
@@ -118,7 +124,7 @@ int ahrs_calculateOrientation(float dt)
 
 vector_t ahrs_get_good_vec_from_mag(vector_t mag) {
     vector_t a = vec_rotate(&mag, &ahrs_parametres.orientation);
-    a.x = sqrt(a.x * a.x + a.y + a.y);
+    a.x = sqrt(a.x * a.x + a.y * a.y);
     a.y = 0;
     return a;
 }

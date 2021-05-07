@@ -10,6 +10,7 @@
 #include "stm32f4xx_hal.h"
 #include "drivers/mems/mems.h"
 #include "drivers/gps/gps.h"
+#include "sins_config.h"
 
 
 #ifndef STATE_H_
@@ -83,11 +84,18 @@ typedef struct {
 
 
 typedef struct {
-	struct timeval tv;
-	float accel[3];
-	float magn[3];
-	float quaternion[4];
+    struct timeval tv;
+    float accel[3];
+    float magn[3];
+    float quaternion[4];
 }stateSINS_isc_t;
+
+typedef struct {
+    struct timeval tv;
+    float sensor[ITS_SINS_LDS_COUNT];
+    float dir[3];
+    float error;
+}stateSINS_lds_t;
 
 
 //typedef struct {

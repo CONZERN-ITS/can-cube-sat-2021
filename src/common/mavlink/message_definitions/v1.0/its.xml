@@ -173,7 +173,7 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-      <field type="float" name="value" units="V">Light diode value</field>
+      <field type="float[10]" name="value" units="V">Light diode value</field>
     </message>
 
     <message id="50008" name="LDS_DIR">
@@ -183,6 +183,7 @@
       <field type="float" name="x" units="">Vector x component</field>
       <field type="float" name="y" units="">Vector y component</field>
       <field type="float" name="z" units="">Vector z component</field>
+      <field type="float" name="error" units="%">relative error</field>      
     </message>
 
 

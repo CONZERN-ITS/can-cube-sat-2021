@@ -98,6 +98,7 @@ stateSINS_rsc_t stateSINS_rsc;
 state_zero_t state_zero;
 stateSINS_isc_t stateSINS_isc;
 stateSINS_isc_t stateSINS_isc_prev;
+stateSINS_lds_t stateSINS_lds;
 
 /* USER CODE END PV */
 
@@ -242,7 +243,14 @@ static void on_gps_packet_main(void * arg, const ubx_any_packet_t * packet)
 	on_gps_packet(arg, packet);
 }
 
+void quat_to_angles(float* quat, float *ang){
 
+    ang[0] = (float)atan((double)((2 * (quat[0] * quat[1] + quat[2] * quat[3])) / (1 - 2 * (quat[1] * quat[1] + quat[2] * quat[2]))));
+
+    ang[1] = (float)asin((double)(2 * (quat[0] * quat[2] - quat[3] * quat[1])));
+
+    ang[2] = (float)atan((double)((2 * (quat[0] * quat[3] + quat[1] * quat[2])) / (1 - 2 * (quat[2] * quat[2] + quat[3] * quat[3]))));
+}
 /**
   * @brief	Collects data from SINS, stores it and makes quat using "S.Madgwick's" algo
   * @retval	R/w IMU error
@@ -267,8 +275,15 @@ int UpdateDataAll(void)
 	if (ITS_SINS_USE_LDS) {
 	    float arr[ITS_SINS_LDS_COUNT] = {0};
 	    read_ldiods(arr);
+	    for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
+	        stateSINS_lds.sensor[i] = arr[i];
+	    }
 	    lds_find(light, arr);
-	    lds_err = lds_get_error(light, arr);
+	    for (int i = 0; i < 3; i++) {
+	        stateSINS_lds.dir[i] = light[i];
+	    }
+
+        stateSINS_lds.error = lds_err = lds_get_error(light, arr);
 	}
 
 	time_svc_world_get_time(&stateSINS_isc.tv);
@@ -289,7 +304,6 @@ int UpdateDataAll(void)
 	/////////////////////////////////////////////////////
 	/////////////	UPDATE QUATERNION  //////////////////
 	/////////////////////////////////////////////////////
-	float quaternion[4] = {1, 0, 0, 0};
 
 
 	float dt = ((float)((stateSINS_isc.tv.tv_sec * 1000 + stateSINS_isc.tv.tv_usec / 1000)  - (stateSINS_isc_prev.tv.tv_sec * 1000 + stateSINS_isc_prev.tv.tv_usec / 1000))) / 1000;
@@ -298,43 +312,34 @@ int UpdateDataAll(void)
 	stateSINS_isc_prev.tv.tv_usec = stateSINS_isc.tv.tv_usec;
 
     float beta = 6.0;
-    quaternion_t ori = {0, 0, 0, 0};
-	if (ITS_SINS_USE_LDS) {
-        if ((error_system.lsm6ds3_error == 0) && (error_system.lis3mdl_error == 0) && ITS_SINS_USE_MAG) {
-            ahrs_vectorActivate(AHRS_MAG, 1);
-            ahrs_vectorActivate(AHRS_LIGHT, 1);
-            ahrs_setKoefB(beta);
-            ahrs_updateVecMeasured(AHRS_MAG, ahrs_get_good_vec_from_mag(vec_arrToVec(magn)));
-            ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
-            ahrs_calculateOrientation(dt);
-        } else if (error_system.lsm6ds3_error == 0) {
-            ahrs_vectorActivate(AHRS_MAG, 0);
-            ahrs_vectorActivate(AHRS_LIGHT, 1);
-            ahrs_setKoefB(beta);
-            ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
-            ahrs_calculateOrientation(dt);
-        }
+    quaternion_t ori = {1, 0, 0, 0};
+    if ((error_system.lsm6ds3_error == 0) && (error_system.lis3mdl_error == 0) && ITS_SINS_USE_MAG) {
+        ahrs_vectorActivate(AHRS_MAG, 1);
+        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS);
+        ahrs_setKoefB(beta);
+        ahrs_updateVecReal(AHRS_MAG, ahrs_get_good_vec_from_mag(vec_arrToVec(magn)));
+        ahrs_updateVecMeasured(AHRS_MAG, vec_arrToVec(magn));
+        ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
+        ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
+        ahrs_updateGyroData(vec_arrToVec(gyro));
+        ahrs_calculateOrientation(dt);
+    } else if (error_system.lsm6ds3_error == 0) {
+        ahrs_vectorActivate(AHRS_MAG, 0);
+        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS);
+        ahrs_setKoefB(beta);
+        ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
+        ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
+        ahrs_updateGyroData(vec_arrToVec(gyro));
+        ahrs_calculateOrientation(dt);
+    }
 
-        ori = ahrs_getOrientation();
-        stateSINS_isc.quaternion[0] = ori.w;
-        stateSINS_isc.quaternion[1] = ori.x;
-        stateSINS_isc.quaternion[2] = ori.y;
-        stateSINS_isc.quaternion[3] = ori.z;
+    ori = ahrs_getOrientation();
+    stateSINS_isc.quaternion[0] = ori.w;
+    stateSINS_isc.quaternion[1] = ori.x;
+    stateSINS_isc.quaternion[2] = ori.y;
+    stateSINS_isc.quaternion[3] = ori.z;
 
 
-	} else {
-        if ((error_system.lsm6ds3_error == 0) && (error_system.lis3mdl_error == 0) && ITS_SINS_USE_MAG)
-            MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], magn[0], magn[1], magn[2], dt, beta);
-        else if (error_system.lsm6ds3_error == 0)
-            MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, beta);
-
-        //	копируем кватернион в глобальную структуру
-        ori.w = stateSINS_isc.quaternion[0] = quaternion[0];
-        ori.x = stateSINS_isc.quaternion[1] = quaternion[1];
-        ori.y = stateSINS_isc.quaternion[2] = quaternion[2];
-        ori.z = stateSINS_isc.quaternion[3] = quaternion[3];
-
-	}
 	/////////////////////////////////////////////////////
 	///////////  ROTATE VECTORS TO ISC  /////////////////
 	/////////////////////////////////////////////////////
@@ -344,7 +349,7 @@ int UpdateDataAll(void)
 	t = vec_arrToVec(magn);
 	vector_t mag_ISC = vec_rotate(&t, &ori);
 
-
+//	printf("hello?\n");
 	if (0 == error_system.lsm6ds3_error)
 	{
         //TODO: разобраться со сдвигами
@@ -372,6 +377,9 @@ int UpdateDataAll(void)
 			stateSINS_isc.magn[i] = 0;
 	}
 
+	float ang[3];
+	quat_to_angles(stateSINS_isc.quaternion, ang);
+	printf("ang: %6.2f %6.2f %6.2f\n", ang[0], ang[1], ang[2]);
 	return error;
 }
 
@@ -585,7 +593,7 @@ int main(void)
   			// подбираем частоту данных (система против потома)
   			for (int u = 0; u < 5; u++)
   			{
-  				for (int i = 0; i < 30; i++)
+  				for (int i = 0; i < 10; i++)
   				{
   					// Кормит маджвик данными
   					UpdateDataAll();
@@ -635,6 +643,7 @@ int main(void)
   					continue;
   				// Отвравляем данные во внешний мир
   				mavlink_sins_isc(&stateSINS_isc); //<<---------------TODO: Переписать
+  				mavlink_lds_dir(&stateSINS_lds);
 
   			}
   			time = HAL_GetTick();
@@ -645,6 +654,7 @@ int main(void)
   			// Отправляем всякое почтой России (или нет)
   			mavlink_timestamp();
   			own_temp_packet();
+  			mavlink_light_diode(&stateSINS_lds);
 
   			error_mems_read();
   			mavlink_errors_packet();
@@ -871,6 +881,7 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+  printf("hello?\n");
 
 }
 

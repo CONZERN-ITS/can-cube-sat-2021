@@ -29,7 +29,7 @@ vector_t ahrs_get_good_vec_from_mag(vector_t mag);
 
 quaternion_t ahrs_getOrientation();
 
-int ahrs_calculateOrientation(float dt);
+void ahrs_calculateOrientation(float dt);
 
 int ahrs_updateError();
 
