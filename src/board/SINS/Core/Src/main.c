@@ -49,8 +49,8 @@
 
 #include "state.h"
 
+#include "ahrs.h"
 #include "MadgwickAHRS.h"
-#include "vector.h"
 #include "quaternion.h"
 #include "sensors.h"
 
@@ -242,7 +242,7 @@ static void on_gps_packet_main(void * arg, const ubx_any_packet_t * packet)
 
 
 /**
-  * @brief	Collects data from SINS, stores it and makes quat using S.Madgwick's algo
+  * @brief	Collects data from SINS, stores it and makes quat using "S.Madgwick's" algo
   * @retval	R/w IMU error
   */
 int UpdateDataAll(void)
@@ -270,6 +270,8 @@ int UpdateDataAll(void)
 		stateSINS_rsc.magn[k] = magn[k];
 	}
 
+
+
 	if ((error_system.lsm6ds3_error != 0) && (error_system.lis3mdl_error != 0))
 		return -22;
 
@@ -284,33 +286,61 @@ int UpdateDataAll(void)
 	stateSINS_isc_prev.tv.tv_sec = stateSINS_isc.tv.tv_sec;
 	stateSINS_isc_prev.tv.tv_usec = stateSINS_isc.tv.tv_usec;
 
+    float beta = 6.0;
+    quaternion_t ori = {0, 0, 0, 0};
+	if (ITS_SINS_USE_LDS) {
+        if ((error_system.lsm6ds3_error == 0) && (error_system.lis3mdl_error == 0) && ITS_SINS_USE_MAG) {
+            ahrs_vectorActivate(AHRS_MAG, 1);
+            ahrs_vectorActivate(AHRS_LIGHT, 1);
+            ahrs_setKoefB(beta);
+            ahrs_updateVecMeasured(AHRS_MAG, ahrs_get_good_vec_from_mag(vec_arrToVec(magn)));
+            ahrs_updateVecMeasured(AHRS_LIGHT, vec_init(1, 0, 0));
+            ahrs_calculateOrientation(dt);
+        } else if (error_system.lsm6ds3_error == 0) {
+            ahrs_vectorActivate(AHRS_MAG, 0);
+            ahrs_vectorActivate(AHRS_LIGHT, 1);
+            ahrs_setKoefB(beta);
+            ahrs_updateVecMeasured(AHRS_LIGHT, vec_init(1, 0, 0));
+            ahrs_calculateOrientation(dt);
+        }
 
-	float beta = 6.0;
-	if ((error_system.lsm6ds3_error == 0) && (error_system.lis3mdl_error == 0))
-		MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], magn[0], magn[1], magn[2], dt, beta);
-	else if (error_system.lsm6ds3_error == 0)
-		MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, beta);
+        ori = ahrs_getOrientation();
+        stateSINS_isc.quaternion[0] = ori.w;
+        stateSINS_isc.quaternion[1] = ori.x;
+        stateSINS_isc.quaternion[2] = ori.y;
+        stateSINS_isc.quaternion[3] = ori.z;
 
-	//	копируем кватернион в глобальную структуру
-	stateSINS_isc.quaternion[0] = quaternion[0];
-	stateSINS_isc.quaternion[1] = quaternion[1];
-	stateSINS_isc.quaternion[2] = quaternion[2];
-	stateSINS_isc.quaternion[3] = quaternion[3];
 
+	} else {
+        if ((error_system.lsm6ds3_error == 0) && (error_system.lis3mdl_error == 0) && ITS_SINS_USE_MAG)
+            MadgwickAHRSupdate(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], magn[0], magn[1], magn[2], dt, beta);
+        else if (error_system.lsm6ds3_error == 0)
+            MadgwickAHRSupdateIMU(quaternion, gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], dt, beta);
+
+        //	копируем кватернион в глобальную структуру
+        ori.w = stateSINS_isc.quaternion[0] = quaternion[0];
+        ori.x = stateSINS_isc.quaternion[1] = quaternion[1];
+        ori.y = stateSINS_isc.quaternion[2] = quaternion[2];
+        ori.z = stateSINS_isc.quaternion[3] = quaternion[3];
+
+	}
 	/////////////////////////////////////////////////////
 	///////////  ROTATE VECTORS TO ISC  /////////////////
 	/////////////////////////////////////////////////////
 
-	float accel_ISC[3] = {0, 0, 0};
-	vect_rotate(accel, quaternion, accel_ISC);
+	vector_t t = vec_arrToVec(accel);
+	vector_t accel_ISC = vec_rotate(&t, &ori);
+	t = vec_arrToVec(magn);
+	vector_t mag_ISC = vec_rotate(&t, &ori);
+
 
 	if (0 == error_system.lsm6ds3_error)
 	{
-		for (int i = 0; i < 3; i++)
-		{
-			accel_ISC[i] -= state_zero.accel_staticShift[i]; //<<---------- TODO: разобраться со сдвигами
-			stateSINS_isc.accel[i] = accel_ISC[i];
-		}
+        //TODO: разобраться со сдвигами
+	    stateSINS_isc.accel[0] = accel_ISC.x - state_zero.accel_staticShift[0];
+	    stateSINS_isc.accel[1] = accel_ISC.y - state_zero.accel_staticShift[1];
+	    stateSINS_isc.accel[2] = accel_ISC.z - state_zero.accel_staticShift[2];
+
 	}
 	else
 	{
@@ -321,10 +351,9 @@ int UpdateDataAll(void)
 	//	Copy vectors to global structure
 	if (0 == error_system.lis3mdl_error)
 	{
-		for (int i = 0; i < 3; i++)
-		{
-			stateSINS_isc.magn[i] = magn[i];
-		}
+        stateSINS_isc.magn[0] = mag_ISC.x;
+        stateSINS_isc.magn[1] = mag_ISC.y;
+        stateSINS_isc.magn[2] = mag_ISC.z;
 	}
 	else
 	{
@@ -461,6 +490,7 @@ int main(void)
 
   		time_svc_steady_init();
 
+
   		//backup_sram_enable_after_reset();
   		//backup_sram_read_zero_state(&state_zero);
 
@@ -506,6 +536,18 @@ int main(void)
   				HAL_Delay(500);
   				error_system.analog_sensor_init_error = analog_restart();
   			}
+
+  		ahrs_init();
+        ahrs_vectorActivate(AHRS_ACCEL, 1);
+        ahrs_updateVecReal(AHRS_ACCEL, vec_init(0, 0, 1));
+        ahrs_updateVecPortion(AHRS_ACCEL, 1);
+
+        ahrs_vectorActivate(AHRS_MAG, 1);
+        ahrs_updateVecPortion(AHRS_MAG, 1);
+
+        ahrs_vectorActivate(AHRS_LIGHT, 1);
+        ahrs_updateVecPortion(AHRS_LIGHT, 1);
+
 
   		// мемсы?
   		sensors_init();

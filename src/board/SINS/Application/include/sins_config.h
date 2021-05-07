@@ -58,4 +58,7 @@
 //! Базовый год для RTC, так как оно работает в двух последних цифрах года
 #define ITS_SINS_TIME_SVC_RTC_BASE_YEAR (2000)
 
+#define ITS_SINS_USE_LDS 1
+#define ITS_SINS_USE_MAG 0
+
 #endif /* INC_SINS_CONFIG_H_*/
