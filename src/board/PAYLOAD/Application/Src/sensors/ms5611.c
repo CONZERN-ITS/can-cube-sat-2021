@@ -198,30 +198,35 @@ void ms5611_calculate_temp_and_pressure(const ms5611_prom_data_t * prom,
 	int32_t temp = 0;
 	int32_t press = 0;
 
-	int32_t dT = r_temp - prom->c5 * pow(2, 8);		//Difference between actual and reference temperature
-	temp = 2000 + (int32_t)(dT * prom->c6 / pow(2, 23));		//Actual temperature (-40...85°C with 0.01°C resolution)
+	int32_t dT = (int32_t)r_temp - ((int32_t)prom->c5 << 8); //Difference between actual and reference temperature
+	temp = 2000 + (int32_t)(((int64_t)dT * prom->c6) >> 23); //Actual temperature (-40...85°C with 0.01°C resolution)
 
-	int64_t off = prom->c2 * pow(2, 16) + (prom->c4 * dT) / pow(2, 7);		//Offset at actual temperature
-	int64_t sens = prom->c1 * pow(2, 15) + (prom->c3 * dT) / pow(2, 8);		//Sensitivity at actual temperature
+	int64_t off =  ((int64_t)prom->c2 << 16) + (((int64_t)prom->c4 * dT) >> 7); //Offset at actual temperature
+	int64_t sens = ((int64_t)prom->c1 << 15) + (((int64_t)prom->c3 * dT) >> 8); //Sensitivity at actual temperature
 
 	if (temp < 2000)
 	{
-		int32_t t2 = dT*dT / pow(2, 31);
-		int64_t off2, sens2;
-		off2 = 5 * (temp - 2000)*(temp - 2000) / 2;
-		sens2 = 5 * (temp - 2000)*(temp - 2000) / 2*2;
+		int32_t t2 = (dT*dT) >> 31;
+
+		int64_t t_minus_20 = (int64_t)temp - 2000;
+		int64_t t_minus_20_squared = t_minus_20 * t_minus_20;
+
+		int64_t off2 = (5 * t_minus_20_squared) >> 1;
+		int64_t sens2 = (5 * t_minus_20_squared) >> 2;
 
 		if (temp < -1500)
 		{
-			off2 = off2 + 7 * (temp + 1500)*(temp + 1500);
-			sens2 = sens2 + 11 * (temp + 1500)*(temp + 1500) / 2;
+			int64_t temp_plus_15 = (int64_t)temp + 1500;
+			int64_t temp_plus_15_squared = temp_plus_15 * temp_plus_15;
+			off2 = off2 + 7 * temp_plus_15_squared;
+			sens2 = sens2 + (11 * temp_plus_15_squared) >> 1;
 		}
 
 		temp -= t2;
 		off -= off2;
 		sens -= sens2;
 	}
-	press = (r_press * sens / pow(2, 21) - off) / pow(2, 15);		//Temperature compensated pressure (10...1200mbar with 0.01mbar resolution)
+	press = ((r_press * sens) >> 21 - off) >> 16;		//Temperature compensated pressure (10...1200mbar with 0.01mbar resolution)
 	*end_presssure = press;
 	*end_temp = temp;
 }
