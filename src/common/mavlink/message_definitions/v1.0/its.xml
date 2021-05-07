@@ -169,6 +169,22 @@
       <field type="float" name="rssi"></field>
     </message>
 
+    <message id="50007" name="LIGHT_DIODE">
+      <description></description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="float" name="value" units="V">Light diode value</field>
+    </message>
+
+    <message id="50008" name="LDS_DIR">
+      <description></description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="float" name="x" units="">Vector x component</field>
+      <field type="float" name="y" units="">Vector y component</field>
+      <field type="float" name="z" units="">Vector z component</field>
+    </message>
+
 
 
     <!--  SINS messages. Id range: 50100 - 50199  -->
@@ -324,7 +340,7 @@
       
       <field type="int32_t" name="temperature" units="deg">Atmospheric temperature</field>
       <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>
-    </message>
+    </message>    
 
 
     <!--  BCU messages. Id range 50300 - 50399  -->
