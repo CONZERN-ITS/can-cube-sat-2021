@@ -25,27 +25,27 @@ ADC_HandleTypeDef hadc1;
 
 int analog_init(void)
 {
-	/** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-	*/
-	hadc1.Instance = ADC1;
-	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
-	hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-	hadc1.Init.ScanConvMode = DISABLE;
-	hadc1.Init.ContinuousConvMode = DISABLE;
-	hadc1.Init.DiscontinuousConvMode = DISABLE;
-	hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	hadc1.Init.NbrOfConversion = 1;
-	hadc1.Init.DMAContinuousRequests = DISABLE;
-	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-	int error = HAL_ADC_Init(&hadc1);
+//	/** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+//	*/
+//	hadc1.Instance = ADC1;
+//	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+//	hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+//	hadc1.Init.ScanConvMode = DISABLE;
+//	hadc1.Init.ContinuousConvMode = DISABLE;
+//	hadc1.Init.DiscontinuousConvMode = DISABLE;
+//	hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+//	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+//	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+//	hadc1.Init.NbrOfConversion = 1;
+//	hadc1.Init.DMAContinuousRequests = DISABLE;
+//	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+//	int error = HAL_ADC_Init(&hadc1);
 
 	// Включаем АЦП
 	__HAL_ADC_ENABLE(&hadc1);
 
 
-	return error;
+	return 0;
 }
 
 
