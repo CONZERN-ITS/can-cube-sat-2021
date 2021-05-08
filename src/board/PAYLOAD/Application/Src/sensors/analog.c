@@ -57,6 +57,8 @@ static int _channgel_config_for_target(analog_target_t target, ADC_ChannelConfTy
 	case ANALOG_TARGET_DNA_TEMP:
 		config->Channel = ADC_CHANNEL_4;
 		config->Rank = 1;
+		config->SamplingTime = ADC_SAMPLETIME_144CYCLES;
+		break;
 
 	case ANALOG_TARGET_INTEGRATED_TEMP:
 		config->Channel = ADC_CHANNEL_TEMPSENSOR;
