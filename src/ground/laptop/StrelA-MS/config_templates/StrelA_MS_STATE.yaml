@@ -5,35 +5,34 @@ CentralWidget:
         name: 10_0_THERMAL_STATE
         sourse_id: '10_0'
         message_id: 'THERMAL_STATE'
-        time_limit: 20
       CUBE_1_BCU_TEMP_COMP_1:
         name: 10_1_THERMAL_STATE
         sourse_id: '10_1'
         message_id: 'THERMAL_STATE'
-        time_limit: 20
       CUBE_1_BCU_TEMP_COMP_2:
         name: 10_2_THERMAL_STATE
         sourse_id: '10_2'
         message_id: 'THERMAL_STATE'
-        time_limit: 20
       CUBE_1_BCU_TEMP_COMP_3:
         name: 10_3_THERMAL_STATE
         sourse_id: '10_3'
         message_id: 'THERMAL_STATE'
-        time_limit: 20
       CUBE_1_BCU_TEMP_COMP_4:
         name: 10_4_THERMAL_STATE
         sourse_id: '10_4'
         message_id: 'THERMAL_STATE'
-        time_limit: 20
       CUBE_1_BCU_TEMP_COMP_5:
         name: 10_5_THERMAL_STATE
         sourse_id: '10_5'
         message_id: 'THERMAL_STATE'
-        time_limit: 20
       is_on: true
       def_time_limit: 20
     Packet_table:
+      CUBE_1_BCU_STATS:
+        is_on: false
+        name: 'cube 1 BCU BCU_STATS'
+        sourse_id: '10_0'
+        message_id: 'BCU_STATS'
       CUBE_1_BCU_TEMP_COMP_0:
         name: 10_0_THERMAL_STATE
         sourse_id: '10_0'
@@ -58,6 +57,151 @@ CentralWidget:
         name: 10_5_THERMAL_STATE
         sourse_id: '10_5'
         message_id: 'THERMAL_STATE'
+      CUBE_1_PCU_OWN_TEMP:
+        is_on: false
+        name: cube 1 PCU OWN_TEMP
+        sourse_id: '12_0'
+        message_id: OWN_TEMP
+      CUBE_1_PCU_TEMP_COMP_0:
+        is_on: false
+        name: cube 1 PCU comp 0 THERMAL_STATE
+        sourse_id: '12_0'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_TEMP_COMP_1:
+        is_on: false
+        name: cube 1 PCU comp 1 THERMAL_STATE
+        sourse_id: '12_1'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_TEMP_COMP_2:
+        is_on: false
+        name: cube 1 PCU comp 2 THERMAL_STATE
+        sourse_id: '12_2'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_TEMP_COMP_3:
+        is_on: false
+        name: cube 1 PCU comp 3 THERMAL_STATE
+        sourse_id: '12_3'
+        message_id: THERMAL_STATE
+      CUBE_1_PCU_VOLT_COMP_0:
+        is_on: true
+        name: cube 1 PCU comp 0 ELECTRICAL_STATE
+        sourse_id: '12_0'
+        message_id: ELECTRICAL_STATE
+      CUBE_1_PL_BME280_TEMP:
+        is_on: false
+        name: cube 1 PL PLD_BME280_DATA
+        sourse_id: '13_0'
+        message_id: PLD_BME280_DATA
+      CUBE_1_PL_I2C_LINK_STATS:
+        is_on: false
+        name: cube 1 PL I2C_LINK_STATS
+        sourse_id: '13_0'
+        message_id: I2C_LINK_STATS
+      CUBE_1_PL_ME2O2:
+        is_on: false
+        name: cube 1 PL ME2O2
+        sourse_id: '13_0'
+        message_id: ME2O2
+      CUBE_1_PL_MICS_6814_CO:
+        is_on: false
+        name: cube 1 PL PLD_MICS_6814_DATA
+        sourse_id: '13_0'
+        message_id: PLD_MICS_6814_DATA
+      CUBE_1_PL_OWN_TEMP:
+        is_on: false
+        name: cube 1 PL OWN_TEMP
+        sourse_id: '13_0'
+        message_id: OWN_TEMP
+      CUBE_1_PL_STATS:
+        is_on: false
+        name: cube 1 PL PLD_STATS
+        sourse_id: '13_0'
+        message_id: PLD_STATS
+      CUBE_1_SINS_DIODES:
+        name: 'SINS LIGHT_DIODE'
+        sourse_id: '11_0'
+        message_id: 'LIGHT_DIODE'
+      CUBE_1_SINS_LDS_DIR:
+        name: 'SINS LDS_DIR'
+        sourse_id: '11_0'
+        message_id: 'LDS_DIR'
+      CUBE_1_SINS_ERRORS:
+        name: cube 1 SINS SINS_ERRORS
+        sourse_id: '11_0'
+        message_id: SINS_ERRORS
+      CUBE_1_SINS_GPS_UBX_NAV_SOL:
+        is_on: false
+        name: cube 1 SINS GPS_UBX_NAV_SOL
+        sourse_id: '11_0'
+        message_id: GPS_UBX_NAV_SOL
+      CUBE_1_SINS_ISC:
+        name: cube 1 SINS SINS_ISC
+        sourse_id: '11_0'
+        message_id: SINS_ISC
+      CUBE_1_SINS_OWN_TEMP:
+        name: cube 1 SINS OWN_TEMP
+        sourse_id: '11_0'
+        message_id: OWN_TEMP
+      CUBE_2_PCU_OWN_TEMP:
+        is_on: false
+        name: cube 2 PCU OWN_TEMP
+        sourse_id: '21_0'
+        message_id: OWN_TEMP
+      CUBE_2_PCU_TEMP_COMP_0:
+        is_on: false
+        name: cube 2 PCU comp 0 THERMAL_STATE
+        sourse_id: '21_0'
+        message_id: THERMAL_STATE
+      CUBE_2_PCU_TEMP_COMP_1:
+        is_on: false
+        name: cube 2 PCU comp 1 THERMAL_STATE
+        sourse_id: '21_1'
+        message_id: THERMAL_STATE
+      CUBE_2_PCU_TEMP_COMP_2:
+        is_on: false
+        name: cube 2 PCU comp 2 THERMAL_STATE
+        sourse_id: '21_2'
+        message_id: THERMAL_STATE
+      CUBE_2_PCU_TEMP_COMP_3:
+        is_on: false
+        name: cube 2 PCU comp 3 THERMAL_STATE
+        sourse_id: '21_3'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_STATS:
+        is_on: false
+        name: cube 1 BCU BCU_STATS
+        sourse_id: '20_0'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_0:
+        is_on: false
+        name: cube 2 PFU comp 0 THERMAL_STATE
+        sourse_id: '20_0'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_1:
+        is_on: false
+        name: cube 2 PFU comp 1 THERMAL_STATE
+        sourse_id: '20_1'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_2:
+        is_on: false
+        name: cube 2 PFU comp 2 THERMAL_STATE
+        sourse_id: '20_2'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_3:
+        is_on: false
+        name: cube 2 PFU comp 3 THERMAL_STATE
+        sourse_id: '20_3'
+        message_id: THERMAL_STATE
+      CUBE_2_PFU_TEMP_COMP_4:
+        is_on: false
+        name: cube 2 PFU comp 4 THERMAL_STATE
+        sourse_id: '20_4'
+        message_id: THERMAL_STATE
+      GCS_RADIO:
+        is_on: false
+        name: GCS RADIO RSSI
+        sourse_id: '1_0'
+        message_id: RSSI
       is_on: true
     Time_table:
       CUBE_1_BCU:
@@ -334,7 +478,7 @@ MainWindow:
     MAVLink:
       connection: udpin:0.0.0.0:14540
     ZMQ:
-      bus_bpcs: "tcp://192.168.1.223:7778"
+      bus_bpcs: "tcp://10.10.10.203:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
