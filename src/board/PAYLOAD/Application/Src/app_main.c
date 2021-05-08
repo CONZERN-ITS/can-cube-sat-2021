@@ -20,6 +20,8 @@
 #include "sensors/me2o2.h"
 #include "sensors/mics6814.h"
 #include "sensors/integrated.h"
+#include "sensors/dna_temp.h"
+#include "sensors/dosim.h"
 
 //! Длина одного такта в мс
 #define TICK_LEN_MS (200)
@@ -27,25 +29,25 @@
 #define LED_RESTART_LOCK (1500)
 
 //! Периодичность выдачи BME пакета (в тактах)
-#define PACKET_PERIOD_BME (5)
+#define PACKET_PERIOD_BME (500)
 #define PACKET_OFFSET_BME (0)
 //! Периодичность выдачи пакета MS5611
-#define PACKET_PERIOD_MS5611 (5)
+#define PACKET_PERIOD_MS5611 (500)
 #define PACKET_OFFSET_MS5611 (4)
 //! Периодичность выдачи ME202 пакета (в тактах)
-#define PACKET_PERIOD_ME2O2 (5)
+#define PACKET_PERIOD_ME2O2 (500)
 #define PACKET_OFFSET_ME2O2 (1)
 //! Периодичность выдачи MICS6814 пакета (в тактах)
-#define PACKET_PERIOD_MICS6814 (5)
+#define PACKET_PERIOD_MICS6814 (500)
 #define PACKET_OFFSET_MICS6814 (2)
 //! Периодичность выдачи данных со встроенных сенсоров (в тактах)
 #define PACKET_PERIOD_INTEGRATED (5)
 #define PACKET_OFFSET_INTEGRATED (3)
 //! Периодичность выдачи собственной статистики (в тактах)
-#define PACKET_PERIOD_OWN_STATS (15)
+#define PACKET_PERIOD_OWN_STATS (1500)
 #define PACKET_OFFSET_OWN_STATS (8)
 //! Периодичность выдачи its-link статистики (в тактах)
-#define PACKET_PERIOD_ITS_LINK_STATS (15)
+#define PACKET_PERIOD_ITS_LINK_STATS (1500)
 #define PACKET_OFFSET_ITS_LINK_STATS (7)
 
 
@@ -135,6 +137,7 @@ int app_main()
 	int_ms5611_reinit(ITS_MS_INTERNAL);
 	_analog_op_analysis(analog_init());
 	mics6814_init();
+	dosim_init();
 
 	// После перезагрузки будем аж пол секунды светить лампочкой
 	uint32_t tick_begin = HAL_GetTick();
@@ -244,6 +247,32 @@ int app_main()
 				mavlink_own_temp_t own_temp_msg = {0};
 				if (0 == _analog_op_analysis(integrated_read(&own_temp_msg)))
 					mav_main_process_owntemp_message(&own_temp_msg);
+			}
+		}
+
+		if (tock % PACKET_PERIOD_INTEGRATED == PACKET_OFFSET_INTEGRATED)
+		{
+			if (0 == _analog_restart_if_need_so())
+			{
+				uint16_t data = 0;
+				read_dna_temp_value(&data);
+				float temp = 0;
+				calculate_temp(data, &temp);
+//				printf("dna_temp_data :  %d\n", data);
+//				printf("dna_temp  %f\n", temp);
+
+			}
+		}
+
+
+		if (tock % PACKET_PERIOD_INTEGRATED == PACKET_OFFSET_INTEGRATED)
+		{
+			if (0 == _analog_restart_if_need_so())
+			{
+				dosim_data_t data;
+				dosim_read(&data);
+				printf("dosim count :  %d\n", (int)data.count_tick);
+
 			}
 		}
 
