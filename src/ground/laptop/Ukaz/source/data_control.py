@@ -29,44 +29,46 @@ class MAVDataSource():
     def start(self):
         self.connection_in = mavutil.mavlink_connection(self.connection_str_in)
         self.connection_out = mavutil.mavlink_connection(self.connection_str_out)
-        self.telemetry_log = open(self.log_path + generate_log_file_name() + '.mav', 'wb')
-        self.command_log = open(self.log_path + generate_log_file_name() + '.mav', 'wb')
+        self.input_log = open(self.log_path + generate_log_file_name() + '.mav', 'wb')
+        self.output_log = open(self.log_path + generate_log_file_name() + '.mav', 'wb')
 
     def read_data(self):
         msg = self.connection_in.recv_match()
         if (msg is None):
             raise RuntimeError("No Message")
-        self.log.write(struct.pack("<Q", time.time()))
-        self.log.write(msg.get_msgbuf())
+        self.input_log.write(struct.pack("<Q", time.time()))
+        self.input_log.write(msg.get_msgbuf())
 
         return msg
 
     def write_data(self, msg):
         self.connection_out.mav.send(msg, False)
+        self.output_log.write(struct.pack("<Q", time.time()))
+        self.output_log.write(buf.get_msgbuf())
 
     def stop(self):
-        self.connection.close()
-        self.log.close()
+        self.connection_in.close()
+        self.connection_out.close()
+        self.input_log.close()
+        self.output_log.close()
 
 
 class ZMQDataSource():
-    def __init__(self, bus_pub="tcp://127.0.0.1:7778", bus_sub="tcp://127.0.0.1:7777", topics=[], log_path="./"):
-        self.bus_pub = bus_pub
-        self.bus_sub = bus_sub
+    def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", bus_bscp="tcp://127.0.0.1:7777", topics=[]):
+        self.bus_bpcs = bus_bpcs
+        self.bus_bscp = bus_bscp
         self.topics = topics
-        self.log_path = log_path
 
     def start(self):
         self.zmq_ctx = zmq.Context()
 
         self.sub_socket = self.zmq_ctx.socket(zmq.SUB)
-        self.sub_socket.connect(self.bus_pub)
+        self.sub_socket.connect(self.bus_bpcs)
         for topic in self.topics:
             self.sub_socket.setsockopt_string(zmq.SUBSCRIBE, topic)
 
-
         self.pub_socket = self.zmq_ctx.socket(zmq.PUB)
-        self.pub_socket.connect(self.bus_sub)
+        self.pub_socket.connect(self.bus_bscp)
 
         self.poller = zmq.Poller()
         self.poller.register(self.sub_socket, zmq.POLLIN)
@@ -82,7 +84,5 @@ class ZMQDataSource():
         self.pub_socket.send_multipart(msg)
 
     def stop(self):
-        print('1')
         self.sub_socket.close()
         self.pub_socket.close()
-        print('2')
