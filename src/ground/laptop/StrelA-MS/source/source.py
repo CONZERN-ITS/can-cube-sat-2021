@@ -234,7 +234,7 @@ class MainWindow(QtWidgets.QMainWindow):
             data = MAVDataSource(connection_str=self.settings.value('MAVLink/connection'),
                                  log_path=LOG_FOLDER_PATH)
         elif sourse == 'ZMQ':
-            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_bpcs'),
+            data = ZMQDataSource(bus_bpcs=self.settings.value('ZMQ/bus_bpcs'),
                                  topics=self.settings.value('ZMQ/topics'),
                                  log_path=LOG_FOLDER_PATH)
         self.settings.endGroup()

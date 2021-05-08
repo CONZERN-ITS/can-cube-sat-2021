@@ -136,15 +136,16 @@ class MAVLogDataSource():
 
 
 class ZMQDataSource():
-    def __init__(self, bus_pub="tcp://127.0.0.1:7778", topics=["its.telemetry_packet"], log_path="./"):
-        self.bus_pub = bus_pub
+    def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", topics=["its.telemetry_packet"], log_path="./"):
+        self.bus_bpcs = bus_bpcs
         self.topics = topics
         self.log_path = log_path
 
     def start(self):
         self.zmq_ctx = zmq.Context()
+
         self.sub_socket = self.zmq_ctx.socket(zmq.SUB)
-        self.sub_socket.connect(self.bus_pub)
+        self.sub_socket.connect(self.bus_bpcs)
         for topic in self.topics:
             self.sub_socket.setsockopt_string(zmq.SUBSCRIBE, topic)
 
@@ -160,7 +161,8 @@ class ZMQDataSource():
         events = dict(self.poller.poll(1000))
         if self.sub_socket in events:
             zmq_msg = self.sub_socket.recv_multipart()
-            msg_buf = self.get_data(zmq_msg)
+
+            msg_buf = zmq_msg[2]
 
             self.log.write(struct.pack("<Q", int(time.time() * 1000)))
             self.log.write(msg_buf)
@@ -172,9 +174,6 @@ class ZMQDataSource():
             return data
         else:
             raise RuntimeError("No Message")
-
-    def get_data(self, msgs):
-        return msgs[2]
 
     def stop(self):
         self.log
