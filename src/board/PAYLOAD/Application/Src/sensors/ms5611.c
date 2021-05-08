@@ -226,7 +226,7 @@ void ms5611_calculate_temp_and_pressure(const ms5611_prom_data_t * prom,
 		off -= off2;
 		sens -= sens2;
 	}
-	press = ((r_press * sens) >> 21 - off) >> 16;		//Temperature compensated pressure (10...1200mbar with 0.01mbar resolution)
+	press = ((((int64_t)r_press * sens) >> 21) - off) >> 15;		//Temperature compensated pressure (10...1200mbar with 0.01mbar resolution)
 	*end_presssure = press;
 	*end_temp = temp;
 }
