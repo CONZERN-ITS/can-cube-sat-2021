@@ -56,7 +56,7 @@ static int _read(float * value)
 	}
 
 	raw = sum_raw / oversamapling;
-	float amp_mv = raw * 3300.0f/0xFFF;
+	float amp_mv = raw * 3300.0f/0x1000;
 
 	// Окей, у нас есть милливольты с операционного усилителя.
 	// ОУ усиливает напряжение на нагрузочном резисторе датчика в 121 раз
