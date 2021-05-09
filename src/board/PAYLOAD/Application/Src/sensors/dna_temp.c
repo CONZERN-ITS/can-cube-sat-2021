@@ -10,8 +10,8 @@
 #include "time_svc.h"
 
 
-// Нагрузочный резистор сенсора (в Омах)
-#define DNA_TEMP_R_LOAD (22000.0f)
+// Нагрузочный резистор сенсора (в Омах) с погрешностью
+#define DNA_TEMP_R_LOAD (22160.0f)
 // Температура в градусах Цельсия
 #define STANDART_TEMP (25.0f)
 // Сопротивление термистора при 25 градусах Цельсия
@@ -26,7 +26,7 @@
 
 
 typedef struct {
-	int32_t dna_temp;
+	float dna_temp;
 	uint8_t heater_is_on;
 } dna_data_t;
 
