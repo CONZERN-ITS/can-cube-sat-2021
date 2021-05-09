@@ -1,7 +1,7 @@
 #MicroXplorer Configuration settings - do not modify
 Mcu.Family=STM32F4
 ProjectManager.MainLocation=Core/Src
-I2C2.IPParameters=I2C_Mode
+I2C2.IPParameters=I2C_Mode,ClockSpeed
 SH.S_TIM4_CH2.ConfNb=1
 PH0-OSC_IN.Signal=RCC_OSC_IN
 USART2.IPParameters=VirtualMode,BaudRate
@@ -229,6 +229,7 @@ MxCube.Version=6.2.1
 Dma.I2C1_TX.1.MemInc=DMA_MINC_ENABLE
 PC2.GPIOParameters=GPIO_Label
 SH.ADCx_IN10.ConfNb=1
+I2C2.ClockSpeed=100000
 Mcu.Pin30=PB8
 PC1.GPIO_Label=LDiod8
 PA1.GPIO_Label=LDiod1
