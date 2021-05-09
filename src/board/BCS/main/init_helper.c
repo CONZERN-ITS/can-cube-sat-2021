@@ -44,9 +44,9 @@
 static i2c_config_t init_pin_i2c_tm  = {
 	.mode = I2C_MODE_MASTER,
 	.sda_io_num = ITS_PIN_I2CTM_SDA,
-	.sda_pullup_en = GPIO_PULLUP_DISABLE,
+	.sda_pullup_en = GPIO_PULLUP_ENABLE,
 	.scl_io_num = ITS_PIN_I2CTM_SCL,
-	.scl_pullup_en = GPIO_PULLUP_DISABLE,
+	.scl_pullup_en = GPIO_PULLUP_ENABLE,
 	.master.clk_speed = ITS_I2CTM_FREQ
 };
 
@@ -103,7 +103,6 @@ static op_ip_t hop;
 shift_reg_handler_t hsr;
 
 
-#ifndef ITS_ESP_DEBUG
 static spi_bus_config_t buscfg={
 	.miso_io_num = ITS_PIN_SPISR_MISO,
 	.mosi_io_num = ITS_PIN_SPISR_MOSI,
@@ -130,8 +129,31 @@ static void task_led(void *arg) {
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 }
-#endif
+static void task_test(void *arg) {
+	shift_reg_handler_t *hsr = arg;
+	uint16_t arr[2] = {(uint8_t)-1, ((uint8_t)-1) << (int)8};
 
+	printf("@ %d\n", (int) hsr);
+	fflush(stdout);
+	while (1) {
+		for (int i = 0; i < 8; i++) {
+			vTaskDelay(500 / portTICK_PERIOD_MS);
+			arr[0] <<= 1;
+			arr[1] >>= 1;
+			hsr->byte_arr[0] = arr[0];
+			hsr->byte_arr[1] = arr[1] >> 8;
+			shift_reg_load(hsr);
+		}
+		for (int i = 0; i < 8; i++) {
+			vTaskDelay(500 / portTICK_PERIOD_MS);
+			arr[0] >>= 1;
+			arr[1] <<= 1;
+			hsr->byte_arr[0] = arr[0];
+			hsr->byte_arr[1] = arr[1] >> 8;
+			shift_reg_load(hsr);
+		}
+	}
+}
 
 void init_basic(void) {
 	xTaskCreatePinnedToCore(task_led, "Led", configMINIMAL_STACK_SIZE + 1500, 0, 1, 0, tskNO_AFFINITY);
@@ -248,7 +270,7 @@ void init_helper(void) {
 	//Связь с SINS
 	//uart_mavlink_install(ITS_UARTE_PORT, quart);
 #ifndef ITS_ESP_DEBUG
-	/////shift_reg_init_spi(&hsr, ITS_SPISR_PORT, 16, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_CS_SR);
+	shift_reg_init_spi(&hsr, ITS_SPISR_PORT, 16, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_CS_SR);
 	ESP_LOGD("SYSTEM", "Shift reg inited");
 /*
 	control_vcc_init(&hsr, 0, ITS_PIN_PL_VCC);
@@ -294,7 +316,9 @@ void init_helper(void) {
 //	hsr.byte_arr[2] = 0xBB;
 	shift_reg_load(&hsr);*/
 
-	//xTaskCreate(test_task, "test task", configMINIMAL_STACK_SIZE + 2000, 0, 3, 0);
+	printf("@ %d\n", (int) &hsr);
+	fflush(stdout);
+	xTaskCreate(task_test, "test task", configMINIMAL_STACK_SIZE + 2000, &hsr, 3, 0);
 	sensors_init();
 #endif
 

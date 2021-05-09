@@ -46,7 +46,7 @@ int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg) {
 		.address_bits = 0,
 		.dummy_bits = 0,
 		.flags = 0,
-		.clock_speed_hz = 50000,
+		.clock_speed_hz = 20000,
 		.mode = 0,
 		.spics_io_num = -1,
 		.queue_size = 30,

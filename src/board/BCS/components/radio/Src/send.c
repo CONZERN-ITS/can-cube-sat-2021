@@ -10,7 +10,7 @@
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "pinout_cfg.h"
 
@@ -230,6 +230,44 @@ static int is_sleeping(safe_send_t *sst) {
 	return sst->sleep_state;
 }
 */
+int fill_one_packet(radio_t * server) {
+/*	static int nat = 0;
+	log_info("fill packet");
+	for (; server->radio_buf.index < server->radio_buf.size; server->radio_buf.index++) {
+		server->radio_buf.buf[server->radio_buf.index] = nat++;
+	}*/
+	if (server->radio_buf.index < server->radio_buf.size) {
+		log_info("gen %d %d", server->radio_buf.index, server->radio_buf.size);
+		if (server->mav_buf.size - server->mav_buf.index <= 0) {
+			msg_container *st = 0;
+			st = get_best(server->msg_count);
+			if (0 == st) {
+				goto end;
+			}
+
+			server->mav_buf.size = mavlink_msg_to_send_buffer(server->mav_buf.buf, &st->last_msg);
+			server->mav_buf.index = 0;
+			st->is_updated = 0; // Сообщение внутри контейнера уже не свежее
+			st->last = server->msg_count;// Запоминаем, когда сообщение было отправленно в последний раз
+			server->msg_count++;
+		}
+
+		uint8_t *out = server->mav_buf.buf + server->mav_buf.index;
+		int cnt = server->mav_buf.size - server->mav_buf.index;
+		int diff = server->radio_buf.size - server->radio_buf.index;
+		if (cnt > diff) {
+			cnt = diff;
+		}
+		memcpy(server->radio_buf.buf + server->radio_buf.index, out, cnt);
+		server->mav_buf.index += cnt;
+		server->radio_buf.index += cnt;
+
+	}
+end:
+	return server->radio_buf.index == server->radio_buf.size;
+}
+
+
 int fill_packet(radio_t * server) {
 /*	static int nat = 0;
 	log_info("fill packet");
@@ -264,9 +302,6 @@ int fill_packet(radio_t * server) {
 	}
 	return server->radio_buf.index == server->radio_buf.size;
 }
-
-
-
 
 static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 		sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg
@@ -306,7 +341,7 @@ static int _radio_init(radio_t * server)
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_12,
+			.spreading_factor = SX126X_LORA_SF_5,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_5,
 			.ldr_optimizations = true,
@@ -448,7 +483,7 @@ static void task_send(void *arg) {
 			.name = "radio_send"
 	};
 	//Регистрируем на сообщения всех типов
-	tid.queue = xQueueCreate(10, MAVLINK_MAX_PACKET_LEN);
+	tid.queue = xQueueCreate(20, MAVLINK_MAX_PACKET_LEN);
 	its_rt_register_for_all(tid);
 
 
@@ -469,21 +504,34 @@ static void task_send(void *arg) {
 	while (1) {
 		ESP_LOGV("radio", "STEP");
 		uint32_t dummy = 0;
-		xTaskNotifyWait(0, 0, &dummy, 200 / portTICK_PERIOD_MS);
+		xTaskNotifyWait(0, 0, &dummy, 50 / portTICK_PERIOD_MS);
 		int rc = sx126x_drv_poll(&radio_server->dev);
 
 		ESP_LOGV("radio", "poll");
 		if (rc) {
 			ESP_LOGE("radio", "poll %d", rc);
 		}
-		int is_filled = fill_packet(radio_server);
+
+		ESP_LOGV("radio", "recieving");
+		mavlink_message_t incoming_msg = {0};
+		while (pdTRUE == xQueueReceive(tid.queue, &incoming_msg, 0))
+		{
+			// Если мы получили сообщение - складываем в его хранилище
+			update_msg	(&incoming_msg);
+		}
+		int is_filled = 0;
+		if (radio_server->is_ready_to_send) {
+			is_filled = fill_packet(radio_server);
+		} else {
+			is_filled = fill_one_packet(radio_server);
+		}
 		ESP_LOGV("radio", "filled");
 		if ((is_filled && radio_server->is_ready_to_send) || esp_timer_get_time() - last_changed > 1000000 * 10) {
-			log_info("out buf: ");
+			/*log_info("out buf: ");
 			for (int i = 0; i < radio_server->radio_buf.size; i++) {
 				printf("0x%02X ", radio_server->radio_buf.buf[i]);
 			}
-			printf("\n");
+			printf("\n");*/
 
 			rc = sx126x_drv_payload_write(&radio_server->dev, radio_server->radio_buf.buf, ITS_RADIO_PACKET_SIZE);
 			if (0 != rc) {
@@ -504,13 +552,6 @@ static void task_send(void *arg) {
 			last_changed = esp_timer_get_time();
 		}
 
-		ESP_LOGV("radio", "recieving");
-		mavlink_message_t incoming_msg = {0};
-		while (pdTRUE == xQueueReceive(tid.queue, &incoming_msg, 0))
-		{
-			// Если мы получили сообщение - складываем в его хранилище
-			update_msg(&incoming_msg);
-		}
 
 
 		ESP_LOGV("radio", "sleep?");
