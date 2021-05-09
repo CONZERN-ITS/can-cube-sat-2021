@@ -41,8 +41,14 @@
 #define PACKET_PERIOD_MICS6814 (500)
 #define PACKET_OFFSET_MICS6814 (2)
 //! Периодичность выдачи данных со встроенных сенсоров (в тактах)
-#define PACKET_PERIOD_INTEGRATED (5)
+#define PACKET_PERIOD_INTEGRATED (500)
 #define PACKET_OFFSET_INTEGRATED (3)
+// ! Периодичность выдачи данных с дозиметра (в тактах)
+#define PACKET_PERIOD_DOSIM (500)
+#define PACKET_OFFSET_DOSIM (1)
+//! Периодичность выдачи данных с ДНК (в тактах)
+#define PACKET_PERIOD_DNA (5)
+#define PACKET_OFFSET_DNA (1)
 //! Периодичность выдачи собственной статистики (в тактах)
 #define PACKET_PERIOD_OWN_STATS (1500)
 #define PACKET_OFFSET_OWN_STATS (8)
@@ -250,30 +256,24 @@ int app_main()
 			}
 		}
 
-		if (tock % PACKET_PERIOD_INTEGRATED == PACKET_OFFSET_INTEGRATED)
+		if (tock % PACKET_PERIOD_DNA == PACKET_OFFSET_DNA)
 		{
 			if (0 == _analog_restart_if_need_so())
 			{
-				uint16_t data = 0;
-				read_dna_temp_value(&data);
-				float temp = 0;
-				calculate_temp(data, &temp);
-//				printf("dna_temp_data :  %d\n", data);
-//				printf("dna_temp  %f\n", temp);
+				mavlink_pld_dna_data_t pld_dna_msg = {0};
+				if (0 == dna_get_status(&pld_dna_msg))
+					mav_main_process_dna_message(&pld_dna_msg);
 
 			}
 		}
 
 
-		if (tock % PACKET_PERIOD_INTEGRATED == PACKET_OFFSET_INTEGRATED)
+		if (tock % PACKET_PERIOD_DOSIM == PACKET_OFFSET_DOSIM)
 		{
-			if (0 == _analog_restart_if_need_so())
-			{
-				dosim_data_t data;
-				dosim_read(&data);
-				printf("dosim count :  %d\n", (int)data.count_tick);
+			mavlink_pld_dosim_data_t pld_dosim_msg = {0};
+			dosim_read(&pld_dosim_msg);
+			mav_main_process_dosim_message(&pld_dosim_msg);
 
-			}
 		}
 
 
