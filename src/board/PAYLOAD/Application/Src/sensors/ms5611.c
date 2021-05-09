@@ -219,7 +219,7 @@ void ms5611_calculate_temp_and_pressure(const ms5611_prom_data_t * prom,
 			int64_t temp_plus_15 = (int64_t)temp + 1500;
 			int64_t temp_plus_15_squared = temp_plus_15 * temp_plus_15;
 			off2 = off2 + 7 * temp_plus_15_squared;
-			sens2 = sens2 + (11 * temp_plus_15_squared) >> 1;
+			sens2 = sens2 + (11 * temp_plus_15_squared >> 1);
 		}
 
 		temp -= t2;
