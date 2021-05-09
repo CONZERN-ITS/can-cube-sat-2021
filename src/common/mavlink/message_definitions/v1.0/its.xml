@@ -343,6 +343,24 @@
       <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>
     </message>    
 
+    <message id="50207" name="PLD_DOSIM_DATA">
+      <description>Payload module message with dosimeter data</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      
+      <field type="uint32_t" name="count_tick" units="tick">Count ticks</field>
+      <field type="uint32_t" name="delta_time" units="ms">Time for count ticks</field>
+    </message> 
+
+    <message id="50208" name="PLD_DNA_DATA">
+      <description>Payload module message with external ms5611 related data</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      
+      <field type="float" name="dna_temp" units="deg">DNA temperature</field>
+      <field type="uint8_t" name="heater_is_on" units="bool">Heater is on or off</field>
+    </message> 
+
 
     <!--  BCU messages. Id range 50300 - 50399  -->
     <message id="50300" name="BCU_STATS">

@@ -165,6 +165,53 @@ void mav_main_process_owntemp_message(mavlink_own_temp_t * msg)
 }
 
 
+void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg)
+{
+#ifdef PROCESS_TO_PRINTF
+	printf("dosim : count_tick=%lu, delta time=%lu\n",
+			msg->count_tick, msg->delta_time
+	);
+
+	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
+			(uint32_t)(msg->time_s >> 4*8), (uint32_t)(msg->time_s & 0xFFFFFFFF), msg->time_us
+	);
+
+	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+#endif
+
+#ifdef PROCESS_TO_ITSLINK
+	mavlink_message_t ms;
+	mavlink_msg_pld_dosim_data_encode(mavlink_system, COMP_ANY_0, &ms, msg);
+    uint16_t size = mavlink_msg_to_send_buffer(buf, &ms);
+    mav_main_send_to_its_link(MAVLINK_COMM_0, buf, size);
+#endif
+}
+
+
+void mav_main_process_dna_message(mavlink_pld_dna_data_t * msg)
+{
+#ifdef PROCESS_TO_PRINTF
+	printf("dna: temp=%f, heater is on=%u\n",
+			msg->dna_temp, msg->heater_is_on
+	);
+
+	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
+			(uint32_t)(msg->time_s >> 4*8), (uint32_t)(msg->time_s & 0xFFFFFFFF), msg->time_us
+	);
+
+	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+#endif
+
+#ifdef PROCESS_TO_ITSLINK
+	mavlink_message_t ms;
+	mavlink_msg_pld_dna_data_encode(mavlink_system, COMP_ANY_0, &ms, msg);
+    uint16_t size = mavlink_msg_to_send_buffer(buf, &ms);
+    mav_main_send_to_its_link(MAVLINK_COMM_0, buf, size);
+#endif
+}
+
+
+
 void mav_main_process_own_stats(mavlink_pld_stats_t * msg)
 {
 #ifdef PROCESS_TO_PRINTF
