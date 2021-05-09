@@ -3,6 +3,9 @@
 
 #include "sensors/dosim.h"
 
+#include "util.h"
+#include "time_svc.h"
+
 
 extern  TIM_HandleTypeDef htim3;
 
@@ -20,18 +23,25 @@ void dosim_init()
 	data.start_time_ms = HAL_GetTick();
 	data.dosim_time = &htim3;
 	data.dosim_time->Instance->CNT = 0;
+	HAL_TIM_Base_Start(data.dosim_time);
 }
 
 
-void dosim_read(dosim_data_t * output_data)
+void dosim_read(mavlink_pld_dosim_data_t * msg)
 {
 	uint32_t stop_time_ms = HAL_GetTick();
-	output_data->count_tick = data.dosim_time->Instance->CNT;
+	msg->count_tick = data.dosim_time->Instance->CNT;
 
-	output_data->delta_time = stop_time_ms - data.start_time_ms;
+	msg->delta_time = stop_time_ms - data.start_time_ms;
 
 	data.dosim_time->Instance->CNT = 0;
 	data.start_time_ms = stop_time_ms;
+
+	struct timeval tmv;
+	time_svc_gettimeofday(&tmv);
+	msg->time_s = tmv.tv_sec;
+	msg->time_us = tmv.tv_usec;
+
 
 }
 

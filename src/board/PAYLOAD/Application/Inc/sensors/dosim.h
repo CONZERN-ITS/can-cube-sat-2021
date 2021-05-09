@@ -8,16 +8,9 @@
 #ifndef INC_SENSORS_DOSIM_H_
 #define INC_SENSORS_DOSIM_H_
 
+#include "mavlink_main.h"
 
-typedef struct {
-	// Количество насчитанных тиков
-	uint32_t count_tick;
-	// Время, за которое эти тики посчитаны
-	uint32_t delta_time;
-} dosim_data_t;
-
-
-void dosim_read(dosim_data_t * output_data);
+void dosim_read(mavlink_pld_dosim_data_t * msg);
 
 void dosim_init();
 
