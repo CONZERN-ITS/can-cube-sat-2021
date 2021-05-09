@@ -16,7 +16,7 @@
 #include "drivers/common.h"
 
 
-ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc1;
 
 #define _ADC_HAL_TIMEOUT (HAL_MAX_DELAY)
 

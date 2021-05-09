@@ -33,7 +33,7 @@ void ahrs_init()
 	ahrs_parametres.gyro_data = vec_zero();
 	ahrs_parametres.gyro_bias = vec_zero();
     ahrs_parametres.koef_B = 0.3;
-    ahrs_parametres.koef_M = 0.01;
+    ahrs_parametres.koef_M = 0.00;
 	ahrs_parametres.orientation = quat_init(1,0,0,0);
 
 	for(int i = 0; i < MAX_COUNT; i++)
@@ -57,10 +57,12 @@ void ahrs_vectorActivate(enum Vector_type vec, int isUsed)
 }
 void ahrs_updateVecMeasured(enum Vector_type vec, vector_t vector)
 {
+    vec_normate(&vector);
 	ahrs_parametres.mesuared_vectros[vec] = vector;
 }
 void ahrs_updateVecReal(enum Vector_type vec, vector_t vector)
 {
+    vec_normate(&vector);
 	ahrs_parametres.real_vectros[vec] = vector;
 }
 void ahrs_updateVecPortion(enum Vector_type vec, float portion)
@@ -119,7 +121,7 @@ void ahrs_calculateOrientation(float dt)
 	ahrs_parametres.orientation = result;
 
 
-	return err;
+	return;
 }
 
 vector_t ahrs_get_good_vec_from_mag(vector_t mag) {

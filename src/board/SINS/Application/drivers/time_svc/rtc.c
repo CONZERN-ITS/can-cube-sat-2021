@@ -15,7 +15,7 @@
 #include "time_util.h"
 
 
-RTC_HandleTypeDef hrtc;
+extern RTC_HandleTypeDef hrtc;
 
 //! Настройка клоков RTC
 /*! Это нужно делать, только если вдруг обнаружится что наш бэкап домен нифига не настроен */

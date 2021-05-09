@@ -166,6 +166,17 @@ vector_t vec_arrToVec(const float arr[3])
     return a;
 }
 
+float vec_norm(const vector_t *a) {
+    return sqrt(a->x * a->x + a->y * a->y + a->z * a->z);
+}
+
+void vec_normate(vector_t *a) {
+    float n = sqrt(a->x * a->x + a->y * a->y + a->z * a->z);
+    a->x /= n;
+    a->y /= n;
+    a->z /= n;
+}
+
 quaternion_t quat_init(double w, double x, double y, double z)
 {
 	quaternion_t res = {w,x,y,z};

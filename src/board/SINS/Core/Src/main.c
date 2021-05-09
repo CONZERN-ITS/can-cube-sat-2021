@@ -305,7 +305,7 @@ int UpdateDataAll(void)
 	/////////////	UPDATE QUATERNION  //////////////////
 	/////////////////////////////////////////////////////
 
-
+	magn[0] = -magn[0];
 	float dt = ((float)((stateSINS_isc.tv.tv_sec * 1000 + stateSINS_isc.tv.tv_usec / 1000)  - (stateSINS_isc_prev.tv.tv_sec * 1000 + stateSINS_isc_prev.tv.tv_usec / 1000))) / 1000;
 //	trace_printf("dt = %f", dt);
 	stateSINS_isc_prev.tv.tv_sec = stateSINS_isc.tv.tv_sec;
@@ -344,10 +344,10 @@ int UpdateDataAll(void)
 	///////////  ROTATE VECTORS TO ISC  /////////////////
 	/////////////////////////////////////////////////////
 
-	vector_t t = vec_arrToVec(accel);
-	vector_t accel_ISC = vec_rotate(&t, &ori);
-	t = vec_arrToVec(magn);
-	vector_t mag_ISC = vec_rotate(&t, &ori);
+	vector_t accel_ISC = vec_arrToVec(accel);
+	//accel_ISC = vec_rotate(&t, &ori);
+	vector_t mag_ISC = vec_arrToVec(magn);
+	//mag_ISC = vec_rotate(&t, &ori);
 
 //	printf("hello?\n");
 	if (0 == error_system.lsm6ds3_error)
@@ -881,7 +881,6 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
-  printf("hello?\n");
 
 }
 
@@ -901,7 +900,7 @@ static void MX_I2C2_Init(void)
 
   /* USER CODE END I2C2_Init 1 */
   hi2c2.Instance = I2C2;
-  hi2c2.Init.ClockSpeed = 400000;
+  hi2c2.Init.ClockSpeed = 100000;
   hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;

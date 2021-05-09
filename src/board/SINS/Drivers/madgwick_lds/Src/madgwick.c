@@ -76,7 +76,7 @@ int madgwick_getErrorOri(quaternion_t *result, const vector_t * const real[], co
 
 	for(int i = 0; i < count; i++)
 	{
-		madgwick_aproachVector(F, real[i],measured[i],previous);
+		madgwick_aproachVector(F, real[i], measured[i], previous);
 		madgwick_jacobianAproachVector(J, real[i], previous);
 
 		matrix_multiplicate(J, F, temp);
@@ -112,9 +112,18 @@ static int madgwick_aproachVector(Matrixf* result, const vector_t *real, const v
 	float sy = measured->y;
 	float sz = measured->z;
 
-	*matrix_at(result, 0, 0) = 2*dx*(0.5 - q3*q3 - q4*q4) + 2*dy*(q1*q4 + q2*q3) + 2*dz*(q2*q4 - q1*q3) - sx;
-	*matrix_at(result, 1, 0) = 2*dx*(q2*q3 - q1*q4) + 2*dy*(0.5 - q2*q2 - q4*q4) + 2*dz*(q1*q2 + q3*q4) - sy;
-	*matrix_at(result, 2, 0) = 2*dx*(q1*q3 + q2*q4) + 2*dy*(q3*q4 - q1*q2) + 2*dz*(0.5 - q2*q2 - q3*q3) - sz;
+	quaternion_t x = quat_getConj(expected);
+	quaternion_t y = vecToQuat(real);
+	x = quat_mulByQuat(&x, &y);
+	x = quat_mulByQuat(&x, expected);
+
+    *matrix_at(result, 0, 0) = x.x - measured->x;
+    *matrix_at(result, 1, 0) = x.y - measured->y;
+    *matrix_at(result, 2, 0) = x.z - measured->z;
+
+	//*matrix_at(result, 0, 0) = 2*dx*(0.5 - q3*q3 - q4*q4) + 2*dy*(q1*q4 + q2*q3) + 2*dz*(q2*q4 - q1*q3) - sx;
+	//*matrix_at(result, 1, 0) = 2*dx*(q2*q3 - q1*q4) + 2*dy*(0.5 - q2*q2 - q4*q4) + 2*dz*(q1*q2 + q3*q4) - sy;
+	//*matrix_at(result, 2, 0) = 2*dx*(q1*q3 + q2*q4) + 2*dy*(q3*q4 - q1*q2) + 2*dz*(0.5 - q2*q2 - q3*q3) - sz;
 	return 0;
 }
 
