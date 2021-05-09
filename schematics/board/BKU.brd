@@ -4585,6 +4585,12 @@ design rules under a new name.</description>
 <wire x1="72.93" y1="77.72" x2="73" y2="77.65" width="0.4" layer="1"/>
 <wire x1="71.00765625" y1="78.3" x2="71.58765625" y2="77.72" width="0.4" layer="1"/>
 <wire x1="71.58765625" y1="77.72" x2="72.93" y2="77.72" width="0.4" layer="1"/>
+<polygon width="0.05" layer="2" pour="cutout">
+<vertex x="48" y="71.75"/>
+<vertex x="48" y="65.5"/>
+<vertex x="66" y="65.5"/>
+<vertex x="66" y="71.75"/>
+</polygon>
 </signal>
 <signal name="5V">
 <contactref element="U$5" pad="3"/>
