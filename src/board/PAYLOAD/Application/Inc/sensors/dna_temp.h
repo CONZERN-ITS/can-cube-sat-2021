@@ -8,8 +8,11 @@
 #ifndef INC_SENSORS_DNA_TEMP_H_
 #define INC_SENSORS_DNA_TEMP_H_
 
-int read_dna_temp_value(uint16_t * raw_);
+#include "mavlink_main.h"
 
-void calculate_temp(uint16_t raw, float * temp);
+#include "main.h"
+
+//! Данная функция считает температуру и управляет нагревателем
+int dna_get_status(mavlink_pld_dna_data_t * msg);
 
 #endif /* INC_SENSORS_DNA_TEMP_H_ */
