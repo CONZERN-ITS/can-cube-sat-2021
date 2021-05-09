@@ -14,17 +14,25 @@
 #define LDS_DIM 3
 
 
-static const float __lds_number = 2.72154 * 1.73205;
+static const float __lds_number = 1.23793 * 3.16228;
+
 static const float __lds_array_inv[LDS_DIM][LDS_COUNT] = {
-        {1.00000, 0.00000, 0.00000 },
-        {-1.00000, 0.75249, 0.75249 },
-        {0.00000, -1.46190, 1.46190 }
-};
+        {0.18812, 0.18812, -0.00000, -0.18812, -0.18812, -0.18812, -0.18812, -0.00000, 0.18812, 0.18812, },
+        {0.12011, 0.12011, 0.18076, 0.12011, 0.12011, -0.12011, -0.12011, -0.18076, -0.12011, -0.12011, },
+        {-0.36548, 0.36548, 0.00000, 0.36548, -0.36548, -0.36548, 0.36548, 0.00000, 0.36548, -0.36548, },
+        };
 static const float __lds_array_str[LDS_COUNT][LDS_DIM] = {
-        {1.00000, 0.00000, 0.00000 },
-        {0.66446, 0.66446, -0.34202 },
-        {0.66446, 0.66446, 0.34202 }
-};
+        {0.66446, 0.66446, -0.34202, },
+        {0.66446, 0.66446, 0.34202, },
+        {0.00000, 1.00000, 0.00000, },
+        {-0.66446, 0.66446, 0.34202, },
+        {-0.66446, 0.66446, -0.34202, },
+        {-0.66446, -0.66446, -0.34202, },
+        {-0.66446, -0.66446, 0.34202, },
+        {-0.00000, -1.00000, 0.00000, },
+        {0.66446, -0.66446, 0.34202, },
+        {0.66446, -0.66446, -0.34202, },
+        };
 __attribute__((unused))
 static void lds_find(float x[LDS_DIM], const float b[LDS_COUNT]) {
     for (int i = 0; i < LDS_DIM; i++) {
@@ -38,7 +46,7 @@ static void lds_find(float x[LDS_DIM], const float b[LDS_COUNT]) {
 //Возвращает стандартное отклонение
 __attribute__((unused))
 static float lds_get_error(const float x[LDS_DIM], const float b[LDS_COUNT]) {
-    int sumsq = 0;
+    float sumsq = 0;
     for (int i = 0; i < LDS_COUNT; i++) {
         float b0i = 0;
         for (int j = 0; j < LDS_DIM; j++) {
@@ -47,10 +55,11 @@ static float lds_get_error(const float x[LDS_DIM], const float b[LDS_COUNT]) {
         float d = b0i - b[i];
         sumsq += d * d;
     }
-    int sumb = 0;
+    float sumb = 0;
     for (int i = 0; i < LDS_COUNT; i++) {
         sumb += b[i] * b[i];
     }
+
     return sqrt(sumsq / sumb) * __lds_number;
 }
 __attribute__((unused))

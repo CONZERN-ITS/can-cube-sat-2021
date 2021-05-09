@@ -319,6 +319,8 @@ int UpdateDataAll(void)
         ahrs_setKoefB(beta);
         ahrs_updateVecReal(AHRS_MAG, ahrs_get_good_vec_from_mag(vec_arrToVec(magn)));
         ahrs_updateVecMeasured(AHRS_MAG, vec_arrToVec(magn));
+
+        ahrs_updateVecReal(AHRS_LIGHT, vec_init(0, 1, 0));
         ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
         ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
         ahrs_updateGyroData(vec_arrToVec(gyro));
@@ -327,6 +329,7 @@ int UpdateDataAll(void)
         ahrs_vectorActivate(AHRS_MAG, 0);
         ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS);
         ahrs_setKoefB(beta);
+        ahrs_updateVecReal(AHRS_LIGHT, vec_init(0, 1, 0));
         ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
         ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
         ahrs_updateGyroData(vec_arrToVec(gyro));
@@ -1098,8 +1101,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 static void read_ldiods(float arr[ITS_SINS_LDS_COUNT]) {
+    static const int order[10] = {1, 4, 5, 8, 9, 10, 11, 12, 14, 15};
     for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
-        hadc1.Instance->SQR3 = i;
+        hadc1.Instance->SQR3 = order[i];
         HAL_ADC_Start(&hadc1);
         HAL_ADC_PollForConversion(&hadc1, ADC_TIMEOUT);
         uint32_t value = HAL_ADC_GetValue(&hadc1);
