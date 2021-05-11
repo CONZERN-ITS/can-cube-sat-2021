@@ -10,8 +10,9 @@
 
 #include <stddef.h>
 
-//! Уменьшаем количество буферов мавлинка до одного
-#define MAVLINK_COMM_NUM_BUFFERS 1
+//! Уменьшаем количество буферов мавлинка до двух
+#define MAVLINK_COMM_NUM_BUFFERS 2
+
 //! Включаем удобные мавлинковые функции
 //#define MAVLINK_USE_CONVENIENCE_FUNCTIONS
 // Скидывать сообщения в текстовом виде в консольку для отладки
@@ -28,9 +29,13 @@ extern uint8_t mavlink_system;
 
 //! Отправка mavlink пакета в i2c-link
 void mav_main_send_to_its_link(mavlink_channel_t channel, const uint8_t * buffer, uint16_t buffer_size);
+
 //! Получение mavlink пакета и i2c-link
 //! Возвращает 0 если пакет есть и ошибку если ошибка (включая EAGAIN)
-int mav_main_get_packet(mavlink_message_t * msg);
+int mav_main_get_packet_from_its_link(mavlink_message_t * msg);
+
+//! Получение пакета из отладочного уарта
+int mav_main_get_packet_from_imitator_ctl(mavlink_message_t * msg);
 
 //! Определяем функцию для отправки телеметрии
 #define MAVLINK_SEND_UART_BYTES mav_main_send_to_its_link

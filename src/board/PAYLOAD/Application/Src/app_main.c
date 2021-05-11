@@ -357,7 +357,7 @@ static void _collect_i2c_link_stats(mavlink_i2c_link_stats_t * msg)
 static void _process_input_packets()
 {
 	mavlink_message_t input_msg;
-	int rc = mav_main_get_packet(&input_msg);
+	int rc = mav_main_get_packet_from_its_link(&input_msg);
 	if (0 == rc)
 	{
 		// Обрабытываем. Пока только для службы времени
