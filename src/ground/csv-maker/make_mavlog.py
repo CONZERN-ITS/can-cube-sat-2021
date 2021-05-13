@@ -53,7 +53,7 @@ def process_with_mavlink(input_stream, output_stream, notimestamps):
 
 
 def main(argv):
-	arg_parser = argparse.ArgumentParser("")
+	arg_parser = argparse.ArgumentParser("broker log to mavlog", add_help=True)
 	arg_parser.add_argument("-i", "--input", nargs='?', required=True, dest="input")
 	arg_parser.add_argument("-o", "--output", nargs='?', dest="output")
 	arg_parser.add_argument("--use-mavlink", action='store_true', dest='use_mavlink')

@@ -2,11 +2,15 @@ import os
 import logging
 import argparse
 import datetime
+import time
 
 import zmq
 
 
 from its_logfile import LogfileWriter
+
+# Периодичность вызова fflush для лога (с)
+LOGFILE_FLUSH_PERIOD = 1
 
 
 ITS_GBUS_BPCS_ENDPOINT = "tcp://0.0.0.0:7778"
@@ -21,7 +25,7 @@ def generate_logfile_name():
     isostring = now.isoformat()  # строка вида 2021-04-27T23:17:31
     isostring = isostring.replace("-", "")  # Строка вида 20210427T23:17:31
     isostring = isostring.replace(":", "")  # Строка вида 20210427T231731, то что надо
-    return "its-broker-log-" + isostring + ".log"
+    return "its-broker-log-" + isostring + ".zmq-log"
 
 
 def main():
@@ -47,13 +51,17 @@ def main():
 
     poller = zmq.Poller()
     poller.register(sub_socket, zmq.POLLIN)
+    last_log_flush_timepoint = time.time()
     while True:
         events = dict(poller.poll(1000))
         if sub_socket in events:
             msgs = sub_socket.recv_multipart()
             _log.info("got messages: %r", msgs)
-            logfile_writer.write(msgs)
             pub_socket.send_multipart(msgs)
+            logfile_writer.write(msgs)
+            now = time.time()
+            if now - last_log_flush_timepoint >= LOGFILE_FLUSH_PERIOD:
+                logfile_writer.flush()
 
     del ctx
     logfile_writer.close()

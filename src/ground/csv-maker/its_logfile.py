@@ -131,6 +131,9 @@ class LogfileWriter(contextlib.AbstractContextManager):
 		for msg in msg_list:
 			self.write(msg)
 
+	def flush(self):
+		self.stream.flush()
+
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.close()
 

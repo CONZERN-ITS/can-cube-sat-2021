@@ -29,7 +29,7 @@ def _sec_header_size(parts_count):
 
 def _pack_message(msg_time: int, parts: typing.List[bytes]):
 	""" Запаковка сообщения в буфер для записи в файл
-		@param time время получения сообщения
+		@param msg_time время получения сообщения
 		@param parts части сообщения
 	"""
 
@@ -67,7 +67,7 @@ def _unpack_message_sec_header(parts_count, parts_sizes_bytes: bytes):
 		# ну тут даже вторичный заголовок не влезает
 		raise ValueError(
 			"Invalid ITS ZMQ LOG secondary header size: %s. at least %s where expected"
-			% (len(parts_bytes), part_sizes_bytes_len)
+			% (len(parts_sizes_bytes), _sec_header_size(parts_count))
 		)
 
 	parts_sizes = struct.unpack("<%dI" % parts_count, parts_sizes_bytes)
@@ -96,22 +96,32 @@ def _unpack_message_parts(parts_sizes, parts_bytes):
 
 class LogfileWriter(contextlib.AbstractContextManager):
 
-	def __init__(self, filepath=None):
+	def __init__(self, filepath=None, stream=None):
 		super(LogfileWriter, self).__init__()
-		self.filepath = None
 		self.stream = None
+		self.owns_stream = False
 
 		if filepath:
 			self.open(filepath)
+		elif stream:
+			self.open_stream(stream)
 
 	def open(self, filepath):
-		self.filepath = filepath
+		self.close()
 		self.stream = open(filepath, mode="wb")
+		self.owns_stream = False
+
+	def open_stream(self, stream):
+		self.close()
+		self.stream = stream
+		self.owns_stream = True
 
 	def close(self):
-		if self.stream:
+		if self.stream and self.owns_stream:
 			self.stream.close()
-			self.stream = None
+
+		self.stream = None
+		self.owns_stream = False
 
 	def write(self, zmq_multipart_message: typing.List[bytes]):
 		msg_bytes = _pack_message(int(time.time()), zmq_multipart_message)
@@ -121,49 +131,61 @@ class LogfileWriter(contextlib.AbstractContextManager):
 		for msg in msg_list:
 			self.write(msg)
 
+	def flush(self):
+		self.stream.flush()
+
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.close()
 
 
 class LogfileReader(contextlib.AbstractContextManager):
 
-	def __init__(self, filepath=None):
+	def __init__(self, filepath=None, stream=None):
 		super(LogfileReader, self).__init__()
-
-		self.filepath = None
 		self.stream = None
+		self.owns_stream = False
 
 		if filepath:
 			self.open(filepath)
+		elif stream:
+			self.open_stream(stream)
 
 	def open(self, filepath):
+		self.close()
 		self.stream = open(filepath, mode="rb")
+		self.owns_stream = True
+
+	def open_stream(self, stream):
+		self.close()
+		self.stream = stream
+		self.owns_stream = False
 
 	def close(self):
-		if self.stream:
+		if self.stream and self.owns_stream:
 			self.stream.close()
-			self.stream = None
+			
+		self.stream = None
 
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.close()
 
 	def read(self):
 		# Читаем первичный заголовок
-		PRIM_HEADER_SIZE = _prim_header_size()
-		prim_header_bytes = self.stream.read(PRIM_HEADER_SIZE)
+		prim_header_size = _prim_header_size()
+		prim_header_bytes = self.stream.read(prim_header_size)
 		# Возможно файл кончился?
 		if not prim_header_bytes:
-			return None # Так же покажем eof
+			return None  # Так же покажем eof
 
-		if len(prim_header_bytes) != PRIM_HEADER_SIZE:
+		if len(prim_header_bytes) != prim_header_size:
 			raise ValueError("Unexpected EOF in primary header")
 
 		msg_time, parts_count = _unpack_message_prim_header(prim_header_bytes)
 
 		# Читаем вторичный заголовок
-		SEC_HEADER_SIZE = _sec_header_size(parts_count)
-		parts_sizes_bytes = self.stream.read(SEC_HEADER_SIZE)
-		if len(parts_sizes_bytes) != SEC_HEADER_SIZE:
+		sec_header_size = _sec_header_size(parts_count)
+		parts_sizes_bytes = self.stream.read(sec_header_size)
+		if len(parts_sizes_bytes) != sec_header_size:
 			raise ValueError("Unexpected EOF in secondary header")
 
 		parts_sizes = _unpack_message_sec_header(parts_count, parts_sizes_bytes)
@@ -198,7 +220,7 @@ def test():
 		[b"123", b"", b""],
 		[b"", b"321", b"cadebaba"],
 	]
-	
+
 	with LogfileWriter(filepath) as writer:
 		writer.write_all(msgs)
 
