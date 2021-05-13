@@ -1,2 +1,2 @@
-export ITS_GBUS_SUB_ENDPOINT="tcp://0.0.0.0:7777"
-export ITS_GBUS_PUB_ENDPOINT="tcp://0.0.0.0:7778"
+export ITS_GBUS_BPCS_ENDPOINT="tcp://localhost:7778"
+export ITS_GBUS_BSCP_ENDPOINT="tcp://localhost:7777"
