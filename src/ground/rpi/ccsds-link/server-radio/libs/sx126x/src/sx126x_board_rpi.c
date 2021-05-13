@@ -267,7 +267,7 @@ int sx126x_brd_reset(sx126x_board_t * brd)
 int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 {
 	int rc;
-
+	int gpio_value;
 	// Замеряем время, когдна мы начали ждать
 	uint32_t start;
 	rc = sx126x_brd_get_time(brd, &start);
@@ -276,8 +276,8 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 
 	do
 	{
-		rc = gpiod_line_get_value(brd->line_busy);
-		if (rc < 0)
+		gpio_value = gpiod_line_get_value(brd->line_busy);
+		if (gpio_value < 0)
 			return SX126X_ERROR_BOARD;
 
 		usleep(500); // Чуточку спим
@@ -285,11 +285,13 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 		// Смотрим не прошел ли таймаут
 		uint32_t now;
 		rc = sx126x_brd_get_time(brd, &now);
+		if (0 != rc)
+			return SX126X_ERROR_BOARD;
 
 		if (now - start > timeout)
 			return SX126X_ERROR_TIMEOUT;
 
-	} while(rc != 0);
+	} while(gpio_value != 0);
 
 	return 0;
 }

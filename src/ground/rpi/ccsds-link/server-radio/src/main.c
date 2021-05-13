@@ -18,7 +18,7 @@ static server_t server;
 int main(void)
 {
 	int rc;
-	log_set_level(LOG_TRACE);
+	log_set_level(LOG_INFO);
 
 	rc = server_init(&server);
 	if (rc != 0)

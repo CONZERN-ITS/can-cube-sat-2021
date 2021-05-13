@@ -344,7 +344,7 @@ static void _zmq_send_packet_rssi(server_t * server)
 static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 {
 	int rc;
-	log_trace("sending rssi %d", (int)rssi);
+	log_info("sending rssi %d", (int)rssi);
 
 	// Готовим сообщение
 	char json_buffer[1024] = {0};
