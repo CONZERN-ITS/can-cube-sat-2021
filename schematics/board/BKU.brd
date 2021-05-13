@@ -8,8 +8,8 @@
 </settings>
 <grid distance="0.5" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.1" altunitdist="mm" altunit="mm"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
-<layer number="2" name="Route2" color="16" fill="1" visible="yes" active="yes"/>
+<layer number="1" name="Top" color="4" fill="1" visible="no" active="yes"/>
+<layer number="2" name="Route2" color="16" fill="1" visible="no" active="yes"/>
 <layer number="3" name="Route3" color="17" fill="1" visible="no" active="no"/>
 <layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
 <layer number="5" name="Route5" color="19" fill="1" visible="no" active="no"/>
@@ -22,17 +22,17 @@
 <layer number="12" name="Route12" color="20" fill="1" visible="no" active="no"/>
 <layer number="13" name="Route13" color="21" fill="1" visible="no" active="no"/>
 <layer number="14" name="Route14" color="22" fill="1" visible="no" active="no"/>
-<layer number="15" name="Route15" color="23" fill="1" visible="yes" active="yes"/>
+<layer number="15" name="Route15" color="23" fill="1" visible="no" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="yes"/>
-<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="no" active="yes"/>
 <layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="yes"/>
 <layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="no" active="yes"/>
 <layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="28" name="bValues" color="7" fill="1" visible="no" active="yes"/>
@@ -46,9 +46,9 @@
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="yes"/>
 <layer number="37" name="tTest" color="7" fill="1" visible="no" active="yes"/>
 <layer number="38" name="bTest" color="7" fill="1" visible="no" active="yes"/>
-<layer number="39" name="tKeepout" color="4" fill="11" visible="yes" active="yes"/>
+<layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="yes"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="yes" active="yes"/>
-<layer number="41" name="tRestrict" color="4" fill="10" visible="yes" active="yes"/>
+<layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="yes"/>
 <layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="yes"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
@@ -58,7 +58,7 @@
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
 <layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
 <layer number="50" name="dxf" color="7" fill="1" visible="no" active="yes"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="yes"/>
 <layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="53" name="tGND_GNDA" color="7" fill="9" visible="no" active="no"/>
 <layer number="54" name="bGND_GNDA" color="1" fill="9" visible="no" active="no"/>
@@ -232,7 +232,6 @@
 <text x="42.2" y="74.9" size="1" layer="21" ratio="15">PWR</text>
 <text x="4.3" y="46.7" size="1.2" layer="22" ratio="20" rot="MR180" align="bottom-center">for
 firmware</text>
-<text x="67.5" y="43" size="1.5" layer="22" ratio="20" rot="MR0">ARK POWER</text>
 </plain>
 <libraries>
 <library name="pinheadCS">
@@ -4856,68 +4855,6 @@ for trimmer refence see : &lt;u&gt;www.electrospec-inc.com/cross_references/trim
 </package3d>
 </packages3d>
 </library>
-<library name="cansat-lib">
-<packages>
-<package name="UNICS-SWITCH" urn="urn:adsk.eagle:footprint:27544/1" locally_modified="yes">
-<description>&lt;b&gt;SLIDING SWITCH&lt;/b&gt;&lt;p&gt;
-distributor Buerklin, 11G810</description>
-<wire x1="-6.4" y1="3.4" x2="6.4" y2="3.4" width="0.1524" layer="21"/>
-<wire x1="6.4" y1="-3.4" x2="6.4" y2="3.4" width="0.1524" layer="21"/>
-<wire x1="6.4" y1="-3.4" x2="-6.4" y2="-3.4" width="0.1524" layer="21"/>
-<wire x1="-6.4" y1="3.4" x2="-6.4" y2="-3.4" width="0.1524" layer="21"/>
-<wire x1="4.7" y1="-1.397" x2="4.7" y2="1.397" width="0.1524" layer="51"/>
-<wire x1="-4.7" y1="1.397" x2="-4.7" y2="-1.397" width="0.1524" layer="51"/>
-<wire x1="-1.057" y1="1.27" x2="-1.057" y2="-1.27" width="0.1524" layer="51"/>
-<wire x1="-1.565" y1="0.762" x2="-1.565" y2="-0.762" width="0.1524" layer="51"/>
-<wire x1="4.7" y1="-1.524" x2="-1.057" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-2.073" y1="1.524" x2="-2.073" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-2.073" y1="1.524" x2="-1.565" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-2.073" y1="-1.524" x2="-2.581" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-2.581" y1="1.524" x2="-2.581" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-2.581" y1="1.524" x2="-2.073" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="1.016" x2="-3.089" y2="-1.016" width="0.1524" layer="51"/>
-<wire x1="-3.597" y1="1.397" x2="-3.597" y2="-1.397" width="0.1524" layer="51"/>
-<wire x1="-4.7" y1="1.524" x2="-3.597" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-2.581" y1="-1.524" x2="-3.089" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="4.7" y1="-1.524" x2="4.7" y2="-1.397" width="0.1524" layer="21"/>
-<wire x1="4.7" y1="1.524" x2="4.7" y2="1.397" width="0.1524" layer="21"/>
-<wire x1="-1.057" y1="-1.27" x2="-1.057" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-1.057" y1="-1.524" x2="-1.565" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-1.565" y1="-1.524" x2="-1.565" y2="-0.762" width="0.1524" layer="21"/>
-<wire x1="-1.565" y1="-1.524" x2="-2.073" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="-1.016" x2="-3.089" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="-1.524" x2="-3.597" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-3.597" y1="-1.397" x2="-3.597" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-3.597" y1="-1.524" x2="-4.7" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-4.7" y1="-1.397" x2="-4.7" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-4.7" y1="1.524" x2="-4.7" y2="1.397" width="0.1524" layer="21"/>
-<wire x1="-3.597" y1="1.524" x2="-3.597" y2="1.397" width="0.1524" layer="21"/>
-<wire x1="-3.597" y1="1.524" x2="-3.089" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="1.524" x2="-3.089" y2="1.016" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="1.524" x2="-2.581" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-1.565" y1="1.524" x2="-1.565" y2="0.762" width="0.1524" layer="21"/>
-<wire x1="-1.565" y1="1.524" x2="-1.057" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-1.057" y1="1.524" x2="-1.057" y2="1.27" width="0.1524" layer="21"/>
-<wire x1="-1.057" y1="1.524" x2="4.7" y2="1.524" width="0.1524" layer="21"/>
-<pad name="1" x="-4.7" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
-<pad name="2" x="0" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
-<pad name="3" x="4.7" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
-<text x="-6.351" y="-5.08" size="1.27" layer="21" ratio="10">ON</text>
-<text x="3.176" y="-5.08" size="1.27" layer="21" ratio="10">OFF</text>
-<text x="-6.478" y="3.556" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="0" y="3.556" size="1.27" layer="27" ratio="10">&gt;VALUE</text>
-</package>
-</packages>
-<packages3d>
-<package3d name="255SB" urn="urn:adsk.eagle:package:27679/1" type="box">
-<description>SLIDING SWITCH
-distributor Buerklin, 11G810</description>
-<packageinstances>
-<packageinstance name="UNICS-SWITCH"/>
-</packageinstances>
-</package3d>
-</packages3d>
-</library>
 </libraries>
 <attributes>
 </attributes>
@@ -5373,9 +5310,6 @@ design rules under a new name.</description>
 <element name="CAM2" library="pinheadCS" package="1X02" value="" x="9.9" y="29.1" smashed="yes" rot="R90">
 <attribute name="NAME" x="5.7712" y="26.4838" size="1.5" layer="25" ratio="20" rot="R90"/>
 <attribute name="VALUE" x="13.075" y="26.56" size="1.27" layer="27" rot="R90"/>
-</element>
-<element name="S1" library="cansat-lib" package="UNICS-SWITCH" package3d_urn="urn:adsk.eagle:package:27679/1" value="" x="62" y="39" smashed="yes" rot="MR0">
-<attribute name="VALUE" x="62" y="42.556" size="1.27" layer="28" ratio="10" rot="MR0"/>
 </element>
 <element name="U$2" library="CanCubeSat" package="ITS-LOGO" value="PCB-&quot;BKU&quot;" x="46.5" y="35" smashed="yes">
 <attribute name="VALUE" x="46.5" y="33.5" size="1" layer="21" font="vector" ratio="15"/>

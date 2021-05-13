@@ -21868,115 +21868,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </deviceset>
 </devicesets>
 </library>
-<library name="cansat-lib">
-<packages>
-<package name="UNICS-SWITCH" urn="urn:adsk.eagle:footprint:27544/1" locally_modified="yes">
-<description>&lt;b&gt;SLIDING SWITCH&lt;/b&gt;&lt;p&gt;
-distributor Buerklin, 11G810</description>
-<wire x1="-6.4" y1="3.4" x2="6.4" y2="3.4" width="0.1524" layer="21"/>
-<wire x1="6.4" y1="-3.4" x2="6.4" y2="3.4" width="0.1524" layer="21"/>
-<wire x1="6.4" y1="-3.4" x2="-6.4" y2="-3.4" width="0.1524" layer="21"/>
-<wire x1="-6.4" y1="3.4" x2="-6.4" y2="-3.4" width="0.1524" layer="21"/>
-<wire x1="4.7" y1="-1.397" x2="4.7" y2="1.397" width="0.1524" layer="51"/>
-<wire x1="-4.7" y1="1.397" x2="-4.7" y2="-1.397" width="0.1524" layer="51"/>
-<wire x1="-1.057" y1="1.27" x2="-1.057" y2="-1.27" width="0.1524" layer="51"/>
-<wire x1="-1.565" y1="0.762" x2="-1.565" y2="-0.762" width="0.1524" layer="51"/>
-<wire x1="4.7" y1="-1.524" x2="-1.057" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-2.073" y1="1.524" x2="-2.073" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-2.073" y1="1.524" x2="-1.565" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-2.073" y1="-1.524" x2="-2.581" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-2.581" y1="1.524" x2="-2.581" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-2.581" y1="1.524" x2="-2.073" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="1.016" x2="-3.089" y2="-1.016" width="0.1524" layer="51"/>
-<wire x1="-3.597" y1="1.397" x2="-3.597" y2="-1.397" width="0.1524" layer="51"/>
-<wire x1="-4.7" y1="1.524" x2="-3.597" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-2.581" y1="-1.524" x2="-3.089" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="4.7" y1="-1.524" x2="4.7" y2="-1.397" width="0.1524" layer="21"/>
-<wire x1="4.7" y1="1.524" x2="4.7" y2="1.397" width="0.1524" layer="21"/>
-<wire x1="-1.057" y1="-1.27" x2="-1.057" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-1.057" y1="-1.524" x2="-1.565" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-1.565" y1="-1.524" x2="-1.565" y2="-0.762" width="0.1524" layer="21"/>
-<wire x1="-1.565" y1="-1.524" x2="-2.073" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="-1.016" x2="-3.089" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="-1.524" x2="-3.597" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-3.597" y1="-1.397" x2="-3.597" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-3.597" y1="-1.524" x2="-4.7" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-4.7" y1="-1.397" x2="-4.7" y2="-1.524" width="0.1524" layer="21"/>
-<wire x1="-4.7" y1="1.524" x2="-4.7" y2="1.397" width="0.1524" layer="21"/>
-<wire x1="-3.597" y1="1.524" x2="-3.597" y2="1.397" width="0.1524" layer="21"/>
-<wire x1="-3.597" y1="1.524" x2="-3.089" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="1.524" x2="-3.089" y2="1.016" width="0.1524" layer="21"/>
-<wire x1="-3.089" y1="1.524" x2="-2.581" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-1.565" y1="1.524" x2="-1.565" y2="0.762" width="0.1524" layer="21"/>
-<wire x1="-1.565" y1="1.524" x2="-1.057" y2="1.524" width="0.1524" layer="21"/>
-<wire x1="-1.057" y1="1.524" x2="-1.057" y2="1.27" width="0.1524" layer="21"/>
-<wire x1="-1.057" y1="1.524" x2="4.7" y2="1.524" width="0.1524" layer="21"/>
-<pad name="1" x="-4.7" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
-<pad name="2" x="0" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
-<pad name="3" x="4.7" y="0" drill="1.6" diameter="3" shape="octagon" rot="R90"/>
-<text x="-6.351" y="-5.08" size="1.27" layer="21" ratio="10">ON</text>
-<text x="3.176" y="-5.08" size="1.27" layer="21" ratio="10">OFF</text>
-<text x="-6.478" y="3.556" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="0" y="3.556" size="1.27" layer="27" ratio="10">&gt;VALUE</text>
-</package>
-</packages>
-<packages3d>
-<package3d name="255SB" urn="urn:adsk.eagle:package:27679/1" type="box">
-<description>SLIDING SWITCH
-distributor Buerklin, 11G810</description>
-<packageinstances>
-<packageinstance name="UNICS-SWITCH"/>
-</packageinstances>
-</package3d>
-</packages3d>
-<symbols>
-<symbol name="UNICS-SWITCH">
-<wire x1="-3.81" y1="1.905" x2="-3.81" y2="0" width="0.254" layer="94"/>
-<wire x1="-3.81" y1="0" x2="-1.905" y2="0" width="0.1524" layer="94"/>
-<wire x1="-3.81" y1="0" x2="-3.81" y2="-1.905" width="0.254" layer="94"/>
-<wire x1="-1.27" y1="0" x2="-0.762" y2="0" width="0.1524" layer="94"/>
-<wire x1="0.254" y1="0" x2="0.635" y2="0" width="0.1524" layer="94"/>
-<wire x1="2.54" y1="-3.175" x2="2.54" y2="-1.905" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-1.905" x2="0.635" y2="3.175" width="0.254" layer="94"/>
-<wire x1="3.81" y1="2.54" x2="5.08" y2="2.54" width="0.254" layer="94"/>
-<wire x1="5.08" y1="2.54" x2="5.08" y2="3.175" width="0.254" layer="94"/>
-<wire x1="0" y1="2.54" x2="1.27" y2="2.54" width="0.254" layer="94"/>
-<wire x1="0" y1="2.54" x2="0" y2="3.175" width="0.254" layer="94"/>
-<wire x1="1.27" y1="0" x2="1.905" y2="0" width="0.1524" layer="94"/>
-<wire x1="-0.762" y1="0" x2="-0.254" y2="-0.762" width="0.1524" layer="94"/>
-<wire x1="-0.254" y1="-0.762" x2="0.254" y2="0" width="0.1524" layer="94"/>
-<text x="-6.35" y="-1.905" size="1.778" layer="95" rot="R90">&gt;NAME</text>
-<text x="-3.81" y="3.175" size="1.778" layer="96" rot="R90">&gt;VALUE</text>
-<pin name="P" x="2.54" y="-5.08" visible="pad" length="short" direction="pas" rot="R90"/>
-<pin name="S" x="5.08" y="5.08" visible="pad" length="short" direction="pas" rot="R270"/>
-<pin name="O" x="0" y="5.08" visible="pad" length="short" direction="pas" rot="R270"/>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="UNICS-SWITCH" prefix="S" uservalue="yes">
-<description>&lt;b&gt;SLIDING SWITCH&lt;/b&gt;&lt;p&gt;
-Distributor Buerklin, 11G810</description>
-<gates>
-<gate name="1" symbol="UNICS-SWITCH" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="UNICS-SWITCH">
-<connects>
-<connect gate="1" pin="O" pad="1"/>
-<connect gate="1" pin="P" pad="2"/>
-<connect gate="1" pin="S" pad="3"/>
-</connects>
-<package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:27679/1"/>
-</package3dinstances>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 </libraries>
 <attributes>
 <attribute name="ESKD_CHECKED" value=""/>
@@ -22078,7 +21969,6 @@ Distributor Buerklin, 11G810</description>
 <part name="MP1584EN-5V" library="CanCubeSat" deviceset="MP1584-B" device=""/>
 <part name="CAM1" library="pinheadCS" deviceset="PINHD-1X2" device=""/>
 <part name="CAM2" library="pinheadCS" deviceset="PINHD-1X2" device=""/>
-<part name="S1" library="cansat-lib" deviceset="UNICS-SWITCH" device="" package3d_urn="urn:adsk.eagle:package:27679/1"/>
 <part name="U$2" library="CanCubeSat" deviceset="ITS-LOGO" device="PCB-&quot;&quot;" value="PCB-&quot;BKU&quot;"/>
 <part name="U$6" library="CanCubeSat" deviceset="ITS-LOGO" device="PCB-&quot;&quot;" value="PCB-&quot;BKU&quot;"/>
 </parts>
@@ -23407,10 +23297,6 @@ Distributor Buerklin, 11G810</description>
 <instance part="CAM2" gate="G$1" x="398.78" y="88.9" smashed="yes">
 <attribute name="NAME" x="392.43" y="94.615" size="1.778" layer="95"/>
 <attribute name="VALUE" x="392.43" y="83.82" size="1.778" layer="96"/>
-</instance>
-<instance part="S1" gate="1" x="396.24" y="152.4" smashed="yes">
-<attribute name="NAME" x="389.89" y="150.495" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="392.43" y="155.575" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="U$2" gate="G$1" x="20.32" y="325.12" smashed="yes">
 <attribute name="VALUE" x="147.32" y="325.12" size="12.7" layer="96"/>
