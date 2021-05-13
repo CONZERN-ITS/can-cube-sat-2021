@@ -1,34 +1,34 @@
 CentralWidget:
   DataWidget:
     Data_table:
-      CUBE_1_SINS_DIODES:
-        name: 11_0_LIGHT_DIODE
-        sourse_id: '11_0'
-        message_id: 'LIGHT_DIODE'
-      CUBE_1_SINS_LDS_DIR:
-        name: 11_0_LDS_DIR
-        sourse_id: '11_0'
-        message_id: 'LDS_DIR'
-      CUBE_1_SINS_OWN_TEMP:
-        name: 11_0_OWN_TEMP
-        sourse_id: '11_0'
+      PLD_ME2O2_DATA:
+        name: 13_0_PLD_ME2O2_DATA
+        sourse_id: '13_0'
+        message_id: 'PLD_ME2O2_DATA'
+      PLD_MICS_6814_DATA:
+        name: 13_0_PLD_MICS_6814_DATA
+        sourse_id: '13_0'
+        message_id: 'PLD_MICS_6814_DATA'
+      PLD_INT_BME280_DATA:
+        name: 13_0_PLD_INT_BME280_DATA
+        sourse_id: '13_0'
+        message_id: 'PLD_INT_BME280_DATA'
+      PLD_INT_MS5611_DATA:
+        name: 13_0_PLD_INT_MS5611_DATA
+        sourse_id: '13_0'
+        message_id: 'PLD_INT_MS5611_DATA'
+      PL_OWN_TEMP:
+        name: 13_0_OWN_TEMP
+        sourse_id: '13_0'
         message_id: 'OWN_TEMP'
-        range:
-        - - -40
-          - 70
-      CUBE_1_SINS_ERRORS:
-        name: 11_0_SINS_ERRORS
-        sourse_id: '11_0'
-        message_id: 'SINS_ERRORS'
-      CUBE_1_SINS_State:
-        name: 11_0_SINS_ISC
-        sourse_id: '11_0'
-        message_id: 'SINS_ISC'
-      CUBE_1_SINS_GPS:
-        is_on: false
-        name: 11_0_GPS_UBX_NAV_SOL
-        sourse_id: '11_0'
-        message_id: 'GPS_UBX_NAV_SOL'
+      PL_I2C_LINK_STATS:
+        name: 13_0_I2C_LINK_STATS
+        sourse_id: '13_0'
+        message_id: 'I2C_LINK_STATS'
+      PL_PLD_STATS:
+        name: 13_0_PLD_STATS
+        sourse_id: '13_0'
+        message_id: 'PLD_STATS'
       is_on: true
       def_time_limit: 20
     Packet_table:
@@ -193,118 +193,194 @@ CentralWidget:
     position:
     - 0
     - 2
-    - 2
+    - 1
     - 1
   GraphWidget:
     Graph:
-      Sun_pose:
+      O2:
         Packets:
-          11_0_LDS_DIR:
-            sourse_id: '11_0'
-            message_id: LDS_DIR
+          13_0_PLD_ME2O2_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_ME2O2_DATA
             field_id:
-            - x
-            - y
-            - z
-            field_name:
-            - 'x'
-            - 'y'
-            - 'z'
+            - o2_conc
             color:
             - r
-            - g
-            - b
-        legend_is_on: true
-        is_on: false
-        max_data_length: 100
-        name: Sun position vector
-        position:
-        - 0
-        - 1
-        - 1
-        - 1
-        units: ' '
-      Accel:
-        Packets:
-          11_0_SINS_ACCEL:
-            sourse_id: '11_0'
-            message_id: SINS_ISC
-            field_id:
-            - accel[0]
-            - accel[1]
-            - accel[2]
-            field_name:
-            - 'x'
-            - 'y'
-            - 'z'
-            color:
-            - r
-            - g
-            - b
-        legend_is_on: true
-        is_on: true
-        max_data_length: 100
-        name: Acceleration
-        position:
-        - 0
-        - 0
-        - 1
-        - 1
-        units: g
-      Compass:
-        legend_is_on: true
-        Packets:
-          11_0_SINS_COMPASS:
-            field_id:
-            - compass[0]
-            - compass[1]
-            - compass[2]
-            field_name:
-            - x
-            - y
-            - z
-            color:
-            - r
-            - g
-            - b
-            sourse_id: '11_0'
-            message_id: SINS_ISC
-        name: Compass
-        is_on: true
-        max_data_length: 100
-        position:
-        - 1
-        - 0
-        - 1
-        - 1
-        units: G
-      Height:
-        Packets:
-          11_0_GPS_ALTITUDE:
-            field_id:
-            - alt
-            field_name:
-            - height
-            color:
-            - r
-            sourse_id: '11_0'
-            message_id: GPS_UBX_NAV_SOL
         legend_is_on: false
-        is_on: false
+        is_on: true
         max_data_length: 100
-        name: Altitude
+        name: O2
+        position:
+        - 0
+        - 1
+        - 1
+        - 1
+        units: '%'
+      CO:
+        Packets:
+          13_0_PLD_MICS_6814_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_MICS_6814_DATA
+            field_id:
+            - co_conc
+            color:
+            - r
+        legend_is_on: false
+        is_on: true
+        max_data_length: 100
+        name: CO
+        position:
+        - 0
+        - 0
+        - 1
+        - 1
+        units: ppm
+      NO2:
+        Packets:
+          13_0_PLD_MICS_6814_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_MICS_6814_DATA
+            field_id:
+            - no2_conc
+            color:
+            - r
+        legend_is_on: false
+        is_on: true
+        max_data_length: 100
+        name: NO2
+        position:
+        - 1
+        - 0
+        - 1
+        - 1
+        units: ppm
+      NH3:
+        Packets:
+          13_0_PLD_MICS_6814_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_MICS_6814_DATA
+            field_id:
+            - nh3_conc
+            color:
+            - r
+        legend_is_on: false
+        is_on: true
+        max_data_length: 100
+        name: NH3
         position:
         - 2
         - 0
         - 1
         - 1
-        units: m
+        units: ppm
+      Pressure:
+        Packets:
+          13_0_PLD_INT_BME280_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_INT_BME280_DATA
+            field_id:
+            - pressure
+            field_name:
+            - BMP280
+            color:
+            - r
+          13_0_PLD_INT_MS5611_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_INT_MS5611_DATA
+            field_id:
+            - pressure
+            field_name:
+            - MS5611
+            color:
+            - g
+        name: Pressure
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        position:
+        - 1
+        - 1
+        - 1
+        - 1
+        units: Pa
+      Temperature:
+        Packets:
+          13_0_PLD_INT_BME280_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_INT_BME280_DATA
+            field_id:
+            - temperature
+            field_name:
+            - BMP280
+            color:
+            - r
+          13_0_PLD_INT_MS5611_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_INT_MS5611_DATA
+            field_id:
+            - temperature
+            field_name:
+            - MS5611
+            color:
+            - g
+        name: Temperature
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        position:
+        - 2
+        - 1
+        - 1
+        - 1
+        units: C
+      Humidity:
+        Packets:
+          13_0_PLD_INT_BME280_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_INT_BME280_DATA
+            field_id:
+            - humidity
+            field_name:
+            - BMP280
+            color:
+            - r
+        name: Humidity
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        position:
+        - 3
+        - 1
+        - 1
+        - 1
+        units: '%'
+      Altitude:
+        Packets:
+          13_0_PLD_INT_BME280_DATA:
+            sourse_id: '13_0'
+            message_id: PLD_INT_BME280_DATA
+            field_id:
+            - altitude
+            field_name:
+            - BMP280
+            color:
+            - r
+        name: Altitude
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        position:
+        - 3
+        - 0
+        - 1
+        - 1
+        units: 'm'
     is_on: true
     position:
     - 0
     - 0
-    - 2
     - 1
+    - 2
     time_units: s
   MapWidget:
     center:
@@ -374,7 +450,7 @@ CentralWidget:
       shader: balloon
       smooth: false
     background_color: '#323232'
-    is_on: true
+    is_on: false
     sourse_id: '11_0'
     message_id: 'SINS_ISC'
     quat_field_id: 
@@ -420,7 +496,7 @@ CentralWidget:
     position:
     - 0
     - 3
-    - 2
+    - 1
     - 1
 CurrentValues:
   time_shift: 1601731871.944

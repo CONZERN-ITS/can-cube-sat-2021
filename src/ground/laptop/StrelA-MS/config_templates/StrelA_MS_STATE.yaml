@@ -34,27 +34,27 @@ CentralWidget:
         sourse_id: '10_0'
         message_id: 'BCU_STATS'
       CUBE_1_BCU_TEMP_COMP_0:
-        name: 10_0_THERMAL_STATE
+        name: BCU C0 THERMAL_STATE
         sourse_id: '10_0'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_1:
-        name: 10_1_THERMAL_STATE
+        name: BCU C1 THERMAL_STATE
         sourse_id: '10_1'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_2:
-        name: 10_2_THERMAL_STATE
+        name: BCU C2 THERMAL_STATE
         sourse_id: '10_2'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_3:
-        name: 10_3_THERMAL_STATE
+        name: BCU C3 THERMAL_STATE
         sourse_id: '10_3'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_4:
-        name: 10_4_THERMAL_STATE
+        name: BCU C4 THERMAL_STATE
         sourse_id: '10_4'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_5:
-        name: 10_5_THERMAL_STATE
+        name: BCU C5 THERMAL_STATE
         sourse_id: '10_5'
         message_id: 'THERMAL_STATE'
       CUBE_1_PCU_OWN_TEMP:
@@ -83,120 +83,63 @@ CentralWidget:
         sourse_id: '12_3'
         message_id: THERMAL_STATE
       CUBE_1_PCU_VOLT_COMP_0:
-        is_on: true
-        name: cube 1 PCU comp 0 ELECTRICAL_STATE
+        is_on: false
+        name: PCU C0 ELECTRICAL_STATE
         sourse_id: '12_0'
         message_id: ELECTRICAL_STATE
-      CUBE_1_PL_BME280_TEMP:
-        is_on: false
-        name: cube 1 PL PLD_BME280_DATA
+      PLD_INT_BME280_DATA:
+        name: PL PLD_INT_BME280_DATA
         sourse_id: '13_0'
-        message_id: PLD_BME280_DATA
-      CUBE_1_PL_I2C_LINK_STATS:
-        is_on: false
-        name: cube 1 PL I2C_LINK_STATS
+        message_id: PLD_INT_BME280_DATA
+      PLD_INT_MS5611_DATA:
+        name: PL PLD_INT_MS5611_DATAA
+        sourse_id: '13_0'
+        message_id: PLD_INT_MS5611_DATA
+      PL_I2C_LINK_STATS:
+        name: PL I2C_LINK_STATS
         sourse_id: '13_0'
         message_id: I2C_LINK_STATS
-      CUBE_1_PL_ME2O2:
-        is_on: false
-        name: cube 1 PL ME2O2
+      PL_ME2O2:
+        name: PL ME2O2
         sourse_id: '13_0'
-        message_id: ME2O2
-      CUBE_1_PL_MICS_6814_CO:
-        is_on: false
-        name: cube 1 PL PLD_MICS_6814_DATA
+        message_id: PLD_ME2O2_DATA
+      PL_MICS_6814_CO:
+        name: PL PLD_MICS_6814_DATA
         sourse_id: '13_0'
         message_id: PLD_MICS_6814_DATA
-      CUBE_1_PL_OWN_TEMP:
-        is_on: false
-        name: cube 1 PL OWN_TEMP
+      PL_OWN_TEMP:
+        name: PL OWN_TEMP
         sourse_id: '13_0'
         message_id: OWN_TEMP
-      CUBE_1_PL_STATS:
-        is_on: false
-        name: cube 1 PL PLD_STATS
+      PL_STATS:
+        name: PL PLD_STATS
         sourse_id: '13_0'
         message_id: PLD_STATS
-      CUBE_1_SINS_DIODES:
+      SINS_DIODES:
         name: 'SINS LIGHT_DIODE'
         sourse_id: '11_0'
         message_id: 'LIGHT_DIODE'
-      CUBE_1_SINS_LDS_DIR:
+      SINS_LDS_DIR:
         name: 'SINS LDS_DIR'
         sourse_id: '11_0'
         message_id: 'LDS_DIR'
-      CUBE_1_SINS_ERRORS:
-        name: cube 1 SINS SINS_ERRORS
+      SINS_ERRORS:
+        name: SINS SINS_ERRORS
         sourse_id: '11_0'
         message_id: SINS_ERRORS
-      CUBE_1_SINS_GPS_UBX_NAV_SOL:
+      SINS_GPS_UBX_NAV_SOL:
         is_on: false
-        name: cube 1 SINS GPS_UBX_NAV_SOL
+        name: SINS GPS_UBX_NAV_SOL
         sourse_id: '11_0'
         message_id: GPS_UBX_NAV_SOL
-      CUBE_1_SINS_ISC:
-        name: cube 1 SINS SINS_ISC
+      SINS_ISC:
+        name: SINS SINS_ISC
         sourse_id: '11_0'
         message_id: SINS_ISC
-      CUBE_1_SINS_OWN_TEMP:
-        name: cube 1 SINS OWN_TEMP
+      SINS_OWN_TEMP:
+        name: SINS OWN_TEMP
         sourse_id: '11_0'
         message_id: OWN_TEMP
-      CUBE_2_PCU_OWN_TEMP:
-        is_on: false
-        name: cube 2 PCU OWN_TEMP
-        sourse_id: '21_0'
-        message_id: OWN_TEMP
-      CUBE_2_PCU_TEMP_COMP_0:
-        is_on: false
-        name: cube 2 PCU comp 0 THERMAL_STATE
-        sourse_id: '21_0'
-        message_id: THERMAL_STATE
-      CUBE_2_PCU_TEMP_COMP_1:
-        is_on: false
-        name: cube 2 PCU comp 1 THERMAL_STATE
-        sourse_id: '21_1'
-        message_id: THERMAL_STATE
-      CUBE_2_PCU_TEMP_COMP_2:
-        is_on: false
-        name: cube 2 PCU comp 2 THERMAL_STATE
-        sourse_id: '21_2'
-        message_id: THERMAL_STATE
-      CUBE_2_PCU_TEMP_COMP_3:
-        is_on: false
-        name: cube 2 PCU comp 3 THERMAL_STATE
-        sourse_id: '21_3'
-        message_id: THERMAL_STATE
-      CUBE_2_PFU_STATS:
-        is_on: false
-        name: cube 1 BCU BCU_STATS
-        sourse_id: '20_0'
-        message_id: THERMAL_STATE
-      CUBE_2_PFU_TEMP_COMP_0:
-        is_on: false
-        name: cube 2 PFU comp 0 THERMAL_STATE
-        sourse_id: '20_0'
-        message_id: THERMAL_STATE
-      CUBE_2_PFU_TEMP_COMP_1:
-        is_on: false
-        name: cube 2 PFU comp 1 THERMAL_STATE
-        sourse_id: '20_1'
-        message_id: THERMAL_STATE
-      CUBE_2_PFU_TEMP_COMP_2:
-        is_on: false
-        name: cube 2 PFU comp 2 THERMAL_STATE
-        sourse_id: '20_2'
-        message_id: THERMAL_STATE
-      CUBE_2_PFU_TEMP_COMP_3:
-        is_on: false
-        name: cube 2 PFU comp 3 THERMAL_STATE
-        sourse_id: '20_3'
-        message_id: THERMAL_STATE
-      CUBE_2_PFU_TEMP_COMP_4:
-        is_on: false
-        name: cube 2 PFU comp 4 THERMAL_STATE
-        sourse_id: '20_4'
-        message_id: THERMAL_STATE
       GCS_RADIO:
         is_on: false
         name: GCS RADIO RSSI
@@ -206,60 +149,36 @@ CentralWidget:
     Time_table:
       CUBE_1_BCU:
         is_on: true
-        system_name: cube 1 BCU time
+        system_name: BCU time
         sourse_id:
         - '10_0'
         - '10_1'
         - '10_2'
         - '10_3'
         - '10_4'
-        time_limit: 20
       CUBE_1_PCU:
         is_on: true
-        system_name: cube 1 PCU time
+        system_name: PCU time
         sourse_id:
         - '12_0'
         - '12_1'
         - '12_2'
         - '12_3'
-        time_limit: 20
       CUBE_1_PL:
         is_on: true
-        system_name: cube 1 PL time
+        system_name: PL time
         sourse_id:
         - '13_0'
-        time_limit: 20
       CUBE_1_SINS:
         is_on: true
-        system_name: cube 1 SINS time
+        system_name: SINS time
         sourse_id:
         - '11_0'
-        time_limit: 20
-      CUBE_2_PCU:
-        is_on: true
-        system_name: cube 2 PCU time
-        sourse_id:
-        - '21_0'
-        - '21_1'
-        - '21_2'
-        - '21_3'
-        time_limit: 20
-      CUBE_2_PFU:
-        is_on: true
-        system_name: cube 2 PFU time
-        sourse_id:
-        - '20_0'
-        - '20_1'
-        - '20_2'
-        - '20_3'
-        - '20_4'
-        time_limit: 20
       GCS_RADIO:
         is_on: true
         system_name: GCS RADIO time
         sourse_id:
         - '1_0'
-        time_limit: 20
       is_on: true
       def_time_limit: 20
     background_color: '#888888'

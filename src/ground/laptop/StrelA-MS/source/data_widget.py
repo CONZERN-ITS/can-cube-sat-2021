@@ -105,9 +105,9 @@ class DataWidget(QtWidgets.QTreeWidget):
                 for i in range(min(len(self.data_range), len(sorted_keys))):
                     if self.data_range[i] != 'None':
                         if (self.data_range[i][0] != 'None') and (data_list[sorted_keys[i]] < self.data_range[i][0]):
-                            DataWidget.TreeItem.setup_background(self.child(i), self.colors[0])
+                            DataWidget.AbstractTreeItem.setup_background(self.child(i), self.colors[0])
                         elif (self.data_range[i][1] != 'None') and (data_list[sorted_keys[i]] > self.data_range[i][1]):
-                            DataWidget.TreeItem.setup_background(self.child(i), self.colors[1])
+                            DataWidget.AbstractTreeItem.setup_background(self.child(i), self.colors[1])
             if self.timer is not None:
                 self.timer.start()
 
