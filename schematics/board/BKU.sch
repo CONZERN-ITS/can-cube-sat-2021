@@ -206,44 +206,44 @@
 <wire x1="9" y1="6.45" x2="9" y2="12.75" width="0.127" layer="21"/>
 <wire x1="9" y1="12.75" x2="-9" y2="12.75" width="0.127" layer="21"/>
 <wire x1="-9" y1="6.45" x2="9" y2="6.45" width="0.127" layer="21"/>
-<smd name="1" x="-8.5" y="5.26" dx="2" dy="0.9" layer="1"/>
-<smd name="2" x="-8.5" y="3.99" dx="2" dy="0.9" layer="1"/>
-<smd name="3" x="-8.5" y="2.72" dx="2" dy="0.9" layer="1"/>
-<smd name="4" x="-8.5" y="1.45" dx="2" dy="0.9" layer="1"/>
-<smd name="5" x="-8.5" y="0.18" dx="2" dy="0.9" layer="1"/>
-<smd name="6" x="-8.5" y="-1.09" dx="2" dy="0.9" layer="1"/>
-<smd name="7" x="-8.5" y="-2.36" dx="2" dy="0.9" layer="1"/>
-<smd name="8" x="-8.5" y="-3.63" dx="2" dy="0.9" layer="1"/>
-<smd name="9" x="-8.5" y="-4.9" dx="2" dy="0.9" layer="1"/>
-<smd name="10" x="-8.5" y="-6.17" dx="2" dy="0.9" layer="1"/>
-<smd name="11" x="-8.5" y="-7.44" dx="2" dy="0.9" layer="1"/>
-<smd name="12" x="-8.5" y="-8.71" dx="2" dy="0.9" layer="1"/>
-<smd name="13" x="-8.5" y="-9.98" dx="2" dy="0.9" layer="1"/>
-<smd name="14" x="-8.5" y="-11.25" dx="2" dy="0.9" layer="1"/>
-<smd name="15" x="-5.715" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="16" x="-4.445" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="17" x="-3.175" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="18" x="-1.905" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="19" x="-0.635" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="20" x="0.635" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="21" x="1.905" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="22" x="3.175" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="23" x="4.445" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="24" x="5.715" y="-12.25" dx="2" dy="0.9" layer="1" rot="R90"/>
-<smd name="25" x="8.5" y="-11.25" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="26" x="8.5" y="-9.98" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="27" x="8.5" y="-8.71" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="28" x="8.5" y="-7.44" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="29" x="8.5" y="-6.17" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="30" x="8.5" y="-4.9" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="31" x="8.5" y="-3.63" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="32" x="8.5" y="-2.36" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="33" x="8.5" y="-1.09" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="34" x="8.5" y="0.18" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="35" x="8.5" y="1.45" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="36" x="8.5" y="2.72" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="37" x="8.5" y="3.99" dx="2" dy="0.9" layer="1" rot="R180"/>
-<smd name="38" x="8.5" y="5.26" dx="2" dy="0.9" layer="1" rot="R180"/>
+<smd name="1" x="-9.25" y="5.26" dx="2.5" dy="0.8" layer="1"/>
+<smd name="2" x="-9.25" y="3.99" dx="2.5" dy="0.8" layer="1"/>
+<smd name="3" x="-9.25" y="2.72" dx="2.5" dy="0.8" layer="1"/>
+<smd name="4" x="-9.25" y="1.45" dx="2.5" dy="0.8" layer="1"/>
+<smd name="5" x="-9.25" y="0.18" dx="2.5" dy="0.8" layer="1"/>
+<smd name="6" x="-9.25" y="-1.09" dx="2.5" dy="0.8" layer="1"/>
+<smd name="7" x="-9.25" y="-2.36" dx="2.5" dy="0.8" layer="1"/>
+<smd name="8" x="-9.25" y="-3.63" dx="2.5" dy="0.8" layer="1"/>
+<smd name="9" x="-9.25" y="-4.9" dx="2.5" dy="0.8" layer="1"/>
+<smd name="10" x="-9.25" y="-6.17" dx="2.5" dy="0.8" layer="1"/>
+<smd name="11" x="-9.25" y="-7.44" dx="2.5" dy="0.8" layer="1"/>
+<smd name="12" x="-9.25" y="-8.71" dx="2.5" dy="0.8" layer="1"/>
+<smd name="13" x="-9.25" y="-9.98" dx="2.5" dy="0.8" layer="1"/>
+<smd name="14" x="-9.25" y="-11.25" dx="2.5" dy="0.8" layer="1"/>
+<smd name="15" x="-5.715" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="16" x="-4.445" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="17" x="-3.175" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="18" x="-1.905" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="19" x="-0.635" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="20" x="0.635" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="21" x="1.905" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="22" x="3.175" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="23" x="4.445" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="24" x="5.715" y="-13" dx="2.5" dy="0.8" layer="1" rot="R90"/>
+<smd name="25" x="9.25" y="-11.25" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="26" x="9.25" y="-9.98" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="27" x="9.25" y="-8.71" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="28" x="9.25" y="-7.44" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="29" x="9.25" y="-6.17" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="30" x="9.25" y="-4.9" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="31" x="9.25" y="-3.63" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="32" x="9.25" y="-2.36" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="33" x="9.25" y="-1.09" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="34" x="9.25" y="0.18" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="35" x="9.25" y="1.45" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="36" x="9.25" y="2.72" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="37" x="9.25" y="3.99" dx="2.5" dy="0.8" layer="1" rot="R180"/>
+<smd name="38" x="9.25" y="5.26" dx="2.5" dy="0.8" layer="1" rot="R180"/>
 <smd name="HEAT" x="-1.01" y="-2.24" dx="5.01" dy="5.01" layer="1"/>
 <rectangle x1="-8.89" y1="6.35" x2="8.89" y2="12.7" layer="41"/>
 <rectangle x1="-8.89" y1="6.35" x2="8.89" y2="12.7" layer="42"/>

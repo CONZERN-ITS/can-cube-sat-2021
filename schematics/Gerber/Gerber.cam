@@ -260,7 +260,7 @@
                     "list_attribute": true,
                     "list_type": "values",
                     "name": "Bill of Material",
-                    "output_format": "txt",
+                    "output_format": "csv",
                     "type": "bom"
                 }
             ]

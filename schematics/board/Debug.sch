@@ -160,28 +160,6 @@
 <libraries>
 <library name="CanCubeSat">
 <packages>
-<package name="SLW15S">
-<pad name="P$1" x="-7" y="-0.5" drill="0.6" shape="octagon"/>
-<pad name="P$2" x="-6" y="0.5" drill="0.6" shape="octagon"/>
-<pad name="P$3" x="-5" y="-0.5" drill="0.6" shape="octagon"/>
-<pad name="P$4" x="-4" y="0.5" drill="0.6" shape="octagon"/>
-<pad name="P$5" x="-3" y="-0.5" drill="0.6" shape="octagon"/>
-<pad name="P$6" x="-2" y="0.5" drill="0.6" shape="octagon"/>
-<pad name="P$7" x="-1" y="-0.5" drill="0.6" shape="octagon"/>
-<pad name="P$8" x="0" y="0.5" drill="0.6" shape="octagon"/>
-<pad name="P$9" x="1" y="-0.5" drill="0.6" shape="octagon"/>
-<pad name="P$10" x="2" y="0.5" drill="0.6" shape="octagon"/>
-<pad name="P$11" x="3" y="-0.5" drill="0.6" shape="octagon"/>
-<pad name="P$12" x="4" y="0.5" drill="0.6" shape="octagon"/>
-<pad name="P$13" x="5" y="-0.5" drill="0.6" shape="octagon"/>
-<pad name="P$14" x="6" y="0.5" drill="0.6" shape="octagon"/>
-<pad name="P$15" x="7" y="-0.5" drill="0.6" shape="octagon"/>
-<wire x1="-10.6" y1="2" x2="10.6" y2="2" width="0.127" layer="21"/>
-<wire x1="10.6" y1="2" x2="10.6" y2="-2" width="0.127" layer="21"/>
-<wire x1="10.6" y1="-2" x2="-10.6" y2="-2" width="0.127" layer="21"/>
-<wire x1="-10.6" y1="-2" x2="-10.6" y2="2" width="0.127" layer="21"/>
-<text x="-11" y="-2" size="1.27" layer="25" rot="R90">FFC</text>
-</package>
 <package name="68611">
 <smd name="P$1" x="-7" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
 <smd name="P$2" x="-6" y="0.65" dx="1.3" dy="0.6" layer="1" rot="R90"/>
@@ -204,6 +182,28 @@
 <wire x1="-9" y1="-5.6" x2="9" y2="-5.6" width="0.127" layer="21"/>
 <wire x1="9" y1="-5.6" x2="9" y2="0" width="0.127" layer="21"/>
 <wire x1="9" y1="0" x2="-9" y2="0" width="0.127" layer="21"/>
+</package>
+<package name="SLW15S">
+<pad name="15" x="-7" y="-1" drill="0.8" shape="octagon"/>
+<pad name="14" x="-6" y="1" drill="0.8" shape="octagon"/>
+<pad name="13" x="-5" y="-1" drill="0.8" shape="octagon"/>
+<pad name="12" x="-4" y="1" drill="0.8" shape="octagon"/>
+<pad name="11" x="-3" y="-1" drill="0.8" shape="octagon"/>
+<pad name="10" x="-2" y="1" drill="0.8" shape="octagon"/>
+<pad name="9" x="-1" y="-1" drill="0.8" shape="octagon"/>
+<pad name="8" x="0" y="1" drill="0.8" shape="octagon"/>
+<pad name="7" x="1" y="-1" drill="0.8" shape="octagon"/>
+<pad name="6" x="2" y="1" drill="0.8" shape="octagon"/>
+<pad name="5" x="3" y="-1" drill="0.8" shape="octagon"/>
+<pad name="4" x="4" y="1" drill="0.8" shape="octagon"/>
+<pad name="3" x="5" y="-1" drill="0.8" shape="octagon"/>
+<pad name="2" x="6" y="1" drill="0.8" shape="octagon"/>
+<pad name="1" x="7" y="-1" drill="0.8" shape="octagon"/>
+<wire x1="-10.6" y1="2" x2="10.6" y2="2" width="0.127" layer="21"/>
+<wire x1="10.6" y1="2" x2="10.6" y2="-2" width="0.127" layer="21"/>
+<wire x1="10.6" y1="-2" x2="-10.6" y2="-2" width="0.127" layer="21"/>
+<wire x1="-10.6" y1="-2" x2="-10.6" y2="2" width="0.127" layer="21"/>
+<text x="-11" y="-2" size="1.27" layer="25" rot="R90">FFC</text>
 </package>
 </packages>
 <symbols>
@@ -239,21 +239,21 @@
 <devices>
 <device name="" package="SLW15S">
 <connects>
-<connect gate="G$1" pin="1" pad="P$1"/>
-<connect gate="G$1" pin="10" pad="P$10"/>
-<connect gate="G$1" pin="11" pad="P$11"/>
-<connect gate="G$1" pin="12" pad="P$12"/>
-<connect gate="G$1" pin="13" pad="P$13"/>
-<connect gate="G$1" pin="14" pad="P$14"/>
-<connect gate="G$1" pin="15" pad="P$15"/>
-<connect gate="G$1" pin="2" pad="P$2"/>
-<connect gate="G$1" pin="3" pad="P$3"/>
-<connect gate="G$1" pin="4" pad="P$4"/>
-<connect gate="G$1" pin="5" pad="P$5"/>
-<connect gate="G$1" pin="6" pad="P$6"/>
-<connect gate="G$1" pin="7" pad="P$7"/>
-<connect gate="G$1" pin="8" pad="P$8"/>
-<connect gate="G$1" pin="9" pad="P$9"/>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="10" pad="10"/>
+<connect gate="G$1" pin="11" pad="11"/>
+<connect gate="G$1" pin="12" pad="12"/>
+<connect gate="G$1" pin="13" pad="13"/>
+<connect gate="G$1" pin="14" pad="14"/>
+<connect gate="G$1" pin="15" pad="15"/>
+<connect gate="G$1" pin="2" pad="2"/>
+<connect gate="G$1" pin="3" pad="3"/>
+<connect gate="G$1" pin="4" pad="4"/>
+<connect gate="G$1" pin="5" pad="5"/>
+<connect gate="G$1" pin="6" pad="6"/>
+<connect gate="G$1" pin="7" pad="7"/>
+<connect gate="G$1" pin="8" pad="8"/>
+<connect gate="G$1" pin="9" pad="9"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -11125,8 +11125,8 @@ Source: www.kingbright.com</description>
 <part name="R4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="R0603" package3d_urn="urn:adsk.eagle:package:23555/3" value="2k"/>
 <part name="LED2" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
 <part name="LED1" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:15822/2"/>
-<part name="U$21" library="CanCubeSat" deviceset="FFC-CONNECT" device="68611"/>
-<part name="U$12" library="CanCubeSat" deviceset="FFC-CONNECT" device="68611"/>
+<part name="U$21" library="CanCubeSat" deviceset="FFC-CONNECT" device="" value="FFC-CONNECT"/>
+<part name="U$12" library="CanCubeSat" deviceset="FFC-CONNECT" device="" value="FFC-CONNECT"/>
 <part name="POWER" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X3" device="" package3d_urn="urn:adsk.eagle:package:22458/2"/>
 <part name="DAT0" library="switch-omron" library_urn="urn:adsk.eagle:library:377" deviceset="10-XX" device="" package3d_urn="urn:adsk.eagle:package:27496/1"/>
 </parts>
@@ -11536,26 +11536,26 @@ DTR RTS -&gt; EN  IO0
 </net>
 <net name="SWC" class="0">
 <segment>
-<pinref part="DOWNLOAD_STM32" gate="A" pin="2"/>
-<wire x1="152.4" y1="35.56" x2="152.4" y2="22.86" width="0.1524" layer="91"/>
-<label x="152.4" y="27.94" size="1.778" layer="95" rot="R90"/>
-</segment>
-<segment>
 <wire x1="147.32" y1="116.84" x2="147.32" y2="96.52" width="0.1524" layer="91"/>
 <label x="147.32" y="96.52" size="1.778" layer="95" rot="R90"/>
 <pinref part="U$12" gate="G$1" pin="10"/>
 </segment>
-</net>
-<net name="SWD" class="0">
 <segment>
 <pinref part="DOWNLOAD_STM32" gate="A" pin="3"/>
 <wire x1="149.86" y1="35.56" x2="149.86" y2="22.86" width="0.1524" layer="91"/>
 <label x="149.86" y="27.94" size="1.778" layer="95" rot="R90"/>
 </segment>
+</net>
+<net name="SWD" class="0">
 <segment>
 <wire x1="142.24" y1="116.84" x2="142.24" y2="96.52" width="0.1524" layer="91"/>
 <label x="142.24" y="96.52" size="1.778" layer="95" rot="R90"/>
 <pinref part="U$12" gate="G$1" pin="8"/>
+</segment>
+<segment>
+<pinref part="DOWNLOAD_STM32" gate="A" pin="2"/>
+<wire x1="152.4" y1="35.56" x2="152.4" y2="22.86" width="0.1524" layer="91"/>
+<label x="152.4" y="27.94" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -11662,9 +11662,9 @@ DTR RTS -&gt; EN  IO0
 <pinref part="U$12" gate="G$1" pin="4"/>
 </segment>
 <segment>
-<pinref part="DEBUG_STM32" gate="A" pin="3"/>
-<wire x1="127" y1="22.86" x2="127" y2="35.56" width="0.1524" layer="91"/>
-<label x="127" y="27.94" size="1.778" layer="95" rot="R90"/>
+<pinref part="DEBUG_STM32" gate="A" pin="2"/>
+<wire x1="129.54" y1="22.86" x2="129.54" y2="35.56" width="0.1524" layer="91"/>
+<label x="129.54" y="27.94" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="TX-S" class="0">
@@ -11674,9 +11674,9 @@ DTR RTS -&gt; EN  IO0
 <pinref part="U$12" gate="G$1" pin="6"/>
 </segment>
 <segment>
-<pinref part="DEBUG_STM32" gate="A" pin="2"/>
-<wire x1="129.54" y1="22.86" x2="129.54" y2="35.56" width="0.1524" layer="91"/>
-<label x="129.54" y="27.94" size="1.778" layer="95" rot="R90"/>
+<pinref part="DEBUG_STM32" gate="A" pin="3"/>
+<wire x1="127" y1="22.86" x2="127" y2="35.56" width="0.1524" layer="91"/>
+<label x="127" y="27.94" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="3V3-S" class="0">
