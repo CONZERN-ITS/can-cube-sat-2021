@@ -1,7 +1,7 @@
 {
     "Header": {
         "Comment": "All values are metric (mm)",
-        "CreationDate": "2021-05-13T18:39:22Z",
+        "CreationDate": "2021-05-13T18:59:18Z",
         "GenerationSoftware": {
             "Application": "EAGLE",
             "Vendor": "Autodesk",
@@ -10,15 +10,15 @@
         "Part": "Single"
     },
     "Overall": {
-        "BoardThickness": 1.99,
-        "LayerNumber": 4,
+        "BoardThickness": 1.57,
+        "LayerNumber": 2,
         "Name": {
-            "ProjectId": "BKU"
+            "ProjectId": "Debug"
         },
         "Owner": "  <>",
         "Size": {
-            "X": 94,
-            "Y": 94
+            "X": 84,
+            "Y": 54
         }
     }
 }
