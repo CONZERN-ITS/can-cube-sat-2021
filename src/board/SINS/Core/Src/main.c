@@ -284,6 +284,7 @@ int UpdateDataAll(void)
 	    }
 
         stateSINS_lds.error = lds_err = lds_get_error(light, arr);
+        time_svc_world_get_time(&stateSINS_lds.tv);
 	}
 
 	time_svc_world_get_time(&stateSINS_isc.tv);
