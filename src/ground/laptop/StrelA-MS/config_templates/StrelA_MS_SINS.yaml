@@ -16,6 +16,10 @@ CentralWidget:
         range:
         - - -40
           - 70
+      SINS_GPS_UBX_NAV_SOL:
+        name: 11_0_GPS_UBX_NAV_SOL
+        sourse_id: '11_0'
+        message_id: GPS_UBX_NAV_SOL
       CUBE_1_SINS_ERRORS:
         name: 11_0_SINS_ERRORS
         sourse_id: '11_0'
@@ -33,8 +37,7 @@ CentralWidget:
       def_time_limit: 20
     Packet_table:
       CUBE_1_BCU_STATS:
-        is_on: false
-        name: 'cube 1 BCU BCU_STATS'
+        name: 'BCU C0 BCU_STATS'
         sourse_id: '10_0'
         message_id: 'BCU_STATS'
       CUBE_1_BCU_TEMP_COMP_0:
@@ -91,57 +94,72 @@ CentralWidget:
         name: PCU C0 ELECTRICAL_STATE
         sourse_id: '12_0'
         message_id: ELECTRICAL_STATE
-      PLD_INT_BME280_DATA:
-        name: PL PLD_INT_BME280_DATA
+      PLD_DOSIM_DATA:
+        name: PLD C0 PLD_DOSIM_DATA
         sourse_id: '13_0'
-        message_id: PLD_INT_BME280_DATA
-      PLD_INT_MS5611_DATA:
-        name: PL PLD_INT_MS5611_DATAA
+        message_id: 'PLD_DOSIM_DATA'
+      PLD_BME280_DATA_IN:
+        name: PLD C2 PLD_BME280_DATA (IN)
+        sourse_id: '13_2'
+        message_id: 'PLD_BME280_DATA'
+      PLD_MS5611_DATA_IN:
+        name: PLD C2 PLD__MS5611_DATA (IN)
+        sourse_id: '13_2'
+        message_id: 'PLD_MS5611_DATA'
+      PLD_BME280_DATA_OUT:
+        name: PLD C1 EXT_BME280_DATA (OUT)
+        sourse_id: '13_1'
+        message_id: 'PLD_BME280_DATA'
+      PLD_MS5611_DATA_OUT:
+        name: PLD C1 PLD_MS5611_DATA (OUT)
+        sourse_id: '13_1'
+        message_id: 'PLD_MS5611_DATA'
+      PLD_DNA_DATA:
+        name: PLD C0 PLD_DNA_DATA
         sourse_id: '13_0'
-        message_id: PLD_INT_MS5611_DATA
+        message_id: 'PLD_DNA_DATA'
       PL_I2C_LINK_STATS:
-        name: PL I2C_LINK_STATS
+        name: PLD C0 I2C_LINK_STATS
         sourse_id: '13_0'
         message_id: I2C_LINK_STATS
       PL_ME2O2:
-        name: PL ME2O2
+        name: PLD C0 ME2O2
         sourse_id: '13_0'
         message_id: PLD_ME2O2_DATA
       PL_MICS_6814_CO:
-        name: PL PLD_MICS_6814_DATA
+        name: PLD C0 PLD_MICS_6814_DATA
         sourse_id: '13_0'
         message_id: PLD_MICS_6814_DATA
       PL_OWN_TEMP:
-        name: PL OWN_TEMP
+        name: PLD C0 OWN_TEMP
         sourse_id: '13_0'
         message_id: OWN_TEMP
       PL_STATS:
-        name: PL PLD_STATS
+        name: PLD C0 PLD_STATS
         sourse_id: '13_0'
         message_id: PLD_STATS
       SINS_DIODES:
-        name: 'SINS LIGHT_DIODE'
+        name: 'SINS C0 LIGHT_DIODE'
         sourse_id: '11_0'
         message_id: 'LIGHT_DIODE'
       SINS_LDS_DIR:
-        name: 'SINS LDS_DIR'
+        name: 'SINS C0 LDS_DIR'
         sourse_id: '11_0'
         message_id: 'LDS_DIR'
       SINS_ERRORS:
-        name: SINS SINS_ERRORS
+        name: SINS C0 SINS_ERRORS
         sourse_id: '11_0'
         message_id: SINS_ERRORS
       SINS_GPS_UBX_NAV_SOL:
-        is_on: false
-        name: SINS GPS_UBX_NAV_SOL
+        name: SINS C0 GPS_UBX_NAV_SOL
         sourse_id: '11_0'
         message_id: GPS_UBX_NAV_SOL
       SINS_ISC:
-        name: SINS SINS_ISC
+        name: SINS C0 SINS_ISC
         sourse_id: '11_0'
         message_id: SINS_ISC
       SINS_OWN_TEMP:
-        name: SINS OWN_TEMP
+        name: SINS C0 OWN_TEMP
         sourse_id: '11_0'
         message_id: OWN_TEMP
       GCS_RADIO:
@@ -215,12 +233,12 @@ CentralWidget:
             - g
             - b
         legend_is_on: true
-        is_on: false
+        is_on: true
         max_data_length: 100
         name: Sun position vector
         position:
+        - 2
         - 0
-        - 1
         - 1
         - 1
         units: ' '
@@ -250,7 +268,7 @@ CentralWidget:
         - 0
         - 1
         - 1
-        units: g
+        units: m/c^2
       Compass:
         legend_is_on: true
         Packets:
@@ -311,7 +329,7 @@ CentralWidget:
     - 55.9
     - 37.8
     follow: true
-    is_on: false
+    is_on: true
     max_data_length: 40
     sourse_id: '11_0'
     message_id: 'GPS_UBX_NAV_SOL'
@@ -429,17 +447,21 @@ DefaultValues:
 MainWindow:
   DataSourse:
     Log:
-      path: ./log/its_packet_log__20201002T202411.mav
-      real_time: false
-      time_delay: 0.0005
+      MAV:
+        path: ./log/StrelA-MS_log_13-05-2021_20-00-46.mav
+        real_time: false
+        time_delay: 0.0005
+        notimestamps: true
       type: MAV
     MAVLink:
       connection: udpin:0.0.0.0:14540
+      notimestamps: true
     ZMQ:
-      bus_bpcs: "tcp://10.10.10.203:7778"
+      bus_bpcs: "tcp://192.168.1.223:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
+      notimestamps: true
     type: ZMQ
   size:
   - 1000

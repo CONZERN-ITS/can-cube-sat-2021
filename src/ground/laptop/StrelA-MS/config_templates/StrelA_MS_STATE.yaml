@@ -2,35 +2,42 @@ CentralWidget:
   DataWidget:
     Data_table:
       CUBE_1_BCU_TEMP_COMP_0:
-        name: 10_0_THERMAL_STATE
+        name: BCU C0 THERMAL_STATE
         sourse_id: '10_0'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_1:
-        name: 10_1_THERMAL_STATE
+        name: BCU C1 THERMAL_STATE
         sourse_id: '10_1'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_2:
-        name: 10_2_THERMAL_STATE
+        name: BCU C2 THERMAL_STATE
         sourse_id: '10_2'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_3:
-        name: 10_3_THERMAL_STATE
+        name: BCU C3 THERMAL_STATE
         sourse_id: '10_3'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_4:
-        name: 10_4_THERMAL_STATE
+        name: BCU C4 THERMAL_STATE
         sourse_id: '10_4'
         message_id: 'THERMAL_STATE'
       CUBE_1_BCU_TEMP_COMP_5:
-        name: 10_5_THERMAL_STATE
+        name: BCU C5 THERMAL_STATE
         sourse_id: '10_5'
         message_id: 'THERMAL_STATE'
+      SINS_OWN_TEMP:
+        name: SINS OWN_TEMP
+        sourse_id: '11_0'
+        message_id: OWN_TEMP
+      PL_OWN_TEMP:
+        name: PLD OWN_TEMP
+        sourse_id: '13_0'
+        message_id: OWN_TEMP
       is_on: true
       def_time_limit: 20
     Packet_table:
       CUBE_1_BCU_STATS:
-        is_on: false
-        name: 'cube 1 BCU BCU_STATS'
+        name: 'BCU C0 BCU_STATS'
         sourse_id: '10_0'
         message_id: 'BCU_STATS'
       CUBE_1_BCU_TEMP_COMP_0:
@@ -87,57 +94,72 @@ CentralWidget:
         name: PCU C0 ELECTRICAL_STATE
         sourse_id: '12_0'
         message_id: ELECTRICAL_STATE
-      PLD_INT_BME280_DATA:
-        name: PL PLD_INT_BME280_DATA
+      PLD_DOSIM_DATA:
+        name: PLD C0 PLD_DOSIM_DATA
         sourse_id: '13_0'
-        message_id: PLD_INT_BME280_DATA
-      PLD_INT_MS5611_DATA:
-        name: PL PLD_INT_MS5611_DATAA
+        message_id: 'PLD_DOSIM_DATA'
+      PLD_BME280_DATA_IN:
+        name: PLD C2 PLD_BME280_DATA (IN)
+        sourse_id: '13_2'
+        message_id: 'PLD_BME280_DATA'
+      PLD_MS5611_DATA_IN:
+        name: PLD C2 PLD__MS5611_DATA (IN)
+        sourse_id: '13_2'
+        message_id: 'PLD_MS5611_DATA'
+      PLD_BME280_DATA_OUT:
+        name: PLD C1 EXT_BME280_DATA (OUT)
+        sourse_id: '13_1'
+        message_id: 'PLD_BME280_DATA'
+      PLD_MS5611_DATA_OUT:
+        name: PLD C1 PLD_MS5611_DATA (OUT)
+        sourse_id: '13_1'
+        message_id: 'PLD_MS5611_DATA'
+      PLD_DNA_DATA:
+        name: PLD C0 PLD_DNA_DATA
         sourse_id: '13_0'
-        message_id: PLD_INT_MS5611_DATA
+        message_id: 'PLD_DNA_DATA'
       PL_I2C_LINK_STATS:
-        name: PL I2C_LINK_STATS
+        name: PLD C0 I2C_LINK_STATS
         sourse_id: '13_0'
         message_id: I2C_LINK_STATS
       PL_ME2O2:
-        name: PL ME2O2
+        name: PLD C0 ME2O2
         sourse_id: '13_0'
         message_id: PLD_ME2O2_DATA
       PL_MICS_6814_CO:
-        name: PL PLD_MICS_6814_DATA
+        name: PLD C0 PLD_MICS_6814_DATA
         sourse_id: '13_0'
         message_id: PLD_MICS_6814_DATA
       PL_OWN_TEMP:
-        name: PL OWN_TEMP
+        name: PLD C0 OWN_TEMP
         sourse_id: '13_0'
         message_id: OWN_TEMP
       PL_STATS:
-        name: PL PLD_STATS
+        name: PLD C0 PLD_STATS
         sourse_id: '13_0'
         message_id: PLD_STATS
       SINS_DIODES:
-        name: 'SINS LIGHT_DIODE'
+        name: 'SINS C0 LIGHT_DIODE'
         sourse_id: '11_0'
         message_id: 'LIGHT_DIODE'
       SINS_LDS_DIR:
-        name: 'SINS LDS_DIR'
+        name: 'SINS C0 LDS_DIR'
         sourse_id: '11_0'
         message_id: 'LDS_DIR'
       SINS_ERRORS:
-        name: SINS SINS_ERRORS
+        name: SINS C0 SINS_ERRORS
         sourse_id: '11_0'
         message_id: SINS_ERRORS
       SINS_GPS_UBX_NAV_SOL:
-        is_on: false
-        name: SINS GPS_UBX_NAV_SOL
+        name: SINS C0 GPS_UBX_NAV_SOL
         sourse_id: '11_0'
         message_id: GPS_UBX_NAV_SOL
       SINS_ISC:
-        name: SINS SINS_ISC
+        name: SINS C0 SINS_ISC
         sourse_id: '11_0'
         message_id: SINS_ISC
       SINS_OWN_TEMP:
-        name: SINS OWN_TEMP
+        name: SINS C0 OWN_TEMP
         sourse_id: '11_0'
         message_id: OWN_TEMP
       GCS_RADIO:
@@ -145,7 +167,7 @@ CentralWidget:
         name: GCS RADIO RSSI
         sourse_id: '1_0'
         message_id: RSSI
-      is_on: true
+      is_on: trueF
     Time_table:
       CUBE_1_BCU:
         is_on: true
@@ -256,6 +278,36 @@ CentralWidget:
         name: "Thermal state"
         position:
         - 0
+        - 0
+        - 1
+        - 1
+        units: C
+      Own_temperature:
+        Packets:
+          PLD_TEMP:
+            sourse_id: '13_0'
+            message_id: 'OWN_TEMP'
+            field_id:
+            - deg
+            field_name:
+            - PLD
+            color:
+            - r
+          SINS_OWN_TEMP:
+            sourse_id: '11_0'
+            message_id: 'OWN_TEMP'
+            field_id:
+            - deg
+            field_name:
+            - SINS
+            color:
+            - g
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        name: "Own temperature"
+        position:
+        - 1
         - 0
         - 1
         - 1
@@ -377,7 +429,7 @@ CentralWidget:
         priority: 2
     background_color: '#888888'
     attention_color: '#0000FF'
-    is_on: true
+    is_on: false
     position:
     - 0
     - 4
@@ -390,17 +442,21 @@ DefaultValues:
 MainWindow:
   DataSourse:
     Log:
-      path: ./log/its_packet_log__20201002T202411.mav
-      real_time: false
-      time_delay: 0.0005
+      MAV:
+        path: ./log/StrelA-MS_log_13-05-2021_20-00-46.mav
+        real_time: false
+        time_delay: 0.0005
+        notimestamps: true
       type: MAV
     MAVLink:
       connection: udpin:0.0.0.0:14540
+      notimestamps: true
     ZMQ:
-      bus_bpcs: "tcp://10.10.10.203:7778"
+      bus_bpcs: "tcp://192.168.1.223:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
+      notimestamps: true
     type: ZMQ
   size:
   - 1000
