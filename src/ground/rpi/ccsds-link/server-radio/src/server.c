@@ -568,7 +568,7 @@ static int _radio_init(server_t * server)
 
 	const sx126x_drv_basic_cfg_t basic_cfg = {
 			.use_dio3_for_tcxo = true,
-			.tcxo_v = SX126X_TCXO_CTRL_1_6V,
+			.tcxo_v = SX126X_TCXO_CTRL_1_8V,
 			.use_dio2_for_rf_switch = false,
 			.allow_dcdc = true,
 			.standby_mode = SX126X_STANDBY_XOSC
