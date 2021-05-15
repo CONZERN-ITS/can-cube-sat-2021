@@ -27,7 +27,7 @@ def main():
 
         mavlink_payload = msgs[2]
         packets = mav.parse_buffer(mavlink_payload)
-        for p in packets:
+        for p in packets or []:
             print(p)
 
     del ctx
