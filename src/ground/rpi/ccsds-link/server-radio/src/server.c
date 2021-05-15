@@ -42,7 +42,7 @@ static int _parse_tx_frame_metadata(
 	if (parsed_tokens != 3)
 	{
 		log_error(
-				"invalid tx meta json \"%s\", expected json in form \"{ cookie: <number> }\": %d",
+				"invalid tx meta json \"%s\", expected json in form \"{ \"cookie\": <number> }\": %d",
 				parsed_tokens
 		);
 		return -1;
@@ -252,10 +252,10 @@ static void _zmq_send_tx_state(server_t * server)
 	rc = snprintf(
 			json_buffer, sizeof(json_buffer),
 			"{"
-				"cookie_in_wait: %s, "
-				"cookie_in_progress: %s, "
-				"cookie_sent: %s, "
-				"cookie_dropped: %s"
+				"\"cookie_in_wait\": %s, "
+				"\"cookie_in_progress\": %s, "
+				"\"cookie_sent\": %s, "
+				"\"cookie_dropped\": %s"
 			"}",
 			cookie_str_buffers[0],
 			cookie_str_buffers[1],
@@ -300,10 +300,10 @@ static void _zmq_send_packet_rssi(server_t * server)
 	rc = snprintf(
 			json_buffer, sizeof(json_buffer),
 			"{"
-				"cookie: %"MSG_COOKIE_T_PLSHOLDER", "
-				"rssi_pkt: %d, "
-				"snr_pkt: %d, "
-				"rssi_signal: %d"
+				"\"cookie\": %"MSG_COOKIE_T_PLSHOLDER", "
+				"\"rssi_pkt\": %d, "
+				"\"snr_pkt\": %d, "
+				"\"rssi_signal\": %d"
 			"}",
 			server->rx_buffer_cookie,
 			(int)server->rx_rssi_pkt,
@@ -348,7 +348,7 @@ static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 
 	// Готовим сообщение
 	char json_buffer[1024] = {0};
-	rc = snprintf(json_buffer, sizeof(json_buffer), "{rssi: %d}", (int)rssi);
+	rc = snprintf(json_buffer, sizeof(json_buffer), "{\"rssi\": %d}", (int)rssi);
 	if (rc < 0)
 	{
 		log_error("sprintf rssi failed: %d, %d: %s", rc, errno, strerror(errno));
@@ -389,8 +389,8 @@ static void _zmq_send_rx_data(server_t * server)
 	rc = snprintf(
 			json_buffer, sizeof(json_buffer),
 			"{"
-				"checksum_valid: %s, "
-				"cookie: %"MSG_COOKIE_T_PLSHOLDER""
+				"\"checksum_valid\": %s, "
+				"\"cookie\": %"MSG_COOKIE_T_PLSHOLDER""
 			"}",
 			server->rx_crc_valid ? "true" : "false",
 			server->rx_buffer_cookie
@@ -699,8 +699,9 @@ static void _radio_go_rx(server_t * server)
 }
 
 
-static void _radio_fetch_rx(server_t * server, bool crc_valid)
-{
+static void _radio_fetch_rx(server_t * server, bool crc_valid,
+		int8_t rssi_pkt, int8_t snr_pkt, int8_t signal_rssi_pkt
+){
 	int rc;
 
 	rc = sx126x_drv_payload_read(&server->dev, server->rx_buffer, server->rx_buffer_capacity);
@@ -713,7 +714,12 @@ static void _radio_fetch_rx(server_t * server, bool crc_valid)
 	server->rx_crc_valid = crc_valid;
 	server->rx_buffer_cookie++;
 	if (0 == server->rx_buffer_cookie) server->rx_buffer_cookie = 1;
- 	server->rx_buffer_size = server->rx_buffer_capacity;
+	server->rx_buffer_size = server->rx_buffer_capacity;
+
+	// За одно сохраним параметры RSSI пакета
+	server->rx_rssi_pkt = rssi_pkt;
+	server->rx_snr_pkt = snr_pkt;
+	server->rx_signal_rssi_pkt = signal_rssi_pkt;
 
 	log_trace("fetched rx frame from radio");
 }
@@ -752,7 +758,12 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 			server->rx_timedout_cnt = 0;
 			// Мы получили пакет!
 			// Выгружаем его с радио
-			_radio_fetch_rx(server, arg->rx_done.crc_valid);
+			_radio_fetch_rx(
+					server, arg->rx_done.crc_valid,
+					arg->rx_done.packet_status.lora.rssi_pkt,
+					arg->rx_done.packet_status.lora.snr_pkt,
+					arg->rx_done.packet_status.lora.signal_rssi_pkt
+			);
 			// Тут же пойдем в TX, если нам есть чем
 			went_tx = _radio_go_tx_if_any(server);
 		}
