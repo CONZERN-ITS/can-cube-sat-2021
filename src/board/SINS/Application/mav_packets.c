@@ -5,6 +5,7 @@
  *      Author: developer
  */
 
+#include <analog/analog.h>
 #include "mav_packet.h"
 
 #include <its/mavlink.h>
@@ -13,7 +14,6 @@
 #include "drivers/uplink.h"
 #include "state.h"
 
-#include "drivers/temp/analog.h"
 
 
 #define SYSTEM_ID CUBE_1_SINS

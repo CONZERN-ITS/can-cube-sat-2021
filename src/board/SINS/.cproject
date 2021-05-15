@@ -57,7 +57,7 @@
                             							
                             <option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.nanoscanffloat.942197167" name="Use float with scanf from newlib-nano (-u _scanf_float)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.nanoscanffloat" useByScannerDiscovery="false" value="false" valueType="boolean"/>
                             							
-                            <option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.303291461" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.value.workspace" valueType="string"/>
+                            <option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.303291461" name="Toolchain" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.value.workspace" valueType="string"/>
                             							
                             <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.1840556779" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
                             							
@@ -259,11 +259,11 @@
                     					
                     <sourceEntries>
                         						
-                        <entry excluding="library/lis3mdl_STdC/example|library/lsm6ds3_STdC/example" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Application"/>
-                        						
                         <entry excluding="STM32F4xx_HAL_Driver/Src/Application" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+                        						
+                        <entry excluding="library/lsm6ds3_STdC/example|library/lis3mdl_STdC/example" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Application"/>
                         					
                     </sourceEntries>
                     				
@@ -463,9 +463,9 @@
                     					
                     <sourceEntries>
                         						
-                        <entry excluding="library/lis3mdl_STdC/example|library/lsm6ds3_STdC/example" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Application"/>
-                        						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+                        						
+                        <entry excluding="library/lsm6ds3_STdC/example|library/lis3mdl_STdC/example" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Application"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
                         					

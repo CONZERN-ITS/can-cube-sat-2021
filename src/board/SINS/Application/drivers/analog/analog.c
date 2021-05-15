@@ -5,8 +5,7 @@
  *      Author: snork
  */
 
-#include "analog.h"
-
+#include <analog/analog.h>
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -51,14 +50,61 @@ int analog_init(void)
 
 static int _channgel_config_for_target(analog_target_t target, ADC_ChannelConfTypeDef * config)
 {
-	/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-	*/
-
-	config->Channel = ADC_CHANNEL_TEMPSENSOR;
 	config->Rank = 1;
-	config->SamplingTime = ADC_SAMPLETIME_3CYCLES;
-	int error = HAL_ADC_ConfigChannel(&hadc1, config);
 
+	switch (target)
+	{
+	case ANALOG_TARGET_INTEGRATED_TEMP:
+		config->Channel = ADC_CHANNEL_TEMPSENSOR;
+		break;
+
+	case ANALOG_TARGET_LED_0:
+		config->Channel = ADC_CHANNEL_1;
+		break;
+
+	case ANALOG_TARGET_LED_1:
+		config->Channel = ADC_CHANNEL_4;
+		break;
+
+	case ANALOG_TARGET_LED_2:
+		config->Channel = ADC_CHANNEL_5;
+		break;
+
+	case ANALOG_TARGET_LED_3:
+		config->Channel = ADC_CHANNEL_8;
+		break;
+
+	case ANALOG_TARGET_LED_4:
+		config->Channel = ADC_CHANNEL_9;
+		break;
+
+	case ANALOG_TARGET_LED_5:
+		config->Channel = ADC_CHANNEL_10;
+		break;
+
+	case ANALOG_TARGET_LED_6:
+		config->Channel = ADC_CHANNEL_11;
+		break;
+
+	case ANALOG_TARGET_LED_7:
+		config->Channel = ADC_CHANNEL_12;
+		break;
+
+	case ANALOG_TARGET_LED_8:
+		config->Channel = ADC_CHANNEL_14;
+		break;
+
+	case ANALOG_TARGET_LED_9:
+		config->Channel = ADC_CHANNEL_15;
+		break;
+	}
+
+	if (target = ANALOG_TARGET_INTEGRATED_TEMP)
+		config->SamplingTime = ADC_SAMPLETIME_3CYCLES;
+	else
+		config->SamplingTime = ADC_SAMPLETIME_84CYCLES;
+
+	int error = HAL_ADC_ConfigChannel(&hadc1, config);
 	return error;
 }
 
@@ -72,7 +118,6 @@ int analog_restart(void)
 	__HAL_ADC_RESET_HANDLE_STATE(&hadc1);
 
 	// Включаем
-
 	HAL_StatusTypeDef hal_rc;
 	hal_rc = HAL_ADC_Init(&hadc1);
 	int rc = sins_hal_status_to_errno(hal_rc);
