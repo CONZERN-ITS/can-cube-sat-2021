@@ -20,9 +20,9 @@
 #define SENSOR_COEFF_B (3950)
 
 //! Температура, ниже которой необходимо включать нагреватель
-#define MIN_DNA_TEMP_WITHOUT_HEATER (20.0)
+#define MIN_DNA_TEMP_WITHOUT_HEATER (30.0)
 //! Температура, выше которой необходимо выключать нагреватель
-#define MAX_DNA_TEMP_WITH_HEATER (25.0)
+#define MAX_DNA_TEMP_WITH_HEATER (40.0)
 
 
 typedef struct {

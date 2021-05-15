@@ -11,8 +11,8 @@
 #include <errno.h>
 
 
-static mavlink_pld_int_ms5611_data_t _ext_ms5611_data;
-static mavlink_pld_int_bme280_data_t _ext_bme280_data;
+static mavlink_pld_ms5611_data_t _ext_ms5611_data;
+static mavlink_pld_bme280_data_t _ext_bme280_data;
 
 
 int its_imitators_process_input(void)
@@ -25,12 +25,12 @@ int its_imitators_process_input(void)
 
 	switch (msg.msgid)
 	{
-	case MAVLINK_MSG_ID_PLD_INT_MS5611_DATA:
-		mavlink_msg_pld_int_ms5611_data_decode(&msg, &_ext_ms5611_data);
+	case MAVLINK_MSG_ID_PLD_MS5611_DATA:
+		mavlink_msg_pld_ms5611_data_decode(&msg, &_ext_ms5611_data);
 		break;
 
-	case MAVLINK_MSG_ID_PLD_INT_BME280_DATA:
-		mavlink_msg_pld_int_bme280_data_decode(&msg, &_ext_bme280_data);
+	case MAVLINK_MSG_ID_PLD_BME280_DATA:
+		mavlink_msg_pld_bme280_data_decode(&msg, &_ext_bme280_data);
 		break;
 	};
 
@@ -38,7 +38,7 @@ int its_imitators_process_input(void)
 }
 
 
-int its_imitators_bme280_read(its_bme280_id_t id, mavlink_pld_int_bme280_data_t * data)
+int its_imitators_bme280_read(its_bme280_id_t id, mavlink_pld_bme280_data_t * data)
 {
 	switch (id)
 	{
@@ -54,7 +54,7 @@ int its_imitators_bme280_read(its_bme280_id_t id, mavlink_pld_int_bme280_data_t 
 }
 
 
-int int_imitators_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_int_ms5611_data_t * data)
+int int_imitators_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t * data)
 {
 	switch(id)
 	{

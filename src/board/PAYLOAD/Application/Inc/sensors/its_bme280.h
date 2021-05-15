@@ -26,7 +26,7 @@ int its_bme280_reinit(its_bme280_id_t id);
 void its_bme280_power(its_bme280_id_t id, bool enabled);
 
 //! Получение mavlink пакета с данными BME
-int its_bme280_read(its_bme280_id_t id, mavlink_pld_int_bme280_data_t * data);
+int its_bme280_read(its_bme280_id_t id, mavlink_pld_bme280_data_t * data);
 
 
 #endif /* INC_SENSORS_ITS_BME280_H_ */

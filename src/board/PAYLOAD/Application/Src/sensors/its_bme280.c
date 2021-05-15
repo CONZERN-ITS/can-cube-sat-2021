@@ -200,7 +200,7 @@ void its_bme280_power(its_bme280_id_t id, bool enabled)
 }
 
 
-int its_bme280_read(its_bme280_id_t id, mavlink_pld_int_bme280_data_t * data)
+int its_bme280_read(its_bme280_id_t id, mavlink_pld_bme280_data_t * data)
 {
 	its_bme280_t * dev = _dev_by_id(id);
 

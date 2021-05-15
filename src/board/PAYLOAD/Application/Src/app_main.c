@@ -22,6 +22,7 @@
 #include "sensors/integrated.h"
 #include "sensors/dna_temp.h"
 #include "sensors/dosim.h"
+#include "compressor-control.h"
 
 //! Длина одного такта в мс
 #define TICK_LEN_MS (200)
@@ -56,6 +57,9 @@
 #define PACKET_PERIOD_ITS_LINK_STATS (15)
 #define PACKET_OFFSET_ITS_LINK_STATS (7)
 
+#define PACKET_PERIOD_CCONTROL (7)
+#define PACKET_OFFSET_CCONTROL (7)
+
 
 //! Статистика об ошибках этого модуля
 typedef struct its_pld_status_t
@@ -80,6 +84,7 @@ typedef struct its_pld_status_t
 	//! Причина последней перезагрузки
 	uint16_t reset_cause;
 } its_pld_status_t;
+
 
 
 static its_pld_status_t _status = {0};
@@ -117,6 +122,9 @@ static void _process_input_packets(void);
 /*! Возвращает значение - битовую комбинацию флагов  */
 static uint16_t _fetch_reset_cause(void);
 
+
+static int _compressor_control(int64_t tick);
+
 // TODO:
 /* калибрануть все и вся
    проверить как работает рестарт АЦП
@@ -144,7 +152,7 @@ int app_main()
 	_analog_op_analysis(analog_init());
 	mics6814_init();
 	dosim_init();
-
+	its_ccontrol_init();
 	// После перезагрузки будем аж пол секунды светить лампочкой
 	uint32_t tick_begin = HAL_GetTick();
 	uint32_t tick_led_unlock = tick_begin + LED_RESTART_LOCK;
@@ -186,28 +194,30 @@ int app_main()
 		{
 			if (0 == _int_bme_restart_if_need_so())
 			{
-				mavlink_pld_int_bme280_data_t bme_msg = {0};
+				mavlink_pld_bme280_data_t bme_msg = {0};
 				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg));
-				if (0 == rc)
-					mav_main_process_int_bme_message(&bme_msg);
+				if (0 == rc) {
+					mav_main_process_bme_message(&bme_msg, PLD_LOC_INTERNAL);
+				}
 			}
 			if (0 == _ext_bme_restart_if_need_so())
 			{
-				mavlink_pld_int_bme280_data_t bme_msg = {0};
+				mavlink_pld_bme280_data_t bme_msg = {0};
 				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg));
-				if (0 == rc)
-					mav_main_process_int_bme_message(&bme_msg);
+				if (0 == rc) {
+					mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
+				}
 			}
 		}
 
 
 		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MS5611)
 		{
-			mavlink_pld_int_ms5611_data_t data = {0};
+			mavlink_pld_ms5611_data_t data = {0};
 			int rc = int_ms5611_read_and_calculate(ITS_MS_EXTERNAL, &data);
 			printf("rc = %d\n", rc);
 			if (rc == 0)
-				mav_main_process_ms5611_message(&data);
+				mav_main_process_ms5611_message(&data, PLD_LOC_EXTERNAL);
 			else
 				int_ms5611_reinit(ITS_MS_EXTERNAL);
 
@@ -216,7 +226,7 @@ int app_main()
 			rc = int_ms5611_read_and_calculate(ITS_MS_INTERNAL, &data);
 			printf("rc = %d\n", rc);
 			if (rc == 0)
-				mav_main_process_ms5611_message(&data);
+				mav_main_process_ms5611_message(&data, PLD_LOC_INTERNAL);
 			else
 				int_ms5611_reinit(ITS_MS_INTERNAL);
 
@@ -291,7 +301,10 @@ int app_main()
 			_collect_i2c_link_stats(&i2c_stats_msg);
 			mav_main_process_i2c_link_stats(&i2c_stats_msg);
 		}
-
+		_compressor_control(tock);
+		/*if (tock % PACKET_PERIOD_CCONTROL == PACKET_OFFSET_CCONTROL) {
+		    ccontrol_update_inner_pressure()
+		}*/
 
 		// Ждем начала следующего такта
 		uint32_t now;
@@ -447,5 +460,59 @@ static int _analog_restart_if_need_so(void)
 		_analog_op_analysis(analog_restart());
 
 	return _status.adc_last_error;
+}
+
+static int _compressor_control(int64_t tick) {
+    // Максимальная высота подъема (в м)
+    const ccontrol_alt_t max_alt = 30*1000;
+    // Скорость подъема (в м/мс)
+    const ccontrol_alt_t alt_speed_up = 40000.f/(10 * 60*1000); // ~ 4км в 10 минут
+    // Скорость спуска (в м/мс)
+    const ccontrol_alt_t alt_speed_down = -13000.f/(10 * 60*1000); // ~ -13 км за 10 минут
+    // Шаг симуляции по времени (в мс)
+    const ccontrol_time_t time_step = 200;
+    // Пауза в тактах между замерами высоты и оффсет этих замеров
+    const uint32_t alt_measure_period = 4;
+    const uint32_t alt_measure_offset = 0;
+    // Пауза в тактах и между замерами внутренного давлени и оффсет этих замеров
+    const uint32_t inner_pressure_measure_period = 4;
+    const uint32_t inner_pressure_measure_offset = 1;
+    // Длительность симуляции
+    const uint64_t sym_time_limit = 80 * 60*1000;
+    // Частота сообщений отчета (такты)
+    const uint32_t report_period = 10;
+
+    // Пока что мы летим вверх
+    static bool going_up = true;
+
+    static ccontrol_alt_t alt = -100;
+    static ccontrol_time_t time = 0;
+    static ccontrol_pressure_t inner_pressure = 0;
+
+    time += time_step;
+    if (going_up)
+    {
+        alt += alt_speed_up * time_step;
+        if (alt >= max_alt)
+            going_up = false; // начинаем падать
+    }
+    else
+    {
+        alt += alt_speed_down * time_step;
+        if (alt <= -100)
+            alt = -100;
+    }
+    inner_pressure = 0; // Пока вообще не держится давление у нас
+
+
+    if (tick % alt_measure_period == alt_measure_offset)
+        ccontrol_update_altitude(alt);
+
+    if (tick % inner_pressure_measure_period == inner_pressure_measure_offset)
+        ccontrol_update_inner_pressure(inner_pressure);
+
+    ccontrol_poll();
+    ccontrol_state_t state = ccontrol_get_state();
+
 }
 

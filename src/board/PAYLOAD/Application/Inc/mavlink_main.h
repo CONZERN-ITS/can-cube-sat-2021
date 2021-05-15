@@ -49,8 +49,8 @@ int mav_main_get_packet_from_imitator_ctl(mavlink_message_t * msg);
 #include <mavlink.h>
 #pragma GCC diagnostic pop
 
-void mav_main_process_int_bme_message(const mavlink_pld_int_bme280_data_t * msg);
-void mav_main_process_ms5611_message(const mavlink_pld_int_ms5611_data_t * msg);
+void mav_main_process_bme_message(const mavlink_pld_bme280_data_t * msg, PLD_LOCATION location);
+void mav_main_process_ms5611_message(const mavlink_pld_ms5611_data_t * msg, PLD_LOCATION location);
 void mav_main_process_me2o2_message(mavlink_pld_me2o2_data_t * msg);
 void mav_main_process_mics_message(mavlink_pld_mics_6814_data_t * msg);
 void mav_main_process_owntemp_message(mavlink_own_temp_t * msg);

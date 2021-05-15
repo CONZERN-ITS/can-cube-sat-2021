@@ -182,7 +182,7 @@ int its_ms5611_power(its_ms5611_id_t id, bool enabled)
 }
 
 
-int int_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_int_ms5611_data_t * data)
+int int_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t * data)
 {
 	its_ms5611_t * const dev = _dev_by_id(id);
 
@@ -198,7 +198,7 @@ int int_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_int_ms5611_dat
 
 	data->time_s = tv.tv_sec;
 	data->time_us = tv.tv_usec;
-	data->temperature = temp;
+	data->temperature = temp / 100;
 	data->pressure = press;
 
 	return 0;
