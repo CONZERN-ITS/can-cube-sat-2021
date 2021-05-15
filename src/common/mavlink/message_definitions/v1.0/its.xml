@@ -104,6 +104,24 @@
         <description>In response to this command antenna system have to send state message</description>
       </entry>
     </enum>
+    <enum name="BME_ID">
+      <description>Devices bme280</description>
+      <entry value="1" name="BME_EXTERNAL">
+        <description>External bme280</description>
+      </entry>
+      <entry value="2" name="BME_INTERNAL">
+        <description>Internal bme280</description>
+      </entry>
+    </enum>
+    <enum name="PLD_LOCATION">
+      <description>Location of PLD sensors </description>
+      <entry value="1" name="PLD_LOC_EXTERNAL">
+        <description>External sensors</description>
+      </entry>
+      <entry value="2" name="PLD_LOC_INTERNAL">
+        <description>Internal sensors</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
 
@@ -261,19 +279,8 @@
     
     
     <!--  Payload messages. Id range: 50200 - 50299  -->
-    <message id="50200" name="PLD_INT_BME280_DATA">
-      <description>Payload module message with internal bme280 related data</description>
-      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
-      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-      
-      <field type="double" name="temperature" units="deg">Atmospheric temerapture</field>
-      <field type="double" name="pressure" units="Pa">Atmospheric pressure</field>
-      <field type="double" name="humidity" units="percent">Atmospheric relative humidity</field>
-      <field type="double" name="altitude" units="m">Cube altitude relative to cube power-on location</field>
-    </message>
-
-	<message id="50201" name="PLD_EXT_BME280_DATA">
-      <description>Payload module message with external bme280 related data</description>
+    <message id="50200" name="PLD_BME280_DATA">
+      <description>Payload module message with bme280 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
       
@@ -325,23 +332,14 @@
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
     </message>
 
-    <message id="50205" name="PLD_INT_MS5611_DATA">
-      <description>Payload module message with internal ms5611 related data</description>
+    <message id="50205" name="PLD_MS5611_DATA">
+      <description>Payload module message with ms5611 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
       
-      <field type="int32_t" name="temperature" units="deg">Atmospheric temperature</field>
+      <field type="float" name="temperature" units="deg">Atmospheric temperature</field>
       <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>`
-    </message>
-
-    <message id="50206" name="PLD_EXT_MS5611_DATA">
-      <description>Payload module message with external ms5611 related data</description>
-      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
-      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-      
-      <field type="int32_t" name="temperature" units="deg">Atmospheric temperature</field>
-      <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>
-    </message>    
+    </message>  
 
     <message id="50207" name="PLD_DOSIM_DATA">
       <description>Payload module message with dosimeter data</description>
