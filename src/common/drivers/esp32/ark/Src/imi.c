@@ -204,6 +204,7 @@ static void _imi_recv_all(imi_handler_t *h) {
 			int rc = imi_get_packet_size(&himi, &size);
 			ESP_LOGV(TAG, "get size from 0x%02X: %d %d", himi.address, rc, size);
 			if (rc || size == 0) {
+				ESP_LOGW(TAG, "Can't get size from %d %d", himi.address, rc);
 				isAny = 0;
 				continue;
 			}
@@ -211,7 +212,7 @@ static void _imi_recv_all(imi_handler_t *h) {
 			//Get space for paket
 			uint8_t *pointer = (*h->cfg.alloc)(size);
 			if (!pointer) {
-				ESP_LOGE(TAG, "ERROR: IMI static alloc error %d\n", size);
+				ESP_LOGE(TAG, "IMI static alloc error %d\n", size);
 				/*
 				 * Мы хотим больше не читать от этого глупого устройства,
 				 * который послал безумно большой пакет
