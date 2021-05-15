@@ -97,6 +97,9 @@ void Error_Handler(void);
 #define MICS_PWR_GPIO_Port GPIOA
 #define O2_PWR_Pin GPIO_PIN_12
 #define O2_PWR_GPIO_Port GPIOA
+#define PPS_Input_Pin GPIO_PIN_15
+#define PPS_Input_GPIO_Port GPIOA
+#define PPS_Input_EXTI_IRQn EXTI15_10_IRQn
 #define LED_Pin_Pin GPIO_PIN_12
 #define LED_Pin_GPIO_Port GPIOC
 #define COMPR_ON_Pin GPIO_PIN_5
