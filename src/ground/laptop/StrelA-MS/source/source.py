@@ -227,16 +227,19 @@ class MainWindow(QtWidgets.QMainWindow):
         if sourse == 'Log':
             log = self.settings.value('Log/type')
             if log == "MAV":
-                data = MAVLogDataSource(self.settings.value('Log/path'),
-                                     int(self.settings.value('Log/real_time')),
-                                     float(self.settings.value('Log/time_delay')))
+                data = MAVLogDataSource(log_path=self.settings.value('Log/MAV/path'),
+                                        real_time=int(self.settings.value('Log/MAV/real_time')),
+                                        time_delay=float(self.settings.value('Log/MAV/time_delay')),
+                                        notimestamps=bool(self.settings.value('Log/MAV/notimestamps')))
         elif sourse == 'MAVLink':
             data = MAVDataSource(connection_str=self.settings.value('MAVLink/connection'),
-                                 log_path=LOG_FOLDER_PATH)
+                                 log_path=LOG_FOLDER_PATH,
+                                 notimestamps=bool(self.settings.value('MAVLink/notimestamps')))
         elif sourse == 'ZMQ':
             data = ZMQDataSource(bus_bpcs=self.settings.value('ZMQ/bus_bpcs'),
                                  topics=self.settings.value('ZMQ/topics'),
-                                 log_path=LOG_FOLDER_PATH)
+                                 log_path=LOG_FOLDER_PATH,
+                                 notimestamps=bool(self.settings.value('ZMQ/notimestamps')))
         self.settings.endGroup()
         return data
 

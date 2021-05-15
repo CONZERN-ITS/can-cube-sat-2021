@@ -42,7 +42,8 @@ class Message():
 
 
 class MAVDataSource():
-    def __init__(self, connection_str, log_path="./"):
+    def __init__(self, connection_str, log_path="./", notimestamps=True):
+        self.notimestamps = notimestamps
         self.connection_str = connection_str
         self.log_path = log_path
 
@@ -54,7 +55,8 @@ class MAVDataSource():
         msg = self.connection.recv_match()
         if (msg is None):
             raise RuntimeError("No Message")
-        self.log.write(struct.pack("<Q", time.time()))
+        if not self.notimestamps:
+            self.log.write(struct.pack("<Q", int(time.time() * 1.0e6) & -3))
         self.log.write(msg.get_msgbuf())
 
         if msg.get_type() == "BAD_DATA":
@@ -70,6 +72,7 @@ class MAVDataSource():
         msg_list = []
         for msg in msgs:
             if msg.get_type() == "BAD_DATA":
+                print(msg)
                 continue
             data = msg.to_dict()
             data.pop('mavpackettype', None)
@@ -83,16 +86,27 @@ class MAVDataSource():
 
             if msg.get_type() == "GPS_UBX_NAV_SOL":
                 gps = wgs84_conv(msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100)
-                data.update([['lat', gps[0]], ['lon', gps[1]], ['alt', gps[2]]])
+                data.update([['lat', gps[0]],
+                             ['lon', gps[1]],
+                             ['alt', gps[2]]])
                 data['ecefX'] /= 100
                 data['ecefY'] /= 100
                 data['ecefZ'] /= 100
+            elif msg.get_type() == 'PLD_DOSIM_DATA':
+                gain =  1000 * 60 * 60
+                data.update([['dose_max', (msg.count_tick / 44) / msg.delta_time * gain],
+                             ['dose_min', (msg.count_tick / 52) / msg.delta_time * gain]])
+
 
             header = msg.get_header()
             msg_list.append(Message(message_id=msg.get_type(),
                                 source_id=(str(header.srcSystem) + '_' + str(header.srcComponent)),
                                 msg_time=msg_time,
                                 msg_data=data))
+            print(msg_list[-1].get_time())
+            print(msg_list[-1].get_message_id())
+            print(msg_list[-1].get_source_id())
+            print(msg_list[-1].get_data_dict())
         return msg_list
 
     def stop(self):
@@ -101,13 +115,14 @@ class MAVDataSource():
 
 
 class MAVLogDataSource():
-    def __init__(self, log_path, real_time=0, time_delay=0.01):
+    def __init__(self, log_path, real_time=0, time_delay=0.01, notimestamps=True):
+        self.notimestamps = notimestamps
         self.log_path = log_path
         self.real_time = real_time
         self.time_delay = time_delay
 
     def start(self):
-        self.connection = mavutil.mavlogfile(self.log_path, notimestamps=False)
+        self.connection = mavutil.mavlogfile(self.log_path, notimestamps=self.notimestamps)
         self.time_shift = None
         self.time_start = None
 
@@ -136,7 +151,8 @@ class MAVLogDataSource():
 
 
 class ZMQDataSource():
-    def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", topics=["its.telemetry_packet"], log_path="./"):
+    def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", topics=["its.telemetry_packet"], log_path="./", notimestamps=True):
+        self.notimestamps = notimestamps
         self.bus_bpcs = bus_bpcs
         self.topics = topics
         self.log_path = log_path
@@ -164,7 +180,8 @@ class ZMQDataSource():
 
             msg_buf = zmq_msg[2]
 
-            self.log.write(struct.pack("<Q", int(time.time() * 1000)))
+            if not self.notimestamps:
+                self.log.write(struct.pack("<Q", int(time.time() * 1.0e6) & -3))
             self.log.write(msg_buf)
 
             msg = self.mav.parse_buffer(msg_buf)
