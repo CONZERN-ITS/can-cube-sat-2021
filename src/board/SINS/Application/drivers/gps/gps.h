@@ -32,7 +32,6 @@ int gps_init(
 		gps_packet_callback_t packet_callback, void * packet_callback_arg
 );
 
-
 //! Обработка накопленных в прерывании байт и поиск в них сообщений.
 /*! Передает сообщения через указанный ранее колбек. Возвращает количество байт, которое было опрошено */
 int gps_poll(void);
@@ -48,5 +47,11 @@ void gps_configure_begin(void);
  * -EWOULDBLOCK. Если конфигурация закончилась - вовзращает код последней ошибки
  * из-за которой конфигурация была остановлена, или же 0, если ошибок не было */
 int gps_configure_status(void);
+
+//! Эту функцию полагается дергать по получению байтика от GPS
+void gps_consume_byte(uint8_t byte);
+
+//! Эту функцию полагается дергать в прерывании от PPS сигнала
+void gps_pps_signal_handler(void);
 
 #endif /* DRIVERS_GPS_H_ */

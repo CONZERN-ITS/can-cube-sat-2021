@@ -65,6 +65,9 @@ void Error_Handler(void);
 #define LDiod8_GPIO_Port GPIOC
 #define LDiod4_Pin GPIO_PIN_2
 #define LDiod4_GPIO_Port GPIOC
+#define GPS_PPS_INPUT_Pin GPIO_PIN_0
+#define GPS_PPS_INPUT_GPIO_Port GPIOA
+#define GPS_PPS_INPUT_EXTI_IRQn EXTI0_IRQn
 #define LDiod1_Pin GPIO_PIN_1
 #define LDiod1_GPIO_Port GPIOA
 #define GPS_UART_TX_Pin GPIO_PIN_2

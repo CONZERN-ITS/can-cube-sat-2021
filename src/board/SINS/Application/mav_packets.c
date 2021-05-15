@@ -22,66 +22,66 @@
 int mavlink_sins_isc(stateSINS_isc_t * state_isc)
 {
 
-        printf("mavlink_sins_isc?\n");
-        mavlink_sins_isc_t msg_sins_isc;
-        msg_sins_isc.time_s = state_isc->tv.tv_sec;
-        msg_sins_isc.time_us = state_isc->tv.tv_usec;
-        //printf("Accel: %f %f %f \n", state_isc->accel[0], state_isc->accel[1], state_isc->accel[2]);
-        //printf("Mag: %f %f %f \n", state_isc->magn[0], state_isc->magn[1], state_isc->magn[2]);
+	//printf("mavlink_sins_isc?\n");
+	mavlink_sins_isc_t msg_sins_isc;
+	msg_sins_isc.time_s = state_isc->tv.tv_sec;
+	msg_sins_isc.time_us = state_isc->tv.tv_usec;
+	//printf("Accel: %f %f %f \n", state_isc->accel[0], state_isc->accel[1], state_isc->accel[2]);
+	//printf("Mag: %f %f %f \n", state_isc->magn[0], state_isc->magn[1], state_isc->magn[2]);
 
-        for (int i = 0; i < 3; i++)
-        {
-            msg_sins_isc.accel[i] = state_isc->accel[i];
-            msg_sins_isc.compass[i] = state_isc->magn[i];
-            msg_sins_isc.quaternion[i] = state_isc->quaternion[i];
-        }
-        msg_sins_isc.quaternion[3] = state_isc->quaternion[3];
+	for (int i = 0; i < 3; i++)
+	{
+		msg_sins_isc.accel[i] = state_isc->accel[i];
+		msg_sins_isc.compass[i] = state_isc->magn[i];
+		msg_sins_isc.quaternion[i] = state_isc->quaternion[i];
+	}
+	msg_sins_isc.quaternion[3] = state_isc->quaternion[3];
 
 
-        mavlink_message_t msg;
-        mavlink_msg_sins_isc_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_isc);
-        int error = uplink_write_mav(&msg);
-        return error;
+	mavlink_message_t msg;
+	mavlink_msg_sins_isc_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_isc);
+	int error = uplink_write_mav(&msg);
+	return error;
 }
 
 int mavlink_lds_dir(stateSINS_lds_t * state)
 {
-        mavlink_lds_dir_t mld;
-        mld.time_s = state->tv.tv_sec;
-        mld.time_us = state->tv.tv_usec;
-        //printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
-        //printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
+	mavlink_lds_dir_t mld;
+	mld.time_s = state->tv.tv_sec;
+	mld.time_us = state->tv.tv_usec;
+	//printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
+	//printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
 
 
-        mld.x = state->dir[0];
-        mld.y = state->dir[1];
-        mld.z = state->dir[2];
-        mld.error = state->error;
+	mld.x = state->dir[0];
+	mld.y = state->dir[1];
+	mld.z = state->dir[2];
+	mld.error = state->error;
 
 
-        mavlink_message_t msg;
-        mavlink_msg_lds_dir_encode(SYSTEM_ID, COMPONENT_ID, &msg, &mld);
-        int error = uplink_write_mav(&msg);
-        return error;
+	mavlink_message_t msg;
+	mavlink_msg_lds_dir_encode(SYSTEM_ID, COMPONENT_ID, &msg, &mld);
+	int error = uplink_write_mav(&msg);
+	return error;
 }
 
 int mavlink_light_diode(stateSINS_lds_t * state)
 {
-        mavlink_light_diode_t mld;
-        mld.time_s = state->tv.tv_sec;
-        mld.time_us = state->tv.tv_usec;
-        //printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
-        //printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
+	mavlink_light_diode_t mld;
+	mld.time_s = state->tv.tv_sec;
+	mld.time_us = state->tv.tv_usec;
+	//printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
+	//printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
 
 
-        for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
-            mld.value[i] = state->dir[i];
-        }
+	for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
+		mld.value[i] = state->dir[i];
+	}
 
-        mavlink_message_t msg;
-        mavlink_msg_light_diode_encode(SYSTEM_ID, COMPONENT_ID, &msg, &mld);
-        int error = uplink_write_mav(&msg);
-        return error;
+	mavlink_message_t msg;
+	mavlink_msg_light_diode_encode(SYSTEM_ID, COMPONENT_ID, &msg, &mld);
+	int error = uplink_write_mav(&msg);
+	return error;
 }
 
 int mavlink_timestamp(void)

@@ -78,7 +78,7 @@ int uplink_flush_injected()
 		{
 			// О, такое сообщение у нас есть
 			int error = its_i2c_link_write(record->message, record->len);
-			printf("msgid %d\n", (int)record->msgid);
+			//printf("msgid %d\n", (int)record->msgid);
 			if (0 > error)
 				return error;
 
@@ -101,7 +101,7 @@ int uplink_write_mav(const mavlink_message_t * msg)
 
 	// Сперва флашим инжектируемые
 //	error = uplink_flush_injected();
-	printf("error %d\n", error);
+//	printf("error %d\n", error);
 	if (error == -EAGAIN)
 	{
 		// Ну если мы получили такую ошибку
@@ -115,7 +115,7 @@ int uplink_write_mav(const mavlink_message_t * msg)
 
 	uint16_t len = mavlink_msg_to_send_buffer(msg_buffer, msg);
 	error = its_i2c_link_write(msg_buffer, len);
-	printf("msgid %d\n", msg->msgid);
+	//printf("msgid %d\n", msg->msgid);
 	if (error == -EAGAIN)
 	{
 		// Если не удалось отправить сообщение

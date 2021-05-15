@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "sins_config.h"
 #include "../common.h"
@@ -81,22 +82,18 @@ static gps_cfg_state_t _cfg_state = {0};
 //! Набор сообщений конфигурации приёмника
 //extern const uint8_t * ublox_neo7_cfg_msgs[];
 extern const uint8_t * ublox_neo6_cfg_msgs[];
-
 static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * packet_);
-//static int _init_uart(void);
-static void _init_pps(void);
 static void _gps_configure_step(void);
 static int _gps_configure_step_packet(void);
 
 
-void NONHAL_PPS_MspInit(void);
-
-void gps_power_off()
+static void gps_power_off()
 {
 	HAL_GPIO_WritePin(PWR_GPS_GPIO_Port, PWR_GPS_Pin, RESET);
 }
 
-void gps_power_on()
+
+static void gps_power_on()
 {
 	HAL_GPIO_WritePin(PWR_GPS_GPIO_Port, PWR_GPS_Pin, SET);
 }
@@ -108,6 +105,7 @@ void gps_power_on()
 static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * packet_)
 {
 	gps_cfg_state_t * const cfg_state = &_cfg_state;
+	printf("gps: got packet 0x%04X\n", packet_->pid);
 
 	// FIXME: Возможно стоит что-то сделать, чтобы не использовать оба пакета на одном такте?
 	// Если они оба придут (а они оба придут)
@@ -152,6 +150,7 @@ static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * 
 		{
 			// дождалис
 			const ubx_ack_packet_t * packet = &packet_->packet.ack;
+			printf("gps: got ack 0x%04X\n", packet->packet_pid);
 			if (cfg_state->sent_packet_pid == packet->packet_pid)
 				cfg_state->sent_packet_ack_status = GPS_CFG_ACK_STATUS_GOT_ACK;
 		}
@@ -163,6 +162,7 @@ static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * 
 		{
 			// не дождались
 			const ubx_nack_packet_t * packet = &packet_->packet.nack;
+			printf("gps: got nack 0x%04X\n", packet->packet_pid);
 			if (cfg_state->sent_packet_pid == packet->packet_pid)
 				cfg_state->sent_packet_ack_status = GPS_CFG_ACK_STATUS_GOT_NACK;
 		}
@@ -175,81 +175,6 @@ static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * 
 
 	// В конце передаем таки пакет пользователю
 	_user_packet_callback(user_arg, packet_);
-}
-
-
-//! Настойка уартовой перефирии производится кубом
-//static int _init_uart()
-//{
-//	GPS_BUS_HANDLE.Instance = USART2;					//uart для приема GPS
-//	GPS_BUS_HANDLE.Init.BaudRate = 9600;
-//	GPS_BUS_HANDLE.Init.WordLength = UART_WORDLENGTH_8B;
-//	GPS_BUS_HANDLE.Init.StopBits = UART_STOPBITS_1;
-//	GPS_BUS_HANDLE.Init.Parity = UART_PARITY_NONE;
-//	GPS_BUS_HANDLE.Init.Mode = UART_MODE_TX_RX;
-//	GPS_BUS_HANDLE.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-//	GPS_BUS_HANDLE.Init.OverSampling = UART_OVERSAMPLING_16;
-//
-//	HAL_StatusTypeDef hal_error;
-//	hal_error = HAL_UART_Init(&GPS_BUS_HANDLE);
-//	if (HAL_OK != hal_error)
-//		return sins_hal_status_to_errno(hal_error);
-//
-//	//Включение прерывания USART: RXNE
-//	__HAL_UART_ENABLE_IT(&GPS_BUS_HANDLE, UART_IT_RXNE);
-//
-//	// nvic в hal_msp
-//	return 0;
-//}
-
-
-//! настройка перфирии для PPS сигнала
-static void _init_pps()
-{
-	// Настройка PPS пина на прерывания
-	__GPIOA_CLK_ENABLE();
-
-	GPIO_InitTypeDef gpioa;
-	gpioa.Mode = GPIO_MODE_IT_RISING;
-	gpioa.Pin = GPIO_PIN_0;
-	gpioa.Pull = GPIO_PULLDOWN;
-	HAL_GPIO_Init(GPIOA, &gpioa);
-
-	// nvic в hal_msp
-	NONHAL_PPS_MspInit();
-}
-
-
-void USART2_IRQHandler(void)
-{
-	//Проверка флага о приеме байтика по USART
-	if ((USART2->SR & USART_SR_RXNE) != 0)
-	{
-		//Сохранение принятого байтика
-		volatile uint8_t tmp = USART2->DR;
-
-		int next_head = _uart_cycle_buffer_head + 1;
-		if (next_head >= ITS_SINS_GPS_UART_CYCLE_BUFFER_SIZE)
-			next_head = 0;
-
-		if (next_head == _uart_cycle_buffer_tail)
-			return; // Переполнение циклобуфера. Выкидываем байт
-
-		_uart_cycle_buffer[_uart_cycle_buffer_head] = tmp;
-		__disable_irq();
-		_uart_cycle_buffer_head = next_head;
-		__enable_irq();
-	}
-}
-
-
-void EXTI0_IRQHandler()
-{
-	// Правим службу времени
-	if (_next_pps_time > 0)
-		time_svc_world_set_time(_next_pps_time, TIME_SVC_TIMEBASE__GPS);
-
-	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
 }
 
 
@@ -288,6 +213,7 @@ static int _send_conf_packet(const uint8_t * packet)
 	if (hal_error != HAL_OK)
 		return sins_hal_status_to_errno(hal_error);
 
+	printf("gps: sent gps config packet pid 0x%04X\n", ubx_packet_pid(packet));
 	return 0;
 }
 
@@ -304,6 +230,7 @@ static int _gps_configure_step_packet()
 		// Мы дошли до последнего пакета и успешно завершились
 		state->last_error = 0;
 		state->enabled = 0;
+		printf("gps: configuration complete\n");
 		return 0;
 	}
 
@@ -312,6 +239,7 @@ static int _gps_configure_step_packet()
 	{
 		state->enabled = 0;
 		// state->result выставили при прошлой ошибке
+		printf("gps: configuration failed\n");
 		return state->last_error;
 	}
 
@@ -372,6 +300,7 @@ static void _gps_configure_step()
 				// Ставим ошибку
 				state->last_error = -ETIMEDOUT;
 				// Таймаут наступил, пробуем отправить пакет еще раз, если попытки не кончились
+				printf("gps: ack timedout\n");
 				_gps_configure_step_packet();
 			}
 			// Продолжаем ждать
@@ -380,7 +309,6 @@ static void _gps_configure_step()
 	}
 
 }
-
 
 
 int gps_init(
@@ -400,13 +328,8 @@ int gps_init(
 	_uart_cycle_buffer_head = 0;
 	_uart_cycle_buffer_tail = 0;
 
-	// Настраиваем железо для работы с PPS
-	_init_pps();
-
 	// Настраиваем уартовое железо
-//	int error =_init_uart();
-//	if (error != 0)
-//		return error;
+	// uart и pps настраиваются кубом...
 
 	// Все готово! поехали!
 	return 0;
@@ -453,10 +376,11 @@ void gps_configure_begin()
 	if (state->enabled)
 		return; // Мы уже конфигурируемся
 
-	gps_power_off();
-	HAL_Delay(100);
-	gps_power_on();
-	HAL_Delay(10);
+	printf("gps: configuration start\n");
+	//gps_power_off();
+	//HAL_Delay(100);
+	//gps_power_on();
+	//HAL_Delay(10);
 
 	state->packet_ptr = ublox_neo6_cfg_msgs;
 	state->sent_packet_ack_status = GPS_CFG_ACK_STATUS_IDLE;
@@ -476,3 +400,26 @@ int gps_configure_status()
 }
 
 
+void gps_consume_byte(uint8_t byte)
+{
+	//Сохранение принятого байтика
+	int next_head = _uart_cycle_buffer_head + 1;
+	if (next_head >= ITS_SINS_GPS_UART_CYCLE_BUFFER_SIZE)
+		next_head = 0;
+
+	if (next_head == _uart_cycle_buffer_tail)
+		return; // Переполнение циклобуфера. Выкидываем байт
+
+	_uart_cycle_buffer[_uart_cycle_buffer_head] = byte;
+	__disable_irq();
+	_uart_cycle_buffer_head = next_head;
+	__enable_irq();
+}
+
+
+void gps_pps_signal_handler()
+{
+	// Правим службу времени
+	if (_next_pps_time > 0)
+		time_svc_world_set_time(_next_pps_time, TIME_SVC_TIMEBASE__GPS);
+}
