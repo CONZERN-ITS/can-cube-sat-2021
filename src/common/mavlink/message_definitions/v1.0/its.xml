@@ -104,15 +104,6 @@
         <description>In response to this command antenna system have to send state message</description>
       </entry>
     </enum>
-    <enum name="BME_ID">
-      <description>Devices bme280</description>
-      <entry value="1" name="BME_EXTERNAL">
-        <description>External bme280</description>
-      </entry>
-      <entry value="2" name="BME_INTERNAL">
-        <description>Internal bme280</description>
-      </entry>
-    </enum>
     <enum name="PLD_LOCATION">
       <description>Location of PLD sensors </description>
       <entry value="1" name="PLD_LOC_EXTERNAL">
