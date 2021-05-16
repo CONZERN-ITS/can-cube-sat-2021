@@ -475,19 +475,23 @@ void _antihang(i2c_link_ctx_t * ctx)
 
     if (ctx->state == I2C_LINK_STATE_ERROR)
     {
-    	ctx->stats.restarts_cnt++;
+        // Сперва пробдуем сброс битом в регистре перефирии
+        // Практика показывает, что пока этот бит не снят, дальше мы не поедем
+        // в любом случае
+        hi2c->Instance->CR1 |= I2C_CR1_SWRST;
+        hi2c->Instance->CR1 &= ~I2C_CR1_SWRST;
 
-    	I2C_LINK_BUS_FORCE_RESET;
-    	HAL_Delay(1);
-        __HAL_I2C_RESET_HANDLE_STATE(hi2c);
-        I2C_LINK_BUS_RELEASE_RESET;
-
+        // Отключим вообще все
+        // и все соответствующие пины
+        HAL_I2C_DeInit(hi2c);
+        // И начнем все включать
         hal_rc = HAL_I2C_Init(hi2c);
         assert(HAL_OK == hal_rc);
 
         hal_rc = HAL_I2C_EnableListen_IT(hi2c);
         assert(HAL_OK == hal_rc);
 
+        ctx->stats.restarts_cnt++;
         ctx->state = I2C_LINK_STATE_IDLE;
     }
 }
@@ -506,6 +510,17 @@ int its_i2c_link_start()
     rc = _hal_status_to_errno(hal_rc);
     if (0 != rc)
         return rc;
+
+    return 0;
+}
+
+
+int its_i2c_link_reset(void)
+{
+    i2c_link_ctx_t * const ctx = &_ctx;
+
+    ctx->state = I2C_LINK_STATE_ERROR;
+    _antihang(ctx);
 
     return 0;
 }

@@ -8,6 +8,7 @@ typedef enum commissar_subordinate_t
 	COMMISSAR_SUB_BME280_EXT,
 	COMMISSAR_SUB_MS5611_INT,
 	COMMISSAR_SUB_MS5611_EXT,
+	COMMISSAR_SUB_I2C_LINK,
 
 	COMMISSAR__SUBS_COUNT
 } commissar_subordinate_t;

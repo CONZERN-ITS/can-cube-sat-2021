@@ -8,6 +8,7 @@
 
 #include "its-i2c-link-conf.h"
 #include "Inc/its-i2c-link.h"
+#include "commissar.h"
 
 
 extern IWDG_HandleTypeDef hiwdg;
@@ -46,6 +47,12 @@ void mav_main_send_to_its_link(mavlink_channel_t channel, const uint8_t * buffer
 	{
 		// Сообщение успешно отправлено
 		HAL_IWDG_Refresh(&hiwdg);
+		// Для комиссара покажем код ошибки 0
+		commissar_report(COMMISSAR_SUB_I2C_LINK, 0);
+	}
+	else
+	{
+		commissar_report(COMMISSAR_SUB_I2C_LINK, rc);
 	}
 }
 
