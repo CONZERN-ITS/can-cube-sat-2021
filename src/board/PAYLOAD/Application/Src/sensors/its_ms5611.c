@@ -42,24 +42,6 @@ struct its_ms5611_t
 };
 
 
-void ms_power_on(its_ms5611_id_t devid)
-{
-	if (ITS_MS_EXTERNAL == devid)
-		HAL_GPIO_WritePin(MS_EXT_PWR_GPIO_Port, MS_EXT_PWR_Pin, SET);
-	if (ITS_MS_INTERNAL == devid)
-		HAL_GPIO_WritePin(MS_INT_PWR_GPIO_Port, MS_INT_PWR_Pin, SET);
-}
-
-
-void ms_power_off(its_ms5611_id_t devid)
-{
-	if (ITS_MS_EXTERNAL == devid)
-		HAL_GPIO_WritePin(MS_EXT_PWR_GPIO_Port, MS_EXT_PWR_Pin, RESET);
-	if (ITS_MS_INTERNAL == devid)
-		HAL_GPIO_WritePin(MS_INT_PWR_GPIO_Port, MS_INT_PWR_Pin, RESET);
-}
-
-
 static its_ms5611_t * _dev_by_id(its_ms5611_id_t devid);
 
 
@@ -115,8 +97,8 @@ static its_ms5611_t _devices[2] = {
 		{
 			.bus = &hi2c1,
 			.addr = MS5611_I2C_ADDR_HIGH,
-			.power_ctl_port = GPIOC,
-			.power_ctl_pin = GPIO_PIN_1,
+			.power_ctl_port = MS_EXT_PWR_GPIO_Port, //GPIOC,
+			.power_ctl_pin = MS_EXT_PWR_Pin, //GPIO_PIN_1,
 			.driver = {
 					._user_arg = (void*)ITS_MS_EXTERNAL,
 					._write = _write,
@@ -131,8 +113,8 @@ static its_ms5611_t _devices[2] = {
 		{
 			.bus = &hi2c3,
 			.addr = MS5611_I2C_ADDR_HIGH,
-			.power_ctl_port = GPIOB,
-			.power_ctl_pin = GPIO_PIN_0,
+			.power_ctl_port = MS_INT_PWR_GPIO_Port, //GPIOB,
+			.power_ctl_pin = MS_INT_PWR_Pin, //GPIO_PIN_0,
 			.driver = {
 				._user_arg = (void*)ITS_MS_INTERNAL,
 				._write = _write,

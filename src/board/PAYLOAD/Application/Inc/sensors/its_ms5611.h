@@ -29,10 +29,6 @@ struct its_ms5611_t;
 typedef struct its_ms5611_t its_ms5611_t;
 
 
-void ms_power_on(its_ms5611_id_t devid);
-
-void ms_power_off(its_ms5611_id_t devid);
-
 int int_ms5611_reinit(its_ms5611_id_t id);
 
 int its_ms5611_power(its_ms5611_id_t id, bool enabled);
