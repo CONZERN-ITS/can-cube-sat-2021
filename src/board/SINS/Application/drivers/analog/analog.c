@@ -97,9 +97,12 @@ static int _channgel_config_for_target(analog_target_t target, ADC_ChannelConfTy
 	case ANALOG_TARGET_LED_9:
 		config->Channel = ADC_CHANNEL_15;
 		break;
+
+	default:
+		return -ENODEV;
 	}
 
-	if (target = ANALOG_TARGET_INTEGRATED_TEMP)
+	if (target == ANALOG_TARGET_INTEGRATED_TEMP)
 		config->SamplingTime = ADC_SAMPLETIME_3CYCLES;
 	else
 		config->SamplingTime = ADC_SAMPLETIME_84CYCLES;
