@@ -46,6 +46,8 @@ static int madgwick_jacobianAproachVector(Matrixf *result, const vector_t *real,
  * Считает производную кватерниона ориентации СО Земли по отношению к СО аппарата. Эта проиводная
  * определяет скорость поворота на основании показаний гироскопа
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int madgwick_getGyroDerOri(quaternion_t *result, const vector_t *gyro_data, float dt, const quaternion_t *previous)
 {
 	quaternion_t S = vecToQuat(gyro_data);
@@ -56,6 +58,7 @@ int madgwick_getGyroDerOri(quaternion_t *result, const vector_t *gyro_data, floa
 
 	return 0;
 }
+#pragma GCC diagnostic pop
 
 /*
  * Считает ошибку в ориентации на основании измеренных векторов и того, где они
@@ -99,6 +102,7 @@ int madgwick_getErrorOri(quaternion_t *result, const vector_t * const real[], co
  */
 static int madgwick_aproachVector(Matrixf* result, const vector_t *real, const vector_t *measured, const quaternion_t *expected)
 {
+	/*
 	float q1 = expected->w;
 	float q2 = expected->x;
 	float q3 = expected->y;
@@ -111,7 +115,7 @@ static int madgwick_aproachVector(Matrixf* result, const vector_t *real, const v
 	float sx = measured->x;
 	float sy = measured->y;
 	float sz = measured->z;
-
+	*/
 	quaternion_t x = quat_getConj(expected);
 	quaternion_t y = vecToQuat(real);
 	x = quat_mulByQuat(&x, &y);

@@ -577,6 +577,8 @@ void its_i2c_link_stats(its_i2c_link_stats_t * statsbuf)
 void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t transfer_direction,
         uint16_t addr_match_code
 ){
+    (void)addr_match_code;
+
     i2c_link_ctx_t * const ctx = &_ctx;
     if (ctx->iface.hi2c->Instance != hi2c->Instance) {
         return;

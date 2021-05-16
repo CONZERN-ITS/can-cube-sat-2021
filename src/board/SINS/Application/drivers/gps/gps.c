@@ -10,6 +10,7 @@
 #include <time.h>
 #include <errno.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -87,15 +88,9 @@ static void _gps_configure_step(void);
 static int _gps_configure_step_packet(void);
 
 
-static void gps_power_off()
+static void gps_power(bool on)
 {
-	HAL_GPIO_WritePin(PWR_GPS_GPIO_Port, PWR_GPS_Pin, RESET);
-}
-
-
-static void gps_power_on()
-{
-	HAL_GPIO_WritePin(PWR_GPS_GPIO_Port, PWR_GPS_Pin, SET);
+	HAL_GPIO_WritePin(PWR_GPS_GPIO_Port, PWR_GPS_Pin, on ? SET : RESET);
 }
 
 
@@ -315,6 +310,8 @@ int gps_init(
 		gps_packet_callback_t packet_callback, void * packet_callback_arg
 )
 {
+	gps_power(true);
+
 	// У нас пока ничего не приходило и времени на следующую метку у нас нет
 	_next_pps_time = 0;
 

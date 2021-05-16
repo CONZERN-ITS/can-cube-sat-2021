@@ -16,21 +16,6 @@
 #include <system_stm32f4xx.h>
 
 
-//I2C_HandleTypeDef hmems_i2c = {
-//		.Instance = HMEMS_I2C_INSTANCE,
-//		.Mode = HAL_I2C_MODE_MASTER,
-//		.Init = {
-//				.AddressingMode = I2C_ADDRESSINGMODE_7BIT,
-//				.ClockSpeed = HMEMS_I2C_CLOCK_SPEED,
-//				.DualAddressMode = I2C_DUALADDRESS_DISABLE,
-//				.DutyCycle = I2C_DUTYCYCLE_2,
-//				.GeneralCallMode = I2C_GENERALCALL_DISABLE,
-//				.NoStretchMode = I2C_NOSTRETCH_DISABLE,
-//				.OwnAddress1 = 0x00
-//		}
-//};
-
-
 void mems_power_off()
 {
 	HAL_GPIO_WritePin(PWR_MEMS_GPIO_Port, PWR_MEMS_Pin, RESET);
@@ -91,6 +76,7 @@ void mems_generate_stop_flag(void)
 	SET_BIT(hmems_i2c.Instance->CR1,I2C_CR1_STOP);
 }
 
+
 static uint32_t get_dwt_count()
 {
 	return DWT->CYCCNT;
@@ -114,6 +100,7 @@ void wait_need_ticks_delay(uint32_t ticks_delay)
 	while (get_dwt_count() < ticks_delay)
 	{
 		volatile int x = 0;
+		(void)x;
 	}
 }
 

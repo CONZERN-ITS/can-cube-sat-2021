@@ -138,14 +138,13 @@ static uint32_t last_gps_packet_ts = 0;
 static uint32_t last_gps_fix_packet_ts = 0;
 
 
+/*
 static void calibration_accel()
 {
 	backup_sram_enable();
 	backup_sram_erase();
 
 	sensors_init();
-
-	debug_uart_init();
 
 	for(;;)
 	{
@@ -176,16 +175,16 @@ static void calibration_accel()
 		led_toggle();
 	}
 }
+*/
 
 
+/*
 static void calibration_magn()
 {
 	backup_sram_enable();
 	backup_sram_erase();
 
 	sensors_init();
-
-	debug_uart_init();
 
 	for(;;)
 	{
@@ -212,6 +211,7 @@ static void calibration_magn()
 		led_toggle();
 	}
 }
+*/
 
 
 // Функция для слежения за здоровьем GPS и передачи его пакетов в мавлинк
@@ -1049,23 +1049,12 @@ static void read_ldiods(float arr[ITS_SINS_LDS_COUNT]) {
 
     for (int i = 0; i < ITS_SINS_LDS_COUNT; i++)
     {
-        uint32_t value;
+        uint16_t value;
         int rc = analog_get_raw(order[i], &value);
+        assert(0 == rc);
         float v = ((float)value / (1 << 12)) * 3.3;
         arr[i] = v;
     }
-    /*
-    static const int order[10] = {1, 4, 5, 8, 9, 10, 11, 12, 14, 15};
-    for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
-        hadc1.Instance->SQR3 = order[i];
-        HAL_ADC_Start(&hadc1);
-        HAL_ADC_PollForConversion(&hadc1, ADC_TIMEOUT);
-        uint32_t value = HAL_ADC_GetValue(&hadc1);
-        float v = ((float)value / (1 << 12)) * 3.3;
-
-        arr[i] = v;
-    }
-    */
 }
 /* USER CODE END 4 */
 

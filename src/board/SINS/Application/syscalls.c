@@ -13,12 +13,14 @@ extern UART_HandleTypeDef huart3;
 int
 _write(int file, char* ptr, int len)
 {
+	assert(0 == file);
+
 	HAL_UART_Transmit(&huart3, (uint8_t*)ptr, len, HAL_MAX_DELAY);
 	return len;
 }
 
 int
-_close(int fildes)
+_close(int fildes __attribute__((unused)))
 {
 	assert(0);
 	return -1;
@@ -32,7 +34,7 @@ _read(int file __attribute__((unused)), char* ptr __attribute__((unused)),
 	return -1;
 }
 
-int _lseek(int file, int ptr, int dir)
+int _lseek(int file __attribute__((unused)), int ptr __attribute__((unused)), int dir __attribute__((unused)))
 {
 	assert(0);
 	return 0;
