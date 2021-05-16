@@ -31,6 +31,8 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
+#include <stm32f4xx_hal.h>
+
 
 /* Variables */
 //#undef errno
@@ -63,7 +65,11 @@ int _kill(int pid, int sig)
 void _exit (int status)
 {
 	_kill(status, -1);
+#ifndef DEBUG
+	HAL_NVIC_SystemReset();
+#else
 	while (1) {}		/* Make sure we hang here */
+#endif
 }
 
 __attribute__((weak)) int _read(int file, char *ptr, int len)
@@ -80,12 +86,8 @@ return len;
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
-	int DataIdx;
-
-	for (DataIdx = 0; DataIdx < len; DataIdx++)
-	{
-		__io_putchar(*ptr++);
-	}
+	extern UART_HandleTypeDef huart4;
+	HAL_UART_Transmit(&huart4, (uint8_t * )ptr, len, HAL_MAX_DELAY);
 	return len;
 }
 
