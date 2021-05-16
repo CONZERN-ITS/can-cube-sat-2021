@@ -92,6 +92,12 @@ static void _delay(void * user_arg, uint32_t ms)
 }
 
 
+static void _power(its_ms5611_t * dev, bool enabled)
+{
+	HAL_GPIO_WritePin(dev->power_ctl_port, dev->power_ctl_pin, enabled ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+
 static its_ms5611_t _devices[2] = {
 		// Внешний
 		{
@@ -136,9 +142,10 @@ static its_ms5611_t * _dev_by_id(its_ms5611_id_t devid)
 }
 
 
-int int_ms5611_reinit(its_ms5611_id_t id)
+int its_ms5611_init(its_ms5611_id_t id)
 {
 	its_ms5611_t * const dev = _dev_by_id(id);
+	_power(dev, true);
 
 	// Сброс!
 	int rc = ms5611_reset(&dev->driver);
@@ -155,16 +162,31 @@ int int_ms5611_reinit(its_ms5611_id_t id)
 }
 
 
-int its_ms5611_power(its_ms5611_id_t id, bool enabled)
+int its_ms5611_punish(its_ms5611_id_t id)
 {
 	its_ms5611_t * const dev = _dev_by_id(id);
-	HAL_GPIO_WritePin(dev->power_ctl_port, dev->power_ctl_pin, enabled ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+	// рубим шину
+	HAL_I2C_DeInit(dev->bus);
+	// Рубим питание датчику
+	_power(dev, false);
+
+	HAL_Delay(10);
+
+	_power(dev, true);
+	HAL_I2C_Init(dev->bus);
+
+	// Пробуем поднять датчик
+	int rc;
+	rc = its_ms5611_init(id);
+	if (0 != rc)
+		return rc;
 
 	return 0;
 }
 
 
-int int_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t * data)
+int its_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t * data)
 {
 	its_ms5611_t * const dev = _dev_by_id(id);
 
@@ -185,7 +207,3 @@ int int_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t 
 
 	return 0;
 }
-
-
-
-

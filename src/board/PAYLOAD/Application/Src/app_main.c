@@ -23,6 +23,7 @@
 #include "sensors/dna_temp.h"
 #include "sensors/dosim.h"
 #include "compressor-control.h"
+#include "commissar.h"
 
 //! Длина одного такта в мс
 #define TICK_LEN_MS (200)
@@ -100,21 +101,6 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg);
 //! Пакуем i2c-link статистику в мав пакет
 static void _collect_i2c_link_stats(mavlink_i2c_link_stats_t * msg);
 
-//! Анализ кода возвращенного внутреннему bme операцией
-static int _int_bme_op_analysis(int rc);
-//! Убеждаемся в том, что внутренний БМЕ функционален. Пытаемся его рестартнуть если нет
-static int _int_bme_restart_if_need_so(void);
-
-//! Анализ кода возвращенного внешнему bme операцией
-static int _ext_bme_op_analysis(int rc);
-//! Убеждаемся в том, что внешний БМЕ функционален. Пытаемся его рестартнуть если нет
-static int _ext_bme_restart_if_need_so(void);
-
-//! Анализ кода возвращенного аналоговой операцией
-static int _analog_op_analysis(int rc);
-//! Убеждаемся в том, что АЦП функционален. Пытаемся его рестартнуть если нет
-static int _analog_restart_if_need_so(void);
-
 //! Обработка вхоядщие пакетов
 static void _process_input_packets(void);
 
@@ -145,13 +131,14 @@ int app_main()
 	time_svc_init();
 	its_i2c_link_start();
 
-	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_EXTERNAL));
-	_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
-	int_ms5611_reinit(ITS_MS_EXTERNAL);
-	int_ms5611_reinit(ITS_MS_INTERNAL);
-	_analog_op_analysis(analog_init());
+	its_bme280_init(ITS_BME_LOCATION_EXTERNAL);
+	its_bme280_init(ITS_BME_LOCATION_INTERNAL);
+	its_ms5611_init(ITS_MS_EXTERNAL);
+	its_ms5611_init(ITS_MS_INTERNAL);
+	analog_init();
 	mics6814_init();
 	dosim_init();
+	commissar_init();
 	its_ccontrol_init();
 	dna_control_init();
 	// После перезагрузки будем аж пол секунды светить лампочкой
@@ -192,91 +179,72 @@ int app_main()
 		_process_input_packets();
 		// Управляем температурой ДНК
 		dna_control_work();
+		// Управляем компрессором
+		_compressor_control(tock);
 
 		if (tock % PACKET_PERIOD_BME == PACKET_OFFSET_BME)
 		{
-			if (0 == _int_bme_restart_if_need_so())
-			{
-				mavlink_pld_bme280_data_t bme_msg = {0};
-				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg));
-				if (0 == rc) {
-					mav_main_process_bme_message(&bme_msg, PLD_LOC_INTERNAL);
-				}
-			}
-			if (0 == _ext_bme_restart_if_need_so())
-			{
-				mavlink_pld_bme280_data_t bme_msg = {0};
-				int rc = _int_bme_op_analysis(its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg));
-				if (0 == rc) {
-					mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
-				}
-			}
+			mavlink_pld_bme280_data_t bme_msg = {0};
+			int rc = its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg);
+			commissar_report(COMMISSAR_SUB_BME280_INT, rc);
+			if (0 == rc)
+				mav_main_process_bme_message(&bme_msg, PLD_LOC_INTERNAL);
+
+			rc = its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg);
+			commissar_report(COMMISSAR_SUB_BME280_EXT, rc);
+			if (0 == rc)
+				mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
 		}
 
 
 		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MS5611)
 		{
 			mavlink_pld_ms5611_data_t data = {0};
-			int rc = int_ms5611_read_and_calculate(ITS_MS_EXTERNAL, &data);
-			printf("rc = %d\n", rc);
+			int rc = its_ms5611_read_and_calculate(ITS_MS_EXTERNAL, &data);
+			commissar_report(COMMISSAR_SUB_MS5611_EXT, rc);
 			if (rc == 0)
 				mav_main_process_ms5611_message(&data, PLD_LOC_EXTERNAL);
-			else
-				int_ms5611_reinit(ITS_MS_EXTERNAL);
 
-			memset(&data, 0, sizeof(data));
-			rc = 0;
-			rc = int_ms5611_read_and_calculate(ITS_MS_INTERNAL, &data);
-			printf("rc = %d\n", rc);
+			rc = its_ms5611_read_and_calculate(ITS_MS_INTERNAL, &data);
+			commissar_report(COMMISSAR_SUB_MS5611_INT, rc);
 			if (rc == 0)
 				mav_main_process_ms5611_message(&data, PLD_LOC_INTERNAL);
-			else
-				int_ms5611_reinit(ITS_MS_INTERNAL);
-
 		}
 
 
 		if (tock % PACKET_PERIOD_ME2O2 == PACKET_OFFSET_ME2O2)
 		{
-			if (0 == _analog_restart_if_need_so())
-			{
-				mavlink_pld_me2o2_data_t me2o2_msg = {0};
-				int rc = _analog_op_analysis(me2o2_read(&me2o2_msg));
-				if (0 == rc)
-					mav_main_process_me2o2_message(&me2o2_msg);
-			}
+			mavlink_pld_me2o2_data_t me2o2_msg = {0};
+			int rc = me2o2_read(&me2o2_msg);
+			if (0 == rc)
+				mav_main_process_me2o2_message(&me2o2_msg);
 		}
 
 
 		if (tock % PACKET_PERIOD_MICS6814 == PACKET_OFFSET_MICS6814)
 		{
-			if (0 == _analog_restart_if_need_so())
-			{
-				mavlink_pld_mics_6814_data_t mics_msg = {0};
-				if (0 == _analog_op_analysis(mics6814_read(&mics_msg)))
-					mav_main_process_mics_message(&mics_msg);
-			}
+			mavlink_pld_mics_6814_data_t mics_msg = {0};
+			int rc = mics6814_read(&mics_msg);
+			if (0 == rc)
+				mav_main_process_mics_message(&mics_msg);
 		}
 
 
 		if (tock % PACKET_PERIOD_INTEGRATED == PACKET_OFFSET_INTEGRATED)
 		{
-			if (0 == _analog_restart_if_need_so())
-			{
-				mavlink_own_temp_t own_temp_msg = {0};
-				if (0 == _analog_op_analysis(integrated_read(&own_temp_msg)))
-					mav_main_process_owntemp_message(&own_temp_msg);
-			}
+			mavlink_own_temp_t own_temp_msg = {0};
+			int rc = integrated_read(&own_temp_msg);
+			if (0 == rc)
+				mav_main_process_owntemp_message(&own_temp_msg);
 		}
+
 
 		if (tock % PACKET_PERIOD_DNA == PACKET_OFFSET_DNA)
 		{
-			if (0 == _analog_restart_if_need_so())
-			{
-				mavlink_pld_dna_data_t pld_dna_msg = {0};
-				if (0 == dna_control_get_status(&pld_dna_msg))
-					mav_main_process_dna_message(&pld_dna_msg);
-			}
+			mavlink_pld_dna_data_t pld_dna_msg = {0};
+			int rc = dna_control_get_status(&pld_dna_msg);
+			if (0 == rc)
+				mav_main_process_dna_message(&pld_dna_msg);
 		}
 
 
@@ -285,7 +253,6 @@ int app_main()
 			mavlink_pld_dosim_data_t pld_dosim_msg = {0};
 			dosim_read(&pld_dosim_msg);
 			mav_main_process_dosim_message(&pld_dosim_msg);
-
 		}
 
 
@@ -303,10 +270,12 @@ int app_main()
 			_collect_i2c_link_stats(&i2c_stats_msg);
 			mav_main_process_i2c_link_stats(&i2c_stats_msg);
 		}
-		_compressor_control(tock);
 		/*if (tock % PACKET_PERIOD_CCONTROL == PACKET_OFFSET_CCONTROL) {
 		    ccontrol_update_inner_pressure()
 		}*/
+
+		// В конце такта работает комиссар
+		commissar_work();
 
 		// Ждем начала следующего такта
 		uint32_t now;
@@ -407,62 +376,6 @@ static uint16_t _fetch_reset_cause(void)
 	return rc;
 }
 
-
-static int _int_bme_op_analysis(int rc)
-{
-	_status.int_bme_last_error = rc;
-	if (rc)
-		_status.int_bme_error_counter++;
-
-	return _status.int_bme_last_error;
-}
-
-
-static int _ext_bme_op_analysis(int rc)
-{
-	_status.ext_bme_last_error = rc;
-	if (rc)
-		_status.ext_bme_error_counter++;
-
-	return _status.ext_bme_last_error;
-}
-
-
-static int _int_bme_restart_if_need_so(void)
-{
-	if (_status.int_bme_last_error)
-		_int_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
-
-	return _status.int_bme_last_error;
-}
-
-
-static int _ext_bme_restart_if_need_so(void)
-{
-	if (_status.ext_bme_last_error)
-		_ext_bme_op_analysis(its_bme280_reinit(ITS_BME_LOCATION_INTERNAL));
-
-	return _status.ext_bme_last_error;
-}
-
-
-static int _analog_op_analysis(int rc)
-{
-	_status.adc_last_error = rc;
-	if (rc)
-		_status.adc_error_counter++;
-
-	return _status.adc_last_error;
-}
-
-
-static int _analog_restart_if_need_so(void)
-{
-	if (_status.adc_last_error)
-		_analog_op_analysis(analog_restart());
-
-	return _status.adc_last_error;
-}
 
 static int _compressor_control(int64_t tick) {
     // Максимальная высота подъема (в м)

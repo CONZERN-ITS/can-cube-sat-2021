@@ -29,11 +29,11 @@ struct its_ms5611_t;
 typedef struct its_ms5611_t its_ms5611_t;
 
 
-int int_ms5611_reinit(its_ms5611_id_t id);
+int its_ms5611_init(its_ms5611_id_t id);
 
-int its_ms5611_power(its_ms5611_id_t id, bool enabled);
+int its_ms5611_punish(its_ms5611_id_t id);
 
-int int_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t * data);
+int its_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t * data);
 
 
 #endif /* INC_SENSORS_ITS_MS5611_H_ */

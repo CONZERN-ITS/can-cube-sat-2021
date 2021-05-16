@@ -45,8 +45,8 @@ static its_bme280_t _devices[2] = {
 		// Внешний BME280
 		.addr = BME280_I2C_ADDR_PRIM,
 		.bus = &hi2c1,
-		.power_ctl_port = GPIOB,
-		.power_ctl_pin = GPIO_PIN_1,
+		.power_ctl_port = BME_EXT_PWR_GPIO_Port, //GPIOB,
+		.power_ctl_pin = BME_EXT_PWR_Pin, //GPIO_PIN_1,
 		.driver = {
 			.dev_id = ITS_BME_LOCATION_EXTERNAL,
 			.intf = BME280_I2C_INTF,
@@ -66,8 +66,8 @@ static its_bme280_t _devices[2] = {
 		// Внутренний BME280
 		.addr = BME280_I2C_ADDR_PRIM,
 		.bus = &hi2c3,
-		.power_ctl_port = GPIOC,
-		.power_ctl_pin = GPIO_PIN_0,
+		.power_ctl_port = BME_INT_PWR_GPIO_Port, //GPIOC,
+		.power_ctl_pin = BME_EXT_PWR_Pin, //GPIO_PIN_0,
 		.driver = {
 			.dev_id = ITS_BME_LOCATION_INTERNAL,
 			.intf = BME280_I2C_INTF,
@@ -84,32 +84,6 @@ static its_bme280_t _devices[2] = {
 		}
 	}
 };
-
-
-void bme_pwr_on(its_bme280_id_t id)
-{
-	if (ITS_BME_LOCATION_EXTERNAL == id)
-	{
-		HAL_GPIO_WritePin(BME_EXT_PWR_GPIO_Port, BME_EXT_PWR_Pin, SET);
-	}
-	if (ITS_BME_LOCATION_INTERNAL == id)
-	{
-		HAL_GPIO_WritePin(BME_INT_PWR_GPIO_Port, BME_EXT_PWR_Pin, SET);
-	}
-}
-
-
-void bme_pwr_off(its_bme280_id_t id)
-{
-	if (ITS_BME_LOCATION_EXTERNAL == id)
-	{
-		HAL_GPIO_WritePin(BME_EXT_PWR_GPIO_Port, BME_EXT_PWR_Pin, RESET);
-	}
-	if (ITS_BME_LOCATION_INTERNAL == id)
-	{
-		HAL_GPIO_WritePin(BME_INT_PWR_GPIO_Port, BME_EXT_PWR_Pin, RESET);
-	}
-}
 
 
 static its_bme280_t * _dev_by_id(its_bme280_id_t id)
@@ -166,11 +140,17 @@ static void _delay_ms(uint32_t ms)
 }
 
 
-
-
-int its_bme280_reinit(its_bme280_id_t id)
+static void _power(its_bme280_t * dev, bool enabled)
 {
-	its_bme280_t * dev = _dev_by_id(id);
+	HAL_GPIO_WritePin(dev->power_ctl_port, dev->power_ctl_pin, enabled ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+
+
+int its_bme280_init(its_bme280_id_t id)
+{
+	its_bme280_t * const dev = _dev_by_id(id);
+	_power(dev, true);
 
 	int rc = bme280_soft_reset(&dev->driver);
 	if (0 != rc)
@@ -193,16 +173,31 @@ int its_bme280_reinit(its_bme280_id_t id)
 }
 
 
-void its_bme280_power(its_bme280_id_t id, bool enabled)
+int its_bme280_punish(its_bme280_id_t id)
 {
-	its_bme280_t * dev = _dev_by_id(id);
-	HAL_GPIO_WritePin(dev->power_ctl_port, dev->power_ctl_pin, enabled ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	its_bme280_t * const dev = _dev_by_id(id);
+
+	// Будем действовать радикально и будем сразу стрелять шину
+	HAL_I2C_DeInit(dev->bus);
+	_power(dev, false);
+	HAL_Delay(10);
+
+	_power(dev, true);
+	HAL_I2C_Init(dev->bus);
+
+	// Пробуем перезапустить датчик
+	int rc;
+	rc = its_bme280_init(id);
+	if (0 != rc)
+		return rc;
+
+	return 0;
 }
 
 
 int its_bme280_read(its_bme280_id_t id, mavlink_pld_bme280_data_t * data)
 {
-	its_bme280_t * dev = _dev_by_id(id);
+	its_bme280_t * const dev = _dev_by_id(id);
 
 	struct bme280_data bme280_data;
 
@@ -221,7 +216,3 @@ int its_bme280_read(its_bme280_id_t id, mavlink_pld_bme280_data_t * data)
 	data->altitude = icao_table_alt_for_pressure((float)bme280_data.pressure);
 	return 0;
 }
-
-
-
-

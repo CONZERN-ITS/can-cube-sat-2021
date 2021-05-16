@@ -20,10 +20,10 @@ typedef struct its_bme280_t its_bme280_t;
 
 //! Инициализация (или переинициализация) датчика
 /*! Инициализация начинается с программной перезагрузки */
-int its_bme280_reinit(its_bme280_id_t id);
+int its_bme280_init(its_bme280_id_t id);
 
-//! Управление питанием датчика
-void its_bme280_power(its_bme280_id_t id, bool enabled);
+//! API для комиссара - пробует перезапустить датчик
+int its_bme280_punish(its_bme280_id_t id);
 
 //! Получение mavlink пакета с данными BME
 int its_bme280_read(its_bme280_id_t id, mavlink_pld_bme280_data_t * data);
