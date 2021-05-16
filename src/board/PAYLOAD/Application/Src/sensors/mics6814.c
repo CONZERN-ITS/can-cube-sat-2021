@@ -283,7 +283,7 @@ void mics6814_init()
 /* \arg target задает нужный сенсор
    \arg dr возвращает сырое отношение сопротивлений сенсора
    \arg conc возвращает концентрацию __титульного__ газа сенсора */
-static int _read_one(mics6814_sensor_t target, float * dr, float * conc)
+static int _read_one(mics6814_sensor_t target, uint16_t * adc_raw, float * dr, float * conc)
 {
 	int error = 0;
 
@@ -342,7 +342,10 @@ static int _read_one(mics6814_sensor_t target, float * dr, float * conc)
 		raw_sum += raw;
 	}
 
+
 	raw = raw_sum / oversampling;
+	*adc_raw = raw;
+
 	// Считаем сопротивление сенсора
 	float rx = rb * (float)raw/(0x0FFF - raw); // 0x0FFF - потолок нашего АЦП
 
@@ -386,25 +389,27 @@ int mics6814_read(mavlink_pld_mics_6814_data_t * msg)
 	int error;
 
 	// Теперь опрашиваем все сенсоры
-#	pragma GCC diagnostic push
-	// Здесь было множество сообщений вида
-	// warning: taking address of packed member of 'struct __mavlink_pld_mics_6814_data_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
-	// Мы доверяем мавлинку в том, что он все выровняет
-#	pragma GCC diagnostic ignored "-Waddress-of-packed-member"
-
-	error = _read_one(MICS6814_SENSOR_CO, &msg->red_sensor_raw, &msg->co_conc);
+	uint16_t adc_raw;
+	float dr_raw;
+	float concentration;
+	// TODO: Перебить поле сырых значений на инт16
+	error = _read_one(MICS6814_SENSOR_CO, &adc_raw, &dr_raw, &concentration);
 	if (0 != error)
 		return error;
+	msg->red_sensor_raw = adc_raw;
+	msg->co_conc = concentration;
 
-	error = _read_one(MICS6814_SENSOR_NO2, &msg->ox_sensor_raw, &msg->no2_conc);
+	error = _read_one(MICS6814_SENSOR_NO2, &adc_raw, &dr_raw, &concentration);
 	if (0 != error)
 		return error;
+	msg->ox_sensor_raw = adc_raw;
+	msg->no2_conc = concentration;
 
-	error = _read_one(MICS6814_SENSOR_NH3, &msg->nh3_sensor_raw, &msg->nh3_conc);
+	error = _read_one(MICS6814_SENSOR_NH3, &adc_raw, &dr_raw, &concentration);
 	if (0 != error)
 		return error;
-
-#	pragma GCC diagnostic pop
+	msg->nh3_sensor_raw = adc_raw;
+	msg->nh3_conc = concentration;
 
 	return 0;
 }

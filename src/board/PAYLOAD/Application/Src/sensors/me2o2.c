@@ -98,15 +98,12 @@ int me2o2_read(mavlink_pld_me2o2_data_t * msg)
 	msg->time_us = tv.tv_usec;
 
 	int error = 0;
+	float conc;
+	error = _read(&conc);
+	if (0 != error)
+		return error;
 
-#	pragma GCC diagnostic push
-	// warning: taking address of packed member of 'struct __mavlink_pld_me2o2_data_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
-	// Но мы доверяем мавлинку и будем считать что он не сделал тут ничего не выровненого
-	// Душим этот варнинг
-#	pragma GCC diagnostic ignored "-Waddress-of-packed-member"
-	error = _read(&msg->o2_conc);
-#	pragma GCC diagnostic pop
-
+	msg->o2_conc = conc;
 	return error;
 }
 #endif
