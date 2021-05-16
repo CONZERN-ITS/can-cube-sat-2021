@@ -18,6 +18,7 @@ typedef struct {
 
 static dosim_t data;
 
+
 void dosim_init()
 {
 	data.start_time_ms = HAL_GetTick();
@@ -30,10 +31,6 @@ void dosim_init()
 void dosim_read(mavlink_pld_dosim_data_t * msg)
 {
 	uint32_t stop_time_ms = HAL_GetTick();
-	msg->count_tick = data.dosim_time->Instance->CNT;
-
-	msg->delta_time = stop_time_ms - data.start_time_ms;
-
 	data.dosim_time->Instance->CNT = 0;
 	data.start_time_ms = stop_time_ms;
 
@@ -41,9 +38,6 @@ void dosim_read(mavlink_pld_dosim_data_t * msg)
 	time_svc_gettimeofday(&tmv);
 	msg->time_s = tmv.tv_sec;
 	msg->time_us = tmv.tv_usec;
-
-
+	msg->count_tick = data.dosim_time->Instance->CNT;
+	msg->delta_time = stop_time_ms - data.start_time_ms;
 }
-
-
-

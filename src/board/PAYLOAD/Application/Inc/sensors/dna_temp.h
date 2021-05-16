@@ -12,7 +12,15 @@
 
 #include "main.h"
 
-//! Данная функция считает температуру и управляет нагревателем
-int dna_get_status(mavlink_pld_dna_data_t * msg);
+
+//! Инициализация управления температурой образца ДНК
+int dna_control_init(void);
+
+//! Получение параметров образца ДНК и работы нагревателя
+int dna_control_get_status(mavlink_pld_dna_data_t * msg);
+
+//! Управление темературой образца ДНК
+int dna_control_work(void);
+
 
 #endif /* INC_SENSORS_DNA_TEMP_H_ */

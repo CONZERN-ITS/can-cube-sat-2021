@@ -153,6 +153,7 @@ int app_main()
 	mics6814_init();
 	dosim_init();
 	its_ccontrol_init();
+	dna_control_init();
 	// После перезагрузки будем аж пол секунды светить лампочкой
 	uint32_t tick_begin = HAL_GetTick();
 	uint32_t tick_led_unlock = tick_begin + LED_RESTART_LOCK;
@@ -189,6 +190,8 @@ int app_main()
 
 		// Проверяем входящие пакеты
 		_process_input_packets();
+		// Управляем температурой ДНК
+		dna_control_work();
 
 		if (tock % PACKET_PERIOD_BME == PACKET_OFFSET_BME)
 		{
@@ -271,9 +274,8 @@ int app_main()
 			if (0 == _analog_restart_if_need_so())
 			{
 				mavlink_pld_dna_data_t pld_dna_msg = {0};
-				if (0 == dna_get_status(&pld_dna_msg))
+				if (0 == dna_control_get_status(&pld_dna_msg))
 					mav_main_process_dna_message(&pld_dna_msg);
-
 			}
 		}
 

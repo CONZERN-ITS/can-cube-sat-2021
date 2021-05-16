@@ -31,15 +31,27 @@ typedef struct {
 } dna_data_t;
 
 
+static dna_data_t data;
+
+
 static void dna_on_heater()
 {
 	HAL_GPIO_WritePin(HEATER_PWR_GPIO_Port, HEATER_PWR_Pin, SET);
+	data.heater_is_on = true;
 }
 
 
 static void dna_off_heater()
 {
 	HAL_GPIO_WritePin(HEATER_PWR_GPIO_Port, HEATER_PWR_Pin, RESET);
+	data.heater_is_on = false;
+}
+
+
+int dna_control_init()
+{
+	dna_off_heater();
+	return 0;
 }
 
 
@@ -65,48 +77,18 @@ static int dna_read_temp_value(uint16_t * raw_)
 }
 
 
-static void dna_calculate_temp(uint16_t raw, dna_data_t * data)
+static void dna_calculate_temp(const uint16_t raw, float * celsium)
 {
 	float v_sens = (3.3f * raw) / 0x1000;
 	float i = (3.3f - v_sens) / DNA_TEMP_R_LOAD;
 	float rx = v_sens / i;
 
-	data->dna_temp = 1 / (1 / (273.0f + STANDART_TEMP) - logf(DNA_TEMP_R_FOR_STANDART_TEMP / rx) / SENSOR_COEFF_B) - 273.0f;
+	*celsium = 1 / (1 / (273.0f + STANDART_TEMP) - logf(DNA_TEMP_R_FOR_STANDART_TEMP / rx) / SENSOR_COEFF_B) - 273.0f;
 }
 
 
-static void dna_check_temp(dna_data_t * data)
+int dna_control_get_status(mavlink_pld_dna_data_t * msg)
 {
-	float temp = data->dna_temp;
-
-	if (MIN_DNA_TEMP_WITHOUT_HEATER > temp)
-	{
-		dna_on_heater();
-		data->heater_is_on = 1;
-	}
-	else if (MAX_DNA_TEMP_WITH_HEATER < temp)
-	{
-		dna_off_heater();
-		data->heater_is_on = 0;
-	}
-}
-
-
-int dna_get_status(mavlink_pld_dna_data_t * msg)
-{
-	uint16_t raw_temp = 0;
-	int error = 0;
-	// Получаем сырое значение температуры
-	 error = dna_read_temp_value(&raw_temp);
-	 if (0 != error)
-		 return error;
-
-	dna_data_t data = {0};
-	// Пересчитываем температуру в реальное значение
-	dna_calculate_temp(raw_temp, &data);
-	// Включаесм нагреватель, если необходимо
-	dna_check_temp(&data);
-
 	struct timeval tmv;
 	time_svc_gettimeofday(&tmv);
 	msg->time_s = tmv.tv_sec;
@@ -115,5 +97,25 @@ int dna_get_status(mavlink_pld_dna_data_t * msg)
 	msg->dna_temp = data.dna_temp;
 	msg->heater_is_on = data.heater_is_on;
 
-	return error;
+	return 0;
+}
+
+
+int dna_control_work()
+{
+	uint16_t raw_temp = 0;
+	int error = 0;
+	// Получаем сырое значение температуры
+	error = dna_read_temp_value(&raw_temp);
+	if (0 != error)
+		return error;
+
+	dna_calculate_temp(raw_temp, &data.dna_temp);
+
+	if (MIN_DNA_TEMP_WITHOUT_HEATER > data.dna_temp)
+		dna_on_heater();
+	else if (MAX_DNA_TEMP_WITH_HEATER < data.dna_temp)
+		dna_off_heater();
+
+	return 0;
 }

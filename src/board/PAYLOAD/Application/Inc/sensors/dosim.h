@@ -10,8 +10,8 @@
 
 #include "mavlink_main.h"
 
-void dosim_read(mavlink_pld_dosim_data_t * msg);
+void dosim_init(void);
 
-void dosim_init();
+void dosim_read(mavlink_pld_dosim_data_t * msg);
 
 #endif /* INC_SENSORS_DOSIM_H_ */
