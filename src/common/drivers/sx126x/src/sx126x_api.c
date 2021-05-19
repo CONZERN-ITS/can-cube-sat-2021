@@ -587,9 +587,9 @@ int sx126x_api_get_lora_packet_status(sx126x_api_t * api, sx126x_lora_packet_sta
 	rc = sx126x_api_get_packet_status(api, raw);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	status->rssi_pkt = raw[0];
-	status->snr_pkt = (raw[1] < 128) ? raw[1] >> 1 : (raw[1] - 256) >> 1;
-	status->signal_rssi_pkt = -raw[2] >> 1;
+	status->rssi_pkt = -1*(raw[0] >> 1);
+	status->snr_pkt = (raw[1] < 128) ? raw[1] >> 2 : (raw[1] - 256) >> 2;
+	status->signal_rssi_pkt = -1*(raw[2] >> 1);
 	return 0;
 }
 
