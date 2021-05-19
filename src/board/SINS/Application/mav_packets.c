@@ -75,7 +75,7 @@ int mavlink_light_diode(stateSINS_lds_t * state)
 
 
 	for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
-		mld.value[i] = state->dir[i];
+		mld.value[i] = state->sensor[i];
 	}
 
 	mavlink_message_t msg;

@@ -39,6 +39,8 @@ typedef struct its_i2c_link_stats_t
 /*! Нужно вызывать лишь однажды */
 int its_i2c_link_start(void);
 
+int its_i2c_link_reset(void);
+
 int its_i2c_link_write(const void * data, size_t data_size);
 
 int its_i2c_link_read(void * buffer, size_t buffer_size);

@@ -15,6 +15,7 @@
 #include <its-i2c-link.h>
 
 #include "common.h"
+#include "commissar.h"
 
 //! Буфер под инжектируемые сообщения
 typedef struct its_injected_message_t
@@ -115,6 +116,9 @@ int uplink_write_mav(const mavlink_message_t * msg)
 
 	uint16_t len = mavlink_msg_to_send_buffer(msg_buffer, msg);
 	error = its_i2c_link_write(msg_buffer, len);
+	// > 0 это отсутствие ошибки для комиссара
+	commissar_report(COMMISSAR_SUB_I2C_LINK, error > 0 ? 0 : error);
+
 	//printf("msgid %d\n", msg->msgid);
 	if (error == -EAGAIN)
 	{

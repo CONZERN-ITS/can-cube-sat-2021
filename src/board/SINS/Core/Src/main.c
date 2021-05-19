@@ -55,6 +55,8 @@
 #include "sensors.h"
 #include "lds.h"
 
+#include "commissar.h"
+
 
 /* USER CODE END Includes */
 
@@ -472,6 +474,7 @@ int main(void)
   	led_init();
 
   	dwt_init();
+  	commissar_init();
 
   	/*if (CALIBRATION_LSM)
   		calibration_accel();
@@ -662,6 +665,7 @@ int main(void)
 
   			error_mems_read();
   			mavlink_errors_packet();
+  			commissar_work();
   		}
   	}
 
@@ -671,10 +675,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    break;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
+  HAL_NVIC_SystemReset();
   /* USER CODE END 3 */
 }
 
