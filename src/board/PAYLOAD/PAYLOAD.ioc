@@ -1,6 +1,7 @@
 #MicroXplorer Configuration settings - do not modify
 PH0-OSC_IN.Locked=true
 PB13.GPIOParameters=GPIO_Label
+PC7.GPIOParameters=GPIO_PuPd
 PH0-OSC_IN.Signal=RCC_OSC_IN
 NVIC.I2C1_EV_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 PB10.Mode=I2C
@@ -113,6 +114,7 @@ PC6.Mode=Asynchronous
 PA9.Signal=GPIO_Output
 PB5.Locked=true
 NVIC.I2C2_ER_IRQn=true\:0\:0\:false\:false\:true\:true\:true
+PC7.GPIO_PuPd=GPIO_PULLUP
 Dma.I2C1_RX.1.Instance=DMA1_Stream0
 Dma.I2C1_RX.1.PeriphInc=DMA_PINC_DISABLE
 PB10.Signal=I2C2_SCL
