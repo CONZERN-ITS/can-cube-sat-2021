@@ -66,11 +66,16 @@ class MsgProcessor:
         # Если в сообщении есть time_s и time_us
         if "time_s" in msg_dict and "time_us" in msg_dict:
             ts = msg_dict["time_s"] + msg_dict["time_us"] / (1000 * 1000)
-            dt = datetime.fromtimestamp(ts)
-            ts_text = dt.strftime("%Y-%m-%dT%H:%M:%S")
-            msg_dict.update({
-                "time_gregorian": ts_text,
-            })
+            try:
+                dt = datetime.fromtimestamp(ts)
+                ts_text = dt.strftime("%Y-%m-%dT%H:%M:%S")
+                msg_dict.update({
+                    "time_gregorian": ts_text,
+                })
+            except OverflowError:
+                msg_dict.update({
+                    "time_gregorian": "<invalid>"
+                })
 
         # Добавляем таймштамп из mavlog файла
         if not self.notimestamps:
@@ -122,7 +127,7 @@ def main(argv):
 
     if not base_path:
         fname = os.path.split(f)[1]
-        base_path = os.path.splitext(fname)[0]
+        base_path = os.path.splitext(fname)[0] + "_mav_csv"
 
     if not os.path.isdir(base_path):
         os.makedirs(base_path, exist_ok=True)
