@@ -8,7 +8,13 @@
 //#include "i2c.h"
 #include "its-i2c-link.h"
 #include "its-time.h"
-#include "mavlink/its/mavlink.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+// Тут генерируется множество вот таких сообщений
+// warning: taking address of packed member of 'struct __mavlink_vision_speed_estimate_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
+// Мы доверяем мавлинку в том, что он не сгенерит ничего невыровненого, поэтому давим эти варнинги
+#include "mavlink.h"
 #include "battery.h"
 #include "mavlink_system_id.h"
 #include "task.h"
@@ -18,7 +24,6 @@
 #include "task_recv.h"
 #include "task_battery_control.h"
 #include "adc.h"
-
 
 
 extern I2C_HandleTypeDef hi2c2;

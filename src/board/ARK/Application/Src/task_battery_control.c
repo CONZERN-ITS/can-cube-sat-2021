@@ -15,7 +15,13 @@
 #include "task.h"
 #include "task_ina.h"
 #include "task_ds.h"
-#include "mavlink/its/mavlink.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+// Тут генерируется множество вот таких сообщений
+// warning: taking address of packed member of 'struct __mavlink_vision_speed_estimate_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
+// Мы доверяем мавлинку в том, что он не сгенерит ничего невыровненого, поэтому давим эти варнинги
+#include "mavlink.h"
 
 
 

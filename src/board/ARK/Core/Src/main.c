@@ -91,7 +91,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-   HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -349,9 +349,9 @@ static void MX_RTC_Init(void)
   /* USER CODE END RTC_Init 1 */
   /** Initialize RTC and set the Time and Date
   */
-  RTC_InitStruct.AsynchPrescaler = 127;
+  RTC_InitStruct.AsynchPrescaler = 1048575;
   LL_RTC_Init(RTC, &RTC_InitStruct);
-  LL_RTC_SetAsynchPrescaler(RTC, 127);
+  LL_RTC_SetAsynchPrescaler(RTC, 1048575);
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
