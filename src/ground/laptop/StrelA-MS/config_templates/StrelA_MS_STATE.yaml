@@ -226,7 +226,7 @@ CentralWidget:
             field_name:
             - component 0
             color:
-            - r
+            - '#FF4646'
           CUBE_1_BCU_TEMP_COMP_1:
             sourse_id: '10_1'
             message_id: 'THERMAL_STATE'
@@ -244,7 +244,7 @@ CentralWidget:
             field_name:
             - component 2
             color:
-            - b
+            - '#0096FF'
           CUBE_1_BCU_TEMP_COMP_3:
             sourse_id: '10_3'
             message_id: 'THERMAL_STATE'
@@ -292,7 +292,7 @@ CentralWidget:
             field_name:
             - PLD
             color:
-            - r
+            - '#FF4646'
           SINS_OWN_TEMP:
             sourse_id: '11_0'
             message_id: 'OWN_TEMP'

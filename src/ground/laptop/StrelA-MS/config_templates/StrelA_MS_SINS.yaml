@@ -229,9 +229,9 @@ CentralWidget:
             - 'y'
             - 'z'
             color:
-            - r
+            - '#FF4646'
             - g
-            - b
+            - '#0096FF'
         legend_is_on: true
         is_on: true
         max_data_length: 100
@@ -256,9 +256,9 @@ CentralWidget:
             - 'y'
             - 'z'
             color:
-            - r
+            - '#FF4646'
             - g
-            - b
+            - '#0096FF'
         legend_is_on: true
         is_on: true
         max_data_length: 100
@@ -282,9 +282,9 @@ CentralWidget:
             - y
             - z
             color:
-            - r
+            - '#FF4646'
             - g
-            - b
+            - '#0096FF'
             sourse_id: '11_0'
             message_id: SINS_ISC
         name: Compass
@@ -304,7 +304,7 @@ CentralWidget:
             field_name:
             - height
             color:
-            - r
+            - '#FF4646'
             sourse_id: '11_0'
             message_id: GPS_UBX_NAV_SOL
         legend_is_on: false

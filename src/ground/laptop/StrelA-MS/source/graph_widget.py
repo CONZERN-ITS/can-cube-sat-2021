@@ -42,7 +42,7 @@ class GraphWidget(PyQtGraph.GraphicsLayoutWidget):
 
                 def show_data(self):
                     if self.arr is not None:
-                        self.curve.setData(self.arr[:,0])
+                        self.curve.setData(self.arr)
 
                 def clear(self):
                     self.arr = None
@@ -95,7 +95,7 @@ class GraphWidget(PyQtGraph.GraphicsLayoutWidget):
                     flag = True
                     for curve in self.curves:
                         if curve.get_field_id() == item[0]:
-                            curve.add_data(NumPy.array([[item[1], time]]))
+                            curve.add_data(NumPy.array([[time, item[1]]]))
                             flag = False
                             break
                     if self.autocomplete and flag:

@@ -9,4 +9,6 @@ PyQt5-sip==12.8.0
 pyqtgraph==0.11.0
 PyQtWebEngine==5.15.0
 python-utils==2.4.0
+pyzmq==22.0.3
+PyYAML==5.3.1
 six==1.15.0

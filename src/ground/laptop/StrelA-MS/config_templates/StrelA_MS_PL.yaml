@@ -235,7 +235,7 @@ CentralWidget:
             field_id:
             - o2_conc
             color:
-            - r
+            - '#FF4646'
         legend_is_on: false
         is_on: true
         max_data_length: 100
@@ -254,7 +254,7 @@ CentralWidget:
             field_id:
             - co_conc
             color:
-            - r
+            - '#FF4646'
         legend_is_on: false
         is_on: true
         max_data_length: 100
@@ -273,7 +273,7 @@ CentralWidget:
             field_id:
             - no2_conc
             color:
-            - r
+            - '#FF4646'
         legend_is_on: false
         is_on: true
         max_data_length: 100
@@ -292,7 +292,7 @@ CentralWidget:
             field_id:
             - nh3_conc
             color:
-            - r
+            - '#FF4646'
         legend_is_on: false
         is_on: true
         max_data_length: 100
@@ -313,7 +313,7 @@ CentralWidget:
             field_name:
             - BME280 in
             color:
-            - r
+            - '#FF4646'
           13_0_PLD_INT_MS5611_DATA:
             sourse_id: '13_2'
             message_id: PLD_MS5611_DATA
@@ -361,7 +361,7 @@ CentralWidget:
             field_name:
             - BME280 in
             color:
-            - r
+            - '#FF4646'
           13_0_PLD_INT_MS5611_DATA:
             sourse_id: '13_2'
             message_id: PLD_MS5611_DATA
@@ -409,7 +409,7 @@ CentralWidget:
             field_name:
             - BME280 in
             color:
-            - r
+            - '#FF4646'
           13_0_PLD_EXT_BME280_DATA:
             sourse_id: '13_1'
             message_id: PLD_BME280_DATA
@@ -431,15 +431,6 @@ CentralWidget:
         units: '%'
       Altitude:
         Packets:
-          13_0_PLD_INT_BME280_DATA:
-            sourse_id: '13_2'
-            message_id: PLD_BME280_DATA
-            field_id:
-            - altitude
-            field_name:
-            - BME280 in
-            color:
-            - r
           13_0_PLD_EXT_BME280_DATA:
             sourse_id: '13_1'
             message_id: PLD_BME280_DATA
@@ -450,7 +441,7 @@ CentralWidget:
             color:
             - g
         name: Altitude
-        legend_is_on: true
+        legend_is_on: false
         is_on: true
         max_data_length: 100
         position:
@@ -471,8 +462,8 @@ CentralWidget:
             - max
             - min
             color:
-            - r
-            - b
+            - '#FF4646'
+            - '#0096FF'
         name: Dose
         legend_is_on: true
         is_on: true
@@ -493,8 +484,8 @@ CentralWidget:
             field_name:
             - DNA temperature
             color:
-            - b
-        name: Dose
+            - '#0096FF'
+        name: DNA temperature
         legend_is_on: false
         is_on: true
         max_data_length: 100
@@ -644,7 +635,7 @@ MainWindow:
       connection: udpin:0.0.0.0:14540
       notimestamps: true
     ZMQ:
-      bus_bpcs: "tcp://192.168.1.223:7778"
+      bus_bpcs: "tcp://192.168.10.223:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"

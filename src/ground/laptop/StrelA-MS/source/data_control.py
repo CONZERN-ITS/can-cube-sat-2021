@@ -72,7 +72,7 @@ class MAVDataSource():
         msg_list = []
         for msg in msgs:
             if msg.get_type() == "BAD_DATA":
-                print(msg)
+                #print(msg)
                 continue
             data = msg.to_dict()
             data.pop('mavpackettype', None)
@@ -94,19 +94,23 @@ class MAVDataSource():
                 data['ecefZ'] /= 100
             elif msg.get_type() == 'PLD_DOSIM_DATA':
                 gain =  1000 * 60 * 60
-                data.update([['dose_max', (msg.count_tick / 44) / msg.delta_time * gain],
-                             ['dose_min', (msg.count_tick / 52) / msg.delta_time * gain]])
-
+                delta = msg.delta_time
+                if msg.delta_time != 0:
+                    data.update([['dose_max', (msg.count_tick / 44) / msg.delta_time * gain],
+                                 ['dose_min', (msg.count_tick / 52) / msg.delta_time * gain]])
+                else:
+                    data.update([['dose_max', 0],
+                                 ['dose_min', 0]])
 
             header = msg.get_header()
             msg_list.append(Message(message_id=msg.get_type(),
                                 source_id=(str(header.srcSystem) + '_' + str(header.srcComponent)),
                                 msg_time=msg_time,
                                 msg_data=data))
-            print(msg_list[-1].get_time())
-            print(msg_list[-1].get_message_id())
-            print(msg_list[-1].get_source_id())
-            print(msg_list[-1].get_data_dict())
+            #print(msg_list[-1].get_time())
+            #print(msg_list[-1].get_message_id())
+            #print(msg_list[-1].get_source_id())
+            #print(msg_list[-1].get_data_dict())
         return msg_list
 
     def stop(self):
