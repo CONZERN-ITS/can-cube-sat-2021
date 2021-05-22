@@ -37,6 +37,7 @@ void task_ina_init(void *arg) {
 
 #   if defined CUBE_1 && !defined CUBE_2
 	ina219_init_default(&hina[0], &hi2c2, INA219_I2CADDR_A1_GND_A0_GND << 1, INA_TIMEOUT);
+	ina219_init_default(&hina[1], &hi2c2, INA219_I2CADDR_A1_GND_A0_VSP << 1, INA_TIMEOUT);
 #   elif defined CUBE_2 && !defined CUBE_1
     // не делаем ничего, так как ин тут нет
 #   else

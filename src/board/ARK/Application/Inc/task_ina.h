@@ -13,7 +13,7 @@
 #define INA_TIMEOUT 100
 
 #if defined CUBE_1 && !defined CUBE_2
-#   define TINA_COUNT 1
+#   define TINA_COUNT 2
 #elif defined CUBE_2 && !defined CUBE_1
 #   define TINA_COUNT 0
 #else
