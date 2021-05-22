@@ -49,7 +49,7 @@ static void time_sync_task(void *arg) {
 	};
 	id.queue = xQueueCreate(3, MAVLINK_MAX_PACKET_LEN);
 
-	//Регистрируем очередь для приема нужных сообщений
+	//Регистрируем очередь для приема сообщений времени
 	its_rt_register(MAVLINK_MSG_ID_TIMESTAMP, id);
 	while (1) {
 		mavlink_message_t msg;
@@ -127,7 +127,7 @@ static void IRAM_ATTR isr_handler(void *arg) {
  */
 void time_sync_from_sins_install(ts_sync *cfg) {
 	cfg->is_updated = 0;
-	xTaskCreatePinnedToCore(ntp_server_task, "SNTP server", configMINIMAL_STACK_SIZE + 4000, 0, 1, 0, tskNO_AFFINITY);
+	//xTaskCreatePinnedToCore(ntp_server_task, "SNTP server", configMINIMAL_STACK_SIZE + 4000, 0, 1, 0, tskNO_AFFINITY);
 	xTaskCreate(time_sync_task, "timesync", 4096, cfg, 1, NULL);
 	gpio_config_t init_pin_int = {
 		.mode = GPIO_MODE_INPUT,

@@ -13,7 +13,8 @@
 
 #define ITS_PIN_I2CTM_SCL 	16
 #define ITS_PIN_I2CTM_SDA 	17
-#define ITS_PIN_TIME		18
+#define ITS_PIN_I2CTM_TIME	18
+#define ITS_PIN_PPS			39
 
 
 #define ITS_PIN_SPISR_SCK	22

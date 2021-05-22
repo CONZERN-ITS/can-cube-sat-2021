@@ -55,7 +55,7 @@ static gpio_config_t init_pin_time = {
 	.pull_up_en = GPIO_PULLUP_ENABLE,
 	.pull_down_en = GPIO_PULLDOWN_DISABLE,
 	.intr_type = GPIO_INTR_DISABLE,
-	.pin_bit_mask = 1ULL << ITS_PIN_TIME
+	.pin_bit_mask = 1ULL << ITS_PIN_I2CTM_TIME
 };
 /*
 static gpio_config_t init_pin_pl_kvcc = {
@@ -184,7 +184,7 @@ void init_basic(void) {
 	fflush(stdout);
 	vTaskDelay(20);
 	//time sync
-	//gpio_config(&init_pin_time);
+	gpio_config(&init_pin_time);
 	//gpio_config(&init_pin_pl_kvcc);
 	gpio_install_isr_service(0);
 
@@ -235,12 +235,6 @@ void init_basic(void) {
 		gpio_set_level(ITS_PIN_RADIO_RX_EN, 0);
 
 	}
-
-#if ITS_WIFI_SERVER
-	wifi_init_ap();
-#else
-	wifi_init_sta();
-#endif
 
 }
 
@@ -324,7 +318,7 @@ void init_helper(void) {
 
 	ESP_LOGD("SYSTEM", "Start wifi init");
 	static ts_sync ts = {0};
-	ts.pin = ITS_PIN_TIME;
+	ts.pin = ITS_PIN_PPS;
 	ts.period = 10 * 1000000;
 	time_sync_from_sins_install(&ts);
 	radio_send_init();

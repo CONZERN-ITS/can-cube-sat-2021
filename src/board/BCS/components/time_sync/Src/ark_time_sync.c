@@ -22,7 +22,7 @@ int ark_tsync_send_signal(uint8_t *data, size_t *size) {
 	struct timeval tp;
 
 	TickType_t start = xTaskGetTickCount();
-	gpio_set_level(ITS_PIN_TIME, 0);
+	gpio_set_level(ITS_PIN_I2CTM_TIME, 0);
 	gettimeofday(&tp, 0);
 
 	mavlink_timestamp_t mts;
@@ -32,13 +32,12 @@ int ark_tsync_send_signal(uint8_t *data, size_t *size) {
 	mts.time_us = tp.tv_usec;
 	mts.time_base = 0;
 
-	const int magic_number = 42; //FIXME: Надо добавить системы
-	mavlink_msg_timestamp_encode(magic_number, magic_number, &msg, &mts);
+	mavlink_msg_timestamp_encode(CUBE_1_BCU, 0, &msg, &mts);
 	assert (*size >= mavlink_max_message_length(&msg));
 	*size = mavlink_msg_to_send_buffer(data, &msg);
 	vTaskDelayUntil(&start, ARK_SIGNAL_LENGTH / portTICK_RATE_MS);
 
-	gpio_set_level(ITS_PIN_TIME, 1);
+	gpio_set_level(ITS_PIN_I2CTM_TIME, 1);
 	return 0;
 }
 
