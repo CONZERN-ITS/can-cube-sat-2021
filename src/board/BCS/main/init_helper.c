@@ -44,9 +44,9 @@
 static i2c_config_t init_pin_i2c_tm  = {
 	.mode = I2C_MODE_MASTER,
 	.sda_io_num = ITS_PIN_I2CTM_SDA,
-	.sda_pullup_en = GPIO_PULLUP_ENABLE,
+	.sda_pullup_en = GPIO_PULLUP_DISABLE,
 	.scl_io_num = ITS_PIN_I2CTM_SCL,
-	.scl_pullup_en = GPIO_PULLUP_ENABLE,
+	.scl_pullup_en = GPIO_PULLUP_DISABLE,
 	.master.clk_speed = ITS_I2CTM_FREQ
 };
 
