@@ -67,6 +67,7 @@ void _exit (int status)
 	_kill(status, -1);
 #ifndef DEBUG
 	HAL_NVIC_SystemReset();
+	while (1) {}
 #else
 	while (1) {}		/* Make sure we hang here */
 #endif

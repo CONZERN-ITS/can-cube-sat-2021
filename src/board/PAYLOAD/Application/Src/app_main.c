@@ -22,7 +22,9 @@
 #include "sensors/integrated.h"
 #include "sensors/dna_temp.h"
 #include "sensors/dosim.h"
+#include "sensors/its_ccompressor.h"
 #include "compressor-control.h"
+
 #include "commissar.h"
 
 //! Длина одного такта в мс

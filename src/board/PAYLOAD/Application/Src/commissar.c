@@ -14,6 +14,9 @@
 #include "Inc/its-i2c-link.h"
 
 
+#define COMMISSAR_PUNISHMENT_COOLDOWN (5000)
+
+
 //! Личное дело подчиненного комиссара
 typedef struct subordinate_file_t
 {
@@ -41,6 +44,8 @@ typedef struct subordinate_file_t
 	uint32_t punishments_counter;
 	//! Метка времени последней попытки поднятия модуля
 	uint32_t last_pusnishment_time;
+	//! Пауза между наказаниями
+	uint32_t punishment_cooldown;
 
 } subordinate_file_t;
 
@@ -93,7 +98,7 @@ static int _punish_the_heretic(commissar_t * const self, commissar_subordinate_t
 	}
 
 	subor->punishments_counter++;
-	subor->last_good_report_time = HAL_GetTick();
+	subor->last_pusnishment_time = HAL_GetTick();
 	return rc;
 }
 
@@ -110,6 +115,7 @@ void commissar_init(void)
 		// но не по времени
 		subor->max_ignorance_depth = 0;
 		subor->max_no_good_report_time = UINT32_MAX;
+		subor->punishment_cooldown = COMMISSAR_PUNISHMENT_COOLDOWN;
 	}
 
 	// А вот I2C линк может ошибаться сколько захочет
@@ -149,6 +155,10 @@ void commissar_work(void)
 	for (size_t i = 0; i < COMMISSAR__SUBS_COUNT; i++)
 	{
 		subordinate_file_t * subor = _get_subor(self, i);
+		// Слишком часто не караем
+		if (now - subor->last_pusnishment_time < subor->punishment_cooldown)
+			continue;
+
 		// Если модуль слишком погрузился в свое невежество и отрекся
 		// от императора, будем его исцелять
 		if (subor->ignorance_depth > subor->max_ignorance_depth)

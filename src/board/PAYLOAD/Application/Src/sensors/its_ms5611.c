@@ -32,6 +32,8 @@ struct its_ms5611_t
 	ms5611_t driver;
 	//! Калибровочка
 	ms5611_prom_data_t prom;
+	//! Флаг качества prom данных
+	bool prom_good;
 	//! OSR для температуры
 	ms5611_osr_t temp_osr;
 	//! OSR для далвения
@@ -146,18 +148,33 @@ int its_ms5611_init(its_ms5611_id_t id)
 {
 	its_ms5611_t * const dev = _dev_by_id(id);
 	_power(dev, true);
+	HAL_Delay(30);
 
 	// Сброс!
-	int rc = ms5611_reset(&dev->driver);
+	int rc;
+	// Будем пытаться три раза,
+	// потому что некоторые экземпляры упираются
+	for (int attempts = 3; attempts >= 0; attempts--)
+	{
+		rc = ms5611_reset(&dev->driver);
+		if (0 == rc)
+			break;
+	}
 	if (0 != rc)
 		return rc;
 
-	HAL_Delay(10);
+	HAL_Delay(20);
 	// Загрузка калиброви
-	rc = ms5611_read_prom_data(&dev->driver, &dev->prom);
+	for (int attempts = 3; attempts >= 0; attempts--)
+	{
+		rc = ms5611_read_prom_data(&dev->driver, &dev->prom);
+		if (0 == rc)
+			break;
+	}
 	if (0 != rc)
 		return rc;
 
+	dev->prom_good = true;
 	return 0;
 }
 
@@ -195,6 +212,9 @@ int its_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t 
 
 	int32_t temp;
 	int32_t press;
+
+	if (!dev->prom_good)
+		return MS5611_ERROR_CHECKSUM;
 
 	int rc = ms5611_read_compensated(&dev->driver, &dev->prom, dev->temp_osr, dev->pres_osr, &temp, &press);
 	if (0 != rc)

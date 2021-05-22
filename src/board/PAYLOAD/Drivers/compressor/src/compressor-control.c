@@ -1,4 +1,4 @@
-#include "compressor-control.h"
+#include "../inc/compressor-control.h"
 
 #include <string.h>
 
@@ -14,7 +14,7 @@
 //! Внутреннее давление, на котором перестаем качать (Па)
 #define CCONTROL_INNER_PRESSURE_CUTOFF (90*1000)
 //! Таймаут в течение которого перестаем качать (мс)
-#define CCONTROL_PUMP_TIMEOUT (4*1000)
+#define CCONTROL_PUMP_TIMEOUT (15*1000)
 //! Время в течение которого мы удерживаем давление в камере
 #define CCONTROL_MEASURE_TIMEOUT (10*1000)
 //! Время в течение которого мы проветриваем камеру
