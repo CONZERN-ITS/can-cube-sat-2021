@@ -344,7 +344,7 @@ static void _zmq_send_packet_rssi(server_t * server)
 static void _zmq_send_instant_rssi(server_t * server, int8_t rssi)
 {
 	int rc;
-	log_info("sending rssi %d", (int)rssi);
+	log_debug("sending rssi %d", (int)rssi);
 
 	// Готовим сообщение
 	char json_buffer[1024] = {0};
@@ -582,13 +582,13 @@ static int _radio_init(server_t * server)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 435*1000*1000,
-			.pa_ramp_time = SX126X_PA_RAMP_10_US,
+			.frequency = 435125*1000,
+			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
 			.pa_power = 10,
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_7,
+			.spreading_factor = SX126X_LORA_SF_6,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
@@ -842,6 +842,7 @@ void _server_sync_tx_state(server_t * server)
 
 	_zmq_send_tx_state(server);
 	server->tx_state_report_block_deadline = now;
+	server->tx_cookies_updated = false;
 }
 
 
@@ -922,7 +923,11 @@ void server_run(server_t * server)
 			// Что-то пришло, что хотят отправить на верх
 			_zmq_recv_tx_packet(server);
 			if (server->tx_buffer_size)
-				log_info("loaded tx frame %d with size %zd", server->tx_cookie_wait, server->tx_buffer_size);
+				log_info(
+					"loaded tx frame %"MSG_COOKIE_T_PLSHOLDER" with size %zu", \
+					server->tx_cookie_wait, server->tx_buffer_size
+				);
+	
 		}
 
 		_server_sync_tx_state(server);
