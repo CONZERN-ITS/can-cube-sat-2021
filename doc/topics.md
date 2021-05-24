@@ -138,6 +138,15 @@
 		"cookie": {
 			"type": "integer",
 			"minimum": 1
+		},
+		"rssi_pkt": {
+			"type": "integer"
+		},
+		"snr_pkt": {
+			"type": "integer"
+		},
+		"rssi_signal": {
+			"type": "integer"
 		}
 	}
 }
@@ -147,7 +156,10 @@
 ```json
 {
 	"checksum_valid": true,
-	"cookie": 42
+	"cookie": 42,
+	"rssi_pkt": -2,
+	"snr_pkt": 7, 
+	"rssi_signal": -3
 }
 ```
 

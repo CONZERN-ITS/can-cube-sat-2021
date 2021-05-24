@@ -390,10 +390,16 @@ static void _zmq_send_rx_data(server_t * server)
 			json_buffer, sizeof(json_buffer),
 			"{"
 				"\"checksum_valid\": %s, "
-				"\"cookie\": %"MSG_COOKIE_T_PLSHOLDER""
+				"\"cookie\": %"MSG_COOKIE_T_PLSHOLDER", "
+				"\"rssi_pkt\": %d, "
+				"\"snr_pkt\": %d, "
+				"\"rssi_signal\": %d"
 			"}",
 			server->rx_crc_valid ? "true" : "false",
-			server->rx_buffer_cookie
+			server->rx_buffer_cookie,
+			server->rx_rssi_pkt,
+			server->rx_snr_pkt,
+			server->rx_signal_rssi_pkt
 	);
 	if (rc < 0 || rc >= sizeof(json_buffer))
 	{

@@ -117,7 +117,7 @@ static int _get_pa_coeffs(sx126x_chip_type_t chip_type, int8_t power, sx126x_pa_
 			const sx126x_pa_coeffs_t defs[] = {
 					SX126X_PA_COEFFS_1268
 			};
-			size_t idx = _best_pa_coeff_idx(power, coeffs, sizeof(defs)/sizeof(defs[0]));
+			size_t idx = _best_pa_coeff_idx(power, defs, sizeof(defs)/sizeof(defs[0]));
 			*coeffs = defs[idx];
 		}
 		break;
