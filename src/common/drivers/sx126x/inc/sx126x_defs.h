@@ -346,8 +346,33 @@ typedef enum sx126x_error_t
 	SX126X_ERROR_BAD_STATE				= 0x04,
 	SX126X_ERROR_INVALID_VALUE			= 0x05,
 	SX126X_ERROR_BOARD					= 0x06,
-	SX126X_ERROR_TIMEOUT				= 0x07
+	SX126X_ERROR_TIMEOUT				= 0x07,
+	SX126X_ERROR_BAD_CHIPMODE			= 0x08,
 } sx126x_error_t;
+
+
+typedef enum sx126x_status_chip_mode_t
+{
+	SX126X_STATUS_CHIPMODE_UNUNSED		= 0x00,
+	SX126X_STATUS_CHIPMODE_RFU			= 0x01,
+	SX126X_STATUS_CHIPMODE_STDBY_RC		= 0x02,
+	SX126X_STATUS_CHIPMODE_STDBY_XOSC	= 0x03,
+	SX126X_STATUS_CHIPMODE_FS			= 0x04,
+	SX126X_STATUS_CHIPMODE_RX			= 0x05,
+	SX126X_STATUS_CHIPMODE_TX			= 0x06,
+} sx126x_status_chip_mode_t;
+
+
+typedef enum sx126x_status_cmd_status_t
+{
+	SX126X_STATUS_CMD_STATUS_RESERVED		= 0x00,
+	SX126X_STATUS_CMD_STATUS_RFU			= 0x01,
+	SX126X_STATUS_CMD_STATUS_DATA_AVAIL		= 0x02,
+	SX126X_STATUS_CMD_TIMEOUT				= 0x03,
+	SX126X_STATUS_CMD_PROCESSING_ERROR		= 0x04,
+	SX126X_STATUS_CMD_EXECUTION_FAILURE		= 0x05,
+	SX126X_STATUS_CMD_TX_DONE				= 0x06,
+} sx126x_status_cmd_status_t;
 
 
 typedef union sx126x_status_t
@@ -356,8 +381,8 @@ typedef union sx126x_status_t
 	{
 		uint8_t
 			_reserved1:	1,
-			cmd_status:	3,
-			chip_mode:	3,
+			cmd_status:	3, //!< sx126x_status_chip_mode_t
+			chip_mode:	3, //!< sx126x_status_cmd_status_t
 			_reserved2:	1;
 	} bits;
 	uint8_t value;

@@ -106,6 +106,16 @@ static void _event_handler(sx126x_drv_t * drv, void * user_arg, sx126x_evt_kind_
 }
 
 
+static void print_status(void)
+{
+	sx126x_status_t status;
+	int rc = sx126x_api_get_status(&_radio.api, &status);
+	printf("status read; rc=%d, cmd_status=%d, dev_status=%d\n",
+			rc, (int)status.bits.cmd_status, (int)status.bits.chip_mode
+	);
+}
+
+
 int app_main(void)
 {
 	int rc;
@@ -122,7 +132,7 @@ int app_main(void)
 			// Параметры усилителей и частот
 			.frequency = 435125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
-			.pa_power = 10,
+			.pa_power = 20,
 			.lna_boost = true,
 
 			// Параметры пакетирования
@@ -155,55 +165,52 @@ int app_main(void)
 
 	rc = sx126x_drv_ctor(&_radio, NULL);
 	printf("ctor: %d\n", rc);
+	print_status();
 
-	rc = sx126x_drv_register_event_handler(&_radio, _event_handler, NULL);
+	rc = sx126x_drv_set_event_handler(&_radio, _event_handler, NULL);
 	printf("register_event_handler: %d\n", rc);
+	print_status();
 
 	rc = sx126x_drv_reset(&_radio);
 	printf("reset: %d\n", rc);
-
-	rc = sx126x_drv_mode_standby_rc(&_radio);
-	printf("standy_rc: %d\n", rc);
+	print_status();
 
 	rc = sx126x_drv_configure_basic(&_radio, &basic_cfg);
 	printf("configure_basic: %d\n", rc);
+	print_status();
 
 	rc = sx126x_drv_configure_lora_modem(&_radio, &modem_cfg);
 	printf("configure_lora_modem: %d\n", rc);
+	print_status();
 
 	rc = sx126x_drv_configure_lora_packet(&_radio, &packet_cfg);
 	printf("configure_lora_packet: %d\n", rc);
+	print_status();
 
 	rc = sx126x_drv_configure_lora_cad(&_radio, &cad_cfg);
 	printf("configure_cad: %d\n", rc);
+	print_status();
 
 	rc = sx126x_drv_configure_lora_rx_timeout(&_radio, &rx_timeout_cfg);
 	printf("configure_timeout: %d\n", rc);
+	print_status();
+
+	rc = sx126x_drv_mode_standby(&_radio);
+	printf("went to standby: %d\n", rc);
+	print_status();
 
 	// Начинаем с того, что начинаем приём
 	rc = _push_packet(&_radio);
 	printf("first packet pushed: %d\n", rc);
-
-	rc = sx126x_drv_mode_standby(&_radio);
-	printf("went to standby: %d\n", rc);
-
-	sx126x_status_t status;
-	rc = sx126x_api_get_status(&_radio.api, &status);
-	printf("status read; rc=%d, cmd_status=%d, dev_status=%d\n",
-			rc, (int)status.bits.cmd_status, (int)status.bits.chip_mode
-	);
+	print_status();
 
 	rc = sx126x_drv_mode_tx(&_radio, 0);
 	printf("first tx: %d\n", rc);
-
-	rc = sx126x_api_get_status(&_radio.api, &status);
-	printf("status read; rc=%d, cmd_status=%d, dev_status=%d\n",
-			rc, (int)status.bits.cmd_status, (int)status.bits.chip_mode
-	);
+	print_status();
 
 	while(1)
 	{
-		rc = sx126x_drv_poll(&_radio);
+		rc = sx126x_drv_poll_irq(&_radio);
 		if (rc)
 			printf("poll error: %d\n", rc);
 
