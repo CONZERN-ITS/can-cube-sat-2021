@@ -335,13 +335,13 @@ static int _radio_init(radio_t * server)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 435000*1000,
-			.pa_ramp_time = SX126X_PA_RAMP_10_US,
+			.frequency = 435125*1000,
+			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
 			.pa_power = 10,
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_7,
+			.spreading_factor = SX126X_LORA_SF_6,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
@@ -374,15 +374,11 @@ static int _radio_init(radio_t * server)
 	if (0 != rc)
 		goto bad_exit;
 
-	rc = sx126x_drv_register_event_handler(radio, _radio_event_handler, server);
+	rc = sx126x_drv_set_event_handler(radio, _radio_event_handler, server);
 	if (0 != rc)
 		goto bad_exit;
 
 	rc = sx126x_drv_reset(radio);
-	if (0 != rc)
-		goto bad_exit;
-
-	rc = sx126x_drv_mode_standby_rc(radio);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -403,6 +399,10 @@ static int _radio_init(radio_t * server)
 		goto bad_exit;
 
 	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_mode_standby_rc(radio);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -505,7 +505,7 @@ static void task_send(void *arg) {
 		ESP_LOGV("radio", "STEP");
 		uint32_t dummy = 0;
 		xTaskNotifyWait(0, 0, &dummy, 50 / portTICK_PERIOD_MS);
-		int rc = sx126x_drv_poll(&radio_server->dev);
+		int rc = sx126x_drv_poll_irq(&radio_server->dev);
 
 		ESP_LOGV("radio", "poll");
 		if (rc) {
