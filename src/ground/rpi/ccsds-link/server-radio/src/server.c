@@ -584,11 +584,11 @@ static int _radio_init(server_t * server)
 			// Параметры усилителей и частот
 			.frequency = 435125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
-			.pa_power = 10,
+			.pa_power = 14,
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_6,
+			.spreading_factor = SX126X_LORA_SF_7,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
@@ -612,7 +612,7 @@ static int _radio_init(server_t * server)
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
 			.stop_timer_on_preable = false,
-			.lora_symb_timeout = 24*5
+			.lora_symb_timeout = 24*10
 	};
 
 
