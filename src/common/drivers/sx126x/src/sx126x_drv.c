@@ -407,6 +407,9 @@ static int _switch_state_to_standby(sx126x_drv_t * drv, sx126x_drv_standby_switc
 		case SX126X_STANDBY_XOSC:
 			new_state = SX126X_DRV_STATE_STANDBY_XOSC;
 			break;
+
+		default:
+			return SX126X_ERROR_BAD_STATE;
 		}
 		break;
 
@@ -420,6 +423,9 @@ static int _switch_state_to_standby(sx126x_drv_t * drv, sx126x_drv_standby_switc
 	rc = sx126x_api_get_status(&drv->api, &status);
 	SX126X_RETURN_IF_NONZERO(rc);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+// warning: this statement may fall through. Так задумано
 	switch (status.bits.chip_mode)
 	{
 	case SX126X_STATUS_CHIPMODE_STDBY_RC:
@@ -433,7 +439,7 @@ static int _switch_state_to_standby(sx126x_drv_t * drv, sx126x_drv_standby_switc
 	default:
 		return SX126X_ERROR_BAD_CHIPMODE;
 	}
-
+#pragma GCC diagnostic pop
 	// Если мы выходим из RX - нужно делать воркэраунд на таймер
 	if (drv->_state == SX126X_DRV_STATE_RX)
 	{
