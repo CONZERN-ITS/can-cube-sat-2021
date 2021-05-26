@@ -81,6 +81,9 @@ static void time_sync_task(void *arg) {
 				.tv_sec = there.tv_sec - ts->here.tv_sec,
 				.tv_usec = 0 - ts->here.tv_usec
 		};
+		if (fabs(delta.tv_sec) > 3600) {
+			settimeofday(&there, 0);
+		}
 		ts->diff_total += delta.tv_sec * 1000000 + delta.tv_usec;
 		ts->cnt++;
 

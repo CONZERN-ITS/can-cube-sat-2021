@@ -116,6 +116,8 @@ static int imi_get_packet(imi_t *himi, uint8_t *data, uint16_t size) {
  * сообщение.
  * retval == 0 - нет сообщений у этого подчиненного
  */
+
+__attribute__((unused))
 static int imi_msg_recieve(imi_t *himi, uint8_t *data, uint16_t *size) {
 	uint16_t rsize = 0;
 	int rc = 0;

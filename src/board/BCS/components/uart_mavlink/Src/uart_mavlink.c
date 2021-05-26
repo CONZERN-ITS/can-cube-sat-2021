@@ -70,6 +70,9 @@ void uart_event_task(void *pvParameters)
 			if (event.type != UART_DATA) {
 				log_data.error_count++;
 			}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+
 			switch(event.type) {
 			//Event of UART receving data
 			/*We'd better handler data event fast, there would be much more data events than
@@ -78,11 +81,9 @@ void uart_event_task(void *pvParameters)
 			case UART_FIFO_OVF: {
 				ESP_LOGE(TAG, "hw fifo overflow");
 			}
-				/* no break */
 			case UART_BUFFER_FULL: {
 				ESP_LOGI(TAG, "ring buffer full");
 			}
-				/* no break */
 			case UART_DATA:{
 				//ESP_LOGI(TAG, "[UART DATA]: %d", event.size);
 				uint16_t remain = event.size;
@@ -117,6 +118,8 @@ void uart_event_task(void *pvParameters)
 				ESP_LOGI(TAG, "uart event type: %d", event.type);
 				break;
 			}
+
+#pragma GCC diagnostic pop
 		}
 	}
 	vTaskDelete(NULL);
@@ -142,7 +145,7 @@ int uart_mavlink_install(uart_port_t uart_num, QueueHandle_t uart_queue) {
 	last_time = esp_timer_get_time() / 1000;
 	//Create a task to handler UART event from ISR
 	if (xTaskCreate(uart_event_task, "uart_mavlink", 4096, t, 1, NULL) != pdTRUE ||
-			xTaskCreate(_log, "uart_mavlink_log", 1500, &log_data, 2, NULL) != pdTRUE) {
+			xTaskCreate((void (*)(void *))_log, "uart_mavlink_log", 1500, &log_data, 2, NULL) != pdTRUE) {
 		log_data.last_state = LOG_STATE_OFF;
 		free(t);
 		ESP_LOGE(TAG, "Can't create task");

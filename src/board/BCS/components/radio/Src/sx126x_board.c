@@ -100,7 +100,7 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout) {
 		}
 		vTaskDelay(1);
 	}
-	return 0;
+	return ret;
 }
 
 int sx126x_brd_cleanup_irq(sx126x_board_t * brd) {

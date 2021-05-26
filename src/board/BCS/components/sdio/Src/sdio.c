@@ -137,7 +137,6 @@ static int _sd_try_to_save(int fd) {
 }
 
 static int _sd_find_last(char *dir_name, int *number) {
-	int ret = 0;
 	struct dirent *pDirent = 0;
 	DIR *pDir = 0;
 	if ((pDir = opendir(dir_name)) == NULL) {

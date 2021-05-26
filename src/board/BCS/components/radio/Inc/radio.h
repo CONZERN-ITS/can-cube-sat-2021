@@ -43,9 +43,9 @@ typedef uint64_t msg_cookie_t;
 
 
 typedef struct {
-	uint8_t size;
-	uint8_t index;
-	uint8_t capacity;
+	size_t size;
+	size_t index;
+	size_t capacity;
 	uint8_t buf[];
 } radio_buf_t;
 

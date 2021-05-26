@@ -157,8 +157,8 @@ static void sensors_task(void *arg) {
 #endif
 
 	// Read temperatures more efficiently by starting conversions on all devices at the same time
-	int errors_count[ITS_OWB_MAX_DEVICES] = {0};
-	int sample_count = 0;
+	//int errors_count[ITS_OWB_MAX_DEVICES] = {0};
+
 	ESP_LOGD(TAG, "Start cycle");
 
 	ESP_LOGV(TAG, "Main cycle");
