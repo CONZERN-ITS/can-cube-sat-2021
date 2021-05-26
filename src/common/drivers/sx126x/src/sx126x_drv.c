@@ -12,23 +12,16 @@
 #define SX126X_BREAK_IF_NONZERO(rc) if (0 != rc) break
 
 
-//! Причина, по которой меняется состояние модуля
-typedef enum sx126x_state_switch_flag_t
+//! Тип перехода в стендбай
+typedef enum sx126x_drv_standby_switch_t
 {
-	//! Переход из IDLE состояния
-	SX126X_SSF_FROM_IDLE		= 0x00,
-
-	//! Случился hardware timeout
-	SX126X_SSF_HW_TIMEOUT		= 0x01,
-	//! Случился software timeout
-	SX126X_SSF_SW_TIMEOUT		= 0x02,
-
-	//! Мы занимались получением пакета
-	SX126X_SSF_RX				= 0x10,
-	//! Мы занимались передачей пакета
-	SX126X_SSF_TX				= 0x20,
-
-} sx126x_state_switch_flag_t;
+	//! Переходим в standby на внешнем генераторе xosc
+	SX126X_DRV_STANDBY_SWITCH_XOSC,
+	//! Переходим в standby на rc цепочке
+	SX126X_DRV_STANDBY_SWITCH_RC,
+	//! Переходим в стендбай, который по-умолчанию
+	SX126X_DRV_STANDBY_SWITCH_DEFAULT
+} sx126x_drv_standby_switch_t;
 
 
 //! Дефолтный эвент хендлер, чтобы не делать проверок на NULL
@@ -133,22 +126,26 @@ static int _get_pa_coeffs(sx126x_chip_type_t chip_type, int8_t power, sx126x_pa_
 //! Костыль для правки бага с качеством модуляции на 500кгц лоры
 static int _workaround_1_lora_bw500(sx126x_drv_t * drv)
 {
+	// Делаем какую-то магию, которую велено делать в даташите перед каждой TX операцией
 	int rc;
 
-	// Этот хак должен работать только для лоры на 500кГц
-	if (drv->_modem_type != SX126X_PACKET_TYPE_LORA || drv->_modem_state.lora.bw != SX126X_LORA_BW_500)
-		return 0;
-
-	// Делаем какую-то магию, которую велено делать в даташите перед каждой TX операцией
 	uint8_t value;
 	rc = sx126x_brd_reg_read(drv->api.board, SX126X_REGADDR_LR_BW500_WORKAROUND, &value, sizeof(value));
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	value &= 0xFB;
-
+	if (SX126X_DRV_MODEM_TYPE_LORA == drv->_modem_type && SX126X_LORA_BW_500 == drv->_modem_state.lora.bw)
+	{
+		// Для лоры на 500кГц особое значение
+		value = value & 0xFB;
+	}
+	else
+	{
+		// Для всего остального - тоже особое, но другое
+		value = value | 0x04;
+	}
 	rc = sx126x_brd_reg_write(drv->api.board, SX126X_REGADDR_LR_BW500_WORKAROUND, &value, sizeof(value));
 	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
+	_wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;
@@ -189,7 +186,8 @@ static int _workaround_2_tx_power(sx126x_drv_t * drv)
 	return 0;
 }
 
-//! Костыль 3 для парирования залипания RX тайматов
+
+//! Костыль 3 для парирования залипания RX таймаутов
 static int _workaround_3_rx_timeout(sx126x_drv_t * drv)
 {
 	int rc;
@@ -236,54 +234,6 @@ static int _workaround_4_iq_polarity(sx126x_drv_t * drv, bool iq_inversion_used)
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	return 0;
-}
-
-
-static int _switch_state(sx126x_drv_t * drv, sx126x_drv_state_t new_state)
-{
-	int rc;
-
-	// Если мы выходим из RX - нужно делать воркэраунд на таймер
-	if (drv->state == SX126X_DRVSTATE_RX && new_state != SX126X_DRVSTATE_RX)
-	{
-		rc = _workaround_3_rx_timeout(drv);
-		SX126X_RETURN_IF_NONZERO(rc);
-	}
-
-	// Если мы переходим в дефолтный standby - смотрим какой именно это имеется ввиду
-	if (SX126X_DRVSTATE_STANDBY_DEFAULT == new_state)
-	{
-		switch (drv->_default_standby)
-		{
-		case SX126X_STANDBY_RC:
-			new_state = SX126X_DRVSTATE_STANDBY_RC;
-			break;
-
-		case SX126X_STANDBY_XOSC:
-			new_state = SX126X_DRVSTATE_STANDBY_XOSC;
-			break;
-
-		default:
-			return SX126X_ERROR_INVALID_VALUE;
-		}
-		new_state = drv->_default_standby;
-	}
-
-	// Во всех режимах кроме RX/TX/CAD выключаем антенну
-	switch (new_state)
-	{
-	case SX126X_DRVSTATE_TX:
-	case SX126X_DRVSTATE_RX:
-	case SX126X_DRVSTATE_CAD:
-		break;
-
-	default:
-		rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
-		SX126X_RETURN_IF_NONZERO(rc);
-	}
-
-	drv->state = new_state;
 	return 0;
 }
 
@@ -430,6 +380,115 @@ static int _fetch_clear_irq(sx126x_drv_t * drv, uint16_t * irq_status)
 }
 
 
+//! Смена состояния
+static int _switch_state_to_standby(sx126x_drv_t * drv, sx126x_drv_standby_switch_t standby_kind)
+{
+	int rc;
+
+	// Проверяем в какой именно стендбай мы пойдем
+	sx126x_drv_state_t new_state;
+	switch (standby_kind)
+	{
+	case SX126X_DRV_STANDBY_SWITCH_RC:
+		new_state = SX126X_DRV_STATE_STANDBY_RC;
+		break;
+
+	case SX126X_DRV_STANDBY_SWITCH_XOSC:
+		new_state = SX126X_DRV_STATE_STANDBY_XOSC;
+		break;
+
+	case SX126X_DRV_STANDBY_SWITCH_DEFAULT:
+		switch (drv->_default_standby)
+		{
+		case SX126X_STANDBY_RC:
+			new_state = SX126X_DRV_STATE_STANDBY_RC;
+			break;
+
+		case SX126X_STANDBY_XOSC:
+			new_state = SX126X_DRV_STATE_STANDBY_XOSC;
+			break;
+
+		default:
+			return SX126X_ERROR_BAD_STATE;
+		}
+		break;
+
+	default:
+		return SX126X_ERROR_INVALID_VALUE;
+		break;
+	};
+
+	// Проверяем, находимся мы в этом состоянии реально или нет
+	sx126x_status_t status;
+	rc = sx126x_api_get_status(&drv->api, &status);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+// warning: this statement may fall through. Так задумано
+	switch (status.bits.chip_mode)
+	{
+	case SX126X_STATUS_CHIPMODE_STDBY_RC:
+		if (SX126X_DRV_STATE_STANDBY_RC == new_state)
+			break;
+
+	case SX126X_DRV_STATE_STANDBY_XOSC:
+		if (SX126X_DRV_STATE_STANDBY_XOSC == new_state)
+			break;
+
+	default:
+		return SX126X_ERROR_BAD_CHIPMODE;
+	}
+#pragma GCC diagnostic pop
+	// Если мы выходим из RX - нужно делать воркэраунд на таймер
+	if (drv->_state == SX126X_DRV_STATE_RX)
+	{
+		rc = _workaround_3_rx_timeout(drv);
+		SX126X_RETURN_IF_NONZERO(rc);
+	}
+
+	// Выключаем антенну
+	rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	drv->_state = new_state;
+	return 0;
+}
+
+
+//! Переинициализация дескриптора параметрами после reset-а модуля
+static void _load_defaults(sx126x_drv_t * drv)
+{
+	// Без настроек это работает именно так
+	drv->_default_standby = SX126X_STANDBY_RC;
+	// Модем еще не настроен никак
+	drv->_modem_type = SX126X_DRV_MODEM_TYPE_UNCONFIGURED;
+
+	// Просто это нужно выставить в какое-то корректное значение
+	// чтобы не стрелял воркэраунд, если кто-то вдруг решит попередавать без настроек
+	// Хотя ничего хорошего из этого не выйдет и так и так...
+	drv->_modem_state.lora.bw = SX126X_LORA_BW_007;
+
+	// Это значение по-умолчанию
+	drv->_modem_state.lora.cad_exit_mode = SX126X_LORA_CAD_ONLY;
+
+	// Это, наверное, тоже значения по-умолчанию?
+	// Аналогично, нам нужно иметь тут какие-то определенные значения
+	drv->_modem_state.lora.explicit_header = false;
+	drv->_modem_state.lora.payload_length = 0;
+}
+
+//! Проверка на то, находится ли модуль в standby режиме
+/*! Вынесена отдельно, больно часто уж используется */
+static bool _is_in_standby(sx126x_drv_t * drv)
+{
+	const bool retval = (
+			drv->_state == SX126X_DRV_STATE_STANDBY_RC
+		||	drv->_state == SX126X_DRV_STATE_STANDBY_XOSC
+	);
+
+	return retval;
+}
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -443,19 +502,12 @@ int sx126x_drv_ctor(sx126x_drv_t * drv, void * board_ctor_arg)
 	rc = sx126x_api_ctor(&drv->api, board_ctor_arg);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	// Пока что мы ничего не настраивали и находимся в состоянии ошибки
-	drv->state = SX126X_DRVSTATE_ERROR;
-	drv->_default_standby = SX126X_STANDBY_RC;
+	_load_defaults(drv);
+
+	// Пока что мы ничего не настраивали
+	drv->_state = SX126X_DRV_STATE_STARTUP;
 	drv->_evt_handler = _default_evt_handler;
 
-	// Просто это нужно выставить в какое-то корректное значение
-	drv->_modem_state.lora.bw = SX126X_LORA_BW_007;
-	// Это значение по-умолчанию
-	drv->_modem_state.lora.cad_exit_mode = SX126X_LORA_CAD_ONLY;
-
-	// Это, наверное, тоже значения по-умолчанию?
-	drv->_modem_state.lora.explicit_header = false;
-	drv->_modem_state.lora.payload_length = 0;
 	return 0;
 }
 
@@ -466,12 +518,18 @@ void sx126x_drv_dtor(sx126x_drv_t * drv)
 }
 
 
-int sx126x_drv_register_event_handler(sx126x_drv_t * drv, sx126x_evt_handler_t handler, void * cb_user_arg)
+int sx126x_drv_set_event_handler(sx126x_drv_t * drv, sx126x_evt_handler_t handler, void * cb_user_arg)
 {
 	drv->_evt_handler = handler;
 	drv->_evt_handler_user_arg = cb_user_arg;
 
 	return 0;
+}
+
+
+sx126x_drv_state_t sx126x_drv_state(sx126x_drv_t * drv)
+{
+	return drv->_state;
 }
 
 
@@ -487,192 +545,26 @@ int sx126x_drv_reset(sx126x_drv_t * drv)
 	rc = _set_antenna(drv, SX126X_ANTENNA_OFF);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	drv->state = SX126X_DRVSTATE_STANDBY_RC;
-	return 0;
-}
-
-
-sx126x_drv_state_t sx126x_drv_state(sx126x_drv_t * drv)
-{
-	return drv->state;
-}
-
-
-int sx126x_drv_mode_standby_rc(sx126x_drv_t * drv)
-{
-	int rc;
-
-	rc = sx126x_api_set_standby(&drv->api, SX126X_STANDBY_RC);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_RC);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	return 0;
-}
-
-
-int sx126x_drv_mode_standby(sx126x_drv_t * drv)
-{
-	int rc;
-
-	rc = sx126x_api_set_standby(&drv->api, drv->_default_standby);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	return 0;
-}
-
-
-int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms)
-{
-	int rc;
-	// Выставляем указатели буфера
-	rc = sx126x_api_buffer_base_address(&drv->api, 0, 0);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Включаем антенну
-	rc = _set_antenna(drv, SX126X_ANTENNA_RX);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Запускаем rx операцию
-	rc = sx126x_api_set_rx(&drv->api, timeout_ms);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	rc = _switch_state(drv, SX126X_DRVSTATE_RX);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	if (0xFFFF == timeout_ms)
-		drv->_infinite_rx = true;
-
-	return 0;
-}
-
-
-int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms)
-{
-	int rc;
-	// Выставляем указатели буфера
-	rc = sx126x_api_buffer_base_address(&drv->api, 0, 0);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// делаем workaround1 из даташита
-	rc = _workaround_1_lora_bw500(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Включаем антенну
-	rc = _set_antenna(drv, SX126X_ANTENNA_TX);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Запускаем передачу пакета
-	rc = sx126x_api_set_tx(&drv->api, timeout_ms);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	rc = _switch_state(drv, SX126X_DRVSTATE_TX);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	return 0;
-}
-
-
-int sx126x_drv_mode_cad(sx126x_drv_t * drv)
-{
-	int rc;
-
-	rc = sx126x_api_set_cad(&drv->api);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	// Включаем антенну
-	rc = _set_antenna(drv, SX126X_ANTENNA_RX);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	rc = _switch_state(drv, SX126X_DRVSTATE_CAD);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	return 0;
-}
-
-
-int sx126x_drv_payload_write(sx126x_drv_t * drv, const uint8_t * data, uint8_t data_size)
-{
-	int rc;
-
-	// Загоняем пакет в радио
-	rc = sx126x_brd_buf_write(drv->api.board, 0, data, data_size);
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	return 0;
-}
-
-
-int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size)
-{
-	int rc;
-	uint8_t payload_size;
-	uint8_t payload_offset;
-
-	if (SX126X_PACKET_TYPE_LORA  == drv->_modem_type && drv->_modem_state.lora.explicit_header)
-	{
-		// Если используется лора с неявным заголовком, то размер пакета мы и так знаем
-		payload_size = drv->_modem_state.lora.payload_length;
-	}
-	else
-	{
-		// Если нет - придется лезть в чип и спрашивать
-		rc = sx126x_api_get_rx_buffer_status(&drv->api, &payload_size, &payload_offset);
-		SX126X_RETURN_IF_NONZERO(rc);
-		// Не ждем busy
-	}
-
-	*data_size = payload_size;
-	return 0;
-}
-
-
-int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size)
-{
-	int rc;
-	// Выгребаем
-	rc = sx126x_brd_buf_read(drv->api.board, 0, buffer, buffer_size);
-	SX126X_RETURN_IF_NONZERO(rc);
-
-	return 0;
-}
-
-
-int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value)
-{
-	if (drv->state != SX126X_DRVSTATE_CAD && drv->state != SX126X_DRVSTATE_RX)
-		return SX126X_ERROR_BAD_STATE;
-
-	int rc = sx126x_api_get_rssi_inst(&drv->api, value);
-	SX126X_RETURN_IF_NONZERO(rc);
-
+	_load_defaults(drv);
+	drv->_state = SX126X_DRV_STATE_STARTUP;
 	return 0;
 }
 
 
 int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t * config)
 {
-	int rc;
-	// TODO: Проверка на то, что мы сейчас можем давать такие команды
+	// Такую настройку можно делать только в startup состоянии
+	if (drv->_state != SX126X_DRV_STATE_STARTUP)
+		return SX126X_ERROR_BAD_STATE;
 
+	int rc;
+	// Убежаемся что мы в правильном режиме
+	rc = sx126x_api_set_standby(&drv->api, SX126X_STANDBY_RC);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Начали настраивать
 	// В первую очередь определяемся с регулятором
 	sx126x_regulator_t regulator_mode = config->allow_dcdc ? SX126X_REGULATOR_DCDC : SX126X_REGULATOR_LDO;
 	rc = sx126x_api_set_regulator_mode(&drv->api, regulator_mode);
@@ -680,7 +572,7 @@ int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t 
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	// Теперь включаем TCXO
+	// Теперь включаем TCXO, если нужно
 	if (config->use_dio3_for_tcxo)
 	{
 		rc = sx126x_api_set_dio3_as_tcxo_ctl(&drv->api, config->tcxo_v, SX126X_TCXO_STARTUP_TIMEOUT_MS);
@@ -696,7 +588,21 @@ int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t 
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	// Ставим режим фолбека rx/tx
-	rc = sx126x_api_set_rxtx_fallback_mode(&drv->api, config->standby_mode);
+	sx126x_fallback_mode_t fallback_mode;
+	switch (config->standby_mode)
+	{
+	case SX126X_STANDBY_RC:
+		fallback_mode = SX126X_FALLBACK_RC;
+		break;
+
+	case SX126X_STANDBY_XOSC:
+		fallback_mode = SX126X_FALLBACK_XOSC;
+		break;
+
+	default:
+		return SX126X_ERROR_INVALID_VALUE;
+	}
+	rc = sx126x_api_set_rxtx_fallback_mode(&drv->api, fallback_mode);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -715,15 +621,59 @@ int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t 
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	drv->_default_standby = config->standby_mode;
+
+	// Переходим в стендбай RC режим
+	drv->_state = SX126X_DRV_STATE_STANDBY_RC;
+	return 0;
+}
+
+
+int sx126x_drv_mode_standby_rc(sx126x_drv_t * drv)
+{
+	// Сперва нужно сконфигурироваться
+	if (drv->_state < SX126X_DRV_STATE_STANDBY_RC)
+		return SX126X_ERROR_BAD_STATE;
+
+	int rc;
+	rc = sx126x_api_set_standby(&drv->api, SX126X_STANDBY_RC);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	rc = _switch_state_to_standby(drv, SX126X_DRV_STATE_STANDBY_RC);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+int sx126x_drv_mode_standby(sx126x_drv_t * drv)
+{
+	// Сперва нужно сконфигурироваться
+	if (drv->_state < SX126X_DRV_STATE_STANDBY_RC)
+		return SX126X_ERROR_BAD_STATE;
+
+	int rc;
+	rc = sx126x_api_set_standby(&drv->api, drv->_default_standby);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Все ок, меняем свое состояние
+	rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_DEFAULT);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	return 0;
 }
 
 
 int sx126x_drv_configure_lora_modem(sx126x_drv_t * drv, const sx126x_drv_lora_modem_cfg_t * config)
 {
-	int rc;
-	// TODO: Проверка на то, что такие команды мы можем здесь выдавать
+	// Такое можно делать только в стендбае RC
+	if (drv->_state != SX126X_DRV_STATE_STANDBY_RC)
+		return SX126X_ERROR_BAD_STATE;
 
+	int rc;
 	// Перво-наперво, как велит даташит - делаем set_packet_type
 	rc = sx126x_api_set_packet_type(&drv->api, SX126X_PACKET_TYPE_LORA);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -757,7 +707,7 @@ int sx126x_drv_configure_lora_modem(sx126x_drv_t * drv, const sx126x_drv_lora_mo
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	drv->_modem_type = SX126X_PACKET_TYPE_LORA;
+	drv->_modem_type = SX126X_DRV_MODEM_TYPE_LORA;
 	drv->_modem_state.lora.bw = config->bandwidth;
 	return 0;
 }
@@ -765,8 +715,15 @@ int sx126x_drv_configure_lora_modem(sx126x_drv_t * drv, const sx126x_drv_lora_mo
 
 int sx126x_drv_configure_lora_packet(sx126x_drv_t * drv, const sx126x_drv_lora_packet_cfg_t * config)
 {
-	int rc;
+	// Такое можно делать только в стендбае
+	if (!_is_in_standby(drv))
+		return SX126X_ERROR_BAD_STATE;
 
+	// И еще только, если выбран лора модем
+	if (SX126X_DRV_MODEM_TYPE_LORA != drv->_modem_type)
+		return SX126X_ERROR_BAD_STATE;
+
+	int rc;
 	// Ставим параметры пакетизации
 	const sx126x_lora_packet_params_t packet_params = {
 			.preamble_length = config->preamble_length,
@@ -796,8 +753,11 @@ int sx126x_drv_configure_lora_packet(sx126x_drv_t * drv, const sx126x_drv_lora_p
 
 int sx126x_drv_configure_lora_cad(sx126x_drv_t * drv, const sx126x_drv_cad_cfg_t * config)
 {
-	int rc;
+	// Такое можно делать только в стендбае
+	if (!_is_in_standby(drv))
+		return SX126X_ERROR_BAD_STATE;
 
+	int rc;
 	rc = sx126x_api_set_cad_params(
 			&drv->api,
 			config->cad_len,
@@ -817,8 +777,11 @@ int sx126x_drv_configure_lora_cad(sx126x_drv_t * drv, const sx126x_drv_cad_cfg_t
 
 int sx126x_drv_configure_lora_rx_timeout(sx126x_drv_t * drv, const sx126x_drv_lora_rx_timeout_cfg_t * config)
 {
-	int rc;
+	// Такое можно делать только в стендбае
+	if(!_is_in_standby(drv))
+		return SX126X_ERROR_BAD_STATE;
 
+	int rc;
 	rc = sx126x_api_stop_rx_timer_on_preamble(&drv->api, config->stop_timer_on_preable);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
@@ -833,7 +796,139 @@ int sx126x_drv_configure_lora_rx_timeout(sx126x_drv_t * drv, const sx126x_drv_lo
 }
 
 
-int sx126x_drv_poll(sx126x_drv_t * drv)
+
+int sx126x_drv_payload_write(sx126x_drv_t * drv, const uint8_t * data, uint8_t data_size)
+{
+	int rc;
+	// Загоняем пакет в радио
+	rc = sx126x_brd_buf_write(drv->api.board, 0, data, data_size);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size)
+{
+	int rc;
+	uint8_t payload_size;
+	uint8_t payload_offset;
+
+	if (SX126X_DRV_MODEM_TYPE_LORA == drv->_modem_type && drv->_modem_state.lora.explicit_header)
+	{
+		// Если используется лора с неявным заголовком, то размер пакета мы и так знаем
+		payload_size = drv->_modem_state.lora.payload_length;
+	}
+	else
+	{
+		// Если нет - придется лезть в чип и спрашивать
+		rc = sx126x_api_get_rx_buffer_status(&drv->api, &payload_size, &payload_offset);
+		SX126X_RETURN_IF_NONZERO(rc);
+		// Не ждем busy
+	}
+
+	*data_size = payload_size;
+	return 0;
+}
+
+
+int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size)
+{
+	// Такое можно делать только в стендбае
+	if(!_is_in_standby(drv))
+		return SX126X_ERROR_BAD_STATE;
+
+	int rc;
+	// Выгребаем
+	rc = sx126x_brd_buf_read(drv->api.board, 0, buffer, buffer_size);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms)
+{
+	// Сперва нужно сконфигурироваться
+	if (drv->_state < SX126X_DRV_STATE_STANDBY_RC)
+		return SX126X_ERROR_BAD_STATE;
+
+	int rc;
+	// Выставляем указатели буфера
+	rc = sx126x_api_buffer_base_address(&drv->api, 0, 0);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Включаем антенну
+	rc = _set_antenna(drv, SX126X_ANTENNA_RX);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Запускаем rx операцию
+	rc = sx126x_api_set_rx(&drv->api, timeout_ms);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Проверяем что реально начали
+	sx126x_status_t status;
+	rc = sx126x_api_get_status(&drv->api, &status);
+	SX126X_RETURN_IF_NONZERO(rc);
+	if (status.bits.chip_mode != SX126X_STATUS_CHIPMODE_RX)
+		return SX126X_ERROR_BAD_CHIPMODE;
+
+	// Переходим в RX
+	drv->_state = SX126X_DRV_STATE_RX;
+
+	if (0xFFFF == timeout_ms)
+		drv->_infinite_rx = true;
+
+	return 0;
+}
+
+
+int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms)
+{
+	// Сперва нужно сконфигурироваться
+	if (drv->_state < SX126X_DRV_STATE_STANDBY_RC)
+		return SX126X_ERROR_BAD_STATE;
+
+	int rc;
+	// Выставляем указатели буфера
+	rc = sx126x_api_buffer_base_address(&drv->api, 0, 0);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// делаем workaround1 из даташита
+	rc = _workaround_1_lora_bw500(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Включаем антенну
+	rc = _set_antenna(drv, SX126X_ANTENNA_TX);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Запускаем передачу пакета
+	rc = sx126x_api_set_tx(&drv->api, timeout_ms);
+	SX126X_RETURN_IF_NONZERO(rc);
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Проверяем что реально начали
+	sx126x_status_t status;
+	rc = sx126x_api_get_status(&drv->api, &status);
+	SX126X_RETURN_IF_NONZERO(rc);
+	if (status.bits.chip_mode != SX126X_STATUS_CHIPMODE_TX)
+		return SX126X_ERROR_BAD_CHIPMODE;
+
+	drv->_state = SX126X_DRV_STATE_TX;
+	return 0;
+}
+
+
+int sx126x_drv_poll_irq(sx126x_drv_t * drv)
 {
 	int rc;
 	sx126x_evt_arg_t evt_arg;
@@ -843,31 +938,23 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 	rc = _fetch_clear_irq(drv, &irq_status);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	switch (drv->state)
+	switch (drv->_state)
 	{
-	default:
-		break;
-
-	case SX126X_DRVSTATE_RX:
+	case SX126X_DRV_STATE_RX:
 		if (irq_status & (SX126X_IRQ_RX_DONE))
 		{
 			if (!drv->_infinite_rx)
 			{
-				rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+				rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_DEFAULT);
 				SX126X_RETURN_IF_NONZERO(rc);
 			}
 
 			evt_arg.rx_done.timed_out = false;
 			evt_arg.rx_done.crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
 			// Сбегаем к чипу и достанем статистику пакета
-			if (SX126X_PACKET_TYPE_LORA == drv->_modem_type)
+			if (SX126X_DRV_MODEM_TYPE_LORA == drv->_modem_type)
 			{
 				rc = sx126x_api_get_lora_packet_status(&drv->api, &evt_arg.rx_done.packet_status.lora);
-				SX126X_RETURN_IF_NONZERO(rc);
-			}
-			else if (SX126X_PACKET_TYPE_GFSK == drv->_modem_type)
-			{
-				rc = sx126x_api_get_gfsk_packet_status(&drv->api, &evt_arg.rx_done.packet_status.gfsk);
 				SX126X_RETURN_IF_NONZERO(rc);
 			}
 
@@ -875,7 +962,7 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 		}
 		else if (irq_status & SX126X_IRQ_TIMEOUT)
 		{
-			rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+			rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_DEFAULT);
 			SX126X_RETURN_IF_NONZERO(rc);
 
 			evt_arg.rx_done.timed_out = true;
@@ -883,45 +970,34 @@ int sx126x_drv_poll(sx126x_drv_t * drv)
 		}
 		break;
 
-	case SX126X_DRVSTATE_TX:
-		if (irq_status & SX126X_IRQ_TX_DONE)
+	case SX126X_DRV_STATE_TX:
+		if (irq_status & (SX126X_IRQ_TX_DONE | SX126X_IRQ_TIMEOUT))
 		{
-			rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
+			rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_DEFAULT);
 			SX126X_RETURN_IF_NONZERO(rc);
 
-			evt_arg.tx_done.timed_out = false;
-			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_TX_DONE, &evt_arg);
-
-		}
-		else if (irq_status & (SX126X_IRQ_TIMEOUT))
-		{
-			rc = _switch_state(drv, SX126X_DRVSTATE_STANDBY_DEFAULT);
-			SX126X_RETURN_IF_NONZERO(rc);
-
-			evt_arg.tx_done.timed_out = true;
+			evt_arg.tx_done.timed_out = (irq_status & SX126X_IRQ_TIMEOUT) != 0;
 			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_TX_DONE, &evt_arg);
 		}
 		break;
 
-	case SX126X_DRVSTATE_CAD:
-		if (irq_status & SX126X_IRQ_CAD_DONE)
-		{
-			sx126x_drv_state_t next_state;
-			if (drv->_modem_state.lora.cad_exit_mode == SX126X_LORA_CAD_RX)
-				next_state = SX126X_DRVSTATE_RX;
-			else
-				next_state = SX126X_DRVSTATE_STANDBY_DEFAULT;
-
-			rc = _switch_state(drv, next_state);
-			SX126X_RETURN_IF_NONZERO(rc);
-
-			evt_arg.cad_done.cad_detected = (irq_status & SX126X_IRQ_CAD_DETECTED) ? true : false;
-			drv->_evt_handler(drv, drv->_evt_handler_user_arg, SX126X_EVTKIND_CAD_DONE, &evt_arg);
-		}
+	default:
 		break;
-	}
+	};
 
 	return 0;
 }
 
+
+int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value)
+{
+	// Такое можно делать только в RX (или CAD)
+	if (drv->_state != SX126X_DRV_STATE_RX)
+		return SX126X_ERROR_BAD_STATE;
+
+	int rc = sx126x_api_get_rssi_inst(&drv->api, value);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
 

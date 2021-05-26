@@ -99,7 +99,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   app_main();
-  return;
+  return 0;
   while (1)
   {
     /* USER CODE END WHILE */

@@ -10,16 +10,33 @@
 #include "sx126x_events.h"
 
 
+//! Тип модема на который настроен модуль
+typedef enum sx126x_drv_modem_type_t
+{
+	//! Модем вообще не настроен
+	SX126X_DRV_MODEM_TYPE_UNCONFIGURED,
+	//! Используется LoRa модем
+	SX126X_DRV_MODEM_TYPE_LORA,
+	// Используется GFSK модем
+	//SX126X_DRV_MODEM_STATE_GFSK, // TODO: Not implemented
+} sx126x_drv_modem_type_t;
+
+
 //! Состояние драйвера
 typedef enum sx126x_drv_state_t
 {
-	SX126X_DRVSTATE_ERROR,
-	SX126X_DRVSTATE_STANDBY_RC,
-	SX126X_DRVSTATE_STANDBY_XOSC,
-	SX126X_DRVSTATE_STANDBY_DEFAULT,
-	SX126X_DRVSTATE_TX,
-	SX126X_DRVSTATE_RX,
-	SX126X_DRVSTATE_CAD,
+	// TODO: CAD, SLEEP и RX_DUTY_CYCLE режимы
+
+	//! Устройство только что включилось и толком не отконфигурированно
+	SX126X_DRV_STATE_STARTUP = 1,
+	//! Устройство в standby на RC цепочке
+	SX126X_DRV_STATE_STANDBY_RC,
+	//! Устройство в STANDBY на внешнем генераторе
+	SX126X_DRV_STATE_STANDBY_XOSC,
+	//! Устройство передает!
+	SX126X_DRV_STATE_TX,
+	//! Устройство принимает
+	SX126X_DRV_STATE_RX,
 } sx126x_drv_state_t;
 
 
@@ -46,14 +63,15 @@ typedef struct sx126x_drv_lora_modem_cfg_t
 	//! Частота, на которой будет работать трансивер
 	uint32_t frequency;
 
-	// Настройки усилителей усилителя
+	// Настройки усилителя
 	// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	//! "Скорость разгона" PA усилителя?
 	sx126x_pa_ramp_time_t pa_ramp_time;
 
 	//! Мощность PA усилителя
 	/*! Фактическая мощность подбирается из предопределенных в даташите значений
-		для разных чипов. Указанное здесь значение приводится к ближайшему определенному.
+		для разных чипов. Указанное здесь значение приводится к ближайшему определенному
+		не выше указанного
 		для sx1261 определены значения 10, 14, 15 dBm
 		для sx1262 определены значения 14, 17, 20, 22 dBm
 		для sx1268 определены значения 10, 14, 17, 20, 22 dBm */
@@ -119,7 +137,7 @@ typedef struct sx126x_drv_cad_cfg_t
 typedef struct sx126x_drv_t
 {
 	sx126x_api_t api;
-	sx126x_drv_state_t state;
+	sx126x_drv_state_t _state;
 
 	sx126x_standby_mode_t _default_standby;
 	bool _infinite_rx;
@@ -143,10 +161,13 @@ typedef struct sx126x_drv_t
 		} gfsk;
 
 	} _modem_state;
-	sx126x_packet_type_t _modem_type;
+	sx126x_drv_modem_type_t _modem_type;
 
 } sx126x_drv_t;
 
+
+// Функции для первичной инициализации драйвера
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //! Конструктор драйвера
 int sx126x_drv_ctor(sx126x_drv_t * drv, void * board_ctor_arg);
@@ -154,14 +175,26 @@ int sx126x_drv_ctor(sx126x_drv_t * drv, void * board_ctor_arg);
 //! Деструктор драйвера
 void sx126x_drv_dtor(sx126x_drv_t * drv);
 
-//! Регистрация обработчика событий драйвера
-int sx126x_drv_register_event_handler(sx126x_drv_t * drv, sx126x_evt_handler_t handler, void * cb_user_arg);
+//! Установка колбека - обработчика событий драйвера
+int sx126x_drv_set_event_handler(sx126x_drv_t * drv, sx126x_evt_handler_t handler, void * cb_user_arg);
+
+//! Состояние драйвера
+sx126x_drv_state_t sx126x_drv_state(sx126x_drv_t * drv);
+
+
+// Функции для первичной инициализации железки, сбросов и standby режимов
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //! Сброс чипа через RST пин и состояния драйвера
 int sx126x_drv_reset(sx126x_drv_t * drv);
 
-//! Состояние модуля
-sx126x_drv_state_t sx126x_drv_state(sx126x_drv_t * drv);
+//! Базовая конфигурация чипа и драйвера
+/*! Большинство опций, которые используются здесь не поддерживают
+	повторной реконфигурации. Поэтому эта функция должна использоваться
+	один раз после резета чипа.
+	Функция может быть вызвана только в состоянии SX126X_DRV_STATE_STARTUP
+	И только посредством этой функции можно перейти в первый стендбай rc */
+int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t * config);
 
 //! Переводит чип в режим standby на RC цепочке
 /*! Это самый базовый режим в котором отключено все что можно.
@@ -171,42 +204,68 @@ int sx126x_drv_mode_standby_rc(sx126x_drv_t * drv);
 //! Переводит чип в тот вид standby режима, который указан в конфиге драйвера
 int sx126x_drv_mode_standby(sx126x_drv_t * drv);
 
-int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms);
 
-int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms);
-
-int sx126x_drv_mode_cad(sx126x_drv_t * drv);
-
-int sx126x_drv_payload_write(sx126x_drv_t * drv, const uint8_t * data, uint8_t data_size);
-
-int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size);
-
-int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size);
-
-int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value);
-
-//! Базовая конфигурация чипа и драйвера
-/*! Большинство опций, которые используются здесь не поддерживают
-	повторной реконфигурации. Поэтому эта функция должна использоваться
-	один раз после резета чипа в режиме standby_rc */
-int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t * config);
+// Функции для вторичной инициализации железки. Настройки модема и пакетирования
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// Эти функции должны быть вызваны после configure_basic и очевидно из standby режимов
 
 //! Активация и конфигурирование LoRa модема
 int sx126x_drv_configure_lora_modem(sx126x_drv_t * drv, const sx126x_drv_lora_modem_cfg_t * config);
 
 //! Конфигурация пакетизатора LoRa
-/*! Должна быть не раньше чем sx126x_drv_configure_lora_modem */
+/*! Должна быть вызвана после sx126x_drv_configure_lora_modem */
 int sx126x_drv_configure_lora_packet(sx126x_drv_t * drv, const sx126x_drv_lora_packet_cfg_t * config);
 
 //! Настройка CAD параметров LoRa модема
-/*! В отличии от RX/TX конфигурации - эта конфигурация загружается в модуль прямо в этом вызове */
+
 int sx126x_drv_configure_lora_cad(sx126x_drv_t * drv, const sx126x_drv_cad_cfg_t * config);
 
 //! Настройки rx таймаут таймера LoRa модема
 int sx126x_drv_configure_lora_rx_timeout(sx126x_drv_t * drv, const sx126x_drv_lora_rx_timeout_cfg_t * config);
 
-//! Обработка событий драйвера
-int sx126x_drv_poll(sx126x_drv_t * drv);
+
+// Функции для работы с буффером данных
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// Этот драйвер использует буфер целиком и для RX и для TX операций
+
+//! Запись данных в отправной буфер
+int sx126x_drv_payload_write(sx126x_drv_t * drv, const uint8_t * data, uint8_t data_size);
+
+//! Получение размера последнего полученного пакета
+int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size);
+
+//! Чтение содержимого буфера
+int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size);
+
+
+// Функции для режимов передачи данных и приёма
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+//! Переход в режим приёма
+/*! Если таймаут указан 0, то таймаута нет и модуль останется в RX до получения первого пакета.
+    После получения первого пакета модуль вернется в standby
+    Если таймаут указан 0xFFFFFF, то таймаута нет и модуль останется в RX даже после получения
+    первого пакета и в standby не вернется пока не будет указано явно */
+int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms);
+
+//! Переход в режим передачи
+/*! Если таймаут указан 0, то таймаута нет и модуль останется в TX до полной передачи пакета */
+int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms);
+
+
+// Функции для различных опросов модуля
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+//! Опрос модуля на предмет новых событий и прерываний
+/*! Функция выгребает из модуля IRQ флаги и на их основании вызывает event_handler переданный в драйвер
+    Так же управляет состоянием драйвера в целом.
+    Предполагается, что эту функцию следует вызывать либо по получению прерывания от модуля
+    либо просто пеориодически, если прерывания не используются */
+int sx126x_drv_poll_irq(sx126x_drv_t * drv);
+
+//! Получение текущего значения RSSI, определяеого модулем.
+/*! Очевидно имеет смысл вызывать только в RX/CAD режимах работы модуля */
+int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value);
 
 
 #endif /* RADIO_SX126X_DRV_H_ */

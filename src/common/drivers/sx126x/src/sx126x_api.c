@@ -70,6 +70,7 @@ int sx126x_api_set_tx(sx126x_api_t * api, uint32_t timeout_ms)
 			(uint8_t)((timeout      ) & 0xFF)
 	};
 
+	rc = 0;
 	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_SET_TX, timeout_bytes, sizeof(timeout_bytes));
 	SX126X_RETURN_IF_NONZERO(rc);
 

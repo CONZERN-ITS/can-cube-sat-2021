@@ -620,15 +620,11 @@ static int _radio_init(server_t * server)
 	if (0 != rc)
 		goto bad_exit;
 
-	rc = sx126x_drv_register_event_handler(radio, _radio_event_handler, server);
+	rc = sx126x_drv_set_event_handler(radio, _radio_event_handler, server);
 	if (0 != rc)
 		goto bad_exit;
 
 	rc = sx126x_drv_reset(radio);
-	if (0 != rc)
-		goto bad_exit;
-
-	rc = sx126x_drv_mode_standby_rc(radio);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -649,6 +645,10 @@ static int _radio_init(server_t * server)
 		goto bad_exit;
 
 	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = sx126x_drv_mode_standby_rc(radio);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -812,7 +812,7 @@ void _server_sync_rssi(server_t * server)
 	int rc = clock_gettime(CLOCK_MONOTONIC, &now);
 	assert(0 == rc);
 
-	if (sx126x_drv_state(&server->dev) != SX126X_DRVSTATE_RX)
+	if (sx126x_drv_state(&server->dev) != SX126X_DRV_STATE_RX)
 		return;
 
 	const int64_t time_since_last_report = _timespec_diff_ms(&now, &server->rssi_report_block_deadline);
@@ -911,7 +911,7 @@ void server_run(server_t * server)
 			log_trace("radio event: %d", pollitems[0].revents);
 
 			// Ага, что-то прозошло с радио
-			rc = sx126x_drv_poll(&server->dev);
+			rc = sx126x_drv_poll_irq(&server->dev);
 			if (0 != rc)
 				log_error("radio poll error %d", rc);
 		}
