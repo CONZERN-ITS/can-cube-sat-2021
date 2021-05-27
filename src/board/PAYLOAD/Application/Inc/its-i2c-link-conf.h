@@ -28,10 +28,10 @@ extern I2C_HandleTypeDef hi2c2;
 #define I2C_LINK_BUS_HANDLE (&hi2c2)
 
 //! релиз резет для нашего i2c-handle
-#define I2C_LINK_BUS_RELEASE_RESET (__HAL_RCC_I2C1_RELEASE_RESET())
+#define I2C_LINK_BUS_RELEASE_RESET (__HAL_RCC_I2C2_RELEASE_RESET())
 
 //! форс резет для нашего i2c-handle
-#define I2C_LINK_BUS_FORCE_RESET (__HAL_RCC_I2C1_FORCE_RESET())
+#define I2C_LINK_BUS_FORCE_RESET (__HAL_RCC_I2C2_FORCE_RESET())
 
 /*
  * I2C transmit timeout used in hal_slave_transmit
