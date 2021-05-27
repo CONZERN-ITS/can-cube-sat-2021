@@ -5,6 +5,12 @@ class AbstractElectromechanicalDrive():
     def setup_horizontal_motor(self, horizontal_motor):
         pass
 
+    def set_vertical_motor_enabled(self, mode):
+        pass
+
+    def set_horizontal_motor_enabled(self, mode):
+        pass
+
     def setup_vertical_limits(self, positive_limits, negative_limits):
         pass
 
@@ -44,6 +50,12 @@ class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
 
     def setup_horizontal_motor(self, horizontal_motor):
         self.horizontal_motor = horizontal_motor
+
+    def set_vertical_motor_enabled(self, mode):
+        self.vertical_motor.set_enable(mode)
+
+    def set_horizontal_motor_enabled(self, mode):
+        self.horizontal_motor.set_enable(mode)
 
     def setup_vertical_limits(self, positive_limits, negative_limits):
         if self.vertical_motor is not None:
