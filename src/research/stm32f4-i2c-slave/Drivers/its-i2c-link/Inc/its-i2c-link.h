@@ -47,4 +47,8 @@ int its_i2c_link_read(void * buffer, size_t buffer_size);
 
 void its_i2c_link_stats(its_i2c_link_stats_t * statsbuf);
 
+void i2s_i2c_link_it_event_handler(void);
+
+void i2s_i2c_link_it_error_handler(void);
+
 #endif /* I2C_INC_H_ */

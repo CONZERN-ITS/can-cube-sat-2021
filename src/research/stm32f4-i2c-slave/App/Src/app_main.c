@@ -13,15 +13,22 @@ int app_main()
 	size_t counter = 0;
 	while(1)
 	{
-		memset(data, 0x00, sizeof(data));
+		memset(data, counter & 0xFF, sizeof(data));
 		int rc = its_i2c_link_write(data, sizeof(data));
-		printf("%u write rc = %d\n", counter, rc);
+		//printf("%u write rc = %d\n", counter, rc);
 
 		rc = its_i2c_link_read(data, sizeof(data));
-		printf("%u read rc = %d\n", counter, rc);
+		if (rc > 0)
+		{
+			printf("%u got packet; rc = %d\n", counter, rc);
+			for (int i = 0; i < rc; i++)
+				printf("%02X", (int)data[i]);
+
+			printf("\n");
+		}
 
 		counter++;
-		HAL_Delay(1000);
+		HAL_Delay(100);
 	}
 
 	return 0;
