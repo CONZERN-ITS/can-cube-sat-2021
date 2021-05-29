@@ -40,6 +40,8 @@
 #include "log_collector.h"
 #include "input_op.h"
 #include "operator_ip.h"
+#include <operator2.h>
+
 
 static i2c_config_t init_pin_i2c_tm  = {
 	.mode = I2C_MODE_MASTER,
@@ -325,6 +327,9 @@ void init_helper(void) {
 	//op_config_ip(&hop, 53597);
 	//op_init((op_handler_t *)&hop);
 	//input_init((op_handler_t *)&hop);
+
+
+	op2_init();
 }
 
 uint8_t mv_packet[MAVLINK_MAX_PACKET_LEN];
