@@ -36,14 +36,12 @@ enum TEMP_STATE {
     DS_READY
 } ;
 
-#define ITS_I2CTM_HANDLER &hi2c1
-
 
 void time_recv_callback(const mavlink_message_t *msg);
 
 void task_main_init(void *arg) {
     printf("INFO: Starting task scheduling\n");
-    its_i2c_link_start(ITS_I2CTM_HANDLER);
+    its_i2c_link_start();
     its_time_init();
     trecv_add_callbac(time_recv_callback);
 
