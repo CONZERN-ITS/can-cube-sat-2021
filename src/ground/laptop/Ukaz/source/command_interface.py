@@ -70,42 +70,90 @@ class MAVITSInterface(AbstractCommanInterface):
             self.send_msg(msg)
 
 
-class ZMQITSInterface(MAVITSInterface):
+class ZMQITSUSLPInterface(MAVITSInterface):
     def __init__(self):
         super(ZMQITSInterface, self).__init__()
         self.cookie = 1
+        self.buf = []
+        self.last_send_time = 0
+        self.timeout = 0.5
 
     def msg_reaction(self, msg):
-        data = json.loads(msg.decode("utf-8"))
-        cookie = data.get('cookie', None)
-        status = data.get('event', None)
-        if (cookie is not None) and (status is not None):
-            if status == 'rejected':
-                status_type = STATUS_FAILURE
-            elif status == 'accepted':
-                status_type = STATUS_PROCESSING
-            elif status == 'emitted':
-                status_type = STATUS_PROCESSING
-            elif status == 'delivered':
-                status_type = STATUS_SUCCSESS
-            elif status == 'undelivered':
-                status_type = STATUS_FAILURE
-            else:
-                status_type = STATUS_UNKNOWN
-            self.command_ststus_changed.emit([cookie, status, status_type])
-        
+        if msg[0] == 'its.telecommand_event':
+            data = json.loads(msg[1].decode("utf-8"))
+            cookie = data.get('cookie', None)
+            status = data.get('event', None)
+            if (cookie is not None) and (status is not None):
+                if status == 'rejected':
+                    status_type = self.STATUS_FAILURE
+                elif status == 'accepted':
+                    status_type = self.STATUS_PROCESSING
+                elif status == 'emitted':
+                    status_type = self.STATUS_PROCESSING
+                elif status == 'delivered':
+                    status_type = self.STATUS_SUCCSESS
+                elif status == 'undelivered':
+                    status_type = self.STATUS_FAILURE
+                else:
+                    status_type = self.STATUS_UNKNOWN
+                self.command_ststus_changed.emit([cookie, status, status_type])
+            
 
     def send_command(self, msg, cookie=None):
         if msg is not None:
             msg.get_header().srcSystem = 0
             msg.get_header().srcComponent = 3
             if cookie is not None:
-                multipart = ["antenna.command_packet".encode("utf-8"),
+                multipart = ["its.telecommand_request".encode("utf-8"),
                              ('{ "cookie": %d }' % cookie).encode("utf-8"),
                              msg.pack(self.mav)]
             else:
-                multipart = ["antenna.command_packet".encode("utf-8"),
+                multipart = ["its.telecommand_request".encode("utf-8"),
                              ('{ "cookie": %d }' % self.cookie).encode("utf-8"),
                              msg.pack(self.mav)]
                 self.cookie += 1
+
             self.send_msg.emit(multipart)
+
+class ZMQITSInterface(MAVITSInterface):
+    def __init__(self):
+        super(ZMQITSInterface, self).__init__()
+        self.cookie = 1
+        self.buf = []
+        self.last_send_time = 0
+        self.timeout = 0.5
+
+    def msg_reaction(self, msg):
+        print(msg)
+        if msg[0] == b'radio.uplink_state':
+            data = json.loads(msg[1].decode("utf-8"))
+            cookie = data.get('cookie_in_wait', 0)
+            if cookie is None:
+                if len(self.buf) > 0:
+                    self.send_msg.emit(self.buf.pop())
+            cookie = data.get('cookie_in_progress', None)
+            if cookie is not  None:
+                self.command_ststus_changed.emit([cookie, 'in progress', self.STATUS_PROCESSING])
+            cookie = data.get('cookie_sent', None)
+            if cookie is not  None:
+                self.command_ststus_changed.emit([cookie, 'sent', self.STATUS_SUCCSESS])
+            cookie = data.get('cookie_dropped', None)
+            if cookie is not  None:
+                self.command_ststus_changed.emit([cookie, 'dropped', self.STATUS_FAILURE])
+
+    def send_command(self, msg, cookie=None):
+        if msg is not None:
+            msg.get_header().srcSystem = 0
+            msg.get_header().srcComponent = 3
+            if cookie is not None:
+                multipart = ["radio.uplink_frame".encode("utf-8"),
+                             ('{ "cookie": %d }' % cookie).encode("utf-8"),
+                             msg.pack(self.mav)]
+            else:
+                multipart = ["radio.uplink_frame".encode("utf-8"),
+                             ('{ "cookie": %d }' % self.cookie).encode("utf-8"),
+                             msg.pack(self.mav)]
+                self.cookie += 1
+
+            self.buf.append(multipart)
+            print(self.buf)
