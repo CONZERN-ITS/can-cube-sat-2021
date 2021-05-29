@@ -172,17 +172,37 @@
       </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
 
-      <field type="uint16_t" name="rx_done_cnt">received packets count</field>
-      <field type="uint16_t" name="rx_dropped_cnt">received and dropped packets count (no free buffers)</field>
-      <field type="uint16_t" name="rx_error_cnt">errors count on packet receival</field>
-      <field type="uint16_t" name="tx_done_cnt">sent packets count</field>
-      <field type="uint16_t" name="tx_zeroes_cnt">amount of situations where master requested data, but we had not any</field>
-      <field type="uint16_t" name="tx_overrun_cnt">amount of situations where we wanted to send data, but there were no space</field>
-      <field type="uint16_t" name="tx_error_cnt">errors count on packet transmission</field>
-      <field type="uint16_t" name="restarts_cnt">i2c peripheral restarts count</field>
-      <field type="uint16_t" name="listen_done_cnt">listen done HAL events count</field>
-      <field type="uint32_t" name="last_error">last error code</field>
+      <field type="uint16_t" name="rx_packet_start_cnt"></field>
+      <field type="uint16_t" name="rx_packet_done_cnt"></field>
+      <field type="uint16_t" name="rx_cmds_start_cnt"></field>
+      <field type="uint16_t" name="rx_cmds_done_cnt"></field>
+      <field type="uint16_t" name="rx_drops_start_cnt"></field>
+      <field type="uint16_t" name="rx_drops_done_cnt"></field>
+
+      <field type="uint16_t" name="tx_psize_start_cnt"></field>
+      <field type="uint16_t" name="tx_psize_done_cnt"></field>
+      <field type="uint16_t" name="tx_packet_start_cnt"></field>
+      <field type="uint16_t" name="tx_packet_done_cnt"></field>
+      <field type="uint16_t" name="tx_zeroes_start_cnt"></field>
+      <field type="uint16_t" name="tx_zeroes_done_cnt"></field>
+      <field type="uint16_t" name="tx_empty_buffer_cnt"></field>
+      <field type="uint16_t" name="tx_overruns_cnt"></field>
+
+      <field type="uint16_t" name="cmds_get_size_cnt"></field>
+      <field type="uint16_t" name="cmds_get_packet_cnt"></field>
+      <field type="uint16_t" name="cmds_set_packet_cnt"></field>
+      <field type="uint16_t" name="cmds_invalid_cnt"></field>
+
+      <field type="uint16_t" name="restarts_cnt"></field>
+      <field type="uint16_t" name="berr_cnt"></field>
+      <field type="uint16_t" name="arlo_cnt"></field>
+      <field type="uint16_t" name="ovf_cnt"></field>
+      <field type="uint16_t" name="af_cnt"></field>
+      <field type="uint16_t" name="btf_cnt"></field>
+      <field type="uint16_t" name="tx_wrong_size_cnt"></field>
+      <field type="uint16_t" name="rx_wrong_size_cnt"></field>
     </message>
 
     <message id="50006" name="RSSI">
