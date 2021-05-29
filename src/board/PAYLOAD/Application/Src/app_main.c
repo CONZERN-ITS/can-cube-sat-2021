@@ -7,7 +7,7 @@
 
 #include <stm32f4xx_hal.h>
 
-#include "Inc/its-i2c-link.h"
+#include "its-i2c-link.h"
 
 #include "app_main.h"
 #include "main.h"
@@ -323,20 +323,37 @@ static void _collect_i2c_link_stats(mavlink_i2c_link_stats_t * msg)
 	time_svc_gettimeofday(&tmv);
 	msg->time_s = tmv.tv_sec;
 	msg->time_us = tmv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
-	its_i2c_link_stats_t statsbuf;
-	its_i2c_link_stats(&statsbuf);
+	its_i2c_link_stats_t stats;
+	its_i2c_link_stats(&stats);
 
-	msg->rx_done_cnt = statsbuf.rx_done_cnt;
-	msg->rx_dropped_cnt = statsbuf.rx_dropped_cnt;
-	msg->rx_error_cnt = statsbuf.rx_error_cnt;
-	msg->tx_done_cnt = statsbuf.tx_done_cnt;
-	msg->tx_zeroes_cnt = statsbuf.tx_zeroes_cnt;
-	msg->tx_error_cnt = statsbuf.tx_error_cnt;
-	msg->tx_overrun_cnt = statsbuf.tx_overrun_cnt;
-	msg->restarts_cnt = statsbuf.restarts_cnt;
-	msg->listen_done_cnt = statsbuf.listen_done_cnt;
-	msg->last_error = statsbuf.last_error;
+	msg->rx_packet_start_cnt = stats.rx_packet_start_cnt;
+	msg->rx_packet_done_cnt = stats.rx_packet_done_cnt;
+	msg->rx_cmds_start_cnt = stats.rx_cmds_start_cnt;
+	msg->rx_cmds_done_cnt = stats.rx_cmds_done_cnt;
+	msg->rx_drops_start_cnt = stats.rx_drops_start_cnt;
+	msg->rx_drops_done_cnt = stats.rx_drops_done_cnt;
+	msg->tx_psize_start_cnt = stats.tx_psize_start_cnt;
+	msg->tx_psize_done_cnt = stats.tx_psize_done_cnt;
+	msg->tx_packet_start_cnt = stats.tx_packet_start_cnt;
+	msg->tx_packet_done_cnt = stats.tx_packet_done_cnt;
+	msg->tx_zeroes_start_cnt = stats.tx_zeroes_start_cnt;
+	msg->tx_zeroes_done_cnt = stats.tx_zeroes_done_cnt;
+	msg->tx_empty_buffer_cnt = stats.tx_empty_buffer_cnt;
+	msg->tx_overruns_cnt = stats.tx_overruns_cnt;
+	msg->cmds_get_size_cnt = stats.cmds_get_size_cnt;
+	msg->cmds_get_packet_cnt = stats.cmds_get_packet_cnt;
+	msg->cmds_set_packet_cnt = stats.cmds_set_packet_cnt;
+	msg->cmds_invalid_cnt = stats.cmds_invalid_cnt;
+	msg->restarts_cnt = stats.restarts_cnt;
+	msg->berr_cnt = stats.berr_cnt;
+	msg->arlo_cnt = stats.arlo_cnt;
+	msg->ovf_cnt = stats.ovf_cnt;
+	msg->af_cnt = stats.af_cnt;
+	msg->btf_cnt = stats.btf_cnt;
+	msg->tx_wrong_size_cnt = stats.tx_wrong_size_cnt;
+	msg->rx_wrong_size_cnt = stats.rx_wrong_size_cnt;
 }
 
 
