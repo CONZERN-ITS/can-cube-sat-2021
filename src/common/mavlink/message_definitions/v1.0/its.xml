@@ -113,6 +113,21 @@
         <description>Internal sensors</description>
       </entry>
     </enum>
+    <enum name="ROZE_LOCATION">
+      <description>Location of PLD sensors </description>
+      <entry value="1" name="BSK_1_ROZE_LOCATION">
+        <description>BSK 1 Roze mechanism</description>
+      </entry>
+      <entry value="2" name="BSK_2_ROZE_LOCATION">
+        <description>BSK 2 Roze mechanism</description>
+      </entry>
+      <entry value="3" name="BSK_3_ROZE_LOCATION">
+        <description>BSK 3 Roze mechanism</description>
+      </entry>
+      <entry value="4" name="BSK_4_ROZE_LOCATION">
+        <description>BSK 4 Roze mechanism</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
 
@@ -503,5 +518,13 @@
       <field type="float" name="motors_timeout" units="s">Motors auto disable timeout</field>
     </message>
 
+    <message id="51010" name="ROZE_ACTIVATE_COMMAND">
+      <description>Roze mechanism activate command</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+
+      <field type="uint8_t" name="area_id">Roze mechanism area id</field>
+      <field type="uint8_t" name="active_time" units="s">Roze mechanism active phase time</field>
+    </message>
   </messages>
 </mavlink>
