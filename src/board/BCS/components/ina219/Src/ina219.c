@@ -115,7 +115,7 @@ static esp_err_t read_conf_bits(ina219_t *dev, uint16_t mask, uint8_t bit, uint1
 
 ///////////////////////////////////////////////////////////////////////////////
 
-esp_err_t ina219_init_desc(ina219_t *dev, uint8_t addr, i2c_port_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio)
+esp_err_t ina219_init_desc(ina219_t *dev, uint8_t addr, i2c_port_t port)
 {
     CHECK_ARG(dev);
 

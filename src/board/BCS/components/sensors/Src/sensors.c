@@ -36,9 +36,11 @@
 #include "mavlink_help2.h"
 
 #include "ds18b20.h"
+#include "ina219.h"
 
 #define ITS_ESP_DEBUG
 
+static void sensors_ina_task(void *arg);
 static void sensors_task(void *arg);
 #define SAMPLE_PERIOD 1000
 #define DS18B20_RESOLUTION   (DS18B20_RESOLUTION_12_BIT)
@@ -46,6 +48,7 @@ static char *TAG = "SENSORS";
 
 esp_err_t sensors_init(void) {
 	xTaskCreatePinnedToCore(sensors_task, "Sensors task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
+	xTaskCreatePinnedToCore(sensors_ina_task, "Sensors ina task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
 	return 0;
 }
 
@@ -218,4 +221,44 @@ static void sensors_task(void *arg) {
 	owb_uninitialize(owb);
 
 	vTaskDelete(0);
+}
+
+static void sensors_ina_task(void *arg) {
+#define INA_MAX 6
+	ina219_t ina[INA_MAX];
+	ina219_init_desc(&ina[0], INA219_ADDR_GND_GND, ITS_I2CTM_PORT);
+	ina219_init_desc(&ina[1], INA219_ADDR_GND_SCL, ITS_I2CTM_PORT);
+	ina219_init_desc(&ina[2], INA219_ADDR_GND_SDA, ITS_I2CTM_PORT);
+	ina219_init_desc(&ina[3], INA219_ADDR_GND_VS, ITS_I2CTM_PORT);
+	ina219_init_desc(&ina[4], INA219_ADDR_SCL_GND, ITS_I2CTM_PORT);
+	ina219_init_desc(&ina[5], INA219_ADDR_SDA_SDA, ITS_I2CTM_PORT);
+
+	for (int i = 0; i < 6; i++) {
+		ina219_configure(&ina[i], INA219_BUS_RANGE_16V, INA219_GAIN_1,
+				INA219_RES_12BIT_128S, INA219_RES_12BIT_128S, INA219_MODE_CONT_SHUNT_BUS);
+	}
+	while (1) {
+		struct timeval tp = {0};
+		gettimeofday(&tp, 0);
+		mavlink_electrical_state_t mes[INA_MAX];
+		for (int i = 0; i < 6; i++) {
+			if (ina219_get_bus_voltage(&ina[i], &mes[i].voltage) != ESP_OK) {
+				mes[i].voltage = NAN;
+			}
+			if (ina219_get_current(&ina[i], &mes[i].current) != ESP_OK) {
+				mes[i].current = NAN;
+			}
+		}
+		for (int i = 0; i < 6; i++) {
+			uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+			mavlink_message_t msg
+
+			mavlink_msg_electrical_state_decode(&msg, &mes[i]);
+
+			its_rt_sender_ctx_t ctx = {0};
+			ctx.from_isr = 0;
+			its_rt_route(&ctx, buf, 0);
+		}
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+	}
 }
