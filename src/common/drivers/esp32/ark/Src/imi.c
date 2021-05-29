@@ -240,7 +240,9 @@ static void _imi_task_recv(void *arg) {
 			ulTaskNotifyTake(pdFALSE, IMI_WAIT_DELAY / portTICK_RATE_MS);
 		}
 		//ESP_LOGI(TAG, "Trying to read");
-		i2c_master_prestart(h->cfg.i2c_port, h->cfg.ticksToWaitForOne);
+		if (i2c_master_prestart(h->cfg.i2c_port, h->cfg.ticksToWaitForOne) != pdTRUE) {
+			continue;
+		}
 		//Receiving packets if there are any
 		_imi_recv_all(h);
 		i2c_master_postend(h->cfg.i2c_port);
