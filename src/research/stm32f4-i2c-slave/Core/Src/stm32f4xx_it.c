@@ -47,8 +47,8 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-void i2s_i2c_link_it_event_handler(void);
-void i2s_i2c_link_it_error_handler(void);
+void its_i2c_link_it_event_handler(void);
+void its_i2c_link_it_error_handler(void);
 
 /* USER CODE END PFP */
 
@@ -233,7 +233,7 @@ void DMA1_Stream6_IRQHandler(void)
 void I2C1_EV_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C1_EV_IRQn 0 */
-  i2s_i2c_link_it_event_handler();
+  its_i2c_link_it_event_handler();
   /* USER CODE END I2C1_EV_IRQn 0 */
 
   /* USER CODE BEGIN I2C1_EV_IRQn 1 */
@@ -247,7 +247,7 @@ void I2C1_EV_IRQHandler(void)
 void I2C1_ER_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C1_ER_IRQn 0 */
-  i2s_i2c_link_it_error_handler();
+  its_i2c_link_it_error_handler();
   /* USER CODE END I2C1_ER_IRQn 0 */
 
   /* USER CODE BEGIN I2C1_ER_IRQn 1 */

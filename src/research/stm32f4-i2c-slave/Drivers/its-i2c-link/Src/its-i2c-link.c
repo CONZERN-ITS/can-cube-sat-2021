@@ -8,16 +8,17 @@
 
 #include "main.h"
 
+//#define I2C_LINK_DEBUG(...) do { printf(__VA_ARGS__); } while (0)
 
-//#define I2C_LINK_DEBUG(...) printf(__VA_ARGS__)
-#define I2C_LINK_DEBUG(...) (void)(__VA_ARGS__);
+#define I2C_LINK_DEBUG(...) do { if (0) printf(__VA_ARGS__); } while (0)
 
+typedef uint16_t its_i2c_link_packet_size_t;
 
 //! Буфер для пакета (а может быть и для нескольких?
 typedef struct its_i2c_link_pbuf_t
 {
-	uint16_t packet_size;
-	uint8_t packet_data[I2C_LINK_PACKET_SIZE];
+	its_i2c_link_packet_size_t packet_size;
+	uint8_t packet_data[I2C_LINK_MAX_PACKET_SIZE];
 } its_i2c_link_pbuf_t;
 
 
@@ -102,7 +103,9 @@ struct i2c_link_ctx_t
 	//! Выполняемая команда
 	its_i2c_link_cmd_t prev_cmd;
 	//! Буфер для приёма команды
-	uint8_t cmd_buf;
+	/*! Сделан специально чуток побольше, чтобы можно было определить,
+		когда хост дает больше данных чем надо */
+	uint8_t cmd_buf[15];
 
 	//! Статистика модуля (для телеметрии в основном)
 	its_i2c_link_stats_t stats;
@@ -113,6 +116,10 @@ struct i2c_link_ctx_t
 	DMA_TypeDef *dma;
 	uint32_t dma_stream_tx;
 	uint32_t dma_stream_rx;
+	GPIO_TypeDef *sda_port;
+	GPIO_TypeDef *scl_port;
+	uint32_t sda_pin;
+	uint32_t scl_pin;
 };
 
 
@@ -191,11 +198,162 @@ static int _ctx_construct(i2c_link_ctx_t *ctx)
 	ctx->dma = I2C_LINK_DMA_HANDLE;
 	ctx->dma_stream_tx = I2C_LINK_DMA_STREAM_TX;
 	ctx->dma_stream_rx = I2C_LINK_DMA_STREAM_RX;
+	ctx->sda_port = I2C_LINK_SDA_PORT;
+	ctx->scl_port = I2C_LINK_SCL_PORT;
+	ctx->sda_pin = I2C_LINK_SDA_PIN;
+	ctx->scl_pin = I2C_LINK_SCL_PIN;
 	return 0;
 }
 
 
-// Отправляет нули
+static int _bus_gpio_disable(i2c_link_ctx_t * ctx)
+{
+	LL_GPIO_InitTypeDef init;
+	LL_GPIO_StructInit(&init);
+
+	init.Alternate = LL_GPIO_AF_0;
+	init.Mode = LL_GPIO_MODE_INPUT;
+
+	init.Pin = ctx->sda_pin;
+	LL_GPIO_Init(ctx->sda_port, &init);
+
+	init.Pin = ctx->scl_pin;
+	LL_GPIO_Init(ctx->scl_port, &init);
+
+	return 0;
+}
+
+
+static int _bus_gpio_enable(i2c_link_ctx_t * ctx)
+{
+	LL_GPIO_InitTypeDef init;
+	init.Mode = LL_GPIO_MODE_ALTERNATE;
+	init.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+	init.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+	init.Pull = LL_GPIO_PULL_NO;
+	init.Alternate = LL_GPIO_AF_4; // Для всех I2C подходит этот номер AF
+
+	init.Pin = ctx->sda_pin;
+	LL_GPIO_Init(ctx->sda_port, &init);
+
+	init.Pin = ctx->scl_pin;
+	LL_GPIO_Init(ctx->scl_port, &init);
+
+	return 0;
+}
+
+
+static int _bus_configure(i2c_link_ctx_t * ctx)
+{
+	DMA_TypeDef * const dma = ctx->dma;
+	I2C_TypeDef * const bus = ctx->bus;
+	const uint32_t stream_tx = ctx->dma_stream_tx;
+	const uint32_t stream_rx = ctx->dma_stream_rx;
+
+	// Настраиваем ДМА
+
+	/* I2C1_RX Init */
+	LL_DMA_SetChannelSelection(dma, stream_rx, I2C_LINK_DMA_CHANNEL_RX);
+	LL_DMA_SetDataTransferDirection(dma, stream_rx, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
+	LL_DMA_SetStreamPriorityLevel(dma, stream_rx, LL_DMA_PRIORITY_HIGH);
+	LL_DMA_SetMode(dma, stream_rx, LL_DMA_MODE_NORMAL);
+	LL_DMA_SetPeriphIncMode(dma, stream_rx, LL_DMA_PERIPH_NOINCREMENT);
+	LL_DMA_SetMemoryIncMode(dma, stream_rx, LL_DMA_MEMORY_INCREMENT);
+	LL_DMA_SetPeriphSize(dma, stream_rx, LL_DMA_PDATAALIGN_BYTE);
+	LL_DMA_SetMemorySize(dma, stream_rx, LL_DMA_MDATAALIGN_BYTE);
+	LL_DMA_DisableFifoMode(dma, stream_rx);
+
+	/* I2C1_TX Init */
+	LL_DMA_SetChannelSelection(dma, stream_tx, LL_DMA_CHANNEL_1);
+	LL_DMA_SetDataTransferDirection(dma, stream_tx, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+	LL_DMA_SetStreamPriorityLevel(dma, stream_tx, LL_DMA_PRIORITY_HIGH);
+	LL_DMA_SetMode(dma, stream_tx, LL_DMA_MODE_NORMAL);
+	LL_DMA_SetPeriphIncMode(dma, stream_tx, LL_DMA_PERIPH_NOINCREMENT);
+	LL_DMA_SetMemoryIncMode(dma, stream_tx, LL_DMA_MEMORY_INCREMENT);
+	LL_DMA_SetPeriphSize(dma, stream_tx, LL_DMA_PDATAALIGN_BYTE);
+	LL_DMA_SetMemorySize(dma, stream_tx, LL_DMA_MDATAALIGN_BYTE);
+	LL_DMA_DisableFifoMode(dma, stream_tx);
+
+	// Настраиваем I2C периферию
+	LL_I2C_InitTypeDef init;
+	LL_I2C_DisableOwnAddress2(bus);
+	LL_I2C_DisableGeneralCall(bus);
+	LL_I2C_EnableClockStretching(bus);
+	init.PeripheralMode = LL_I2C_MODE_I2C;
+	init.ClockSpeed = 100000;
+	init.DutyCycle = LL_I2C_DUTYCYCLE_2;
+	init.OwnAddress1 = I2C_LINK_ADDR << 1;
+	init.TypeAcknowledge = LL_I2C_ACK;
+	init.OwnAddrSize = LL_I2C_OWNADDRESS1_7BIT;
+	LL_I2C_Init(bus, &init);
+	LL_I2C_SetOwnAddress2(bus, 0);
+
+	// Настраиваем и выключаем прерывания в нвике
+	NVIC_SetPriority(I2C1_EV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),
+			I2C_LINK_EV_IRQ_PREEM_PRIORITY, I2C_LINK_EV_IRQ_SUB_PRIORITY
+	));
+	NVIC_SetPriority(I2C1_ER_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),
+			I2C_LINK_ER_IRQ_PREEM_PRIORITY, I2C_LINK_ER_IRQ_SUB_PRIORITY
+	));
+	NVIC_EnableIRQ(I2C1_EV_IRQn);
+	NVIC_EnableIRQ(I2C1_ER_IRQn);
+
+	return 0;
+}
+
+
+static int _bus_shutdown(i2c_link_ctx_t * ctx)
+{
+	if (LL_I2C_IsResetEnabled(ctx->bus))
+	{
+		// Уже все выключено, уходим
+		return 0;
+	}
+
+	// выключаем прерывания
+	LL_I2C_DisableIT_EVT(ctx->bus);
+	LL_I2C_DisableIT_ERR(ctx->bus);
+
+	//! Вырубаем периферию через резет
+	LL_I2C_EnableReset(ctx->bus);
+
+	// Уходим с шины, отключаем соответствующие пины
+	_bus_gpio_disable(ctx);
+
+	// Все. пока что на этом все
+	return 0;
+}
+
+
+// Вызывается в случае, если шина ушла в резет
+// из-за ошибки на ней
+static int _bus_resume(i2c_link_ctx_t * ctx)
+{
+	if (!LL_I2C_IsResetEnabled(ctx->bus))
+		return 0;
+
+	// Шина в резете, нужно поднимать
+	// В первую выводим её из резета и тут же выключаем
+	LL_I2C_DisableReset(ctx->bus);
+	LL_I2C_Disable(ctx->bus);
+
+	// Все переконфигурируем, начинаем с пинов
+	_bus_gpio_enable(ctx);
+	_bus_configure(ctx);
+
+	// сбрасываем состояние
+	ctx->cur_cmd = I2C_LINK_CMD_NONE;
+	ctx->state = I2C_LINK_STATE_IDLE;
+
+	// Запускаемся, включая прерывания
+	LL_I2C_EnableIT_EVT(ctx->bus);
+	LL_I2C_EnableIT_ERR(ctx->bus);
+
+	ctx->stats.restarts_cnt++;
+	return 0;
+}
+
+
 static int _link_tx_setup_for_zeroes(i2c_link_ctx_t *ctx)
 {
 	DMA_TypeDef * const dma = ctx->dma;
@@ -211,6 +369,8 @@ static int _link_tx_setup_for_zeroes(i2c_link_ctx_t *ctx)
 	LL_DMA_SetMode(dma, stream, LL_DMA_MODE_CIRCULAR);
 
 	ctx->state = I2C_LINK_STATE_TX_ZEROES;
+
+	ctx->stats.tx_zeroes_start_cnt++;
 	I2C_LINK_DEBUG("tx 0 begun\n");
 	return 0;
 }
@@ -228,11 +388,13 @@ static int _link_tx_setup_for_packet_size(i2c_link_ctx_t * ctx)
 	{
 		// У нас ничего нет для отправки
 		// нужно отправить нули...
-		static const uint16_t zero_packet_size = 0x00;
+		static const its_i2c_link_packet_size_t zero_packet_size = 0x00;
 
 		LL_DMA_SetMemoryAddress(dma, stream, (uint32_t)&zero_packet_size);
 		LL_DMA_SetDataLength(dma, stream, sizeof(zero_packet_size));
 		I2C_LINK_DEBUG("tx psize 0 begun\n");
+
+		ctx->stats.tx_empty_buffer_cnt++;
 		return 0;
 	}
 
@@ -244,6 +406,8 @@ static int _link_tx_setup_for_packet_size(i2c_link_ctx_t * ctx)
 	LL_DMA_SetMode(dma, stream, LL_DMA_MODE_CIRCULAR);
 
 	ctx->state = I2C_LINK_STATE_TX_PACKET_SIZE;
+
+	ctx->stats.tx_psize_start_cnt++;
 	I2C_LINK_DEBUG("tx psize begun\n");
 	return 0;
 }
@@ -273,11 +437,13 @@ static int _link_tx_setup_for_packet(i2c_link_ctx_t *ctx)
 	// чем у нас есть. Мы. конечно, дадим хосту невалидные данные
 	// но, зато сами останемся в валидном состоянии...
 	LL_DMA_SetMemoryAddress(dma, stream, (uint32_t)buf->packet_data);
-	LL_DMA_SetDataLength(dma, stream, I2C_LINK_PACKET_SIZE);
+	LL_DMA_SetDataLength(dma, stream, I2C_LINK_MAX_PACKET_SIZE);
 
 	LL_DMA_SetMode(dma, stream, LL_DMA_MODE_CIRCULAR);
 
 	ctx->state = I2C_LINK_STATE_TX_PACKET;
+
+	ctx->stats.tx_packet_start_cnt++;
 	I2C_LINK_DEBUG("tx pkt begun\n");
 	return 0;
 }
@@ -353,13 +519,27 @@ static int _link_tx_done(i2c_link_ctx_t * ctx)
 		assert(!_pbuf_queue_is_empty(&ctx->tx_bufs_queue));
 		_pbuf_queue_pop_tail(&ctx->tx_bufs_queue);
 		I2C_LINK_DEBUG("tx pkt done\n");
+		ctx->stats.tx_packet_done_cnt++;
 		break;
 
-	case I2C_LINK_STATE_TX_PACKET_SIZE:
+	case I2C_LINK_STATE_TX_PACKET_SIZE: {
+		const uint32_t dma_leftovers = LL_DMA_GetDataLength(dma, stream) + 1;
+		// Добавляем 1, так как судя по всему DMA успевает пихнуть дополнительный
+		// байт на TXE событие, не думая о том, что предыдущий байт был последним в транзакции
+		// Так же, сравнимаем тут не с нулем, а с reload размером транзакции
+		// из-за циклического режима работы ДМА
+		if (dma_leftovers != sizeof(its_i2c_link_packet_size_t))
+		{
+			// Хост запросил неверное количество байт
+			ctx->stats.tx_wrong_size_cnt++;
+		}
 		I2C_LINK_DEBUG("tx psize done\n");
-		break;
+		ctx->stats.tx_psize_done_cnt++;
+		} break;
+
 	case I2C_LINK_STATE_TX_ZEROES:
 		I2C_LINK_DEBUG("tx 0 done\n");
+		ctx->stats.tx_zeroes_done_cnt++;
 		break;
 
 	default:
@@ -391,6 +571,8 @@ static int _link_rx_setup_for_drop(i2c_link_ctx_t * ctx)
 	LL_DMA_SetMode(dma, stream, LL_DMA_MODE_CIRCULAR);
 
 	ctx->state = I2C_LINK_STATE_RX_DROP;
+
+	ctx->stats.rx_drops_start_cnt++;
 	I2C_LINK_DEBUG("rx drop begun\n");
 	return 0;
 }
@@ -407,6 +589,8 @@ static int _link_rx_setup_for_command(i2c_link_ctx_t * ctx)
 	LL_DMA_SetMode(dma, stream, LL_DMA_MODE_CIRCULAR);
 
 	ctx->state = I2C_LINK_STATE_RX_CMD;
+
+	ctx->stats.rx_cmds_start_cnt++;
 	I2C_LINK_DEBUG("rx cmd begun\n");
 	return 0;
 }
@@ -430,15 +614,16 @@ static int _link_rx_setup_for_packet(i2c_link_ctx_t * ctx)
 	// По аналогии с TX закрутим дма на циклический режим,
 	// чтобы ни при каких условиях не останавливать шину
 	LL_DMA_SetMemoryAddress(dma, stream, (uint32_t)head->packet_data);
-	LL_DMA_SetDataLength(dma, stream, I2C_LINK_PACKET_SIZE);
+	LL_DMA_SetDataLength(dma, stream, I2C_LINK_MAX_PACKET_SIZE);
 
 	LL_DMA_SetMode(dma, stream, LL_DMA_MODE_CIRCULAR);
 
 	ctx->state = I2C_LINK_STATE_RX_PACKET;
+
 	I2C_LINK_DEBUG("rx pkt begun\n");
+	ctx->stats.rx_packet_start_cnt++;
 	return 0;
 }
-
 
 
 static int _link_rx_dispatch(i2c_link_ctx_t * ctx)
@@ -497,29 +682,55 @@ static int _link_rx_done(i2c_link_ctx_t * ctx)
 	case I2C_LINK_STATE_RX_PACKET: {
 		// Закидываем полученный пакет в очередь
 		its_i2c_link_pbuf_t * const head = _pbuf_queue_get_head(&ctx->rx_bufs_queue);
+		// Раз уж мы начинали писать куда-то пакет, это место долнжо быть живо
 		assert(head);
 
-		const uint32_t dma_transferred = I2C_LINK_PACKET_SIZE - LL_DMA_GetDataLength(dma, stream);
+		const uint32_t dma_transferred = I2C_LINK_MAX_PACKET_SIZE - LL_DMA_GetDataLength(dma, stream);
 		head->packet_size =  dma_transferred;
 		_pbuf_queue_push_head(&ctx->rx_bufs_queue);
+
 		I2C_LINK_DEBUG("rx pkt done\n");
+		ctx->stats.rx_packet_done_cnt++;
 		} break;
 
-	case I2C_LINK_STATE_RX_CMD:
-		// Закидываем команду в "активный слот"
-		ctx->cur_cmd = ctx->cmd_buf;
+	case I2C_LINK_STATE_RX_CMD: {
+		const uint32_t dma_transferred = sizeof(ctx->cmd_buf) - LL_DMA_GetDataLength(dma, stream);
+		// Счетчик дма должен быть нулем
+		if (1 == dma_transferred) // Команды ровно по 1 байту
+		{
+			// Закидываем команду в "активный слот"
+			ctx->cur_cmd = ctx->cmd_buf[0];
+		}
+		else
+		{
+			// Хост передал какое-то не такое количество байт
+			ctx->stats.rx_wrong_size_cnt++;
+		}
+
 		I2C_LINK_DEBUG("rx cmd set %d\n", (int)ctx->cur_cmd);
-		break;
+		ctx->stats.rx_cmds_done_cnt++;
+		} break;
 
 	case I2C_LINK_STATE_RX_DROP:
 		I2C_LINK_DEBUG("rx drop done\n");
+		ctx->stats.rx_drops_done_cnt++;
 		break;
 
 	default:
 		assert(false);
 	}
 
-	if (I2C_LINK_STATE_RX_CMD != ctx->state)
+	if (I2C_LINK_STATE_RX_CMD == ctx->state)
+	{
+		switch (ctx->cur_cmd)
+		{
+		case I2C_LINK_CMD_GET_PACKET: ctx->stats.cmds_get_packet_cnt++; break;
+		case I2C_LINK_CMD_GET_SIZE: ctx->stats.cmds_get_size_cnt++; break;
+		case I2C_LINK_CMD_SET_PACKET: ctx->stats.cmds_set_packet_cnt++; break;
+		default: ctx->stats.cmds_invalid_cnt++; break;
+		};
+	}
+	else
 	{
 		// Если мы только что не получили команду, то скидываем её
 		// как выполненую
@@ -541,9 +752,21 @@ int its_i2c_link_start()
 
 	ctx->state = I2C_LINK_STATE_IDLE;
 
+	// Настраиваем периферию и запускаемся
+	_bus_gpio_enable(ctx);
+	_bus_configure(ctx);
+
 	LL_I2C_EnableIT_EVT(ctx->bus);
 	LL_I2C_EnableIT_ERR(ctx->bus);
-	LL_I2C_Enable(ctx->bus);
+
+	return 0;
+}
+
+
+int its_i2c_link_reset(void)
+{
+	// Вот так грязно рубим все
+	_bus_shutdown(&_ctx);
 
 	return 0;
 }
@@ -552,14 +775,15 @@ int its_i2c_link_start()
 int its_i2c_link_write(const void *data, size_t data_size)
 {
 	i2c_link_ctx_t *const ctx = &_ctx;
+	_bus_resume(ctx);
 
-	if (data_size > I2C_LINK_PACKET_SIZE)
+	if (data_size > I2C_LINK_MAX_PACKET_SIZE)
 		return -EINVAL;
 
 	its_i2c_link_pbuf_t *buf = _pbuf_queue_get_head(&ctx->tx_bufs_queue);
 	if (0 == buf)
 	{
-		ctx->stats.tx_overrun_cnt++;
+		ctx->stats.tx_overruns_cnt++;
 		return -EAGAIN;
 	}
 
@@ -575,6 +799,7 @@ int its_i2c_link_write(const void *data, size_t data_size)
 int its_i2c_link_read(void *buffer_, size_t buffer_size)
 {
 	i2c_link_ctx_t *const ctx = &_ctx;
+	_bus_resume(ctx);
 
 	its_i2c_link_pbuf_t *buf = _pbuf_queue_get_tail(&ctx->rx_bufs_queue);
 	if (0 == buf)
@@ -588,11 +813,13 @@ int its_i2c_link_read(void *buffer_, size_t buffer_size)
 		portion_size = buf->packet_size;
 
 	memcpy(data, buf->packet_data, portion_size);
-	// Очистим буфер, чтобы в следующем проходе в нем не было мусора
-	memset(buf->packet_data, 0, I2C_LINK_PACKET_SIZE);
+	int packet_size = buf->packet_size;
 
+	// Очистим буфер, чтобы в следующем проходе в нем не было мусора
+	memset(buf->packet_data, 0, I2C_LINK_MAX_PACKET_SIZE);
 	_pbuf_queue_pop_tail(&ctx->rx_bufs_queue);
-	return buf->packet_size;
+
+	return packet_size;
 }
 
 
@@ -615,6 +842,7 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 	const volatile uint32_t sr1 = ctx->bus->SR1;
 
 	I2C_LINK_DEBUG("evt 0x%04lX 0x%04lX\n", sr1, sr2);
+
 	if (sr1 & I2C_SR1_ADDR)
 	{
 		I2C_LINK_DEBUG("addr\n");
@@ -639,19 +867,6 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 		LL_I2C_ClearFlag_ADDR(ctx->bus);
 	}
 
-	if (sr1 & I2C_SR1_AF)
-	{
-		// AF мы поидее не можем поймать нигде кроме как на TX транзакции
-		// И это будет означать конец этой самой транзакции.
-		// После этого AF должен бы пойти stopf
-		// по чип работает хитро и почему-то его нет...
-		I2C_LINK_DEBUG("af\n");
-		if (ctx->state & I2C_LINK_STATE_DIR_TX)
-			rc = _link_tx_done(ctx);
-
-		LL_I2C_ClearFlag_AF(ctx->bus);
-	}
-
 	if (sr1 & I2C_SR1_STOPF)
 	{
 		I2C_LINK_DEBUG("stopf\n");
@@ -674,11 +889,80 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 		LL_I2C_ClearFlag_STOP(ctx->bus);
 	}
 
+	if (sr1 & I2C_SR1_AF)
+	{
+		// AF мы поидее не можем поймать нигде кроме как на TX транзакции
+		// И это будет означать конец этой самой транзакции.
+		// После этого AF должен бы пойти stopf
+		// по чип работает хитро и почему-то его нет...
+		I2C_LINK_DEBUG("af\n");
+		if (ctx->state & I2C_LINK_STATE_DIR_TX)
+			rc = _link_tx_done(ctx);
+		else
+			// Если мы не в TX, но случилась такая лажа...
+			ctx->stats.af_cnt++;
+
+		LL_I2C_ClearFlag_AF(ctx->bus);
+	}
+
+	if (sr1 & I2C_SR1_ARLO)
+	{
+		// Вполне может быть
+		// Вырубаемся и ждем переиницилизации
+		I2C_LINK_DEBUG("arlo\n");
+		_bus_shutdown(ctx);
+		ctx->stats.arlo_cnt++;
+		LL_I2C_ClearFlag_ARLO(ctx->bus);
+	}
+
+	if (sr1 & I2C_SR1_BERR)
+	{
+		// Прямо очень часто бывает
+		// Так же тут работает еррата о том, что модуль после этого никак вообще не может работать
+		// Вырубаемся и ждем переиницилизации
+		I2C_LINK_DEBUG("berr\n");
+		_bus_shutdown(ctx);
+		ctx->stats.berr_cnt++;
+		LL_I2C_ClearFlag_BERR(ctx->bus);
+	}
+
+	if (sr1 & I2C_SR1_OVR)
+	{
+		// Вот этого вообще-то быть не должно
+		// Мы затягиваем клоки и работаем на дма
+		// Едвали мы что-то не успеем
+		I2C_LINK_DEBUG("ovr\n");
+		_bus_shutdown(ctx);
+		ctx->stats.ovf_cnt++;
+		LL_I2C_ClearFlag_OVR(ctx->bus);
+	}
+
+	if (sr1 & I2C_SR1_BTF)
+	{
+		// Этот бит зажигается, если игнорировать RXNE или TXNE
+		// за нас RXNE и TXNE должно обслуживать DMA
+		// Если оно не работает...
+		// Надо все рубить
+
+		I2C_LINK_DEBUG("btf\n");
+		ctx->stats.btf_cnt++;
+		_bus_shutdown(ctx);
+	}
+
+	if (sr1 & I2C_SR1_PECERR || sr1 & I2C_SR1_TIMEOUT || sr1 & I2C_SR1_SMBALERT)
+	{
+		// Вот этого НИКОГДА быть не должно
+		// так это функционал smbus
+
+		// Грузимся
+		assert(false);
+	}
+
 	return 0;
 }
 
 
-void i2s_i2c_link_it_event_handler(void)
+void its_i2c_link_it_event_handler(void)
 {
 	i2c_link_ctx_t * const ctx = &_ctx;
 
@@ -692,7 +976,7 @@ void i2s_i2c_link_it_event_handler(void)
 }
 
 
-void i2s_i2c_link_it_error_handler(void)
+void its_i2c_link_it_error_handler(void)
 {
-	i2s_i2c_link_it_event_handler();
+	its_i2c_link_it_event_handler();
 }
