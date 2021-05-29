@@ -89,7 +89,7 @@ static esp_err_t write_reg_16(ina219_t *dev, uint8_t reg, uint16_t val)
 
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (dev->i2c_address << 1) | I2C_MASTER_WRITE, 1);
-	i2c_master_write(cmd, (uint8_t*) &val, sizeof(val), 1);
+	i2c_master_write(cmd, (uint8_t*) &v, sizeof(v), 1);
 	i2c_master_stop(cmd);
 	esp_err_t err = i2c_master_cmd_begin(dev->i2c_port, cmd, dev->tick_timeout);
 	if (err) {
