@@ -390,6 +390,9 @@ static int _link_rx_recieve(I2C_HandleTypeDef *hi2c, i2c_link_ctx_t * ctx)
 
     HAL_StatusTypeDef hal_rc = 0;
 
+    ctx->prev_cmd = ctx->cur_cmd;
+    ctx->cur_cmd = I2C_LINK_CMD_NONE;
+    ctx->state = I2C_LINK_STATE_RX;
     hal_rc = HAL_I2C_Slave_Seq_Receive_DMA(
             hi2c,
             (uint8_t*) buf,
@@ -401,15 +404,16 @@ static int _link_rx_recieve(I2C_HandleTypeDef *hi2c, i2c_link_ctx_t * ctx)
     if (0 != rc)
         return rc;
 
-    ctx->state = I2C_LINK_STATE_RX;
     return 0;
 }
 
 static int _link_rx_recieve_cmd(I2C_HandleTypeDef *hi2c, i2c_link_ctx_t * ctx) {
     int rc = 0;
+    ctx->prev_cmd = ctx->cur_cmd;
+    ctx->cur_cmd = I2C_LINK_CMD_NONE;
+    ctx->state = I2C_LINK_STATE_RX;
     rc = _i2c_recieve(hi2c, (uint8_t*) &ctx->cur_cmd, 1, I2C_FIRST_FRAME);
     rc = _hal_status_to_errno(rc);
-    ctx->state = I2C_LINK_STATE_RX;
     return rc;
 }
 
@@ -426,8 +430,6 @@ static int _link_rx_start(I2C_HandleTypeDef *hi2c, i2c_link_ctx_t * ctx) {
     default:
         rc = _link_rx_recieve_cmd(hi2c, ctx);
     }
-    ctx->prev_cmd = ctx->cur_cmd;
-    ctx->cur_cmd = I2C_LINK_CMD_NONE;
 
     return rc;
 }
@@ -442,6 +444,8 @@ static int _link_rx_complete(I2C_HandleTypeDef *hi2c, i2c_link_ctx_t * ctx)
 
         if (ctx->prev_cmd == I2C_LINK_CMD_SET_PACKET) {
             _pbuf_queue_push_head(&ctx->rx_bufs_queue);
+        } else {
+            volatile int h = 4 + 4;
         }
         ctx->stats.rx_done_cnt++;
         break;

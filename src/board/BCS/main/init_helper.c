@@ -157,6 +157,7 @@ void init_basic(void) {
 	}
 	ESP_ERROR_CHECK(ret);
 
+	i2c_master_mutex_init(ITS_I2CTM_PORT);
 	i2c_param_config(ITS_I2CTM_PORT, &init_pin_i2c_tm);
 	i2c_driver_install(ITS_I2CTM_PORT, I2C_MODE_MASTER, 0, 0, 0);
 

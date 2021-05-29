@@ -32,8 +32,6 @@
 
 #define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
 
 ////////////////////////////////////////////////////////////////
@@ -161,7 +159,6 @@ typedef struct {
 	TaskHandle_t taskRecv;
 	uint8_t *adds;
 	int add_count;
-	SemaphoreHandle_t mutex;
 	imi_state_t state;
 
 } imi_handler_t;
@@ -243,10 +240,10 @@ static void _imi_task_recv(void *arg) {
 			ulTaskNotifyTake(pdFALSE, IMI_WAIT_DELAY / portTICK_RATE_MS);
 		}
 		//ESP_LOGI(TAG, "Trying to read");
-		xSemaphoreTake(h->mutex, portMAX_DELAY);
+		i2c_master_prestart(h->cfg.i2c_port, h->cfg.ticksToWaitForOne);
 		//Receiving packets if there are any
 		_imi_recv_all(h);
-		xSemaphoreGive(h->mutex);
+		i2c_master_postend(h->cfg.i2c_port);
 
 		vTaskDelay(IMI_CYCLE_DELAY / portTICK_RATE_MS);
 	}
@@ -265,7 +262,6 @@ void imi_install(imi_config_t *cfg, imi_port_t port) {
 	if (!h->adds) {
 		ESP_LOGE(TAG, "can't allocate memory");
 	}
-	h->mutex = xSemaphoreCreateMutex();
 
 	h->state = IMI_STATE_INSTALLED;
 }
@@ -277,7 +273,6 @@ void imi_install_static(imi_config_t *cfg, imi_port_t port, uint8_t *addrs) {
 	h->cfg = *cfg;
 	h->adds = addrs;
 	h->add_count = cfg->address_count;
-	h->mutex = xSemaphoreCreateMutex();
 
 	h->state = IMI_STATE_INSTALLED;
 }
@@ -326,11 +321,11 @@ int imi_send(imi_port_t port, uint8_t address, uint8_t *data, uint16_t size, Tic
 		.timeout = ticksToWait
 	};
 
-	if (xSemaphoreTake(h->mutex, ticksToWait) == pdFALSE) {
+	if (i2c_master_prestart(h->cfg.i2c_port, ticksToWait) == pdFALSE) {
 		return 1;
 	}
 	rc = imi_msg_send(&himi, data, size);
-	xSemaphoreGive(h->mutex);
+	i2c_master_postend(h->cfg.i2c_port);
 	return rc;
 }
 /*
@@ -345,7 +340,7 @@ int imi_send_all(imi_port_t port, uint8_t *data, uint16_t size, TickType_t ticks
 	h = &imi_device[port];
 	assert(h->state == IMI_STATE_STARTED);
 
-	if (xSemaphoreTake(h->mutex, ticksToWaitForOne) == pdFALSE) {
+	if (i2c_master_prestart(h->cfg.i2c_port, ticksToWaitForOne) == pdFALSE) {
 		return 1;
 	}
 	for (int i = 0; i < h->add_count; i++) {
@@ -358,7 +353,7 @@ int imi_send_all(imi_port_t port, uint8_t *data, uint16_t size, TickType_t ticks
 		rc = imi_msg_send(&himi, data, size);
 	}
 
-	xSemaphoreGive(h->mutex);
+	i2c_master_postend(h->cfg.i2c_port);
 	return rc;
 }
 /*

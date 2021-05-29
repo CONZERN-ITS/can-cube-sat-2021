@@ -6,6 +6,34 @@
  */
 
 #include "my_i2c.h"
+#include <esp_err.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+
+typedef struct i2c_dev_t {
+	SemaphoreHandle_t mutex;
+	StaticSemaphore_t xMutexBuffer;
+} i2c_dev_t;
+
+static i2c_dev_t i2c_dev_arr[I2C_NUM_MAX];
+
+void i2c_master_mutex_init(i2c_port_t i2c_port) {
+	if (i2c_dev_arr[i2c_port].mutex == 0) {
+		i2c_dev_arr[i2c_port].mutex = xSemaphoreCreateMutexStatic(&i2c_dev_arr[i2c_port].xMutexBuffer);
+		configASSERT(i2c_dev_arr[i2c_port].mutex);
+	}
+}
+
+BaseType_t i2c_master_prestart(i2c_port_t i2c_port, int timeout) {
+	return xSemaphoreTake(i2c_dev_arr[i2c_port].mutex, timeout);
+}
+BaseType_t i2c_master_postend(i2c_port_t i2c_port) {
+	return xSemaphoreGive(i2c_dev_arr[i2c_port].mutex);
+}
+
+
 
 int my_i2c_send(i2c_port_t i2c_port, uint8_t address, uint8_t *data, int size, int timeout) {
 	if (size <= 0) {
@@ -21,9 +49,12 @@ int my_i2c_send(i2c_port_t i2c_port, uint8_t address, uint8_t *data, int size, i
 	i2c_master_stop(cmd);
 
 	err = i2c_master_cmd_begin(i2c_port, cmd, timeout);
+	if (err != ESP_OK) {
+		return err;
+	}
 
 	i2c_cmd_link_delete(cmd);
-	return err;
+	return 0;
 }
 int my_i2c_recieve(i2c_port_t i2c_port, uint8_t address, uint8_t *data, int size, int timeout) {
 	esp_err_t err;
@@ -37,6 +68,10 @@ int my_i2c_recieve(i2c_port_t i2c_port, uint8_t address, uint8_t *data, int size
 	i2c_master_stop(cmd);
 
 	err = i2c_master_cmd_begin(i2c_port, cmd, timeout);
+	if (err != ESP_OK) {
+		return err;
+	}
 	i2c_cmd_link_delete(cmd);
-	return err;
+
+	return 0;
 }
