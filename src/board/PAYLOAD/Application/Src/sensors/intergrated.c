@@ -5,7 +5,7 @@
 #include "sensors/analog.h"
 
 
-// Напряжение со встроенного термистра при 25 градусах (в милливольта)
+// Напряжение со встроенного термистра при 25 градусах (в милливольтах)
 #define INTERNAL_TEMP_V25 (760.0f)
 // Коэффициент k внутренного термистра (мВ/C)
 #define INTERNAL_TEMP_AVG_SLOPE (2.5f)
@@ -33,7 +33,7 @@ int integrated_read(mavlink_own_temp_t * msg)
 	raw = raw_sum / oversampling;
 
 	float mv = raw * 3300.0f / 0x0FFF;
-	float temp = (INTERNAL_TEMP_V25 - mv) / INTERNAL_TEMP_AVG_SLOPE + 25;
+	float temp = (mv - INTERNAL_TEMP_V25) / INTERNAL_TEMP_AVG_SLOPE + 25;
 
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
