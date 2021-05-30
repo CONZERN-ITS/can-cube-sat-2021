@@ -15,7 +15,6 @@
 #	define I2C_LINK_IS_DMA_ENABLED(dma, channel_or_stream) LL_DMA_IsEnabledChannel(dma, channel_or_stream)
 #	define I2C_LINK_DMA_ENABLE(dma, channel_or_stream) LL_DMA_EnableChannel(dma, channel_or_stream)
 #	define I2C_LINK_DMA_DISABLE(dma, channel_or_stream) LL_DMA_DisableChannel(dma, channel_or_stream)
-
 #else
 #	define I2C_LINK_IS_DMA_ENABLED(dma, channel_or_stream) LL_DMA_IsEnabledStream(dma, channel_or_stream)
 #	define I2C_LINK_DMA_ENABLE(dma, channel_or_stream) LL_DMA_EnableStream(dma, channel_or_stream)
