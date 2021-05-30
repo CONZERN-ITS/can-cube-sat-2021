@@ -263,10 +263,10 @@ void mav_main_process_dna_message(mavlink_pld_dna_data_t * msg)
 void mav_main_process_own_stats(mavlink_pld_stats_t * msg)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("bme-> le: %"PRIi32", ec: %"PRIu16":\n",
-			 msg->int_bme_last_error, msg->int_bme_error_counter
-	);
-
+//	printf("bme-> le: %"PRIi32", ec: %"PRIu16":\n",
+//			 msg->int_bme_last_error, msg->int_bme_error_counter
+//	);
+//
 //	printf("adc-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
 //			msg->adc_init_error, msg->adc_last_error, msg->adc_error_counter
 //	);
@@ -301,6 +301,7 @@ void mav_main_process_own_stats(mavlink_pld_stats_t * msg)
 void mav_main_process_i2c_link_stats(mavlink_i2c_link_stats_t * msg)
 {
 #ifdef PROCESS_TO_PRINTF
+	/*
 	printf("it2link rx-> done: %"PRIu16", dropped: %"PRIu16", errors: %"PRIu16"\n",
 			msg->rx_done_cnt, msg->rx_dropped_cnt, msg->rx_error_cnt
 	);
@@ -317,6 +318,7 @@ void mav_main_process_i2c_link_stats(mavlink_i2c_link_stats_t * msg)
 			(uint32_t)(msg->time_s >> 4*8), (uint32_t)(msg->time_s & 0xFFFFFFFF), msg->time_us
 	);
 	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+	*/
 #endif
 
 #ifdef PROCESS_TO_ITSLINK

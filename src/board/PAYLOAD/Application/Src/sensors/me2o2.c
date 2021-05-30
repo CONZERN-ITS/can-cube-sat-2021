@@ -46,17 +46,22 @@ static int _read(float * value)
 	const int oversamapling = 10;
 	uint32_t sum_raw = 0;
 	uint16_t raw;
+	uint32_t sum_vdda = 0;
+	uint16_t vdda;
 	for (int i = 0; i < oversamapling; i++)
 	{
-		error = analog_get_raw(ANALOG_TARGET_ME202_O2, &raw);
+		error = analog_get_raw_with_vdda(ANALOG_TARGET_ME202_O2, &raw, &vdda);
 		if (0 != error)
 			return error;
 
 		sum_raw += raw;
+		sum_vdda += vdda;
 	}
 
 	raw = sum_raw / oversamapling;
-	float amp_mv = raw * 3300.0f/0x1000;
+	vdda = vdda / oversamapling;
+
+	float amp_mv = raw * (float)vdda/0x0FFF;
 
 	// Окей, у нас есть милливольты с операционного усилителя.
 	// ОУ усиливает напряжение на нагрузочном резисторе датчика в 121 раз

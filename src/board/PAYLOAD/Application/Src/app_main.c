@@ -326,7 +326,7 @@ static void _collect_i2c_link_stats(mavlink_i2c_link_stats_t * msg)
 
 	its_i2c_link_stats_t statsbuf;
 	its_i2c_link_stats(&statsbuf);
-
+/*
 	msg->rx_done_cnt = statsbuf.rx_done_cnt;
 	msg->rx_dropped_cnt = statsbuf.rx_dropped_cnt;
 	msg->rx_error_cnt = statsbuf.rx_error_cnt;
@@ -337,6 +337,7 @@ static void _collect_i2c_link_stats(mavlink_i2c_link_stats_t * msg)
 	msg->restarts_cnt = statsbuf.restarts_cnt;
 	msg->listen_done_cnt = statsbuf.listen_done_cnt;
 	msg->last_error = statsbuf.last_error;
+*/
 }
 
 

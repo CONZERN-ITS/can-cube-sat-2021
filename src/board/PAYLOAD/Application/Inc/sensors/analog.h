@@ -10,6 +10,9 @@
 
 #include <stdint.h>
 
+//! Номинальное значение VDDA (мВ)
+#define ANALOG_VDDA_NOMINAL 3300
+
 //! Целевой аналоговый сенсор, с которым требуется работать
 typedef enum analog_target_t
 {
@@ -40,6 +43,12 @@ int analog_restart(void);
 
 //! Чтение сырого значения АЦП для указанного датчика
 int analog_get_raw(analog_target_t target, uint16_t * value);
+
+//! Тоже самое что и analog_get_raw, но вместе с сырым значенеим АЦП считает еще и vdda
+int analog_get_raw_with_vdda(analog_target_t target, uint16_t * value, uint16_t * vdda);
+
+//! Высчитка напряжения питания VDDA
+int analog_get_vdda_mv(uint16_t * value);
 
 
 #endif /* INC_ADC_H_ */
