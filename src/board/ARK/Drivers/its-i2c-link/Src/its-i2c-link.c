@@ -9,17 +9,15 @@
 #include "main.h"
 
 //#define I2C_LINK_DEBUG(...) do { printf(__VA_ARGS__); } while (0)
-
 #define I2C_LINK_DEBUG(...) do { if (0) printf(__VA_ARGS__); } while (0)
 
 #ifdef I2C_LINK_VARIANT_F1
 #	define I2C_LINK_IS_DMA_ENABLED(dma, channel_or_stream) LL_DMA_IsEnabledChannel(dma, channel_or_stream)
-#	define I2C_LINK_DMA_ENABLE(dma, channel_or_stream) LL_DMA_IsEnabledChannel(dma, channel_or_stream)
+#	define I2C_LINK_DMA_ENABLE(dma, channel_or_stream) LL_DMA_EnableChannel(dma, channel_or_stream)
 #	define I2C_LINK_DMA_DISABLE(dma, channel_or_stream) LL_DMA_DisableChannel(dma, channel_or_stream)
-
 #else
 #	define I2C_LINK_IS_DMA_ENABLED(dma, channel_or_stream) LL_DMA_IsEnabledStream(dma, channel_or_stream)
-#	define I2C_LINK_DMA_ENABLE(dma, channel_or_stream) LL_DMA_IsEnabledStream(dma, channel_or_stream)
+#	define I2C_LINK_DMA_ENABLE(dma, channel_or_stream) LL_DMA_EnableStream(dma, channel_or_stream)
 #	define I2C_LINK_DMA_DISABLE(dma, channel_or_stream) LL_DMA_DisableStream(dma, channel_or_stream)
 #endif
 
@@ -388,7 +386,7 @@ static int _link_tx_setup_for_zeroes(i2c_link_ctx_t *ctx)
 	DMA_TypeDef * const dma = ctx->dma;
 	const uint32_t stream = ctx->dma_stream_tx;
 
-	static const uint8_t fallback = 0x00;
+	static const uint8_t fallback[10] = { 0x00 };
 
 	// Запускаем Дма в циклическом режиме на выдачу этих дуракцих нулей
 	// из единственного байта в памяти
@@ -875,6 +873,8 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 
 	if (sr1 & I2C_SR1_ADDR)
 	{
+		LL_I2C_ClearFlag_ADDR(ctx->bus);
+
 		I2C_LINK_DEBUG("addr\n");
 		// Кто-то на шине назвал наш адрес!
 		// нужно понять он просит нас принять данные или отдать
@@ -893,12 +893,11 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 		// TODO: что-нибудь с этим сделать
 		assert(0 == rc);
 
-		// снимаем ADDR флаг и продолжаем
-		LL_I2C_ClearFlag_ADDR(ctx->bus);
 	}
 
 	if (sr1 & I2C_SR1_STOPF)
 	{
+		LL_I2C_ClearFlag_STOP(ctx->bus);
 		I2C_LINK_DEBUG("stopf\n");
 		// поидее этот флаг может стрелять всегда и он будет означать конец транзакции..
 		// смотрим по нашему состоянию
@@ -916,11 +915,11 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 			// Это состояние очень уже похоже на невалидное
 			// TODO: запросить сброс перефирии
 		}
-		LL_I2C_ClearFlag_STOP(ctx->bus);
 	}
 
 	if (sr1 & I2C_SR1_AF)
 	{
+		LL_I2C_ClearFlag_AF(ctx->bus);
 		// AF мы поидее не можем поймать нигде кроме как на TX транзакции
 		// И это будет означать конец этой самой транзакции.
 		// После этого AF должен бы пойти stopf
@@ -932,17 +931,18 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 			// Если мы не в TX, но случилась такая лажа...
 			ctx->stats.af_cnt++;
 
-		LL_I2C_ClearFlag_AF(ctx->bus);
+
 	}
 
 	if (sr1 & I2C_SR1_ARLO)
 	{
+		LL_I2C_ClearFlag_ARLO(ctx->bus);
+		_bus_shutdown(ctx);
 		// Вполне может быть
 		// Вырубаемся и ждем переиницилизации
 		I2C_LINK_DEBUG("arlo\n");
-		_bus_shutdown(ctx);
 		ctx->stats.arlo_cnt++;
-		LL_I2C_ClearFlag_ARLO(ctx->bus);
+
 	}
 
 	if (sr1 & I2C_SR1_BERR)
@@ -950,10 +950,12 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 		// Прямо очень часто бывает
 		// Так же тут работает еррата о том, что модуль после этого никак вообще не может работать
 		// Вырубаемся и ждем переиницилизации
-		I2C_LINK_DEBUG("berr\n");
-		_bus_shutdown(ctx);
-		ctx->stats.berr_cnt++;
+
 		LL_I2C_ClearFlag_BERR(ctx->bus);
+		_bus_shutdown(ctx);
+
+		I2C_LINK_DEBUG("berr\n");
+		ctx->stats.berr_cnt++;
 	}
 
 	if (sr1 & I2C_SR1_OVR)
@@ -961,10 +963,11 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 		// Вот этого вообще-то быть не должно
 		// Мы затягиваем клоки и работаем на дма
 		// Едвали мы что-то не успеем
-		I2C_LINK_DEBUG("ovr\n");
-		_bus_shutdown(ctx);
-		ctx->stats.ovf_cnt++;
 		LL_I2C_ClearFlag_OVR(ctx->bus);
+		_bus_shutdown(ctx);
+
+		I2C_LINK_DEBUG("ovr\n");
+		ctx->stats.ovf_cnt++;
 	}
 
 	if (sr1 & I2C_SR1_BTF)
@@ -973,10 +976,11 @@ static int _link_event_handler(i2c_link_ctx_t * ctx)
 		// за нас RXNE и TXNE должно обслуживать DMA
 		// Если оно не работает...
 		// Надо все рубить
+		LL_I2C_ClearFlag_BERR(ctx->bus);
+		_bus_shutdown(ctx);
 
 		I2C_LINK_DEBUG("btf\n");
 		ctx->stats.btf_cnt++;
-		_bus_shutdown(ctx);
 	}
 
 	if (sr1 & I2C_SR1_PECERR || sr1 & I2C_SR1_TIMEOUT || sr1 & I2C_SR1_SMBALERT)
