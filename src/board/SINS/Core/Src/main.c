@@ -1120,7 +1120,7 @@ static void read_ldiods(float arr[ITS_SINS_LDS_COUNT]) {
     for (int i = 0; i < ITS_SINS_LDS_COUNT; i++)
     {
         uint16_t value;
-        int rc = analog_get_raw(order[i], &value);
+        int rc = analog_get_raw(order[i], 5, &value);
         assert(0 == rc);
         float v = ((float)value / (1 << 12)) * 3.3;
         arr[i] = v;

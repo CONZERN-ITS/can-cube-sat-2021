@@ -109,7 +109,6 @@ int analog_restart(void)
 }
 
 
-
 int analog_get_raw(analog_target_t target, uint16_t oversampling, uint16_t * value)
 {
 	int error = 0;

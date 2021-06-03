@@ -39,7 +39,6 @@ static its_injected_message_t _injected_msgs[] =
 		{ .msgid = MAVLINK_MSG_ID_SINS_errors },
 		{ .msgid = MAVLINK_MSG_ID_I2C_LINK_STATS },
 		{ .msgid = MAVLINK_MSG_ID_OWN_TEMP },
-		{ .msgid = MAVLINK_MSG_ID_I2C_LINK_STATS },
 };
 
 

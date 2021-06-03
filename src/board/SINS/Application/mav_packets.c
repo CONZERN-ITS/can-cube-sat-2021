@@ -148,36 +148,51 @@ int own_temp_packet(void)
 {
 	int error = 0;
 
+	const int oversampling = 50;
+	uint16_t raw;
+	error = analog_get_raw(ANALOG_TARGET_INTEGRATED_TEMP, oversampling, &raw);
+	if (0 != error)
+		return error;
+
+	// Пересчитываем по зашитым калибровочным коэффициентам
+	const uint16_t val_c1 = *TEMPSENSOR_CAL1_ADDR;
+	const uint16_t val_c2 = *TEMPSENSOR_CAL2_ADDR;
+	const uint16_t t_c1 = TEMPSENSOR_CAL1_TEMP;
+	const uint16_t t_c2 = TEMPSENSOR_CAL2_TEMP;
+
+	const float slope = (float)(t_c2 - t_c1) / (val_c2 - val_c1);
+	float temp = slope * (raw - val_c1) + t_c1;
+
+	// Теперь посчитаем VBAT
+	error = analog_get_raw(ANALOG_TARGET_VBAT, oversampling, &raw);
+	if (0 != error)
+		return error;
+
+	float vbat = (raw * 2) * 3.3f / 0x0FFF; // * 2 потому что  VAT подключен к АЦП с делителем
+
+	// Теперь vdda
+	error = analog_get_vdda_mv(oversampling, &raw);
+	if (0 != error)
+		return error;
+
+	float vdda = (float)raw / 1000;
+
 	struct timeval tv;
 	time_svc_world_get_time(&tv);
 
-	mavlink_own_temp_t own_temp_msg;
+	mavlink_own_temp_t msg;
+	msg.time_s = tv.tv_sec;
+	msg.time_us = tv.tv_usec;
+	msg.time_steady = HAL_GetTick();
+	msg.deg = temp;
+	msg.vbat = vbat;
+	msg.vdda = vdda;
 
-	const int oversampling = 10;
-	uint32_t raw_sum = 0;
-	uint16_t raw;
-	for (int i = 0; i < oversampling; i++)
-	{
-		error = analog_get_raw(ANALOG_TARGET_INTEGRATED_TEMP, &raw);
-		if (0 != error)
-			return error;
-		raw_sum += raw;
-	}
+	mavlink_message_t generic_msg;
+	mavlink_msg_own_temp_encode(SYSTEM_ID, COMPONENT_ID, &generic_msg, &msg);
+	uplink_write_mav(&generic_msg);
 
-		raw = raw_sum / oversampling;
-
-		float mv = raw * 3300.0f / 0x0FFF;
-		float temp = (mv - INTERNAL_TEMP_V25) / INTERNAL_TEMP_AVG_SLOPE + 25;
-
-		own_temp_msg.time_s = tv.tv_sec;
-		own_temp_msg.time_us = tv.tv_usec;
-		own_temp_msg.deg = temp;
-
-		mavlink_message_t msg;
-		mavlink_msg_own_temp_encode(SYSTEM_ID, COMPONENT_ID, &msg, &own_temp_msg);
-		uplink_write_mav(&msg);
-
-		return 0;
+	return 0;
 }
 
 
