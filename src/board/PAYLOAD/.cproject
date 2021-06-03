@@ -90,8 +90,6 @@
                                     <listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
                                     									
                                     <listOptionValue builtIn="false" value="DEBUG"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="PROCESS_TO_PRINTF=1"/>
                                     								
                                 </option>
                                 								

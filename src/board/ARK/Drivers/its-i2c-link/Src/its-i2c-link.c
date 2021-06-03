@@ -288,7 +288,7 @@ static int _bus_configure(i2c_link_ctx_t * ctx)
 	/* I2C1_TX Init */
 #ifdef I2C_LINK_VARIANT_F1
 #else
-	LL_DMA_SetChannelSelection(dma, stream_tx, LL_DMA_CHANNEL_1);
+	LL_DMA_SetChannelSelection(dma, stream_tx, I2C_LINK_DMA_CHANNEL_TX);
 	LL_DMA_SetStreamPriorityLevel(dma, stream_tx, LL_DMA_PRIORITY_HIGH);
 	LL_DMA_DisableFifoMode(dma, stream_tx);
 #endif

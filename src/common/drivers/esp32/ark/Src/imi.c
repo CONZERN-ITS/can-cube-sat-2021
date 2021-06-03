@@ -33,6 +33,8 @@
 #define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include "esp_log.h"
 
+static const char *TAG = "imi";
+
 
 ////////////////////////////////////////////////////////////////
 //Basic driver
@@ -77,6 +79,7 @@ static int imi_msg_send(imi_t *himi, uint8_t *data, uint16_t size) {
 static int imi_get_packet_size(imi_t *himi, uint16_t *size) {
 	int err = imi_send_cmd(himi, IMI_CMD_GET_SIZE);
 	if (err) {
+		ESP_LOGE(TAG, "unable to send get size cmd %d", err);
 		//printf("Error: send cmd1 = %d\n", (int)err);
 		return err;
 	}
@@ -85,6 +88,7 @@ static int imi_get_packet_size(imi_t *himi, uint16_t *size) {
 	uint16_t rsize = 0;
 	err = my_i2c_recieve(himi->i2c_port, himi->address, (uint8_t*) &rsize, sizeof(rsize), himi->timeout);
 	if (err) {
+		ESP_LOGE(TAG, "unable to pull packet size %d", err);
 		//printf("Error: send cmd2 = %d\n", (int)err);
 		return err;
 	}
@@ -163,7 +167,6 @@ typedef struct {
 
 } imi_handler_t;
 
-static const char *TAG = "imi";
 
 imi_handler_t imi_device[IMI_COUNT];
 
@@ -203,7 +206,7 @@ static void _imi_recv_all(imi_handler_t *h) {
 			int rc = imi_get_packet_size(&himi, &size);
 			ESP_LOGV(TAG, "get size from 0x%02X: %d %d", himi.address, rc, size);
 			if (rc || size == 0) {
-				ESP_LOGW(TAG, "Can't get size from %d %d", himi.address, rc);
+				ESP_LOGW(TAG, "Can't get size from 0x%02X %d", himi.address, rc);
 				isAny = 0;
 				continue;
 			}
