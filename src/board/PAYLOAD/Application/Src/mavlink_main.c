@@ -192,9 +192,9 @@ void mav_main_process_mics_message(mavlink_pld_mics_6814_data_t * msg)
 
 void mav_main_process_owntemp_message(mavlink_own_temp_t * msg)
 {
-#ifdef PROCESS_TO_PRINTF
-	printf("otemp: %fC\n",
-			msg->deg
+//#ifdef PROCESS_TO_PRINTF
+	printf("otemp: %fC\, vbat: %f mv, vdda: %f mv\n",
+			msg->deg, msg->vbat, msg->vdda
 	);
 
 	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
@@ -202,7 +202,7 @@ void mav_main_process_owntemp_message(mavlink_own_temp_t * msg)
 	);
 
 	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
-#endif
+//#endif
 
 #ifdef PROCESS_TO_ITSLINK
 	mavlink_message_t ms;

@@ -162,8 +162,11 @@
       </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+      
       <field type="float" name="deg">Temperature of a computer</field>
+      <field type="float" name="vdda">Voltage over VDDA input of computer</field>
+      <field type="float" name="vbat">Voltage at VBAT input of computer</field>
     </message>
 
     <message id="50005" name="I2C_LINK_STATS">

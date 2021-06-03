@@ -48,7 +48,7 @@ static char *TAG = "SENSORS";
 
 esp_err_t sensors_init(void) {
 	xTaskCreatePinnedToCore(sensors_task, "Sensors task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
-	xTaskCreatePinnedToCore(sensors_ina_task, "Sensors ina task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
+	//xTaskCreatePinnedToCore(sensors_ina_task, "Sensors ina task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
 	return 0;
 }
 
@@ -223,6 +223,7 @@ static void sensors_task(void *arg) {
 	vTaskDelete(0);
 }
 
+/*
 static void sensors_ina_task(void *arg) {
 #define INA_MAX 6
 	ina219_t ina[INA_MAX];
@@ -262,3 +263,4 @@ static void sensors_ina_task(void *arg) {
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 }
+*/

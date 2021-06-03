@@ -61,18 +61,12 @@ static int dna_read_temp_value(uint16_t * raw_)
 	// Несколько замеров, чтобы фильтрануть шум
 	int error = 0;
 	uint16_t raw = 0;
-	uint32_t raw_sum = 0;
-	const int oversampling = 10;
-	for (int i = 0; i < oversampling; i++)
-	{
-		error = analog_get_raw(ANALOG_TARGET_DNA_TEMP, &raw);
-		if (0 != error)
-			return error;
+	const int oversampling = 50;
+	error = analog_get_raw(ANALOG_TARGET_DNA_TEMP, oversampling, &raw);
+	if (0 != error)
+		return error;
 
-		raw_sum += raw;
-	}
-
-	(*raw_) = raw_sum / oversampling;
+	*raw_ = raw;
 	return 0;
 }
 

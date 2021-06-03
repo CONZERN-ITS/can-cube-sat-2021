@@ -331,21 +331,11 @@ static int _read_one(mics6814_sensor_t target, uint16_t * adc_raw, float * dr, f
 	// делаем замер через АЦП
 	// Несколько замеров, чтобы фильтрануть шум
 	uint16_t raw;
-	uint32_t raw_sum = 0;
-	uint16_t vdda;
-	const int oversampling = 10;
-	for (int i = 0; i < oversampling; i++)
-	{
-		error = analog_get_raw_with_vdda(analog_target, &raw, &vdda);
-		if (0 != error)
-			return error;
+	const int oversampling = 50;
+	error = analog_get_raw(analog_target, oversampling, &raw);
+	if (0 != error)
+		return error;
 
-		raw = (uint32_t)raw * vdda / ANALOG_VDDA_NOMINAL;
-		raw_sum += raw;
-	}
-
-
-	raw = raw_sum / oversampling;
 	*adc_raw = raw;
 
 	// Считаем сопротивление сенсора
