@@ -131,7 +131,7 @@
   </enums>
   <messages>
 
-  	<!--  Messages for all systems. Id range: 50000 - 50099  -->
+    <!--  Messages for all systems. Id range: 50000 - 50099  -->
     <message id="50001" name="THERMAL_STATE">
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
@@ -171,7 +171,7 @@
 
     <message id="50005" name="I2C_LINK_STATS">
       <description>
-        This message contains a statistics for its-i2c-link module which is present in BCU, ARK and PAYLOAD subsystems 
+        This message contains a statistics for its-i2c-link module which is present in BCU, ARK, SINS and PAYLOAD subsystems 
       </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -233,6 +233,25 @@
       <field type="float" name="error" units="%">relative error</field>      
     </message>
 
+    <message id="50009" name="COMMISSAR_REPORT">
+      <description>
+        This message contains report by onboard commisar about a paricullar subject.
+        Subject ID is encoded as a component ID field
+      </description>
+
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+
+      <field type="uint32_t" name="last_report_time">Last report time of a subject</field>
+      <field type="uint32_t" name="last_good_report_time">Last good report time of a subject</field>
+      <field type="uint32_t" name="reports_counter">Total amount of received reports</field>
+      <field type="uint32_t" name="bad_reports_counter">Amount of bad reports receved from this subject</field>
+      <field type="int32_t"  name="last_mistake">Code of last error, detected in subject report</field>
+      <field type="uint32_t" name="ignorance_depth">Length of uninterruptable error sequence for this subject</field>
+      <field type="uint32_t" name="punishments_counter">Counter for punishments issued for this subject</field>
+      <field type="uint32_t" name="last_punishment_time">timestamp of last executed punishment</field>
+    </message>
 
 
     <!--  SINS messages. Id range: 50100 - 50199  -->
@@ -305,8 +324,7 @@
       <field type="uint8_t" name="reset_counter"> reset counter</field>
     </message>
 
-    
-    
+
     <!--  Payload messages. Id range: 50200 - 50299  -->
     <message id="50200" name="PLD_BME280_DATA">
       <description>Payload module message with bme280 related data</description>
@@ -341,21 +359,10 @@
     </message>
 
     <message id="50204" name="PLD_STATS">
-      <description>
-        This message contains internal statistics of PAYLOAD subsystem
-      </description>
-
+      <description>This message contains internal statistics of PAYLOAD subsystem</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-
-      <field type="int32_t" name="int_bme_last_error">last error of internal bme280</field>
-      <field type="uint16_t" name="int_bme_error_counter">internal bme280 errors counter</field>
-
-      <field type="int32_t" name="ext_bme_last_error">last error of external bme280</field>
-      <field type="uint16_t" name="ext_bme_error_counter">external bme280 errors counter</field>
-
-      <field type="int32_t" name="adc_last_error">adc last error code</field>
-      <field type="uint16_t" name="adc_error_counter">adc errors counter</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="uint16_t" name="resets_count">mcu reset counter</field>
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>

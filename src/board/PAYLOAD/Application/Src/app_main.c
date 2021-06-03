@@ -59,29 +59,17 @@
 //! Периодичность выдачи its-link статистики (в тактах)
 #define PACKET_PERIOD_ITS_LINK_STATS (15)
 #define PACKET_OFFSET_ITS_LINK_STATS (7)
-
+//! Периодичность выдачи информации о состоянии управления компрессором
 #define PACKET_PERIOD_CCONTROL (7)
 #define PACKET_OFFSET_CCONTROL (7)
+//! Периодичность выдачи рапортов коммиссара
+#define PACKET_PERIOD_COMMISSAR_REPORT (25)
+#define PACKET_OFFSET_COMMISSAR_REPORT (10)
 
 
 //! Статистика об ошибках этого модуля
 typedef struct its_pld_status_t
 {
-	//! Код последней ошибки работы с bme внутри герметичного корпуса
-	int32_t int_bme_last_error;
-	//! Количество ошибок при работе с bme внутри герметичного корпуса
-	uint16_t int_bme_error_counter;
-
-	//! Код последней ошибки работы с bme снаружи герметичного корпуса
-	int32_t ext_bme_last_error;
-	//! Количество ошибок при работе с bme снаружи герметичного корпуса
-	uint16_t ext_bme_error_counter;
-
-	//! Код последней ошибки при работе с АЦП
-	int32_t adc_last_error;
-	//! Количество ошибок при работе с АЦП
-	uint16_t adc_error_counter;
-
 	//! Количество перезагрузок модуля
 	uint16_t resets_count;
 	//! Причина последней перезагрузки
@@ -188,12 +176,12 @@ int app_main()
 		{
 			mavlink_pld_bme280_data_t bme_msg = {0};
 			int rc = its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg);
-			commissar_report(COMMISSAR_SUB_BME280_INT, rc);
+			commissar_accept_report(COMMISSAR_SUB_BME280_INT, rc);
 			if (0 == rc)
 				mav_main_process_bme_message(&bme_msg, PLD_LOC_INTERNAL);
 
 			rc = its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg);
-			commissar_report(COMMISSAR_SUB_BME280_EXT, rc);
+			commissar_accept_report(COMMISSAR_SUB_BME280_EXT, rc);
 			if (0 == rc)
 				mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
 		}
@@ -203,12 +191,12 @@ int app_main()
 		{
 			mavlink_pld_ms5611_data_t data = {0};
 			int rc = its_ms5611_read_and_calculate(ITS_MS_EXTERNAL, &data);
-			commissar_report(COMMISSAR_SUB_MS5611_EXT, rc);
+			commissar_accept_report(COMMISSAR_SUB_MS5611_EXT, rc);
 			if (rc == 0)
 				mav_main_process_ms5611_message(&data, PLD_LOC_EXTERNAL);
 
 			rc = its_ms5611_read_and_calculate(ITS_MS_INTERNAL, &data);
-			commissar_report(COMMISSAR_SUB_MS5611_INT, rc);
+			commissar_accept_report(COMMISSAR_SUB_MS5611_INT, rc);
 			if (rc == 0)
 				mav_main_process_ms5611_message(&data, PLD_LOC_INTERNAL);
 		}
@@ -276,6 +264,14 @@ int app_main()
 		    ccontrol_update_inner_pressure()
 		}*/
 
+		if (tock % PACKET_PERIOD_COMMISSAR_REPORT == PACKET_OFFSET_COMMISSAR_REPORT)
+		{
+			mavlink_commissar_report_t report;
+			uint8_t component_id;
+			commissar_provide_report(&component_id, &report);
+			mav_main_process_commissar_report(component_id, &report);
+		}
+
 		// В конце такта работает комиссар
 		commissar_work();
 
@@ -306,12 +302,7 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg)
 	time_svc_gettimeofday(&tmv);
 	msg->time_s = tmv.tv_sec;
 	msg->time_us = tmv.tv_usec;
-	msg->adc_error_counter = _status.adc_error_counter;
-	msg->adc_last_error = _status.adc_last_error;
-	msg->int_bme_error_counter = _status.int_bme_error_counter;
-	msg->int_bme_last_error = _status.int_bme_last_error;
-	msg->ext_bme_error_counter = _status.ext_bme_error_counter;
-	msg->ext_bme_last_error = _status.ext_bme_last_error;
+	msg->time_steady = HAL_GetTick();
 	msg->resets_count = _status.resets_count;
 	msg->reset_cause = _status.reset_cause;
 }
