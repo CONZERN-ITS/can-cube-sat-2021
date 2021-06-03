@@ -109,7 +109,7 @@
                                     									
                                     <listOptionValue builtIn="false" value="../../../common/mavlink/generated/mavlink/its"/>
                                     									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link}&quot;"/>
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link/Inc}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/BME280_driver-bme280_v3.4.3}&quot;"/>
                                     									
@@ -283,7 +283,7 @@
                                     									
                                     <listOptionValue builtIn="false" value="../../../common/mavlink/generated/mavlink/its"/>
                                     									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link}&quot;"/>
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link/Inc}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/BME280_driver-bme280_v3.4.3}&quot;"/>
                                     									

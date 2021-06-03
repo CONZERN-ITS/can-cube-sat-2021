@@ -11,7 +11,7 @@
 
 #include "sensors/its_bme280.h"
 #include "sensors/its_ms5611.h"
-#include "Inc/its-i2c-link.h"
+#include "its-i2c-link.h"
 
 
 #define COMMISSAR_PUNISHMENT_COOLDOWN (5000)
