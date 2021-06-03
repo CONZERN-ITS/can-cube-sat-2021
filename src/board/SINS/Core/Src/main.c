@@ -662,6 +662,7 @@ int main(void)
 
   			error_mems_read();
   			mavlink_errors_packet();
+  			mavlink_its_link_stats();
   			commissar_work();
   		}
   	}

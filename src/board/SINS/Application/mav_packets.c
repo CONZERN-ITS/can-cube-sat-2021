@@ -11,6 +11,7 @@
 #include <its/mavlink.h>
 
 #include "drivers/time_svc/time_svc.h"
+#include "its-i2c-link.h"
 #include "drivers/uplink.h"
 #include "state.h"
 
@@ -219,6 +220,54 @@ int mavlink_errors_packet(void)
 	mavlink_message_t msg;
 	mavlink_msg_sins_errors_encode(SYSTEM_ID, COMPONENT_ID, &msg, &errors_msg);
 	uplink_write_mav(&msg);
+
+	return 0;
+}
+
+
+int mavlink_its_link_stats(void)
+{
+	struct timeval tv;
+	time_svc_world_get_time(&tv);
+
+	mavlink_i2c_link_stats_t msg;
+	msg.time_s = tv.tv_sec;
+	msg.time_us = tv.tv_usec;
+	msg.time_steady = HAL_GetTick();
+
+	its_i2c_link_stats_t stats;
+	its_i2c_link_stats(&stats);
+
+	msg.rx_packet_start_cnt = stats.rx_packet_start_cnt;
+	msg.rx_packet_done_cnt = stats.rx_packet_done_cnt;
+	msg.rx_cmds_start_cnt = stats.rx_cmds_start_cnt;
+	msg.rx_cmds_done_cnt = stats.rx_cmds_done_cnt;
+	msg.rx_drops_start_cnt = stats.rx_drops_start_cnt;
+	msg.rx_drops_done_cnt = stats.rx_drops_done_cnt;
+	msg.tx_psize_start_cnt = stats.tx_psize_start_cnt;
+	msg.tx_psize_done_cnt = stats.tx_psize_done_cnt;
+	msg.tx_packet_start_cnt = stats.tx_packet_start_cnt;
+	msg.tx_packet_done_cnt = stats.tx_packet_done_cnt;
+	msg.tx_zeroes_start_cnt = stats.tx_zeroes_start_cnt;
+	msg.tx_zeroes_done_cnt = stats.tx_zeroes_done_cnt;
+	msg.tx_empty_buffer_cnt = stats.tx_empty_buffer_cnt;
+	msg.tx_overruns_cnt = stats.tx_overruns_cnt;
+	msg.cmds_get_size_cnt = stats.cmds_get_size_cnt;
+	msg.cmds_get_packet_cnt = stats.cmds_get_packet_cnt;
+	msg.cmds_set_packet_cnt = stats.cmds_set_packet_cnt;
+	msg.cmds_invalid_cnt = stats.cmds_invalid_cnt;
+	msg.restarts_cnt = stats.restarts_cnt;
+	msg.berr_cnt = stats.berr_cnt;
+	msg.arlo_cnt = stats.arlo_cnt;
+	msg.ovf_cnt = stats.ovf_cnt;
+	msg.af_cnt = stats.af_cnt;
+	msg.btf_cnt = stats.btf_cnt;
+	msg.tx_wrong_size_cnt = stats.tx_wrong_size_cnt;
+	msg.rx_wrong_size_cnt = stats.rx_wrong_size_cnt;
+
+	mavlink_message_t generic_msg;
+	mavlink_msg_i2c_link_stats_encode(SYSTEM_ID, COMPONENT_ID, &generic_msg, &msg);
+	uplink_write_mav(&generic_msg);
 
 	return 0;
 }
