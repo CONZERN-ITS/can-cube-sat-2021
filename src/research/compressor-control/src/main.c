@@ -82,7 +82,7 @@ int main()
 	uint64_t tick;
 
 	// Заголвок .csv
-	printf("minues,altitude,inner_pressure,state,pump_on,valve_open\n");
+	printf("minutes,altitude,inner_pressure,state,pump_on,valve_open\n");
 	for (tick = 0; time < sym_time_limit; tick++)
 	{
 		time += time_step;
@@ -98,7 +98,18 @@ int main()
 			if (alt <= -100)
 				alt = -100;
 		}
-		inner_pressure = 0; // Пока вообще не держится давление у нас
+
+		if (!hal.valve_open && hal.pump_on)
+		{
+			inner_pressure += 5*1000; // Внутреннее давление быстро растет!
+		}
+		else if (hal.valve_open)
+		{
+			// А так быстро падает
+			inner_pressure -= 10*1000;
+			if (inner_pressure < 0)
+				inner_pressure = 0;
+		}
 
 		hal.now = time;
 
