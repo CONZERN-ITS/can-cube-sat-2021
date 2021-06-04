@@ -330,6 +330,7 @@
       <description>Payload module message with bme280 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
       <field type="double" name="temperature" units="deg">Atmospheric temerapture</field>
       <field type="double" name="pressure" units="Pa">Atmospheric pressure</field>
@@ -341,6 +342,7 @@
       <description>Payload module message with MiCS-6814 gas sensors data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="float" name="red_sensor_raw">MiCS-6814 RED sensor raw readings in a form for rs/r0</field>
       <field type="float" name="co_conc" units="ppm">C0 concetration from MiCS-6814 RED sensor</field>
@@ -354,6 +356,7 @@
       <description>Payload module message with ME2-O2-F20 gas sensor data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="float" name="o2_conc" units="percent">O2 concetration</field>
     </message>
@@ -372,6 +375,7 @@
       <description>Payload module message with ms5611 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
       <field type="float" name="temperature" units="deg">Atmospheric temperature</field>
       <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>
@@ -382,6 +386,7 @@
       <description>Payload module message with dosimeter data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
       <field type="uint32_t" name="count_tick" units="tick">Count ticks</field>
       <field type="uint32_t" name="delta_time" units="ms">Time for count ticks</field>
@@ -391,6 +396,7 @@
       <description>Payload module message with external ms5611 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
       <field type="float" name="dna_temp" units="deg">DNA temperature</field>
       <field type="uint8_t" name="heater_is_on" units="bool">Heater is on or off</field>

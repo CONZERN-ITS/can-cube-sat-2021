@@ -87,6 +87,7 @@ int dna_control_get_status(mavlink_pld_dna_data_t * msg)
 	time_svc_gettimeofday(&tmv);
 	msg->time_s = tmv.tv_sec;
 	msg->time_us = tmv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
 	msg->dna_temp = data.dna_temp;
 	msg->heater_is_on = data.heater_is_on;

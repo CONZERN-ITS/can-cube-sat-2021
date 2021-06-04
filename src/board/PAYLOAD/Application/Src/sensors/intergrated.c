@@ -44,6 +44,7 @@ int integrated_read(mavlink_own_temp_t * msg)
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
 	msg->time_steady = HAL_GetTick();
+
 	msg->deg = temp;
 	msg->vbat = vbat;
 	msg->vdda = vdda;

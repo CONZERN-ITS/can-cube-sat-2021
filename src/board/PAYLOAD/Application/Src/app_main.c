@@ -317,6 +317,8 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg)
 	msg->time_s = tmv.tv_sec;
 	msg->time_us = tmv.tv_usec;
 	msg->time_steady = HAL_GetTick();
+
+	msg->time_steady = HAL_GetTick();
 	msg->resets_count = _status.resets_count;
 	msg->reset_cause = _status.reset_cause;
 }

@@ -75,6 +75,7 @@ int me2o2_read(mavlink_pld_me2o2_data_t * msg)
 
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
 	msg->o2_conc = 20.0;
 
@@ -89,6 +90,7 @@ int me2o2_read(mavlink_pld_me2o2_data_t * msg)
 
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
 	int error = 0;
 	float conc;

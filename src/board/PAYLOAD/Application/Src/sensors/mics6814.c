@@ -358,6 +358,7 @@ int mics6814_read(mavlink_pld_mics_6814_data_t * msg)
 
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
 	msg->red_sensor_raw = 0;
 	msg->ox_sensor_raw = 1;
@@ -377,6 +378,7 @@ int mics6814_read(mavlink_pld_mics_6814_data_t * msg)
 
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
 	int error;
 
