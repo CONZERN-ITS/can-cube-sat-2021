@@ -22,10 +22,13 @@
 #include "sensors/integrated.h"
 #include "sensors/dna_temp.h"
 #include "sensors/dosim.h"
-#include "sensors/its_ccompressor.h"
-#include "compressor-control.h"
+#include "its_ccompressor.h"
 
 #include "commissar.h"
+
+//! БМЕ принципиально не показывает давление ниже 30ы 0000
+//! Поэтому с этого момента мы его показания для управления компрессором не используем
+#define BME_PRESSURE_THRESHOLD (31*1000)
 
 //! Длина одного такта в мс
 #define TICK_LEN_MS (200)
@@ -99,13 +102,6 @@ static void _process_input_packets(void);
 static uint16_t _fetch_reset_cause(void);
 
 
-static int _compressor_control(int64_t tick);
-
-// TODO:
-/* калибрануть все и вся
-   проверить как работает рестарт АЦП
- */
-
 int app_main()
 {
 	// Грузим из бэкап регистров количество рестартов, которое с нами случилось
@@ -170,7 +166,7 @@ int app_main()
 		// Управляем температурой ДНК
 		dna_control_work();
 		// Управляем компрессором
-		_compressor_control(tock);
+		its_ccontrol_work();
 
 		if (tock % PACKET_PERIOD_BME == PACKET_OFFSET_BME)
 		{
@@ -178,14 +174,23 @@ int app_main()
 			int rc = its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg);
 			commissar_accept_report(COMMISSAR_SUB_BME280_INT, rc);
 			if (0 == rc)
+			{
+				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD)
+					its_ccontrol_update_inner_pressure(bme_msg.pressure);
+
 				mav_main_process_bme_message(&bme_msg, PLD_LOC_INTERNAL);
+			}
 
 			rc = its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg);
 			commissar_accept_report(COMMISSAR_SUB_BME280_EXT, rc);
 			if (0 == rc)
-				mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
-		}
+			{
+				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD)
+					its_ccontrol_update_altitude(bme_msg.altitude);
 
+				mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
+			}
+		}
 
 		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MS5611)
 		{
@@ -193,12 +198,18 @@ int app_main()
 			int rc = its_ms5611_read_and_calculate(ITS_MS_EXTERNAL, &data);
 			commissar_accept_report(COMMISSAR_SUB_MS5611_EXT, rc);
 			if (rc == 0)
+			{
+				its_ccontrol_update_altitude(data.altitude);
 				mav_main_process_ms5611_message(&data, PLD_LOC_EXTERNAL);
+			}
 
 			rc = its_ms5611_read_and_calculate(ITS_MS_INTERNAL, &data);
 			commissar_accept_report(COMMISSAR_SUB_MS5611_INT, rc);
 			if (rc == 0)
+			{
+				its_ccontrol_update_inner_pressure(data.pressure);
 				mav_main_process_ms5611_message(&data, PLD_LOC_INTERNAL);
+			}
 		}
 
 
@@ -260,9 +271,12 @@ int app_main()
 			_collect_i2c_link_stats(&i2c_stats_msg);
 			mav_main_process_i2c_link_stats(&i2c_stats_msg);
 		}
-		/*if (tock % PACKET_PERIOD_CCONTROL == PACKET_OFFSET_CCONTROL) {
-		    ccontrol_update_inner_pressure()
-		}*/
+
+		if (tock % PACKET_PERIOD_CCONTROL == PACKET_OFFSET_CCONTROL) {
+			mavlink_pld_compressor_data_t msg;
+			its_ccontrol_get_state(&msg);
+			mav_main_process_ccompressor_state(&msg);
+		}
 
 		if (tock % PACKET_PERIOD_COMMISSAR_REPORT == PACKET_OFFSET_COMMISSAR_REPORT)
 		{
@@ -386,58 +400,4 @@ static uint16_t _fetch_reset_cause(void)
 	return rc;
 }
 
-
-static int _compressor_control(int64_t tick) {
-    // Максимальная высота подъема (в м)
-    const ccontrol_alt_t max_alt = 30*1000;
-    // Скорость подъема (в м/мс)
-    const ccontrol_alt_t alt_speed_up = 40000.f/(10 * 60*1000); // ~ 4км в 10 минут
-    // Скорость спуска (в м/мс)
-    const ccontrol_alt_t alt_speed_down = -13000.f/(10 * 60*1000); // ~ -13 км за 10 минут
-    // Шаг симуляции по времени (в мс)
-    const ccontrol_time_t time_step = 200;
-    // Пауза в тактах между замерами высоты и оффсет этих замеров
-    const uint32_t alt_measure_period = 4;
-    const uint32_t alt_measure_offset = 0;
-    // Пауза в тактах и между замерами внутренного давлени и оффсет этих замеров
-    const uint32_t inner_pressure_measure_period = 4;
-    const uint32_t inner_pressure_measure_offset = 1;
-    // Длительность симуляции
-    const uint64_t sym_time_limit = 80 * 60*1000;
-    // Частота сообщений отчета (такты)
-    const uint32_t report_period = 10;
-
-    // Пока что мы летим вверх
-    static bool going_up = true;
-
-    static ccontrol_alt_t alt = -100;
-    static ccontrol_time_t time = 0;
-    static ccontrol_pressure_t inner_pressure = 0;
-
-    time += time_step;
-    if (going_up)
-    {
-        alt += alt_speed_up * time_step;
-        if (alt >= max_alt)
-            going_up = false; // начинаем падать
-    }
-    else
-    {
-        alt += alt_speed_down * time_step;
-        if (alt <= -100)
-            alt = -100;
-    }
-    inner_pressure = 0; // Пока вообще не держится давление у нас
-
-
-    if (tick % alt_measure_period == alt_measure_offset)
-        ccontrol_update_altitude(alt);
-
-    if (tick % inner_pressure_measure_period == inner_pressure_measure_offset)
-        ccontrol_update_inner_pressure(inner_pressure);
-
-    ccontrol_poll();
-    ccontrol_state_t state = ccontrol_get_state();
-
-}
 

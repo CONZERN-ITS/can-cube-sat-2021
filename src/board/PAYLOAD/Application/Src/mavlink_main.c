@@ -263,24 +263,8 @@ void mav_main_process_dna_message(mavlink_pld_dna_data_t * msg)
 void mav_main_process_own_stats(mavlink_pld_stats_t * msg)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("bme-> le: %"PRIi32", ec: %"PRIu16":\n",
-			 msg->int_bme_last_error, msg->int_bme_error_counter
-	);
-
-	printf("adc-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->adc_init_error, msg->adc_last_error, msg->adc_error_counter
-	);
-
-	printf("me2o2-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->me2o2_init_error, msg->me2o2_last_error, msg->me2o2_error_counter
-	);
-
-	printf("mics6814-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->mics6814_init_error, msg->mics6814_last_error, msg->mics6814_error_counter
-	);
-
-	printf("integrated-> ie: %"PRIi32", le: %"PRIi32", ec: %"PRIu16":\n",
-			msg->integrated_init_error, msg->integrated_last_error, msg->integrated_error_counter
+	printf("resets_cnt-> ie: %"PRIu16", le: %"PRIu16"\n",
+			msg->resets_count, msg->reset_cause
 	);
 
 	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
@@ -290,10 +274,10 @@ void mav_main_process_own_stats(mavlink_pld_stats_t * msg)
 #endif
 
 #ifdef PROCESS_TO_ITSLINK
-    mavlink_message_t ms;
-    mavlink_msg_pld_stats_encode(mavlink_system, COMP_ANY_0, &ms, msg);
-    uint16_t size = mavlink_msg_to_send_buffer(_its_link_output_buf, &ms);
-    mav_main_send_to_its_link(MAVLINK_COMM_0, _its_link_output_buf, size);
+	mavlink_message_t ms;
+	mavlink_msg_pld_stats_encode(mavlink_system, COMP_ANY_0, &ms, msg);
+	uint16_t size = mavlink_msg_to_send_buffer(_its_link_output_buf, &ms);
+	mav_main_send_to_its_link(MAVLINK_COMM_0, _its_link_output_buf, size);
 #endif
 }
 
@@ -349,10 +333,13 @@ void mav_main_process_commissar_report(uint8_t component_id, const mavlink_commi
 	);
 
 	printf(
-			"punishments: %d, last_one: 0x%08"PRIx32"\n",
-			report->punishments_counter, report->last_punishment_time
+		"punishments: %"PRIu32", last_one: 0x%08"PRIx32"\n",
+		report->punishments_counter, report->last_punishment_time
 	);
 
+	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
+		(uint32_t)(report->time_s >> 4*8), (uint32_t)(report->time_s & 0xFFFFFFFF), report->time_us
+	);
 	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 #endif
 
@@ -364,3 +351,18 @@ void mav_main_process_commissar_report(uint8_t component_id, const mavlink_commi
 #endif
 }
 
+
+void mav_main_process_ccompressor_state(const mavlink_pld_compressor_data_t * msg)
+{
+	printf("compressor state\n");
+
+	printf(
+		"pump_on: %d, valve_open: %d\n",
+		(int)msg->pump_on, (int)msg->valve_open
+	);
+
+	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
+		(uint32_t)(msg->time_s >> 4*8), (uint32_t)(msg->time_s & 0xFFFFFFFF), msg->time_us
+	);
+	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+}

@@ -1,4 +1,4 @@
-#include "../inc/compressor-control.h"
+#include "compressor-control.h"
 
 #include <string.h>
 
@@ -14,13 +14,9 @@
 //! Внутреннее давление, на котором перестаем качать (Па)
 #define CCONTROL_INNER_PRESSURE_CUTOFF (90*1000)
 //! Таймаут в течение которого перестаем качать (мс)
-#define CCONTROL_PUMP_TIMEOUT (15*1000)
-//! Время в течение которого мы удерживаем давление в камере
-#define CCONTROL_MEASURE_TIMEOUT (10*1000)
-//! Время в течение которого мы проветриваем камеру
-#define CCONTROL_DRAIN_TIMEOUT (5*1000)
-//! Время в течение которого мы отдыхаем после очередного замера
-#define CCONTROL_COOLDOWN_TIMEOUT (1*1000)
+#define CCONTROL_PUMP_TIMEOUT (60*1000)
+//! Время в течение которого мы проветриваем камеру (мс)
+#define CCONTROL_DRAIN_TIMEOUT (20*1000)
 
 
 typedef struct ccontrol_t
@@ -36,15 +32,11 @@ typedef struct ccontrol_t
 	//! Состояние модуля
 	ccontrol_state_t state;
 	//! Высота на которой нужно сделать следующее включение компрессора
-	ccontrol_alt_t next_pump_on_altitude;
+	ccontrol_alt_t next_cycle_altitude;
 	//! Точка времени включения компрессора
 	ccontrol_time_t pump_on_timestamp;
-	//! Точка времени начала замеров
-	ccontrol_time_t measure_start_timestamp;
 	//! Время начала стравливания воздуха
 	ccontrol_time_t draing_start_timestamp;
-	//! Время начала отдыха
-	ccontrol_time_t cooldown_start_timestamp;
 
 	ccontrol_hal_t * hal;
 } ccontrol_t;
@@ -52,14 +44,6 @@ typedef struct ccontrol_t
 
 static ccontrol_t ccontrol;
 
-void ccontrol_pull_generic_state(ccontrol_generic_state_t *cgs) {
-    cgs->state = ccontrol.state;
-    cgs->next_pump_on_altitude = ccontrol.next_pump_on_altitude;
-    cgs->pump_on_timestamp = ccontrol.pump_on_timestamp;
-    cgs->measure_start_timestamp = ccontrol.measure_start_timestamp;
-    cgs->draing_start_timestamp = ccontrol.draing_start_timestamp;
-    cgs->cooldown_start_timestamp = ccontrol.cooldown_start_timestamp;
-}
 
 static int _go_pump(ccontrol_t * const self)
 {
@@ -79,21 +63,6 @@ static int _go_pump(ccontrol_t * const self)
 	self->pump_on_timestamp = self->hal->get_time(self->hal);
 	// Переходим в соответствующее состояние
 	self->state = CCONTROL_STATE_PUMPING;
-
-	return 0;
-}
-
-
-static int _go_measure(ccontrol_t * const self)
-{
-	int rc;
-	// Выключаем компрессор и неможечко ждем
-	rc = self->hal->pump_control(self->hal, false);
-	if (0 != rc)
-		return rc;
-
-	self->measure_start_timestamp = self->hal->get_time(self->hal);
-	self->state = CCONTROL_STATE_MEASURING;
 
 	return 0;
 }
@@ -119,37 +88,16 @@ static int _go_drain(ccontrol_t * const self)
 }
 
 
-static int _go_cooldown(ccontrol_t * const self)
-{
-	int rc;
-
-	// Выключаем насос
-	rc = self->hal->pump_control(self->hal, false);
-	if (0 != rc)
-		return rc;
-
-	// Открываем клапан (должен быть уже открыт, но мы параноики)
-	rc = self->hal->valve_control(self->hal, true);
-	if (0 != rc)
-		return rc;
-
-	self->cooldown_start_timestamp = self->hal->get_time(self->hal);
-	self->state = CCONTROL_STATE_COOLDOWN;
-
-	return 0;
-}
-
-
 static int _go_idle(ccontrol_t * const self)
 {
 	int rc;
 
-	// Выключаем насос и открываем клапан
+	// Выключаем насос и закрываем клапан
 	rc = self->hal->pump_control(self->hal, false);
 	if (0 != rc)
 		return rc;
 
-	rc = self->hal->valve_control(self->hal, true);
+	rc = self->hal->valve_control(self->hal, false);
 	if (0 != rc)
 		return rc;
 
@@ -164,7 +112,7 @@ int ccontrol_init(ccontrol_hal_t * hal)
 	ccontrol_t * const self = &ccontrol;
 
 	memset(self, 0x00, sizeof(ccontrol_t));
-	self->next_pump_on_altitude = CCONTROL_START_ALTITUDE;
+	self->next_cycle_altitude = CCONTROL_START_ALTITUDE;
 	self->state = CCONTROL_STATE_IDLE;
 	self->hal = hal;
 	return 0;
@@ -218,7 +166,7 @@ int ccontrol_poll(void)
 			if (self->inner_pressure >= CCONTROL_INNER_PRESSURE_CUTOFF)
 			{
 				// Накачали!
-				_go_measure(self);
+				_go_idle(self);
 				break;
 			}
 		}
@@ -228,52 +176,25 @@ int ccontrol_poll(void)
 		if (now - self->pump_on_timestamp > CCONTROL_PUMP_TIMEOUT)
 		{
 			// да, пора к сожалению
-			_go_measure(self);
+			_go_idle(self);
 			break;
 		}
 
 		// нет, пока продолжим накачивать
 	} break;
 
-	case CCONTROL_STATE_MEASURING: {
-		// Так, мы измеряем. Не пора ли сворачиваться?
-		ccontrol_time_t now = self->hal->get_time(self->hal);
-		if (now - self->measure_start_timestamp > CCONTROL_MEASURE_TIMEOUT)
-		{
-			// Пора
-			_go_drain(self);
-			break;
-		}
-
-		// Нет, не пора, еще потупим
-	} break;
-
 	case CCONTROL_STATE_DRAINING: {
-		// Ну... тут не знаю как быть.
-		// Поидее можно дождаться выравнивания давления?
-		// Пока что сделаем просто таймаут
+		// Ждем пока камера проверится. Уже пора?
 		ccontrol_time_t now = self->hal->get_time(self->hal);
 		if (now - self->draing_start_timestamp > CCONTROL_DRAIN_TIMEOUT)
 		{
 			// Пора завязывать
-			_go_cooldown(self);
+			// Начинаем качать
+			_go_pump(self);
 			break;
 		}
 
 		// Нет, еще пускай по-проветривается
-	} break;
-
-	case CCONTROL_STATE_COOLDOWN: {
-		// Отдыхаем
-		ccontrol_time_t now = self->hal->get_time(self->hal);
-		if (now - self->cooldown_start_timestamp > CCONTROL_COOLDOWN_TIMEOUT)
-		{
-			// Хватит отдыхать
-			_go_idle(self);
-			break;
-		}
-
-		// Все еще отдыхаем
 	} break;
 
 	default: {
@@ -288,15 +209,15 @@ int ccontrol_poll(void)
 	if (self->altitude_updated)
 	{
 		self->altitude_updated = false;
-		if (self->altitude > self->next_pump_on_altitude)
+		if (self->altitude > self->next_cycle_altitude)
 		{
 			// Ага, мы поднялись достаточно высоко, чтобы сделать следующий замер
 			// Если мы сейчас свободны, то пожалуй ка его и начнем
 			if (CCONTROL_STATE_IDLE == self->state)
-				_go_pump(self);
+				_go_drain(self);
 
 			// В любом случае переключаем метку для следующего включения
-			self->next_pump_on_altitude += CCONTROL_ALTITUDE_STEP;
+			self->next_cycle_altitude += CCONTROL_ALTITUDE_STEP;
 		}
 	}
 

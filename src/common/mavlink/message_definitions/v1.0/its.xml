@@ -334,7 +334,7 @@
       <field type="double" name="temperature" units="deg">Atmospheric temerapture</field>
       <field type="double" name="pressure" units="Pa">Atmospheric pressure</field>
       <field type="double" name="humidity" units="percent">Atmospheric relative humidity</field>
-      <field type="double" name="altitude" units="m">Cube altitude relative to cube power-on location</field>
+      <field type="float"  name="altitude" units="m">Barometric altitude</field>
     </message>
 
     <message id="50202" name="PLD_MICS_6814_DATA">
@@ -374,7 +374,8 @@
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
       
       <field type="float" name="temperature" units="deg">Atmospheric temperature</field>
-      <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>`
+      <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>
+      <field type="float"  name="altitude" units="m">Barometric altitude</field>
     </message>  
 
     <message id="50207" name="PLD_DOSIM_DATA">
@@ -394,6 +395,16 @@
       <field type="float" name="dna_temp" units="deg">DNA temperature</field>
       <field type="uint8_t" name="heater_is_on" units="bool">Heater is on or off</field>
     </message> 
+
+    <message id="50209" name="PLD_COMPRESSOR_DATA">
+      <description>Message containing data about compressor control algorithm</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+
+      <field type="uint8_t" name="pump_on">is pump enabled</field>
+      <field type="uint8_t" name="valve_open">is valve opened</field>
+    </message>
 
 
     <!--  BCU messages. Id range 50300 - 50399  -->
