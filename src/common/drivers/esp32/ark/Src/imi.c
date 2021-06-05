@@ -58,8 +58,8 @@ static int imi_msg_send(imi_t *himi, uint8_t *data, uint16_t size) {
 
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, himi->address << 1 | I2C_MASTER_WRITE, 1);
-	i2c_master_write(cmd, (uint8_t*) &size, sizeof(size), 1);
-	//i2c_master_write(cmd, data, size, 1); // По протоколу такое больше не требуется
+	//i2c_master_write(cmd, (uint8_t*) &size, sizeof(size), 1);  // По протоколу такое больше не требуется
+	i2c_master_write(cmd, data, size, 1);
 	i2c_master_stop(cmd);
 	err = i2c_master_cmd_begin(himi->i2c_port, cmd, himi->timeout / portTICK_PERIOD_MS);
 	i2c_cmd_link_delete(cmd);
