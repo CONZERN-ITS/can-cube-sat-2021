@@ -32,6 +32,7 @@ int ark_tsync_send_signal(uint8_t *data, size_t *size) {
 	mts.time_us = tp.tv_usec;
 	mts.time_steady = xTaskGetTickCount();
 	mts.time_base = 0;
+	mts.time_steady = (uint32_t) esp_timer_get_time();
 
 	mavlink_msg_timestamp_encode(CUBE_1_BCU, 0, &msg, &mts);
 	assert (*size >= mavlink_max_message_length(&msg));
@@ -48,7 +49,6 @@ void ark_tsync_task(void *pvParametres) {
 		uint8_t packet[MAVLINK_MAX_PACKET_LEN];
 		size_t size = sizeof(packet);
 		ark_tsync_send_signal(packet, &size);
-
 		if (imi_send_all(ITS_IMI_PORT, packet, size, 100 / portTICK_RATE_MS)) {
 			ESP_LOGI("TIME", "synced i2c devices");
 		} else {

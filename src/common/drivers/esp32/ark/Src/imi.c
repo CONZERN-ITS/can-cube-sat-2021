@@ -30,7 +30,7 @@
 #include "imi.h"
 #include "pinout_cfg.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
+#define LOG_LOCAL_LEVEL ESP_LOG_NONE
 #include "esp_log.h"
 
 static const char *TAG = "imi";
@@ -64,12 +64,8 @@ static int imi_msg_send(imi_t *himi, uint8_t *data, uint16_t size) {
 	err = i2c_master_cmd_begin(himi->i2c_port, cmd, himi->timeout / portTICK_PERIOD_MS);
 	i2c_cmd_link_delete(cmd);
 
-	if (err) {
-		//printf("Error: send cmd2 = %d\n", (int)err);
-		return err;
-	}
 
-	return 0;
+	return err;
 }
 
 

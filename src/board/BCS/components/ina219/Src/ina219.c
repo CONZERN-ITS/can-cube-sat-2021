@@ -66,13 +66,13 @@ static esp_err_t read_reg_16(ina219_t *dev, uint8_t reg, uint16_t *val)
 	i2c_master_read(cmd, (uint8_t*) val, sizeof(*val), 1);
 	i2c_master_stop(cmd);
 	esp_err_t err = i2c_master_cmd_begin(dev->i2c_port, cmd, dev->tick_timeout);
-	if (err) {
-		return err;
-	}
 	i2c_cmd_link_delete(cmd);
 	i2c_master_postend(dev->i2c_port);
 
     *val = (*val >> 8) | (*val << 8);
+	if (err) {
+		return err;
+	}
 
     return ESP_OK;
 }
@@ -92,11 +92,11 @@ static esp_err_t write_reg_16(ina219_t *dev, uint8_t reg, uint16_t val)
 	i2c_master_write(cmd, (uint8_t*) &v, sizeof(v), 1);
 	i2c_master_stop(cmd);
 	esp_err_t err = i2c_master_cmd_begin(dev->i2c_port, cmd, dev->tick_timeout);
+	i2c_cmd_link_delete(cmd);
+	i2c_master_postend(dev->i2c_port);
 	if (err) {
 		return err;
 	}
-	i2c_cmd_link_delete(cmd);
-	i2c_master_postend(dev->i2c_port);
 
     return ESP_OK;
 }

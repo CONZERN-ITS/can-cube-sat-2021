@@ -49,12 +49,9 @@ int my_i2c_send(i2c_port_t i2c_port, uint8_t address, uint8_t *data, int size, i
 	i2c_master_stop(cmd);
 
 	err = i2c_master_cmd_begin(i2c_port, cmd, timeout);
-	if (err != ESP_OK) {
-		return err;
-	}
 
 	i2c_cmd_link_delete(cmd);
-	return 0;
+	return err;
 }
 int my_i2c_recieve(i2c_port_t i2c_port, uint8_t address, uint8_t *data, int size, int timeout) {
 	esp_err_t err;
@@ -68,10 +65,7 @@ int my_i2c_recieve(i2c_port_t i2c_port, uint8_t address, uint8_t *data, int size
 	i2c_master_stop(cmd);
 
 	err = i2c_master_cmd_begin(i2c_port, cmd, timeout);
-	if (err != ESP_OK) {
-		return err;
-	}
 	i2c_cmd_link_delete(cmd);
 
-	return 0;
+	return err;
 }

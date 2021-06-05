@@ -10,7 +10,7 @@
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
 #include "pinout_cfg.h"
 
