@@ -74,7 +74,7 @@ static int is_msg_banned(int msg_id)
 	return 0;
 }
 
-#define RADIO_SEND_BUF_SIZE 30
+#define RADIO_SEND_BUF_SIZE 60
 static msg_container arr_buf[RADIO_SEND_BUF_SIZE];
 static int arr_buf_size = 0;
 

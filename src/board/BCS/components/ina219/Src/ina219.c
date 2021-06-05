@@ -10,6 +10,8 @@
  * BSD Licensed as described in the file LICENSE
 */
 
+
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include <esp_log.h>
 #include <math.h>
 #include <esp_err.h>
@@ -55,6 +57,7 @@ static const float u_shunt_max[] = {
 
 static esp_err_t read_reg_16(ina219_t *dev, uint8_t reg, uint16_t *val)
 {
+	ESP_LOGV(TAG, "read_reg_16 %d %d", dev->i2c_address, reg);
     CHECK_ARG(val);
     if (i2c_master_prestart(dev->i2c_port, dev->tick_timeout) != pdTRUE) {
     	return ESP_ERR_TIMEOUT;
@@ -70,16 +73,14 @@ static esp_err_t read_reg_16(ina219_t *dev, uint8_t reg, uint16_t *val)
 	i2c_master_postend(dev->i2c_port);
 
     *val = (*val >> 8) | (*val << 8);
-	if (err) {
-		return err;
-	}
 
-    return ESP_OK;
+    return err;
 }
 
 
 static esp_err_t write_reg_16(ina219_t *dev, uint8_t reg, uint16_t val)
 {
+	ESP_LOGV(TAG, "write_reg_16 %d %d %d", dev->i2c_address, reg, val);
     uint16_t v = (val >> 8) | (val << 8);
 
     if (i2c_master_prestart(dev->i2c_port, dev->tick_timeout) != pdTRUE) {
@@ -94,11 +95,9 @@ static esp_err_t write_reg_16(ina219_t *dev, uint8_t reg, uint16_t val)
 	esp_err_t err = i2c_master_cmd_begin(dev->i2c_port, cmd, dev->tick_timeout);
 	i2c_cmd_link_delete(cmd);
 	i2c_master_postend(dev->i2c_port);
-	if (err) {
-		return err;
-	}
 
-    return ESP_OK;
+
+    return err;
 }
 
 static esp_err_t read_conf_bits(ina219_t *dev, uint16_t mask, uint8_t bit, uint16_t *res)
@@ -115,7 +114,7 @@ static esp_err_t read_conf_bits(ina219_t *dev, uint16_t mask, uint8_t bit, uint1
 
 ///////////////////////////////////////////////////////////////////////////////
 
-esp_err_t ina219_init_desc(ina219_t *dev, uint8_t addr, i2c_port_t port)
+esp_err_t ina219_init_desc(ina219_t *dev, uint8_t addr, i2c_port_t port, int tickTimeout)
 {
     CHECK_ARG(dev);
 
@@ -126,6 +125,8 @@ esp_err_t ina219_init_desc(ina219_t *dev, uint8_t addr, i2c_port_t port)
     }
 
     dev->i2c_port = port;
+    dev->i2c_address = addr;
+    dev->tick_timeout = tickTimeout;
 
     return ESP_OK;
 }
