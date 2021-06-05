@@ -561,7 +561,6 @@ int main(void)
   	else*/
   	{
   		// Грузим из бэкап регистров количество рестартов, которое с нами случилось
-
 		error_system.reset_counter = RTC_BAK_GetRegister(RTC, RTC_BKP_DR1);
 		error_system.reset_counter += 1;
 		RTC_BAK_SetRegister(RTC, RTC_BKP_DR1, error_system.reset_counter);
@@ -573,14 +572,6 @@ int main(void)
   		//iwdg_init(&transfer_uart_iwdg_handle);
 
   		time_svc_steady_init();
-
-
-  		//backup_sram_enable_after_reset();
-  		//backup_sram_read_zero_state(&state_zero);
-
-  		//backup_sram_read_reset_counter(&error_system.reset_counter);
-  		//error_system.reset_counter++;
-  		//backup_sram_write_reset_counter(&error_system.reset_counter);
 
   		int error = time_svc_world_preinit_with_rtc();
   		error_system.rtc_error = error;
@@ -760,9 +751,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;//|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  //RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -786,12 +777,13 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  /*
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
   PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
-  }
+  }*/
   /** Enables the Clock Security System
   */
   HAL_RCC_EnableCSS();
@@ -990,6 +982,7 @@ static void MX_RTC_Init(void)
 {
 
   /* USER CODE BEGIN RTC_Init 0 */
+	return;
 
   /* USER CODE END RTC_Init 0 */
 

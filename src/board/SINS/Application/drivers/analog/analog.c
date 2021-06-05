@@ -41,6 +41,10 @@ static int _channgel_config_for_target(analog_target_t target, ADC_ChannelConfTy
 		config->Channel = ADC_CHANNEL_TEMPSENSOR;
 		break;
 
+	case ANALOG_TARGET_VBAT:
+		config->Channel = ADC_CHANNEL_VBAT;
+		break;
+
 	case ANALOG_TARGET_LED_0:
 		config->Channel = ADC_CHANNEL_1;
 		break;

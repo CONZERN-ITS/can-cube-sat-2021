@@ -111,15 +111,15 @@ int time_svc_world_init(void)
 	int rc;
 //
 	_time_base = TIME_SVC_TIMEBASE__NONE;
-//	// готовим RTC. По-хардкору или без. Нам нужно чтобы оно работало
-//	int rtc_hardcore_start;
-//	rc = time_svc_rtc_init(&rtc_hardcore_start);
-//	if (0 != rc)
-//	{
-//		rc = time_svc_world_timers_prepare();
-//		if (0 != rc)
-//			return rc;
-//	}
+	// готовим RTC. По-хардкору или без. Нам нужно чтобы оно работало
+	int rtc_hardcore_start;
+	rc = time_svc_rtc_init(&rtc_hardcore_start);
+	if (0 != rc)
+	{
+		rc = time_svc_world_timers_prepare();
+		if (0 != rc)
+			return rc;
+	}
 
 	// взводим таймеры
 	rc = time_svc_world_timers_prepare();
