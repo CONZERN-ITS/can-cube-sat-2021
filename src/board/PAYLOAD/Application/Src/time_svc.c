@@ -25,6 +25,8 @@ static struct timeval * _last_sync_tmv_inner = &_last_sync_tmv_1;
 static struct timeval * _last_sync_tmv_outer = &_last_sync_tmv_2;
 // Откуда мы взяли время
 static uint8_t _my_timebase = TIME_BASE_TYPE_NONE;
+// Количество раз сколько мы синхронизовали время
+static uint16_t _time_syncs_count = 0;
 
 // Ожидается ли
 static bool _sync_pending = false;
@@ -62,6 +64,13 @@ uint8_t time_svc_get_time_base()
 {
 	return _my_timebase;
 }
+
+
+uint16_t time_svc_get_time_syncs_count(void)
+{
+	return _time_syncs_count;
+}
+
 
 void time_svc_gettimeofday(struct timeval * tmv)
 {
@@ -177,4 +186,5 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	time_svc_settimeofday(&current_time);
 	// Запоминаем наш таймбейс
 	_my_timebase = time_base;
+	_time_syncs_count++;
 }

@@ -259,12 +259,15 @@ void mav_main_process_dna_message(mavlink_pld_dna_data_t * msg)
 }
 
 
-
 void mav_main_process_own_stats(mavlink_pld_stats_t * msg)
 {
 #ifdef PROCESS_TO_PRINTF
 	printf("resets_cnt-> ie: %"PRIu16", reason: %"PRIu16"\n",
 			msg->resets_count, msg->reset_cause
+	);
+
+	printf("time base: %d, active osc: %d, time_syncs_count: %"PRIu16"\n",
+			msg->time_base, msg->active_oscillator, msg->time_syncs_count
 	);
 
 	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
