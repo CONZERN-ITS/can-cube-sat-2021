@@ -123,8 +123,8 @@ void mav_main_process_bme_message(const mavlink_pld_bme280_data_t * msg, PLD_LOC
 void mav_main_process_ms5611_message(const mavlink_pld_ms5611_data_t * msg, PLD_LOCATION location)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("int ms5611: t=%fC, p=%fpa\n",
-			(float)msg->temperature, (float)msg->pressure
+	printf("int ms5611: t=%fC, p=%fpa, alt=%f\n",
+			(float)msg->temperature, (float)msg->pressure, (float)msg->altitude
 	);
 
 	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
@@ -263,7 +263,7 @@ void mav_main_process_dna_message(mavlink_pld_dna_data_t * msg)
 void mav_main_process_own_stats(mavlink_pld_stats_t * msg)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("resets_cnt-> ie: %"PRIu16", le: %"PRIu16"\n",
+	printf("resets_cnt-> ie: %"PRIu16", reason: %"PRIu16"\n",
 			msg->resets_count, msg->reset_cause
 	);
 
@@ -289,10 +289,10 @@ void mav_main_process_i2c_link_stats(mavlink_i2c_link_stats_t * msg)
 	printf("its-i2c-link:rx_c:%04"PRIx16"-%04"PRIx16"; ", msg->rx_cmds_start_cnt, msg->rx_cmds_done_cnt);
 	printf("its-i2c-link:rx_d:%04"PRIx16"-%04"PRIx16"\n", msg->rx_drops_start_cnt, msg->rx_drops_done_cnt);
 
-	printf("its-i2c-link:ts_s:%04"PRIx16"-%04"PRIx16"; ", msg->tx_psize_start_cnt, msg->tx_psize_done_cnt);
-	printf("its-i2c-link:ts_p:%04"PRIx16"-%04"PRIx16"; ", msg->tx_packet_start_cnt, msg->tx_packet_done_cnt);
-	printf("its-i2c-link:ts_z:%04"PRIx16"-%04"PRIx16"; ", msg->tx_zeroes_start_cnt, msg->tx_zeroes_done_cnt);
-	printf("its-i2c-link:ts_o:%04"PRIx16"-%04"PRIx16"\n", msg->tx_empty_buffer_cnt, msg->tx_overruns_cnt);
+	printf("its-i2c-link:tx_s:%04"PRIx16"-%04"PRIx16"; ", msg->tx_psize_start_cnt, msg->tx_psize_done_cnt);
+	printf("its-i2c-link:tx_p:%04"PRIx16"-%04"PRIx16"; ", msg->tx_packet_start_cnt, msg->tx_packet_done_cnt);
+	printf("its-i2c-link:tx_z:%04"PRIx16"-%04"PRIx16"; ", msg->tx_zeroes_start_cnt, msg->tx_zeroes_done_cnt);
+	printf("its-i2c-link:tx_o:%04"PRIx16"-%04"PRIx16"\n", msg->tx_empty_buffer_cnt, msg->tx_overruns_cnt);
 
 	printf("its-i2c-link:cmds:%04"PRIx16"-%04"PRIx16"-%04"PRIx16"-%04"PRIx16"\n",
 			msg->cmds_get_size_cnt, msg->cmds_get_packet_cnt,

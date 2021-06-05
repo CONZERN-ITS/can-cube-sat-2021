@@ -136,6 +136,7 @@ void commissar_accept_report(commissar_subordinate_t who, int error_code)
 
 	const uint32_t now = HAL_GetTick();
 	subor->last_report_time = now;
+	subor->reports_counter++;
 	if (0 == error_code)
 	{
 		// Этот товарищ ведет себя хорошо
@@ -146,7 +147,7 @@ void commissar_accept_report(commissar_subordinate_t who, int error_code)
 	{
 		subor->last_mistake = error_code;
 		subor->ignorance_depth++;
-
+		subor->bad_reports_counter++;
 	}
 }
 
@@ -174,6 +175,8 @@ void commissar_provide_report(uint8_t * component_id, mavlink_commissar_report_t
 
 	*component_id = (uint8_t)self->report_carret;
 	self->report_carret++;
+	if(self->report_carret >= COMMISSAR__SUBS_COUNT)
+		self->report_carret = 0;
 }
 
 
