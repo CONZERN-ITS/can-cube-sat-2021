@@ -321,6 +321,8 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg)
 	msg->time_steady = HAL_GetTick();
 	msg->resets_count = _status.resets_count;
 	msg->reset_cause = _status.reset_cause;
+	msg->time_base = time_svc_get_time_base();
+	msg->active_oscillator = ACTIVE_OSCILLATOR_HSE;
 }
 
 

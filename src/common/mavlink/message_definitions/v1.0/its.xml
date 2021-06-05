@@ -49,6 +49,15 @@
         <description>time based on GPS</description>
       </entry>
     </enum>
+    <enum name="ACTIVE_OSCILLATOR">
+      <description>Active oscillator on stm32 controllers</description>
+      <entry value="0" name="ACTIVE_OSCILLATOR_HSE">
+        <description>Working on HSE</description>
+      </entry>
+      <entry value="1" name="ACTIVE_OSCILLATOR_HSI">
+        <description>Working on HSI</description>
+      </entry>
+    </enum>
     <enum name="COMP_ANY">
       <description>Used for any data with simple definition (there is just one source or sources' definitions are similar)</description>
       <entry value="0" name="COMP_ANY_0"></entry>
@@ -385,6 +394,8 @@
 
       <field type="uint16_t" name="resets_count">mcu reset counter</field>
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
+      <field type="uint8_t"  name="time_base">time base for on board time service</field>
+      <field type="uint8_t"  name="active_oscillator">Active oscillator for this computer</field>
     </message>
 
     <message id="50205" name="PLD_MS5611_DATA">
