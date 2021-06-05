@@ -27,6 +27,9 @@ int mavlink_sins_isc(stateSINS_isc_t * state_isc)
 	mavlink_sins_isc_t msg_sins_isc;
 	msg_sins_isc.time_s = state_isc->tv.tv_sec;
 	msg_sins_isc.time_us = state_isc->tv.tv_usec;
+	msg_sins_isc.time_steady = HAL_GetTick();
+
+
 	//printf("Accel: %f %f %f \n", state_isc->accel[0], state_isc->accel[1], state_isc->accel[2]);
 	//printf("Mag: %f %f %f \n", state_isc->magn[0], state_isc->magn[1], state_isc->magn[2]);
 
@@ -50,6 +53,7 @@ int mavlink_lds_dir(stateSINS_lds_t * state)
 	mavlink_lds_dir_t mld;
 	mld.time_s = state->tv.tv_sec;
 	mld.time_us = state->tv.tv_usec;
+	mld.time_steady = HAL_GetTick();
 	//printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
 	//printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
 
@@ -71,6 +75,7 @@ int mavlink_light_diode(stateSINS_lds_t * state)
 	mavlink_light_diode_t mld;
 	mld.time_s = state->tv.tv_sec;
 	mld.time_us = state->tv.tv_usec;
+	mld.time_steady = HAL_GetTick();
 	//printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
 	//printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
 
@@ -93,6 +98,7 @@ int mavlink_timestamp(void)
 	time_svc_world_get_time(&tv);
 	msg_timestamp.time_s = tv.tv_sec;
 	msg_timestamp.time_us = tv.tv_usec;
+	msg_timestamp.time_steady = HAL_GetTick();
 	msg_timestamp.time_base = (uint8_t)time_svc_timebase();
 
 	mavlink_message_t msg;
@@ -115,6 +121,7 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 			mavlink_gps_ubx_nav_sol_t msg_gps_ubx_nav_sol;
 			msg_gps_ubx_nav_sol.time_s = tv.tv_sec;
 			msg_gps_ubx_nav_sol.time_us = tv.tv_usec;
+			msg_gps_ubx_nav_sol.time_steady = HAL_GetTick();
 			msg_gps_ubx_nav_sol.iTOW = packet->packet.navsol.i_tow;
 			msg_gps_ubx_nav_sol.fTOW = packet->packet.navsol.f_tow;
 			msg_gps_ubx_nav_sol.week = packet->packet.navsol.week;
@@ -206,6 +213,7 @@ int mavlink_errors_packet(void)
 
 	errors_msg.time_s = tv.tv_sec;
 	errors_msg.time_us = tv.tv_usec;
+	errors_msg.time_steady = HAL_GetTick();
 
 	errors_msg.analog_sensor_init_error = error_system.analog_sensor_init_error;
 
@@ -231,6 +239,7 @@ int mavlink_errors_packet(void)
 	errors_msg.uart_transfer_error = error_system.uart_transfer_error;
 
 	errors_msg.reset_counter = error_system.reset_counter;
+	errors_msg.reset_cause = error_system.reset_cause;
 
 	mavlink_message_t msg;
 	mavlink_msg_sins_errors_encode(SYSTEM_ID, COMPONENT_ID, &msg, &errors_msg);

@@ -136,6 +136,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="float" name="temperature" units="degC">Area temperature</field>
     </message>
 
@@ -143,6 +145,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="float" name="current" units="A">Area Current</field>
       <field type="float" name="voltage" units="V">Area Voltage</field>
     </message>
@@ -151,6 +155,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="uint8_t" name="time_base" enum="TIME_BASE_TYPE">Time base</field>
     </message>
 
@@ -220,6 +226,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="float[10]" name="value" units="V">Light diode value</field>
     </message>
 
@@ -227,6 +235,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="float" name="x" units="">Vector x component</field>
       <field type="float" name="y" units="">Vector y component</field>
       <field type="float" name="z" units="">Vector z component</field>
@@ -259,6 +269,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>      
+
       <field type="uint32_t" name="iTOW" units="ms">Time of week of the navigation epoch</field>
       <field type="int32_t" name="fTOW" units="ns">Fractorial part of iTOW</field>
       <field type="int16_t" name="week">GPS week number of the navigation epoch</field>
@@ -291,6 +303,8 @@
       <description>SINS data in ISC</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch).</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+
       <field type="float[3]" name="accel">accelerations</field>
       <field type="float[3]" name="compass">magnetometer vector</field>
       <field type="float[4]" name="quaternion">quaternion for translating RSC into ISC (scalar part first)</field>
@@ -302,6 +316,7 @@
       </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="int32_t" name="gps_init_error"> last gps init error </field>
       <field type="int32_t" name="gps_config_error"> last gps config error </field>
@@ -321,7 +336,8 @@
       <field type="int32_t" name="lis3mdl_error_counter"> counter lis errors</field>
       <field type="int32_t" name="gps_reconfig_counter"> gps reconfiguration counter</field>
 
-      <field type="uint8_t" name="reset_counter"> reset counter</field>
+      <field type="uint16_t" name="reset_counter"> reset counter</field>
+      <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
     </message>
 
 
@@ -421,6 +437,7 @@
 
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="int32_t" name="sd_last_error">last error of sdio component</field>
       <field type="uint32_t" name="sd_error_count">count of sdio errors</field>
@@ -475,7 +492,7 @@
       <description>Antenna system manual control without angle recording</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-
+      
       <field type="float" name="azimuth" units="grad">Azimuth angle delta</field>
       <field type="float" name="elevation" units="grad">Elevation angle delta</field>
     </message>

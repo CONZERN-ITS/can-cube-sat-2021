@@ -421,6 +421,58 @@ int check_SINS_state(void)
 		return 0;
 }
 
+
+static uint16_t _fetch_reset_cause(void)
+{
+	int rc = 0;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST))
+		rc |= MCU_RESET_PIN;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST))
+		rc |= MCU_RESET_POR;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST))
+		rc |= MCU_RESET_SW;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))
+		rc |= MCU_RESET_WATCHDOG;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST))
+		rc |= MCU_RESET_WATCHDOG2;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_LPWRRST))
+		rc |= MCU_RESET_LOWPOWER;
+
+	__HAL_RCC_CLEAR_RESET_FLAGS();
+	return rc;
+}
+
+
+#define RTC_BKP_DR1                     0x00000001U
+
+static uint32_t RTC_BAK_GetRegister(RTC_TypeDef *RTCx, uint32_t BackupRegister)
+{
+	register uint32_t tmp = 0U;
+
+	  tmp = (uint32_t)(&(RTCx->BKP0R));
+	  tmp += (BackupRegister * 4U);
+
+	  /* Read the specified register */
+	  return (*(__IO uint32_t *)tmp);
+}
+
+
+static void RTC_BAK_SetRegister(RTC_TypeDef *RTCx, uint32_t BackupRegister, uint32_t Data)
+{
+  register uint32_t tmp = 0U;
+
+  tmp = (uint32_t)(&(RTCx->BKP0R));
+  tmp += (BackupRegister * 4U);
+
+  /* Write the specified register */
+  *(__IO uint32_t *)tmp = (uint32_t)Data;
+}
 /* USER CODE END 0 */
 
 /**
@@ -508,6 +560,15 @@ int main(void)
   	}
   	else*/
   	{
+  		// Грузим из бэкап регистров количество рестартов, которое с нами случилось
+
+		error_system.reset_counter = RTC_BAK_GetRegister(RTC, RTC_BKP_DR1);
+		error_system.reset_counter += 1;
+		RTC_BAK_SetRegister(RTC, RTC_BKP_DR1, error_system.reset_counter);
+
+		// Смотрим причину последнего резета
+		error_system.reset_cause = _fetch_reset_cause();
+
 
   		//iwdg_init(&transfer_uart_iwdg_handle);
 
