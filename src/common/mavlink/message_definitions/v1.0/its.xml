@@ -336,7 +336,8 @@
       <field type="int32_t" name="lis3mdl_error_counter"> counter lis errors</field>
       <field type="int32_t" name="gps_reconfig_counter"> gps reconfiguration counter</field>
 
-      <field type="uint8_t" name="reset_counter"> reset counter</field>
+      <field type="uint16_t" name="reset_counter"> reset counter</field>
+      <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
     </message>
 
 

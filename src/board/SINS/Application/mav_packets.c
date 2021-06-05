@@ -239,6 +239,7 @@ int mavlink_errors_packet(void)
 	errors_msg.uart_transfer_error = error_system.uart_transfer_error;
 
 	errors_msg.reset_counter = error_system.reset_counter;
+	errors_msg.reset_cause = error_system.reset_cause;
 
 	mavlink_message_t msg;
 	mavlink_msg_sins_errors_encode(SYSTEM_ID, COMPONENT_ID, &msg, &errors_msg);
