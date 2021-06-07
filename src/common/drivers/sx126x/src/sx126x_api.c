@@ -465,7 +465,7 @@ int sx126x_api_set_lora_packet_params(sx126x_api_t * api, const sx126x_lora_pack
 	const uint8_t args[6] = {
 			/* 1 */(params->preamble_length >> 8) & 0xFF,
 			/* 2 */(params->preamble_length     ) & 0xFF,
-			/* 3 */params->explicit_header ? 0x01 : 0x00,
+			/* 3 */params->explicit_header ? 0x00 : 0x01,
 			/* 4 */params->payload_length,
 			/* 5 */params->use_crc ? 0x01 : 0x00,
 			/* 6 */params->invert_iq ? 0x01 : 0x00,
