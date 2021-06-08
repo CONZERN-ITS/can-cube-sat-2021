@@ -280,7 +280,7 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 		if (gpio_value < 0)
 			return SX126X_ERROR_BOARD;
 
-		usleep(500); // Чуточку спим
+		usleep(10); // Чуточку спим
 
 		// Смотрим не прошел ли таймаут
 		uint32_t now;

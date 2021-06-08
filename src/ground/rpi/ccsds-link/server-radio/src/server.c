@@ -26,7 +26,7 @@
 
 static int64_t _timespec_diff_ms(const struct timespec * left, const struct timespec * right)
 {
-	return (left->tv_sec - right->tv_sec) * 1000 - (left->tv_nsec - right->tv_nsec) / (1000 * 1000);
+	return (left->tv_sec - right->tv_sec) * 1000 + (left->tv_nsec - right->tv_nsec) / (1000 * 1000);
 }
 
 
@@ -905,6 +905,7 @@ void server_run(server_t * server)
 			perror("zmq poll error");
 			break;
 		}
+		log_trace("poll done");
 
 		if (pollitems[0].revents)
 		{
