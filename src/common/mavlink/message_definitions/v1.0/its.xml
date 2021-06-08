@@ -369,11 +369,16 @@
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
       <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
-      <field type="float" name="red_sensor_raw">MiCS-6814 RED sensor raw readings in a form for rs/r0</field>
+      <field type="uint16_t[3]" name="red_sensor_raw">MiCS-6814 RED sensor raw readings in a form for rs/r0</field>
+      <field type="uint8_t" name="red_rb">amount of registers in upper half of divider</field>
       <field type="float" name="co_conc" units="ppm">C0 concetration from MiCS-6814 RED sensor</field>
-      <field type="float" name="ox_sensor_raw">MiCS-6814 OX sensor raw readings in a form for rs/r0</field>
+
+      <field type="uint16_t[3]" name="ox_sensor_raw">MiCS-6814 OX sensor raw readings in a form for rs/r0</field>
+      <field type="uint8_t" name="ox_rb">amount of registers in upper half of divider</field>
       <field type="float" name="no2_conc" units="ppm">NO2 concentration from MiCS-6814 OX sensor</field>
-      <field type="float" name="nh3_sensor_raw">MiCS-6814 NH3 sensor raw readings in a form of rs/s0</field>
+
+      <field type="uint16_t[3]" name="nh3_sensor_raw">MiCS-6814 NH3 sensor raw readings in a form of rs/s0</field>
+      <field type="uint8_t" name="nh3_rb">amount of registers in upper half of divider</field>
       <field type="float" name="nh3_conc" units="ppm">NH3 concentration from MiCS-6814 NH3 sensor</field>
     </message>
 
