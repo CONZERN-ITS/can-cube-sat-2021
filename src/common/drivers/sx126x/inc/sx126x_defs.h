@@ -134,9 +134,9 @@ typedef enum sx126x_device_error_t
 	SX126X_DEVICE_ERROR_ADC_CALIB		= (1 << 3),
 	SX126X_DEVICE_ERROR_IMG_CALIB		= (1 << 4),
 	SX126X_DEVICE_ERROR_XOSC_START		= (1 << 5),
-	SX126X_DEVICE_ERROR_PLL_LOCK_ERR	= (1 << 6),
+	SX126X_DEVICE_ERROR_PLL_LOCK		= (1 << 6),
 									//	= (1 << 7), reserved
-	SX126X_DEVICE_ERROR_PA_RAMP_ERR		= (1 << 8)
+	SX126X_DEVICE_ERROR_PA_RAMP			= (1 << 8)
 									//	= (1 << 9..15), reserved
 } sx126x_device_error_t;
 

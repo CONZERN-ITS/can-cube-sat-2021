@@ -633,20 +633,19 @@ int sx126x_api_reset_stats(sx126x_api_t * api)
 }
 
 
-int sx126x_get_device_errors(sx126x_api_t * api, uint16_t device_errors)
+int sx126x_api_get_device_errors(sx126x_api_t * api, uint16_t * device_errors)
 {
 	int rc;
 	uint8_t raw[2];
 	rc = sx126x_brd_cmd_read(api->board, SX126X_CMD_GET_ERROR, NULL, raw, sizeof(raw));
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	device_errors = ((uint16_t)raw[0] << 8) | raw[1];
-	(void) device_errors;
+	*device_errors = ((uint16_t)raw[0] << 8) | raw[1];
 	return 0;
 }
 
 
-int sx126x_clear_device_errors(sx126x_api_t * api)
+int sx126x_api_clear_device_errors(sx126x_api_t * api)
 {
 	int rc;
 	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_CLR_ERROR, NULL, 0);

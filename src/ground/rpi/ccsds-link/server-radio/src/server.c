@@ -21,6 +21,7 @@
 #define ITS_GBUS_TOPIC_UPLINK_STATE "radio.uplink_state"
 #define ITS_GBUS_TOPIC_RSSI_INSTANT "radio.rssi_instant"
 #define ITS_GBUS_TOPIC_RSSI_PACKET "radio.rssi_packet"
+#define ITS_GBUS_TOPIC_RADIO_STATS "radio.stats"
 
 
 
@@ -322,12 +323,6 @@ static void _zmq_send_packet_rssi(server_t * server)
 	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
 	if (rc < 0)
 	{
-		log_error("unable to send rx data topic: %d: %s", errno, strerror(errno));
-		return;
-	}
-
-	if (rc < 0)
-	{
 		log_error("sprintf rx rssi json failed: %d, %d: %s", rc, errno, strerror(errno));
 		return;
 	}
@@ -336,6 +331,63 @@ static void _zmq_send_packet_rssi(server_t * server)
 	if (rc < 0)
 	{
 		log_error("unable to send rx rssi data: %d: %s", errno, strerror(errno));
+		return;
+	}
+}
+
+
+static void _zmq_send_radio_stats(
+	server_t * server, const sx126x_stats_t * stats, uint16_t device_errors
+)
+{
+	int rc;
+
+	char json_buffer[1024] = { 0 };
+	rc = snprintf(
+		json_buffer, sizeof(json_buffer),
+		"{"
+			"\"pkt_received\": %"PRIu16", "
+			"\"crc_errors\": %"PRIu16", "
+			"\"hdr_errors\": %"PRIu16", "
+			"\"error_rc64k_calib\": %s, "
+			"\"error_rc13m_calib\": %s, "
+			"\"error_pll_calib\": %s, "
+			"\"error_adc_calib\": %s, "
+			"\"error_img_calib\": %s, "
+			"\"error_xosc_start\": %s, "
+			"\"error_pll_lock\": %s, "
+			"\"error_pa_ramp\": %s "
+		"}",
+		stats->pkt_received, stats->crc_errors, stats->hdr_errors,
+		device_errors & SX126X_DEVICE_ERROR_RC64K_CALIB	? "true": "false",
+		device_errors & SX126X_DEVICE_ERROR_RC13M_CALIB	? "true": "false",
+		device_errors & SX126X_DEVICE_ERROR_PLL_CALIB	? "true": "false",
+		device_errors & SX126X_DEVICE_ERROR_ADC_CALIB	? "true": "false",
+		device_errors & SX126X_DEVICE_ERROR_IMG_CALIB	? "true": "false",
+		device_errors & SX126X_DEVICE_ERROR_XOSC_START	? "true": "false",
+		device_errors & SX126X_DEVICE_ERROR_PLL_LOCK	? "true": "false",
+		device_errors & SX126X_DEVICE_ERROR_PA_RAMP		? "true": "false"
+	);
+	if (rc < 0 || rc >= sizeof(json_buffer))
+	{
+		log_error("spintf radio stats json failed: %d", rc);
+		return;
+	}
+
+	// Топик
+	const char topic[] = ITS_GBUS_TOPIC_RADIO_STATS;
+	rc = zmq_send(server->pub_socket, topic, sizeof(topic)-1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+	if (rc < 0)
+	{
+		log_error("unable to send radio stats topic: %d: %s", errno, strerror(errno));
+		return;
+	}
+
+	// Метаданные
+	rc = zmq_send(server->pub_socket, json_buffer, strlen(json_buffer), ZMQ_DONTWAIT);
+	if (rc < 0)
+	{
+		log_error("unable to send radio stats data: %d: %s", errno, strerror(errno));
 		return;
 	}
 }
@@ -574,7 +626,7 @@ static int _radio_init(server_t * server)
 
 	const sx126x_drv_basic_cfg_t basic_cfg = {
 			.use_dio3_for_tcxo = true,
-			.tcxo_v = SX126X_TCXO_CTRL_1_8V,
+			.tcxo_v = SX126X_TCXO_CTRL_2_2V,
 			.use_dio2_for_rf_switch = false,
 			.allow_dcdc = true,
 			.standby_mode = SX126X_STANDBY_XOSC
@@ -628,27 +680,55 @@ static int _radio_init(server_t * server)
 	if (0 != rc)
 		goto bad_exit;
 
+	uint16_t device_errors = 0;
 	rc = sx126x_drv_configure_basic(radio, &basic_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure basic; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
+
+	device_errors = 0;
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure lora modem; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	rc = sx126x_drv_configure_lora_modem(radio, &modem_cfg);
 	if (0 != rc)
 		goto bad_exit;
 
+
+	device_errors = 0;
 	rc = sx126x_drv_configure_lora_packet(radio, &packet_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure lora packet; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
+
 
 	rc = sx126x_drv_configure_lora_cad(radio, &cad_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure lora cad; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
+
 
 	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure lora rx timeout; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
+
+	device_errors = 0;
 	rc = sx126x_drv_mode_standby_rc(radio);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure standby_rc; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	if (0 != rc)
+		goto bad_exit;
+
+	device_errors = 0;
+	rc = sx126x_drv_mode_standby(radio);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure standby default; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -855,6 +935,100 @@ void _server_sync_rx_data(server_t * server)
 }
 
 
+void _server_sync_radio_stats(server_t * server)
+{
+	int rc;
+
+	struct timespec now;
+	rc = clock_gettime(CLOCK_MONOTONIC, &now);
+	assert(0 == rc);
+
+	const int64_t time_since_last_report = _timespec_diff_ms(
+		&now, &server->radio_stats_report_block_deadline
+	);
+
+	if (time_since_last_report < server->radio_stats_report_period)
+		return;
+
+
+	uint16_t device_errors;
+	rc = sx126x_drv_get_device_errors(&server->dev, &device_errors);
+	if (0 != rc)
+	{
+		log_error("unable to get device errors: %d", rc);
+		return;
+	}
+
+	rc = sx126x_drv_clear_device_errors(&server->dev);
+	if (0 != rc)
+	{
+		log_error("unable to clear device errors");
+		return;
+	}
+
+	if (device_errors)
+	{
+		char errors_str[1024] = {0};
+		if (device_errors & SX126X_DEVICE_ERROR_RC64K_CALIB)
+			strcat(errors_str, ", SX126X_DEVICE_ERROR_RC64K_CALIB");
+
+		if (device_errors & SX126X_DEVICE_ERROR_RC13M_CALIB)
+			strcat(errors_str, ", SX126X_DEVICE_ERROR_RC13M_CALIB");
+
+		if (device_errors & SX126X_DEVICE_ERROR_PLL_CALIB)
+			strcat(errors_str, ", SX126X_DEVICE_ERROR_PLL_CALIB");
+
+		if (device_errors & SX126X_DEVICE_ERROR_ADC_CALIB)
+			strcat(errors_str, ", SX126X_DEVICE_ERROR_ADC_CALIB");
+
+		if (device_errors & SX126X_DEVICE_ERROR_IMG_CALIB)
+			strcat(errors_str, ", SX126X_DEVICE_ERROR_IMG_CALIB");
+
+		if (device_errors & SX126X_DEVICE_ERROR_XOSC_START)
+			strcat(errors_str, ", SX126X_DEVICE_ERROR_XOSC_START");
+
+		if (device_errors & SX126X_DEVICE_ERROR_PLL_LOCK)
+			strcat(errors_str, ", SX126X_DEVICE_ERROR_PLL_LOCK");
+
+		if (device_errors & SX126X_DEVICE_ERROR_PA_RAMP)
+			strcat(errors_str, ", SX126X_DEVICE_ERROR_PA_RAMP");
+
+		const char * errors_str_begin = errors_str + 2; // Сдвигаем 2 символа на первые ", "
+		log_error("detected device errors: 0x%04"PRIx16": %s", device_errors, errors_str_begin);
+
+		uint16_t known_bits = SX126X_DEVICE_ERROR_RC64K_CALIB
+			| SX126X_DEVICE_ERROR_RC13M_CALIB
+			| SX126X_DEVICE_ERROR_PLL_CALIB
+			| SX126X_DEVICE_ERROR_ADC_CALIB
+			| SX126X_DEVICE_ERROR_IMG_CALIB
+			| SX126X_DEVICE_ERROR_XOSC_START
+			| SX126X_DEVICE_ERROR_PLL_LOCK
+			| SX126X_DEVICE_ERROR_PA_RAMP
+		;
+
+		uint16_t unknown_bits = device_errors & ~known_bits;
+		if (unknown_bits)
+			log_error("detected unknown error bits: 0x%04"PRIx16"", unknown_bits);
+	}
+	else
+	{
+		log_info("detected no device_errors!");
+	}
+
+	// Выдаем сообщение
+	sx126x_stats_t stats;
+	rc = sx126x_drv_get_stats(&server->dev, &stats);
+	if (0 != rc)
+	{
+		log_error("unable to get radio stats: %d", rc);
+		return;
+	}
+
+	_zmq_send_radio_stats(server, &stats, device_errors);
+	server->radio_stats_report_block_deadline = now;
+}
+
+
 int server_init(server_t * server)
 {
 	int rc;
@@ -865,7 +1039,8 @@ int server_init(server_t * server)
 	server->rx_timeout_ms = RADIO_RX_TIMEOUT_MS;
 
 	server->rssi_report_period = RADIO_RSSI_PERIOD_MS;
-
+	server->radio_stats_report_period = RADIO_STATS_PERIOD_MS;
+	
 	server->tx_buffer_capacity = RADIO_PACKET_SIZE;
 	server->tx_timeout_ms = RADIO_TX_TIMEOUT_MS;
 
@@ -905,7 +1080,6 @@ void server_run(server_t * server)
 			perror("zmq poll error");
 			break;
 		}
-		log_trace("poll done");
 
 		if (pollitems[0].revents)
 		{
@@ -928,13 +1102,12 @@ void server_run(server_t * server)
 					"loaded tx frame %"MSG_COOKIE_T_PLSHOLDER" with size %zu", \
 					server->tx_cookie_wait, server->tx_buffer_size
 				);
-	
 		}
 
 		_server_sync_tx_state(server);
 		_server_sync_rx_data(server);
 		_server_sync_rssi(server);
-
+		_server_sync_radio_stats(server);
 	} // while (1)
 }
 

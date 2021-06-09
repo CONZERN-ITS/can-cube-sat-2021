@@ -92,7 +92,7 @@ int sx126x_api_reset_stats(sx126x_api_t * api);
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-int sx126x_get_device_errors(sx126x_api_t * api, uint16_t device_errors);
-int sx126x_clear_device_errors(sx126x_api_t * api);
+int sx126x_api_get_device_errors(sx126x_api_t * api, uint16_t * device_errors);
+int sx126x_api_clear_device_errors(sx126x_api_t * api);
 
 #endif /* RADIO_SX126X_API_H_ */

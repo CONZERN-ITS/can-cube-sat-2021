@@ -1001,3 +1001,32 @@ int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value)
 	return 0;
 }
 
+
+int sx126x_drv_get_stats(sx126x_drv_t * drv, sx126x_stats_t * stats)
+{
+	int rc = sx126x_api_get_stats(&drv->api, stats);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+int sx126x_drv_get_device_errors(sx126x_drv_t * drv, uint16_t * error_bits)
+{
+	int rc = sx126x_api_get_device_errors(&drv->api, error_bits);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+int sx126x_drv_clear_device_errors(sx126x_drv_t * drv)
+{
+	int rc = sx126x_api_clear_device_errors(&drv->api);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+	
+	return 0;
+}

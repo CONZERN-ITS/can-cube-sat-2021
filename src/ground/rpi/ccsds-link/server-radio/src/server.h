@@ -12,7 +12,8 @@
 #define RADIO_RX_TIMEDOUT_LIMIT 5
 #define RADIO_TX_TIMEOUT_MS (50000)
 #define RADIO_RX_TIMEOUT_MS (50000)
-#define RADIO_RSSI_PERIOD_MS (10)
+#define RADIO_RSSI_PERIOD_MS (100)
+#define RADIO_STATS_PERIOD_MS (1000)
 #define SERVER_TX_STATE_PERIOD_MS (500)
 #define SERVER_POLL_TIMEOUT_MS (100)
 
@@ -38,6 +39,8 @@ typedef struct server_t
 
 	uint32_t rssi_report_period;
 	struct timespec rssi_report_block_deadline;
+	uint32_t radio_stats_report_period;
+	struct timespec radio_stats_report_block_deadline;
 
 	uint8_t tx_buffer[255];
 	size_t tx_buffer_capacity;
