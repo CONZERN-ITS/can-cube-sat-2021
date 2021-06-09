@@ -648,7 +648,8 @@ int sx126x_api_get_device_errors(sx126x_api_t * api, uint16_t * device_errors)
 int sx126x_api_clear_device_errors(sx126x_api_t * api)
 {
 	int rc;
-	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_CLR_ERROR, NULL, 0);
+	uint8_t dummy[1] = { 0x00 };
+	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_CLR_ERROR, dummy, sizeof(dummy));
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;

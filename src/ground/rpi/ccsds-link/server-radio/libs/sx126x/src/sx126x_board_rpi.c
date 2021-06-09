@@ -379,12 +379,12 @@ int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status
 	// Читаем статус устройства
 	uint8_t dummy_status;
 	uint8_t * status = status_ ? status_ : &dummy_status;
-	*status = 0xFF; // Гоним единички на TX
+	*status = 0x00; // Гоним NOP на TX
 	tran[1].tx_buf = (size_t)status;
 	tran[1].rx_buf = (size_t)status;
 	tran[1].len = 1;
 
-	memset(data, 0xFF, data_size);
+	memset(data, 0x00, data_size);
 	tran[2].tx_buf = (size_t)data;
 	tran[2].rx_buf = (size_t)data;
 	tran[2].len = data_size;
@@ -448,12 +448,12 @@ int sx126x_brd_reg_read(sx126x_board_t * brd, uint16_t addr, uint8_t * data, uin
 	tran[1].len = sizeof(addr_bytes);
 
 	// Читаем статус (выкидываем его вернее)
-	uint8_t _status = 0xFF;
+	uint8_t _status = 0x00;
 	tran[2].tx_buf = (size_t)&_status;
 	tran[2].len = data_size;
 
 	// Читаем данные
-	memset(data, 0xFF, data_size);
+	memset(data, 0x00, data_size);
 	tran[3].tx_buf = (size_t)data;
 	tran[3].rx_buf = (size_t)data;
 	tran[3].len = data_size;
@@ -506,12 +506,12 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 	tran[1].len = 1;
 
 	// Читаем статус (выкидываем его вернее)
-	uint8_t _status = 0xFF;
+	uint8_t _status = 0x00;
 	tran[2].tx_buf = (size_t)&_status;
 	tran[2].len = 1;
 
 	// Читаем данные
-	memset(data, 0xFF, data_size);
+	memset(data, 0x00, data_size);
 	tran[3].tx_buf = (size_t)data;
 	tran[3].rx_buf = (size_t)data;
 	tran[3].len = data_size;

@@ -1010,10 +1010,6 @@ void _server_sync_radio_stats(server_t * server)
 		if (unknown_bits)
 			log_error("detected unknown error bits: 0x%04"PRIx16"", unknown_bits);
 	}
-	else
-	{
-		log_info("detected no device_errors!");
-	}
 
 	// Выдаем сообщение
 	sx126x_stats_t stats;
