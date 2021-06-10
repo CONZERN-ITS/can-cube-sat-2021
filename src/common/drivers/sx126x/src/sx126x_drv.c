@@ -878,7 +878,7 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms)
 	SX126X_RETURN_IF_NONZERO(rc);
 	if (
 		status.bits.chip_mode != SX126X_STATUS_CHIPMODE_RX
-		|| status.bits.cmd_status != SX126X_STATUS_CMD_STATUS_DATA_AVAIL
+		&& status.bits.cmd_status != SX126X_STATUS_CMD_STATUS_DATA_AVAIL
 	)
 		return SX126X_ERROR_BAD_CHIPMODE;
 
