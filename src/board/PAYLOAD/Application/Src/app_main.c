@@ -7,7 +7,7 @@
 
 #include <stm32f4xx_hal.h>
 
-#include "Inc/its-i2c-link.h"
+#include "its-i2c-link.h"
 
 #include "app_main.h"
 #include "main.h"
@@ -22,10 +22,13 @@
 #include "sensors/integrated.h"
 #include "sensors/dna_temp.h"
 #include "sensors/dosim.h"
-#include "sensors/its_ccompressor.h"
-#include "compressor-control.h"
+#include "its_ccompressor.h"
 
 #include "commissar.h"
+
+//! БМЕ принципиально не показывает давление ниже 30ы 0000
+//! Поэтому с этого момента мы его показания для управления компрессором не используем
+#define BME_PRESSURE_THRESHOLD (31*1000)
 
 //! Длина одного такта в мс
 #define TICK_LEN_MS (200)
@@ -59,29 +62,17 @@
 //! Периодичность выдачи its-link статистики (в тактах)
 #define PACKET_PERIOD_ITS_LINK_STATS (15)
 #define PACKET_OFFSET_ITS_LINK_STATS (7)
-
+//! Периодичность выдачи информации о состоянии управления компрессором
 #define PACKET_PERIOD_CCONTROL (7)
 #define PACKET_OFFSET_CCONTROL (7)
+//! Периодичность выдачи рапортов коммиссара
+#define PACKET_PERIOD_COMMISSAR_REPORT (25)
+#define PACKET_OFFSET_COMMISSAR_REPORT (10)
 
 
 //! Статистика об ошибках этого модуля
 typedef struct its_pld_status_t
 {
-	//! Код последней ошибки работы с bme внутри герметичного корпуса
-	int32_t int_bme_last_error;
-	//! Количество ошибок при работе с bme внутри герметичного корпуса
-	uint16_t int_bme_error_counter;
-
-	//! Код последней ошибки работы с bme снаружи герметичного корпуса
-	int32_t ext_bme_last_error;
-	//! Количество ошибок при работе с bme снаружи герметичного корпуса
-	uint16_t ext_bme_error_counter;
-
-	//! Код последней ошибки при работе с АЦП
-	int32_t adc_last_error;
-	//! Количество ошибок при работе с АЦП
-	uint16_t adc_error_counter;
-
 	//! Количество перезагрузок модуля
 	uint16_t resets_count;
 	//! Причина последней перезагрузки
@@ -110,13 +101,6 @@ static void _process_input_packets(void);
 /*! Возвращает значение - битовую комбинацию флагов  */
 static uint16_t _fetch_reset_cause(void);
 
-
-static int _compressor_control(int64_t tick);
-
-// TODO:
-/* калибрануть все и вся
-   проверить как работает рестарт АЦП
- */
 
 int app_main()
 {
@@ -182,35 +166,50 @@ int app_main()
 		// Управляем температурой ДНК
 		dna_control_work();
 		// Управляем компрессором
-		_compressor_control(tock);
+		its_ccontrol_work();
 
 		if (tock % PACKET_PERIOD_BME == PACKET_OFFSET_BME)
 		{
 			mavlink_pld_bme280_data_t bme_msg = {0};
 			int rc = its_bme280_read(ITS_BME_LOCATION_INTERNAL, &bme_msg);
-			commissar_report(COMMISSAR_SUB_BME280_INT, rc);
+			commissar_accept_report(COMMISSAR_SUB_BME280_INT, rc);
 			if (0 == rc)
+			{
+				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD)
+					its_ccontrol_update_inner_pressure(bme_msg.pressure);
+
 				mav_main_process_bme_message(&bme_msg, PLD_LOC_INTERNAL);
+			}
 
 			rc = its_bme280_read(ITS_BME_LOCATION_EXTERNAL, &bme_msg);
-			commissar_report(COMMISSAR_SUB_BME280_EXT, rc);
+			commissar_accept_report(COMMISSAR_SUB_BME280_EXT, rc);
 			if (0 == rc)
-				mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
-		}
+			{
+				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD)
+					its_ccontrol_update_altitude(bme_msg.altitude);
 
+				mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
+			}
+		}
 
 		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MS5611)
 		{
 			mavlink_pld_ms5611_data_t data = {0};
 			int rc = its_ms5611_read_and_calculate(ITS_MS_EXTERNAL, &data);
-			commissar_report(COMMISSAR_SUB_MS5611_EXT, rc);
+			commissar_accept_report(COMMISSAR_SUB_MS5611_EXT, rc);
 			if (rc == 0)
+			{
+				its_ccontrol_update_altitude(data.altitude);
 				mav_main_process_ms5611_message(&data, PLD_LOC_EXTERNAL);
+			}
 
 			rc = its_ms5611_read_and_calculate(ITS_MS_INTERNAL, &data);
-			commissar_report(COMMISSAR_SUB_MS5611_INT, rc);
+			commissar_accept_report(COMMISSAR_SUB_MS5611_INT, rc);
 			if (rc == 0)
+			{
+				its_ccontrol_update_inner_pressure(data.pressure);
 				mav_main_process_ms5611_message(&data, PLD_LOC_INTERNAL);
+			}
 		}
 
 
@@ -272,9 +271,20 @@ int app_main()
 			_collect_i2c_link_stats(&i2c_stats_msg);
 			mav_main_process_i2c_link_stats(&i2c_stats_msg);
 		}
-		/*if (tock % PACKET_PERIOD_CCONTROL == PACKET_OFFSET_CCONTROL) {
-		    ccontrol_update_inner_pressure()
-		}*/
+
+		if (tock % PACKET_PERIOD_CCONTROL == PACKET_OFFSET_CCONTROL) {
+			mavlink_pld_compressor_data_t msg;
+			its_ccontrol_get_state(&msg);
+			mav_main_process_ccompressor_state(&msg);
+		}
+
+		if (tock % PACKET_PERIOD_COMMISSAR_REPORT == PACKET_OFFSET_COMMISSAR_REPORT)
+		{
+			mavlink_commissar_report_t report;
+			uint8_t component_id;
+			commissar_provide_report(&component_id, &report);
+			mav_main_process_commissar_report(component_id, &report);
+		}
 
 		// В конце такта работает комиссар
 		commissar_work();
@@ -306,14 +316,14 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg)
 	time_svc_gettimeofday(&tmv);
 	msg->time_s = tmv.tv_sec;
 	msg->time_us = tmv.tv_usec;
-	msg->adc_error_counter = _status.adc_error_counter;
-	msg->adc_last_error = _status.adc_last_error;
-	msg->int_bme_error_counter = _status.int_bme_error_counter;
-	msg->int_bme_last_error = _status.int_bme_last_error;
-	msg->ext_bme_error_counter = _status.ext_bme_error_counter;
-	msg->ext_bme_last_error = _status.ext_bme_last_error;
+	msg->time_steady = HAL_GetTick();
+
+	msg->time_steady = HAL_GetTick();
 	msg->resets_count = _status.resets_count;
 	msg->reset_cause = _status.reset_cause;
+	msg->time_base = time_svc_get_time_base();
+	msg->active_oscillator = ACTIVE_OSCILLATOR_HSE;
+	msg->time_syncs_count = time_svc_get_time_syncs_count();
 }
 
 
@@ -323,20 +333,37 @@ static void _collect_i2c_link_stats(mavlink_i2c_link_stats_t * msg)
 	time_svc_gettimeofday(&tmv);
 	msg->time_s = tmv.tv_sec;
 	msg->time_us = tmv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
-	its_i2c_link_stats_t statsbuf;
-	its_i2c_link_stats(&statsbuf);
+	its_i2c_link_stats_t stats;
+	its_i2c_link_stats(&stats);
 
-	msg->rx_done_cnt = statsbuf.rx_done_cnt;
-	msg->rx_dropped_cnt = statsbuf.rx_dropped_cnt;
-	msg->rx_error_cnt = statsbuf.rx_error_cnt;
-	msg->tx_done_cnt = statsbuf.tx_done_cnt;
-	msg->tx_zeroes_cnt = statsbuf.tx_zeroes_cnt;
-	msg->tx_error_cnt = statsbuf.tx_error_cnt;
-	msg->tx_overrun_cnt = statsbuf.tx_overrun_cnt;
-	msg->restarts_cnt = statsbuf.restarts_cnt;
-	msg->listen_done_cnt = statsbuf.listen_done_cnt;
-	msg->last_error = statsbuf.last_error;
+	msg->rx_packet_start_cnt = stats.rx_packet_start_cnt;
+	msg->rx_packet_done_cnt = stats.rx_packet_done_cnt;
+	msg->rx_cmds_start_cnt = stats.rx_cmds_start_cnt;
+	msg->rx_cmds_done_cnt = stats.rx_cmds_done_cnt;
+	msg->rx_drops_start_cnt = stats.rx_drops_start_cnt;
+	msg->rx_drops_done_cnt = stats.rx_drops_done_cnt;
+	msg->tx_psize_start_cnt = stats.tx_psize_start_cnt;
+	msg->tx_psize_done_cnt = stats.tx_psize_done_cnt;
+	msg->tx_packet_start_cnt = stats.tx_packet_start_cnt;
+	msg->tx_packet_done_cnt = stats.tx_packet_done_cnt;
+	msg->tx_zeroes_start_cnt = stats.tx_zeroes_start_cnt;
+	msg->tx_zeroes_done_cnt = stats.tx_zeroes_done_cnt;
+	msg->tx_empty_buffer_cnt = stats.tx_empty_buffer_cnt;
+	msg->tx_overruns_cnt = stats.tx_overruns_cnt;
+	msg->cmds_get_size_cnt = stats.cmds_get_size_cnt;
+	msg->cmds_get_packet_cnt = stats.cmds_get_packet_cnt;
+	msg->cmds_set_packet_cnt = stats.cmds_set_packet_cnt;
+	msg->cmds_invalid_cnt = stats.cmds_invalid_cnt;
+	msg->restarts_cnt = stats.restarts_cnt;
+	msg->berr_cnt = stats.berr_cnt;
+	msg->arlo_cnt = stats.arlo_cnt;
+	msg->ovf_cnt = stats.ovf_cnt;
+	msg->af_cnt = stats.af_cnt;
+	msg->btf_cnt = stats.btf_cnt;
+	msg->tx_wrong_size_cnt = stats.tx_wrong_size_cnt;
+	msg->rx_wrong_size_cnt = stats.rx_wrong_size_cnt;
 }
 
 
@@ -378,58 +405,4 @@ static uint16_t _fetch_reset_cause(void)
 	return rc;
 }
 
-
-static int _compressor_control(int64_t tick) {
-    // Максимальная высота подъема (в м)
-    const ccontrol_alt_t max_alt = 30*1000;
-    // Скорость подъема (в м/мс)
-    const ccontrol_alt_t alt_speed_up = 40000.f/(10 * 60*1000); // ~ 4км в 10 минут
-    // Скорость спуска (в м/мс)
-    const ccontrol_alt_t alt_speed_down = -13000.f/(10 * 60*1000); // ~ -13 км за 10 минут
-    // Шаг симуляции по времени (в мс)
-    const ccontrol_time_t time_step = 200;
-    // Пауза в тактах между замерами высоты и оффсет этих замеров
-    const uint32_t alt_measure_period = 4;
-    const uint32_t alt_measure_offset = 0;
-    // Пауза в тактах и между замерами внутренного давлени и оффсет этих замеров
-    const uint32_t inner_pressure_measure_period = 4;
-    const uint32_t inner_pressure_measure_offset = 1;
-    // Длительность симуляции
-    const uint64_t sym_time_limit = 80 * 60*1000;
-    // Частота сообщений отчета (такты)
-    const uint32_t report_period = 10;
-
-    // Пока что мы летим вверх
-    static bool going_up = true;
-
-    static ccontrol_alt_t alt = -100;
-    static ccontrol_time_t time = 0;
-    static ccontrol_pressure_t inner_pressure = 0;
-
-    time += time_step;
-    if (going_up)
-    {
-        alt += alt_speed_up * time_step;
-        if (alt >= max_alt)
-            going_up = false; // начинаем падать
-    }
-    else
-    {
-        alt += alt_speed_down * time_step;
-        if (alt <= -100)
-            alt = -100;
-    }
-    inner_pressure = 0; // Пока вообще не держится давление у нас
-
-
-    if (tick % alt_measure_period == alt_measure_offset)
-        ccontrol_update_altitude(alt);
-
-    if (tick % inner_pressure_measure_period == inner_pressure_measure_offset)
-        ccontrol_update_inner_pressure(inner_pressure);
-
-    ccontrol_poll();
-    ccontrol_state_t state = ccontrol_get_state();
-
-}
 

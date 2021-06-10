@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include <stm32f4xx_hal.h>
 
@@ -63,7 +64,9 @@
 // Значение R0 (сопротивление сенсора в калибровочной атмосфере)
 #define MICS6814_CO_R0	(350*1000)
 // Значение резистора в верхнем плече делителя сенсора
-#define MICS6814_CO_RB	(292*1000)
+#define MICS6814_CO_RB_1	(0)
+#define MICS6814_CO_RB_2	(0)
+#define MICS6814_CO_RB_3	(292*1000)
 
 //FIXME: поменять пины
 // Второй порт/пин для управления балансирующими резисторами
@@ -88,21 +91,17 @@
 // Значение R0 (сопротивление сенсора в калибровочной атмосфере)
 #define MICS6814_NO2_R0	(4.30*1000)
 // Значение резистора в верхнем плече делителя сенсора
-#define MICS6814_NO2_RB	(4.26*1000)
+#define MICS6814_NO2_RB_1	(0)
+#define MICS6814_NO2_RB_2	(0)
+#define MICS6814_NO2_RB_3	(4.26*1000)
 
 // Второй порт/пин для управления балансирующими резисторами
 #define MICS6814_NO2_CTRL_2_PORT	GPIOA
 #define MICS6814_NO2_CTRL_2_PIN		GPIO_PIN_4
 
-// Номинал Балансирующего резистора R2 из резисторного делителя
-#define MICS6814_NO2_R2_VALUE	(10*1000)
-
 // Первый порт/пин для управления балансирующими резисторами
 #define MICS6814_NO2_CTRL_1_PORT	GPIOA
 #define MICS6814_NO2_CTRL_1_PIN		GPIO_PIN_5
-
-// Номинал Балансирующего резистора R3 из резисторного делителя
-#define MICS6814_NO2_R3_VALUE	(10*1000)
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // Сенсор NH3
@@ -118,7 +117,9 @@
 // Значение R0 (сопротивление сенсора в калибровочной атмосфере)
 #define MICS6814_NH3_R0	(98.30*1000)
 // Значение резистора в верхнем плече делителя сенсора
-#define MICS6814_NH3_RB	(18.78*1000)
+#define MICS6814_NH3_RB_1	(0)
+#define MICS6814_NH3_RB_2	(0)
+#define MICS6814_NH3_RB_3	(18.78*1000)
 
 // Второй порт/пин для управления балансирующими резисторами
 #define MICS6814_NH3_CTRL_2_PORT	GPIOA
@@ -144,11 +145,11 @@ typedef enum mics6814_sensor_t {
 //! Количество резисторов в верхнем плече резисторного делителя сенсоров
 typedef enum mics6814_divider_upper_half_mode_t {
 	//! Используются три резистора в плече
-	MICS6814_DIVIER_UPPER_HALF_TRIPLE,
+	MICS6814_DIVIER_UPPER_HALF_TRIPLE = 3,
 	//! Используются два резистора в плече
-	MICS6814_DIVIER_UPPER_HALF_DOUBLE,
+	MICS6814_DIVIER_UPPER_HALF_DOUBLE = 2,
 	//! Используется один резистор в плече
-	MICS6814_DIVIER_UPPER_HALF_SINGLE,
+	MICS6814_DIVIER_UPPER_HALF_SINGLE = 1,
 } mics6814_divider_upper_half_mode_t;
 
 
@@ -194,7 +195,7 @@ static void _pin_to_high_output(GPIO_TypeDef * port, uint32_t pin)
 // Устанавливаем верхнее плечо делителя для указанного сенсора
 int _divider_upper_half_set_mode(mics6814_sensor_t target, mics6814_divider_upper_half_mode_t mode)
 {
-	int error;
+	int error = 0;
 	GPIO_TypeDef * port1, * port2;
 	uint32_t pin1, pin2;
 
@@ -257,6 +258,56 @@ int _divider_upper_half_set_mode(mics6814_sensor_t target, mics6814_divider_uppe
 }
 
 
+//! Итоговое сопротивление делителя
+static int _divider_rb(mics6814_sensor_t target, mics6814_divider_upper_half_mode_t mode, float * value)
+{
+	float r1, r2, r3;
+	switch (target)
+	{
+	case MICS6814_SENSOR_CO:
+		r1 = MICS6814_CO_RB_1;
+		r2 = MICS6814_CO_RB_2;
+		r3 = MICS6814_CO_RB_3;
+		break;
+
+	case MICS6814_SENSOR_NO2:
+		r1 = MICS6814_NO2_RB_1;
+		r2 = MICS6814_NO2_RB_2;
+		r3 = MICS6814_NO2_RB_3;
+		break;
+
+	case MICS6814_SENSOR_NH3:
+		r1 = MICS6814_NH3_RB_1;
+		r2 = MICS6814_NH3_RB_2;
+		r3 = MICS6814_NH3_RB_3;
+		break;
+
+	default:
+		return -EINVAL;
+	}
+
+	switch (mode)
+	{
+	case MICS6814_DIVIER_UPPER_HALF_SINGLE:
+		*value = r3;
+		break;
+
+	case MICS6814_DIVIER_UPPER_HALF_DOUBLE:
+		*value = r3 + r2;
+		break;
+
+	case MICS6814_DIVIER_UPPER_HALF_TRIPLE:
+		*value = r3 + r2 + r1;
+		break;
+
+	default:
+		return -EINVAL;
+	};
+
+	return 0;
+}
+
+
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // Работа с сенсором по-крупному
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -278,26 +329,26 @@ void mics6814_init()
 }
 
 
-#ifndef ITS_IMITATOR
 // Делает замер для одного из сенсоров датчика
 /* \arg target задает нужный сенсор
    \arg dr возвращает сырое отношение сопротивлений сенсора
    \arg conc возвращает концентрацию __титульного__ газа сенсора */
-static int _read_one(mics6814_sensor_t target, uint16_t * adc_raw, float * dr, float * conc)
+static int _read_one(
+		mics6814_sensor_t target, uint16_t * adc_raw_, uint8_t * rb_mode, float * conc
+)
 {
 	int error = 0;
 
 	float r0;
-	float rb;
 	float a, exp_b;
 	analog_target_t analog_target;
+	const int16_t adc_max = 0x0FFF;
 
 	// Определяемся с параметрами сенсора
 	switch (target)
 	{
 	case MICS6814_SENSOR_CO:
 		r0 = MICS6814_CO_R0;
-		rb = MICS6814_CO_RB;
 		a  = MICS6814_CO_COEFFS_A;
 		exp_b  = MICS6814_CO_COEFFS_EXP_B;
 		analog_target = ANALOG_TARGET_MICS6814_CO;
@@ -305,7 +356,6 @@ static int _read_one(mics6814_sensor_t target, uint16_t * adc_raw, float * dr, f
 
 	case MICS6814_SENSOR_NO2:
 		r0 = MICS6814_NO2_R0;
-		rb = MICS6814_NO2_RB;
 		a  = MICS6814_NO2_COEFFS_A;
 		exp_b  = MICS6814_NO2_COEFFS_EXP_B;
 		analog_target = ANALOG_TARGET_MICS6814_NO2;
@@ -313,7 +363,6 @@ static int _read_one(mics6814_sensor_t target, uint16_t * adc_raw, float * dr, f
 
 	case MICS6814_SENSOR_NH3:
 		r0 = MICS6814_NH3_R0;
-		rb = MICS6814_NH3_RB;
 		a  = MICS6814_NH3_COEFFS_A;
 		exp_b  = MICS6814_NH3_COEFFS_EXP_B;
 		analog_target = ANALOG_TARGET_MICS6814_NH3;
@@ -324,40 +373,61 @@ static int _read_one(mics6814_sensor_t target, uint16_t * adc_raw, float * dr, f
 		break;
 	}
 
-	if (0 != error)
-		return error;
-
-
-	// делаем замер через АЦП
-	// Несколько замеров, чтобы фильтрануть шум
-	uint16_t raw;
-	uint32_t raw_sum = 0;
-	const int oversampling = 10;
-	for (int i = 0; i < oversampling; i++)
+	// делаем замер для каждого из доступных плеч делителя
+	// И сразу же выбираем лучшее плечо, которое дало
+	// результат ближе всего к центру шкалы АЦП
+	mics6814_divider_upper_half_mode_t modes[] = {
+			MICS6814_DIVIER_UPPER_HALF_SINGLE,
+			MICS6814_DIVIER_UPPER_HALF_DOUBLE,
+			MICS6814_DIVIER_UPPER_HALF_TRIPLE,
+	};
+	uint16_t adc_raw[sizeof(modes)/sizeof(*modes)];
+	int32_t best_raw_diff = INT32_MAX;
+	size_t best_raw_idx = 0;
+	for(size_t i = 0; i < sizeof(modes)/sizeof(*modes); i++)
 	{
-		error = analog_get_raw(analog_target, &raw);
+		mics6814_divider_upper_half_mode_t mode = modes[i];
+		error = _divider_upper_half_set_mode(target, mode);
 		if (0 != error)
 			return error;
 
-		raw_sum += raw;
+		const int oversampling = 50;
+		error = analog_get_raw(analog_target, oversampling, &adc_raw[i]);
+		if (0 != error)
+			return error;
+
+		int32_t diff = abs(adc_raw[i] - adc_max / 2);
+		if (diff < best_raw_diff)
+		{
+			best_raw_diff = diff;
+			best_raw_idx = i;
+		}
 	}
 
+	// Считаем концентрацию по показаниям лучшего плеча
+	mics6814_divider_upper_half_mode_t best_mode = modes[best_raw_idx];
+	uint16_t best_raw = adc_raw[best_raw_idx];
 
-	raw = raw_sum / oversampling;
-	*adc_raw = raw;
+	float rb;
+	error = _divider_rb(target, best_mode, &rb);
+	if (0 != error)
+		return error;
 
 	// Считаем сопротивление сенсора
-	float rx = rb * (float)raw/(0x0FFF - raw); // 0x0FFF - потолок нашего АЦП
+	float dv = (float)best_raw/adc_max;
+	float rx = rb * dv/(1 - dv);
 
 	// Пересчитываем в концентрацию
-	*dr = rx/r0;
-	*conc = pow(*dr, a) * exp_b;
+	float dr = rx/r0;
+	*conc = pow(dr, a) * exp_b;
 
+	// Закидываем сырые значения из которых считали
+	memcpy(adc_raw_, adc_raw, sizeof(adc_raw));
+	*rb_mode = (uint8_t)best_mode;
 	return 0;
 }
-#endif
 
-#ifdef ITS_IMITATOR
+
 int mics6814_read(mavlink_pld_mics_6814_data_t * msg)
 {
 	// Берем время
@@ -366,51 +436,41 @@ int mics6814_read(mavlink_pld_mics_6814_data_t * msg)
 
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
-
-	msg->red_sensor_raw = 0;
-	msg->ox_sensor_raw = 1;
-	msg->nh3_sensor_raw = 2;
-
-	msg->co_conc = 10;
-	msg->no2_conc = 20;
-	msg->nh3_conc = 30;
-	return 0;
-}
-#else
-int mics6814_read(mavlink_pld_mics_6814_data_t * msg)
-{
-	// Берем время
-	struct timeval tv;
-	time_svc_gettimeofday(&tv);
-
-	msg->time_s = tv.tv_sec;
-	msg->time_us = tv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
 	int error;
 
 	// Теперь опрашиваем все сенсоры
-	uint16_t adc_raw;
-	float dr_raw;
+	uint16_t adc_raw[3];
+	uint8_t rb_mode;
 	float concentration;
-	// TODO: Перебить поле сырых значений на инт16
-	error = _read_one(MICS6814_SENSOR_CO, &adc_raw, &dr_raw, &concentration);
+
+
+	error = _read_one(MICS6814_SENSOR_CO, adc_raw, &rb_mode, &concentration);
 	if (0 != error)
 		return error;
-	msg->red_sensor_raw = adc_raw;
+
+	memcpy(msg->red_sensor_raw, adc_raw, sizeof(adc_raw));
+	msg->red_rb = rb_mode;
 	msg->co_conc = concentration;
 
-	error = _read_one(MICS6814_SENSOR_NO2, &adc_raw, &dr_raw, &concentration);
+
+	error = _read_one(MICS6814_SENSOR_NO2, adc_raw, &rb_mode, &concentration);
 	if (0 != error)
 		return error;
-	msg->ox_sensor_raw = adc_raw;
+
+	memcpy(msg->ox_sensor_raw, adc_raw, sizeof(adc_raw));
+	msg->ox_rb = rb_mode;
 	msg->no2_conc = concentration;
 
-	error = _read_one(MICS6814_SENSOR_NH3, &adc_raw, &dr_raw, &concentration);
+
+	error = _read_one(MICS6814_SENSOR_NH3, adc_raw, &rb_mode, &concentration);
 	if (0 != error)
 		return error;
-	msg->nh3_sensor_raw = adc_raw;
+
+	memcpy(msg->nh3_sensor_raw, adc_raw, sizeof(adc_raw));
+	msg->nh3_rb = rb_mode;
 	msg->nh3_conc = concentration;
 
 	return 0;
 }
-#endif

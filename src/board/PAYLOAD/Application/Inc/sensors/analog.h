@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+
 //! Целевой аналоговый сенсор, с которым требуется работать
 typedef enum analog_target_t
 {
@@ -27,7 +28,9 @@ typedef enum analog_target_t
 	ANALOG_TARGET_DNA_TEMP,
 
 	//! Интегрированный в stm32 термистр
-	ANALOG_TARGET_INTEGRATED_TEMP
+	ANALOG_TARGET_INTEGRATED_TEMP,
+	//! Напряжение на VBAT
+	ANALOG_TARGET_VBAT,
 } analog_target_t;
 
 
@@ -39,7 +42,11 @@ int analog_init(void);
 int analog_restart(void);
 
 //! Чтение сырого значения АЦП для указанного датчика
-int analog_get_raw(analog_target_t target, uint16_t * value);
+int analog_get_raw(analog_target_t target, uint16_t oversampling, uint16_t * value);
+
+//! Чтение и расчет сырого значения VDDA
+int analog_get_vdda_mv(uint16_t oversampling, uint16_t * value);
+
 
 
 #endif /* INC_ADC_H_ */

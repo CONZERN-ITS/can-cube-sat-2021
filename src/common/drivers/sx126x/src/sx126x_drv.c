@@ -5,7 +5,7 @@
 #include "sx126x_drv.h"
 
 
-#define SX126X_TCXO_STARTUP_TIMEOUT_MS (10)
+#define SX126X_TCXO_STARTUP_TIMEOUT_MS (500)
 #define SX126X_WAIT_BUSY_DEFAULT_TIMEOUT (1000)
 
 #define SX126X_RETURN_IF_NONZERO(rc) if (0 != rc) return rc
@@ -876,7 +876,10 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms)
 	sx126x_status_t status;
 	rc = sx126x_api_get_status(&drv->api, &status);
 	SX126X_RETURN_IF_NONZERO(rc);
-	if (status.bits.chip_mode != SX126X_STATUS_CHIPMODE_RX)
+	if (
+		status.bits.chip_mode != SX126X_STATUS_CHIPMODE_RX
+		&& status.bits.cmd_status != SX126X_STATUS_CMD_STATUS_DATA_AVAIL
+	)
 		return SX126X_ERROR_BAD_CHIPMODE;
 
 	// Переходим в RX
@@ -1001,3 +1004,32 @@ int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value)
 	return 0;
 }
 
+
+int sx126x_drv_get_stats(sx126x_drv_t * drv, sx126x_stats_t * stats)
+{
+	int rc = sx126x_api_get_stats(&drv->api, stats);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+int sx126x_drv_get_device_errors(sx126x_drv_t * drv, uint16_t * error_bits)
+{
+	int rc = sx126x_api_get_device_errors(&drv->api, error_bits);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	return 0;
+}
+
+
+int sx126x_drv_clear_device_errors(sx126x_drv_t * drv)
+{
+	int rc = sx126x_api_clear_device_errors(&drv->api);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	rc = _wait_busy(drv);
+	SX126X_RETURN_IF_NONZERO(rc);
+	
+	return 0;
+}

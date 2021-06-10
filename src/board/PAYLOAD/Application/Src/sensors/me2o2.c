@@ -43,20 +43,13 @@ static int _read(float * value)
 {
 	int error = 0;
 	// Берем значение с АЦП
-	const int oversamapling = 10;
-	uint32_t sum_raw = 0;
+	const int oversampling = 50;
 	uint16_t raw;
-	for (int i = 0; i < oversamapling; i++)
-	{
-		error = analog_get_raw(ANALOG_TARGET_ME202_O2, &raw);
-		if (0 != error)
-			return error;
+	error = analog_get_raw(ANALOG_TARGET_ME202_O2, oversampling, &raw);
+	if (0 != error)
+		return error;
 
-		sum_raw += raw;
-	}
-
-	raw = sum_raw / oversamapling;
-	float amp_mv = raw * 3300.0f/0x1000;
+	float amp_mv = raw * (float)VREFINT_CAL_VREF/0x0FFF;
 
 	// Окей, у нас есть милливольты с операционного усилителя.
 	// ОУ усиливает напряжение на нагрузочном резисторе датчика в 121 раз
@@ -82,6 +75,7 @@ int me2o2_read(mavlink_pld_me2o2_data_t * msg)
 
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
 	msg->o2_conc = 20.0;
 
@@ -96,6 +90,7 @@ int me2o2_read(mavlink_pld_me2o2_data_t * msg)
 
 	msg->time_s = tv.tv_sec;
 	msg->time_us = tv.tv_usec;
+	msg->time_steady = HAL_GetTick();
 
 	int error = 0;
 	float conc;

@@ -19,7 +19,6 @@
 extern ADC_HandleTypeDef hadc1;
 
 #define _ADC_HAL_TIMEOUT (HAL_MAX_DELAY)
-
 #define _ADC_HANDLE (&hadc1)
 
 
@@ -57,11 +56,17 @@ static int _channgel_config_for_target(analog_target_t target, ADC_ChannelConfTy
 	case ANALOG_TARGET_DNA_TEMP:
 		config->Channel = ADC_CHANNEL_4;
 		config->Rank = 1;
-		config->SamplingTime = ADC_SAMPLETIME_144CYCLES;
+		config->SamplingTime = ADC_SAMPLETIME_480CYCLES;
 		break;
 
 	case ANALOG_TARGET_INTEGRATED_TEMP:
 		config->Channel = ADC_CHANNEL_TEMPSENSOR;
+		config->Rank = 1;
+		config->SamplingTime = ADC_SAMPLETIME_480CYCLES;
+		break;
+
+	case ANALOG_TARGET_VBAT:
+		config->Channel = ADC_CHANNEL_VBAT;
 		config->Rank = 1;
 		config->SamplingTime = ADC_SAMPLETIME_480CYCLES;
 		break;
@@ -77,25 +82,6 @@ static int _channgel_config_for_target(analog_target_t target, ADC_ChannelConfTy
 
 int analog_init()
 {
-	// Предположим, что куб все правильно настроил
-	// Нам не нужно никакой автоматики, настриваемся на один канал
-	// Вроде вот такого
-	//	hadc1.Instance = ADC1;
-	//	hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-	//	hadc1.Init.ContinuousConvMode = DISABLE;
-	//	hadc1.Init.DiscontinuousConvMode = DISABLE;
-	//	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-	//	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	//	hadc1.Init.NbrOfConversion = 1;
-	//	if (HAL_ADC_Init(&hadc1) != HAL_OK)
-	//	{
-	//	Error_Handler();
-	//	}
-
-	// Калибруем ацп
-//	int error = hal_status_to_errno(HAL_ADCEx_Calibration_Start(&hadc1));
-	// Ошибку тут проигнорируем. Вдруг как-то да заработает дальше
-
 	// Включаем АЦП
 	__HAL_ADC_ENABLE(&hadc1);
 
@@ -123,30 +109,109 @@ int analog_restart(void)
 }
 
 
-int analog_get_raw(analog_target_t target, uint16_t * value)
+int analog_get_raw(analog_target_t target, uint16_t oversampling, uint16_t * value)
 {
 	int error = 0;
 
-	ADC_ChannelConfTypeDef config;
-	error = _channgel_config_for_target(target, &config);
+	ADC_ChannelConfTypeDef vtref_config;
+	vtref_config.Channel = ADC_CHANNEL_VREFINT;
+	vtref_config.Offset = 0;
+	vtref_config.Rank = 1;
+	vtref_config.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+
+	ADC_ChannelConfTypeDef target_config;
+	error = _channgel_config_for_target(target, &target_config);
 	if (0 != error)
 		return error;
 
-	HAL_StatusTypeDef hal_error = HAL_ADC_ConfigChannel(_ADC_HANDLE, &config);
-	error = hal_status_to_errno(hal_error);
-	if (0 != error)
-		return error;
+	uint32_t raw_sum = 0;
+	uint32_t vrefint_sum = 0;
+	for (uint16_t i = 0; i < oversampling; i++)
+	{
+		// Замер целевого напряжения
+		HAL_StatusTypeDef hal_error = HAL_ADC_ConfigChannel(_ADC_HANDLE, &target_config);
+		error = hal_status_to_errno(hal_error);
+		if (0 != error)
+			return error;
 
-	hal_error = HAL_ADC_Start(&hadc1);
-	error = hal_status_to_errno(hal_error);
-	if (0 != error)
-		return error;
+		hal_error = HAL_ADC_Start(&hadc1);
+		error = hal_status_to_errno(hal_error);
+		if (0 != error)
+			return error;
 
-	hal_error = HAL_ADC_PollForConversion(_ADC_HANDLE, _ADC_HAL_TIMEOUT);
-	error = hal_status_to_errno(hal_error);
-	if (0 != error)
-		return error;
+		hal_error = HAL_ADC_PollForConversion(_ADC_HANDLE, _ADC_HAL_TIMEOUT);
+		error = hal_status_to_errno(hal_error);
+		if (0 != error)
+			return error;
 
-	*value = (uint16_t)HAL_ADC_GetValue(_ADC_HANDLE);
+		raw_sum += HAL_ADC_GetValue(&hadc1);
+
+
+		// Замер вдда
+		hal_error = HAL_ADC_ConfigChannel(_ADC_HANDLE, &vtref_config);
+		error = hal_status_to_errno(hal_error);
+		if (0 != error)
+			return error;
+
+		hal_error = HAL_ADC_Start(&hadc1);
+		error = hal_status_to_errno(hal_error);
+		if (0 != error)
+			return error;
+
+		hal_error = HAL_ADC_PollForConversion(_ADC_HANDLE, _ADC_HAL_TIMEOUT);
+		error = hal_status_to_errno(hal_error);
+		if (0 != error)
+			return error;
+
+		vrefint_sum += HAL_ADC_GetValue(&hadc1);
+	}
+
+	uint32_t retval = raw_sum / oversampling;
+	uint32_t vrefint = vrefint_sum / oversampling;
+
+	// Корректируем с учетом внешнего напряжения
+	retval = retval * (*VREFINT_CAL_ADDR) / vrefint ;
+
+	*value = (uint16_t)retval;
 	return 0;
 }
+
+
+int analog_get_vdda_mv(uint16_t oversampling, uint16_t * value)
+{
+	int error = 0;
+
+	ADC_ChannelConfTypeDef vtref_config;
+	vtref_config.Channel = ADC_CHANNEL_VREFINT;
+	vtref_config.Offset = 0;
+	vtref_config.Rank = 1;
+	vtref_config.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+
+	HAL_StatusTypeDef hal_error = HAL_ADC_ConfigChannel(_ADC_HANDLE, &vtref_config);
+	error = hal_status_to_errno(hal_error);
+	if (0 != error)
+		return error;
+
+	uint32_t raw_sum = 0;
+	for (uint16_t i = 0; i < oversampling; i++)
+	{
+		hal_error = HAL_ADC_Start(&hadc1);
+		error = hal_status_to_errno(hal_error);
+		if (0 != error)
+			return error;
+
+		hal_error = HAL_ADC_PollForConversion(_ADC_HANDLE, _ADC_HAL_TIMEOUT);
+		error = hal_status_to_errno(hal_error);
+		if (0 != error)
+			return error;
+
+		raw_sum += HAL_ADC_GetValue(&hadc1);
+	}
+
+	uint32_t vrefint = raw_sum / oversampling;
+	uint32_t retval = VREFINT_CAL_VREF * (*VREFINT_CAL_ADDR) / (vrefint);
+	*value = (uint16_t)retval;
+	return 0;
+}
+
+

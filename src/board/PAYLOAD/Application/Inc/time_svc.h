@@ -25,6 +25,12 @@ extern TIM_HandleTypeDef htim4;
  *  миллисекунды а переполняется таймер раз в секунду */
 void time_svc_init(void);
 
+//! Получение базы времени
+uint8_t time_svc_get_time_base(void);
+
+//! Сколько раз мы синхронизовали своё время
+uint16_t time_svc_get_time_syncs_count(void);
+
 //! Получение текущего времени
 void time_svc_gettimeofday(struct timeval * tmv);
 

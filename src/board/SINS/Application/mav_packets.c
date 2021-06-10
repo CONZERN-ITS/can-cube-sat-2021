@@ -11,6 +11,7 @@
 #include <its/mavlink.h>
 
 #include "drivers/time_svc/time_svc.h"
+#include "its-i2c-link.h"
 #include "drivers/uplink.h"
 #include "state.h"
 
@@ -26,6 +27,9 @@ int mavlink_sins_isc(stateSINS_isc_t * state_isc)
 	mavlink_sins_isc_t msg_sins_isc;
 	msg_sins_isc.time_s = state_isc->tv.tv_sec;
 	msg_sins_isc.time_us = state_isc->tv.tv_usec;
+	msg_sins_isc.time_steady = HAL_GetTick();
+
+
 	//printf("Accel: %f %f %f \n", state_isc->accel[0], state_isc->accel[1], state_isc->accel[2]);
 	//printf("Mag: %f %f %f \n", state_isc->magn[0], state_isc->magn[1], state_isc->magn[2]);
 
@@ -49,6 +53,7 @@ int mavlink_lds_dir(stateSINS_lds_t * state)
 	mavlink_lds_dir_t mld;
 	mld.time_s = state->tv.tv_sec;
 	mld.time_us = state->tv.tv_usec;
+	mld.time_steady = HAL_GetTick();
 	//printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
 	//printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
 
@@ -70,6 +75,7 @@ int mavlink_light_diode(stateSINS_lds_t * state)
 	mavlink_light_diode_t mld;
 	mld.time_s = state->tv.tv_sec;
 	mld.time_us = state->tv.tv_usec;
+	mld.time_steady = HAL_GetTick();
 	//printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
 	//printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
 
@@ -92,6 +98,7 @@ int mavlink_timestamp(void)
 	time_svc_world_get_time(&tv);
 	msg_timestamp.time_s = tv.tv_sec;
 	msg_timestamp.time_us = tv.tv_usec;
+	msg_timestamp.time_steady = HAL_GetTick();
 	msg_timestamp.time_base = (uint8_t)time_svc_timebase();
 
 	mavlink_message_t msg;
@@ -114,6 +121,7 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 			mavlink_gps_ubx_nav_sol_t msg_gps_ubx_nav_sol;
 			msg_gps_ubx_nav_sol.time_s = tv.tv_sec;
 			msg_gps_ubx_nav_sol.time_us = tv.tv_usec;
+			msg_gps_ubx_nav_sol.time_steady = HAL_GetTick();
 			msg_gps_ubx_nav_sol.iTOW = packet->packet.navsol.i_tow;
 			msg_gps_ubx_nav_sol.fTOW = packet->packet.navsol.f_tow;
 			msg_gps_ubx_nav_sol.week = packet->packet.navsol.week;
@@ -147,36 +155,51 @@ int own_temp_packet(void)
 {
 	int error = 0;
 
+	const int oversampling = 50;
+	uint16_t raw;
+	error = analog_get_raw(ANALOG_TARGET_INTEGRATED_TEMP, oversampling, &raw);
+	if (0 != error)
+		return error;
+
+	// Пересчитываем по зашитым калибровочным коэффициентам
+	const uint16_t val_c1 = *TEMPSENSOR_CAL1_ADDR;
+	const uint16_t val_c2 = *TEMPSENSOR_CAL2_ADDR;
+	const uint16_t t_c1 = TEMPSENSOR_CAL1_TEMP;
+	const uint16_t t_c2 = TEMPSENSOR_CAL2_TEMP;
+
+	const float slope = (float)(t_c2 - t_c1) / (val_c2 - val_c1);
+	float temp = slope * (raw - val_c1) + t_c1;
+
+	// Теперь посчитаем VBAT
+	error = analog_get_raw(ANALOG_TARGET_VBAT, oversampling, &raw);
+	if (0 != error)
+		return error;
+
+	float vbat = (raw * 2) * 3.3f / 0x0FFF; // * 2 потому что  VAT подключен к АЦП с делителем
+
+	// Теперь vdda
+	error = analog_get_vdda_mv(oversampling, &raw);
+	if (0 != error)
+		return error;
+
+	float vdda = (float)raw / 1000;
+
 	struct timeval tv;
 	time_svc_world_get_time(&tv);
 
-	mavlink_own_temp_t own_temp_msg;
+	mavlink_own_temp_t msg;
+	msg.time_s = tv.tv_sec;
+	msg.time_us = tv.tv_usec;
+	msg.time_steady = HAL_GetTick();
+	msg.deg = temp;
+	msg.vbat = vbat;
+	msg.vdda = vdda;
 
-	const int oversampling = 10;
-	uint32_t raw_sum = 0;
-	uint16_t raw;
-	for (int i = 0; i < oversampling; i++)
-	{
-		error = analog_get_raw(ANALOG_TARGET_INTEGRATED_TEMP, &raw);
-		if (0 != error)
-			return error;
-		raw_sum += raw;
-	}
+	mavlink_message_t generic_msg;
+	mavlink_msg_own_temp_encode(SYSTEM_ID, COMPONENT_ID, &generic_msg, &msg);
+	uplink_write_mav(&generic_msg);
 
-		raw = raw_sum / oversampling;
-
-		float mv = raw * 3300.0f / 0x0FFF;
-		float temp = (mv - INTERNAL_TEMP_V25) / INTERNAL_TEMP_AVG_SLOPE + 25;
-
-		own_temp_msg.time_s = tv.tv_sec;
-		own_temp_msg.time_us = tv.tv_usec;
-		own_temp_msg.deg = temp;
-
-		mavlink_message_t msg;
-		mavlink_msg_own_temp_encode(SYSTEM_ID, COMPONENT_ID, &msg, &own_temp_msg);
-		uplink_write_mav(&msg);
-
-		return 0;
+	return 0;
 }
 
 
@@ -190,6 +213,7 @@ int mavlink_errors_packet(void)
 
 	errors_msg.time_s = tv.tv_sec;
 	errors_msg.time_us = tv.tv_usec;
+	errors_msg.time_steady = HAL_GetTick();
 
 	errors_msg.analog_sensor_init_error = error_system.analog_sensor_init_error;
 
@@ -215,10 +239,59 @@ int mavlink_errors_packet(void)
 	errors_msg.uart_transfer_error = error_system.uart_transfer_error;
 
 	errors_msg.reset_counter = error_system.reset_counter;
+	errors_msg.reset_cause = error_system.reset_cause;
 
 	mavlink_message_t msg;
 	mavlink_msg_sins_errors_encode(SYSTEM_ID, COMPONENT_ID, &msg, &errors_msg);
 	uplink_write_mav(&msg);
+
+	return 0;
+}
+
+
+int mavlink_its_link_stats(void)
+{
+	struct timeval tv;
+	time_svc_world_get_time(&tv);
+
+	mavlink_i2c_link_stats_t msg;
+	msg.time_s = tv.tv_sec;
+	msg.time_us = tv.tv_usec;
+	msg.time_steady = HAL_GetTick();
+
+	its_i2c_link_stats_t stats;
+	its_i2c_link_stats(&stats);
+
+	msg.rx_packet_start_cnt = stats.rx_packet_start_cnt;
+	msg.rx_packet_done_cnt = stats.rx_packet_done_cnt;
+	msg.rx_cmds_start_cnt = stats.rx_cmds_start_cnt;
+	msg.rx_cmds_done_cnt = stats.rx_cmds_done_cnt;
+	msg.rx_drops_start_cnt = stats.rx_drops_start_cnt;
+	msg.rx_drops_done_cnt = stats.rx_drops_done_cnt;
+	msg.tx_psize_start_cnt = stats.tx_psize_start_cnt;
+	msg.tx_psize_done_cnt = stats.tx_psize_done_cnt;
+	msg.tx_packet_start_cnt = stats.tx_packet_start_cnt;
+	msg.tx_packet_done_cnt = stats.tx_packet_done_cnt;
+	msg.tx_zeroes_start_cnt = stats.tx_zeroes_start_cnt;
+	msg.tx_zeroes_done_cnt = stats.tx_zeroes_done_cnt;
+	msg.tx_empty_buffer_cnt = stats.tx_empty_buffer_cnt;
+	msg.tx_overruns_cnt = stats.tx_overruns_cnt;
+	msg.cmds_get_size_cnt = stats.cmds_get_size_cnt;
+	msg.cmds_get_packet_cnt = stats.cmds_get_packet_cnt;
+	msg.cmds_set_packet_cnt = stats.cmds_set_packet_cnt;
+	msg.cmds_invalid_cnt = stats.cmds_invalid_cnt;
+	msg.restarts_cnt = stats.restarts_cnt;
+	msg.berr_cnt = stats.berr_cnt;
+	msg.arlo_cnt = stats.arlo_cnt;
+	msg.ovf_cnt = stats.ovf_cnt;
+	msg.af_cnt = stats.af_cnt;
+	msg.btf_cnt = stats.btf_cnt;
+	msg.tx_wrong_size_cnt = stats.tx_wrong_size_cnt;
+	msg.rx_wrong_size_cnt = stats.rx_wrong_size_cnt;
+
+	mavlink_message_t generic_msg;
+	mavlink_msg_i2c_link_stats_encode(SYSTEM_ID, COMPONENT_ID, &generic_msg, &msg);
+	uplink_write_mav(&generic_msg);
 
 	return 0;
 }

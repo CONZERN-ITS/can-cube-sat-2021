@@ -27,14 +27,10 @@ typedef enum ccontrol_state_t
 {
 	//! Ждем очередного замера
 	CCONTROL_STATE_IDLE = 1,
+	//! Проветриваем камеру
+	CCONTROL_STATE_DRAINING = 2,
 	//! Качаем компрессором!
-	CCONTROL_STATE_PUMPING = 2,
-	//! Проводим измерения
-	CCONTROL_STATE_MEASURING = 3,
-	//! Стравливаем давление и проветриваем камеру
-	CCONTROL_STATE_DRAINING = 4,
-	//! Отдыхаем после стравливания воздуха
-	CCONTROL_STATE_COOLDOWN = 5,
+	CCONTROL_STATE_PUMPING = 3,
 } ccontrol_state_t;
 
 

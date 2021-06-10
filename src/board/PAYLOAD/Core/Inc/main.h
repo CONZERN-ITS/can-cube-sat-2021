@@ -29,6 +29,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx_ll_i2c.h"
 #include "stm32f4xx_ll_rtc.h"
 #include "stm32f4xx_ll_bus.h"
 #include "stm32f4xx_ll_cortex.h"
@@ -91,6 +92,9 @@ void Error_Handler(void);
 #define SENS_CTRL_NH3_2_GPIO_Port GPIOB
 #define SENS_CTRL_CO_1_Pin GPIO_PIN_14
 #define SENS_CTRL_CO_1_GPIO_Port GPIOB
+#define PPS_Input_debug_Pin GPIO_PIN_8
+#define PPS_Input_debug_GPIO_Port GPIOC
+#define PPS_Input_debug_EXTI_IRQn EXTI9_5_IRQn
 #define SENS_CTRL_CO_2_Pin GPIO_PIN_9
 #define SENS_CTRL_CO_2_GPIO_Port GPIOA
 #define MICS_PWR_Pin GPIO_PIN_11

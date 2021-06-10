@@ -10,7 +10,7 @@
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
 #include "pinout_cfg.h"
 
@@ -74,10 +74,9 @@ static int is_msg_banned(int msg_id)
 	return 0;
 }
 
-#define RADIO_SEND_BUF_SIZE 30
+#define RADIO_SEND_BUF_SIZE 60
 static msg_container arr_buf[RADIO_SEND_BUF_SIZE];
 static int arr_buf_size = 0;
-static SemaphoreHandle_t buf_mutex;
 
 /*
  * Поиск контейнера для данного сообщения в буфере arr_buf
@@ -341,7 +340,7 @@ static int _radio_init(radio_t * server)
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_6,
+			.spreading_factor = SX126X_LORA_SF_7,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
@@ -423,7 +422,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 	log_trace("Event handler");
 	radio_t * radio_server = (radio_t*)user_arg;
 
-	bool went_tx = false;
+
 	switch (kind)
 	{
 	case SX126X_EVTKIND_RX_DONE:
@@ -486,16 +485,6 @@ static void task_send(void *arg) {
 	tid.queue = xQueueCreate(20, MAVLINK_MAX_PACKET_LEN);
 	its_rt_register_for_all(tid);
 
-
-	//Количество отправленных сообщений
-	int msg_count = 0;
-	// Буфер для отправляемого сообщения
-	uint8_t out_buf[MAVLINK_MAX_PACKET_LEN] = {0};
-
-	// Текущая отправляемая порция
-	uint8_t * portion = out_buf;
-	// размер порции
-	int portion_size = 0;
 
 
 	sx126x_drv_mode_rx(&radio_server->dev, 0);

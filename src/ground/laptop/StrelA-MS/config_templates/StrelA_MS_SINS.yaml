@@ -64,6 +64,14 @@ CentralWidget:
         name: BCU C5 THERMAL_STATE
         sourse_id: '10_5'
         message_id: 'THERMAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_0:
+        name: BCU C0 ELECTRICAL_STATE
+        sourse_id: '10_0'
+        message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_1:
+        name: BCU C1 ELECTRICAL_STATE
+        sourse_id: '10_1'
+        message_id: 'ELECTRICAL_STATE'
       CUBE_1_PCU_OWN_TEMP:
         is_on: false
         name: cube 1 PCU OWN_TEMP

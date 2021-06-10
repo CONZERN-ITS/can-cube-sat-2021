@@ -153,17 +153,17 @@ static void _task_update(void *arg) {
 		//Поуправляем радио. Если плата слишком горячая, то...
 		if (temperature[0] > CONTROL_HEAT_RADIO_HIGH_THD) {
 			portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
-			taskENTER_CRITICAL(&myMutex);
+			portENTER_CRITICAL(&myMutex);
 			radio_send_set_sleep_delay(7000);
-			taskEXIT_CRITICAL(&myMutex);
+			portEXIT_CRITICAL(&myMutex);
 			ESP_LOGD("CONTROL_HEAT", "TOO hot! Radio OFF");
 
 		}
 		if (temperature[0] < CONTROL_HEAT_RADIO_LOW_THD) {
 			portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
-			taskENTER_CRITICAL(&myMutex);
+			portENTER_CRITICAL(&myMutex);
 			radio_send_set_sleep_delay(RADIO_SLEEP_DEFAULT);
-			taskEXIT_CRITICAL(&myMutex);
+			portEXIT_CRITICAL(&myMutex);
 			ESP_LOGD("CONTROL_HEAT", "Cool! Radio ON");
 		}
 		//Выключим те, от которых ничего не слышно

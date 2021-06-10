@@ -36,9 +36,11 @@
 #include "mavlink_help2.h"
 
 #include "ds18b20.h"
+#include "ina219.h"
 
 #define ITS_ESP_DEBUG
 
+static void sensors_ina_task(void *arg);
 static void sensors_task(void *arg);
 #define SAMPLE_PERIOD 1000
 #define DS18B20_RESOLUTION   (DS18B20_RESOLUTION_12_BIT)
@@ -46,6 +48,7 @@ static char *TAG = "SENSORS";
 
 esp_err_t sensors_init(void) {
 	xTaskCreatePinnedToCore(sensors_task, "Sensors task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
+	xTaskCreatePinnedToCore(sensors_ina_task, "Sensors ina task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
 	return 0;
 }
 
@@ -157,8 +160,8 @@ static void sensors_task(void *arg) {
 #endif
 
 	// Read temperatures more efficiently by starting conversions on all devices at the same time
-	int errors_count[ITS_OWB_MAX_DEVICES] = {0};
-	int sample_count = 0;
+	//int errors_count[ITS_OWB_MAX_DEVICES] = {0};
+
 	ESP_LOGD(TAG, "Start cycle");
 
 	ESP_LOGV(TAG, "Main cycle");
@@ -218,4 +221,59 @@ static void sensors_task(void *arg) {
 	owb_uninitialize(owb);
 
 	vTaskDelete(0);
+}
+
+
+static void sensors_ina_task(void *arg) {
+#define INA_MAX 1
+	ina219_t ina[INA_MAX];
+	int timeout = 50 / portTICK_PERIOD_MS;
+	ina219_init_desc(&ina[0], INA219_ADDR_GND_GND, ITS_I2CTM_PORT, timeout);
+	/*ina219_init_desc(&ina[1], INA219_ADDR_GND_SCL, ITS_I2CTM_PORT, timeout);
+	ina219_init_desc(&ina[2], INA219_ADDR_GND_SDA, ITS_I2CTM_PORT, timeout);
+	ina219_init_desc(&ina[3], INA219_ADDR_GND_VS, ITS_I2CTM_PORT, timeout);
+	ina219_init_desc(&ina[4], INA219_ADDR_SCL_GND, ITS_I2CTM_PORT, timeout);
+	ina219_init_desc(&ina[5], INA219_ADDR_SDA_SDA, ITS_I2CTM_PORT, timeout);
+*/
+	int rc = 0;
+	for (int i = 0; i < INA_MAX; i++) {
+		rc = ina219_init(&ina[i]);
+		ESP_LOGD(TAG, "ina0: %d", rc);
+		rc = ina219_configure(&ina[i], INA219_BUS_RANGE_16V, INA219_GAIN_1,
+				INA219_RES_12BIT_128S, INA219_RES_12BIT_128S, INA219_MODE_CONT_SHUNT_BUS);
+
+		ESP_LOGD(TAG, "ina1: %d", rc);
+		rc = ina219_init(&ina[i]);
+		ESP_LOGD(TAG, "ina2: %d", rc);
+		rc = ina219_calibrate(&ina[i], 10, 0.1);
+		ESP_LOGD(TAG, "ina3: %d", rc);
+	}
+	while (1) {
+		struct timeval tp = {0};
+		gettimeofday(&tp, 0);
+		mavlink_electrical_state_t mes[INA_MAX];
+		int64_t now = esp_timer_get_time();
+		for (int i = 0; i < INA_MAX; i++) {
+			if (ina219_get_bus_voltage(&ina[i], &mes[i].voltage) != ESP_OK) {
+				mes[i].voltage = NAN;
+			}
+			if (ina219_get_current(&ina[i], &mes[i].current) != ESP_OK) {
+				mes[i].current = NAN;
+			}
+			ESP_LOGD("SENSORS", "[%d] current: %f, voltage: %0.2f", i, mes[i].current, mes[i].voltage);
+			mes[i].time_s = tp.tv_sec;
+			mes[i].time_us = tp.tv_usec;
+			mes[i].time_steady = (uint32_t) now;
+		}
+		for (int i = 0; i < INA_MAX; i++) {
+			mavlink_message_t msg;
+
+			mavlink_msg_electrical_state_encode(CUBE_1_BCU, i, &msg, &mes[i]);
+
+			its_rt_sender_ctx_t ctx = {0};
+			ctx.from_isr = 0;
+			its_rt_route(&ctx, &msg, 0);
+		}
+		vTaskDelay(2000 / portTICK_PERIOD_MS);
+	}
 }

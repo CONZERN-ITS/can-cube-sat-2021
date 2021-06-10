@@ -71,8 +71,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 except EOFError as e:
                     self.autoclose.emit(str(e))
                     break
-                #except Exception as e:
-                #    print(e)
+                except Exception as e:
+                    print(e)
                 else:
                     self.new_data.emit(data)
                 self.mutex.lock()
@@ -145,12 +145,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.action_exit.setStatusTip("Exit")
 
     def send_msg(self, data):
-        print('msg')
         msg = self.interface.generate_message(*data[:2])
         if msg is not None:
             self.msg_box.setDetailedText(str(msg))
             if self.msg_box.exec() == QtWidgets.QMessageBox.Yes:
-                print(msg)
                 self.interface.send_command(msg, data[2])
                 self.central_widget.status_widget.add_command(data[0], data[2])
 
@@ -162,9 +160,9 @@ class MainWindow(QtWidgets.QMainWindow):
                                  connection_str_out=self.settings.value('MAVLink/connection_out'),
                                  log_path=LOG_FOLDER_PATH)
         elif sourse == 'ZMQ':
-            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_bpcs'),
-                                 bus_sub=self.settings.value('ZMQ/bus_bscp'),
-                                 log_path=LOG_FOLDER_PATH)
+            data = ZMQDataSource(bus_bpcs=self.settings.value('ZMQ/bus_bpcs'),
+                                 bus_bscp=self.settings.value('ZMQ/bus_bscp'),
+                                 topics=self.settings.value('ZMQ/topics'))
         self.settings.endGroup()
         return data
 
@@ -175,6 +173,8 @@ class MainWindow(QtWidgets.QMainWindow):
             interface = MAVITSInterface()
         elif sourse == 'ZMQITS':
             interface = ZMQITSInterface()
+        elif sourse == 'ZMQITSUSLP':
+            interface = ZMQITSUSLPInterface()
         else:
         	interface = AbstractCommanInterface()
         self.settings.endGroup()

@@ -17,7 +17,7 @@
 //#define MAVLINK_USE_CONVENIENCE_FUNCTIONS
 // Скидывать сообщения в текстовом виде в консольку для отладки
 #ifdef DEBUG
-//#define PROCESS_TO_PRINTF
+#define PROCESS_TO_PRINTF
 #endif
 // Скидывать сообщения в its_link
 #define PROCESS_TO_ITSLINK
@@ -58,6 +58,7 @@ void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg);
 void mav_main_process_dna_message(mavlink_pld_dna_data_t * msg);
 void mav_main_process_own_stats(mavlink_pld_stats_t * msg);
 void mav_main_process_i2c_link_stats(mavlink_i2c_link_stats_t * msg);
-
+void mav_main_process_commissar_report(uint8_t component_id, const mavlink_commissar_report_t * report);
+void mav_main_process_ccompressor_state(const mavlink_pld_compressor_data_t * msg);
 
 #endif /* INC_MAVLINK_MAIN_H_ */

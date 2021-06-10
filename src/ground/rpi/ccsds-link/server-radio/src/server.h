@@ -10,11 +10,14 @@
 
 #define RADIO_PACKET_SIZE 200
 #define RADIO_RX_TIMEDOUT_LIMIT 5
-#define RADIO_TX_TIMEOUT_MS (5000)
-#define RADIO_RX_TIMEOUT_MS (5000)
+#define RADIO_TX_TIMEOUT_MS (50000)
+#define RADIO_RX_TIMEOUT_MS (1000)
 #define RADIO_RSSI_PERIOD_MS (500)
+#define RADIO_STATS_PERIOD_MS (1000)
 #define SERVER_TX_STATE_PERIOD_MS (500)
 #define SERVER_POLL_TIMEOUT_MS (1000)
+
+#define SERVER_IGNORED_ERRORS (SX126X_DEVICE_ERROR_XOSC_START|0)
 
 typedef uint64_t msg_cookie_t;
 #define MSG_COOKIE_T_PLSHOLDER PRIu64
@@ -38,6 +41,9 @@ typedef struct server_t
 
 	uint32_t rssi_report_period;
 	struct timespec rssi_report_block_deadline;
+	uint32_t radio_stats_report_period;
+	struct timespec radio_stats_report_block_deadline;
+	uint16_t ignored_errors;
 
 	uint8_t tx_buffer[255];
 	size_t tx_buffer_capacity;

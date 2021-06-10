@@ -37,10 +37,10 @@ static op_cmd_t *op_find_cmd_ip(op_ip_t *hop, char *name);
 static void op_add_op_ip(op_ip_t *hop, char *name, int (*func)(char *arg));
 
 void op_config_ip(op_ip_t *hop, uint16_t port) {
-	hop->hop.operations.recieve_cmd = op_recieve_cmd_ip;
-	hop->hop.operations.init = op_init_ip;
-	hop->hop.operations.find_cmd = op_find_cmd_ip;
-	hop->hop.operations.add_op = op_add_op_ip;
+	hop->hop.operations.recieve_cmd = (int (*)(struct op_handler_t *, char *, int)) op_recieve_cmd_ip;
+	hop->hop.operations.init = (int (*)(struct op_handler_t *)) op_init_ip;
+	hop->hop.operations.find_cmd = (op_cmd_t * (*)(struct op_handler_t *, char *)) op_find_cmd_ip;
+	hop->hop.operations.add_op = (void (*)(struct op_handler_t *, char *, int (*)(char *))) op_add_op_ip;
 
 	hop->port = port;
 	hop->arr_size = 0;

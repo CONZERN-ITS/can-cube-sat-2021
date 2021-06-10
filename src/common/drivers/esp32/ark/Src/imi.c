@@ -30,10 +30,10 @@
 #include "imi.h"
 #include "pinout_cfg.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
+#define LOG_LOCAL_LEVEL ESP_LOG_NONE
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+
+static const char *TAG = "imi";
 
 
 ////////////////////////////////////////////////////////////////
@@ -58,18 +58,14 @@ static int imi_msg_send(imi_t *himi, uint8_t *data, uint16_t size) {
 
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, himi->address << 1 | I2C_MASTER_WRITE, 1);
-	i2c_master_write(cmd, (uint8_t*) &size, sizeof(size), 1);
+	//i2c_master_write(cmd, (uint8_t*) &size, sizeof(size), 1);  // По протоколу такое больше не требуется
 	i2c_master_write(cmd, data, size, 1);
 	i2c_master_stop(cmd);
 	err = i2c_master_cmd_begin(himi->i2c_port, cmd, himi->timeout / portTICK_PERIOD_MS);
 	i2c_cmd_link_delete(cmd);
 
-	if (err) {
-		//printf("Error: send cmd2 = %d\n", (int)err);
-		return err;
-	}
 
-	return 0;
+	return err;
 }
 
 
@@ -79,6 +75,7 @@ static int imi_msg_send(imi_t *himi, uint8_t *data, uint16_t size) {
 static int imi_get_packet_size(imi_t *himi, uint16_t *size) {
 	int err = imi_send_cmd(himi, IMI_CMD_GET_SIZE);
 	if (err) {
+		ESP_LOGE(TAG, "unable to send get size cmd %d", err);
 		//printf("Error: send cmd1 = %d\n", (int)err);
 		return err;
 	}
@@ -87,6 +84,7 @@ static int imi_get_packet_size(imi_t *himi, uint16_t *size) {
 	uint16_t rsize = 0;
 	err = my_i2c_recieve(himi->i2c_port, himi->address, (uint8_t*) &rsize, sizeof(rsize), himi->timeout);
 	if (err) {
+		ESP_LOGE(TAG, "unable to pull packet size %d", err);
 		//printf("Error: send cmd2 = %d\n", (int)err);
 		return err;
 	}
@@ -116,6 +114,8 @@ static int imi_get_packet(imi_t *himi, uint8_t *data, uint16_t size) {
  * сообщение.
  * retval == 0 - нет сообщений у этого подчиненного
  */
+
+__attribute__((unused))
 static int imi_msg_recieve(imi_t *himi, uint8_t *data, uint16_t *size) {
 	uint16_t rsize = 0;
 	int rc = 0;
@@ -159,12 +159,10 @@ typedef struct {
 	TaskHandle_t taskRecv;
 	uint8_t *adds;
 	int add_count;
-	SemaphoreHandle_t mutex;
 	imi_state_t state;
 
 } imi_handler_t;
 
-static const char *TAG = "imi";
 
 imi_handler_t imi_device[IMI_COUNT];
 
@@ -204,7 +202,7 @@ static void _imi_recv_all(imi_handler_t *h) {
 			int rc = imi_get_packet_size(&himi, &size);
 			ESP_LOGV(TAG, "get size from 0x%02X: %d %d", himi.address, rc, size);
 			if (rc || size == 0) {
-				ESP_LOGW(TAG, "Can't get size from %d %d", himi.address, rc);
+				ESP_LOGW(TAG, "Can't get size from 0x%02X %d", himi.address, rc);
 				isAny = 0;
 				continue;
 			}
@@ -241,10 +239,12 @@ static void _imi_task_recv(void *arg) {
 			ulTaskNotifyTake(pdFALSE, IMI_WAIT_DELAY / portTICK_RATE_MS);
 		}
 		//ESP_LOGI(TAG, "Trying to read");
-		xSemaphoreTake(h->mutex, portMAX_DELAY);
+		if (i2c_master_prestart(h->cfg.i2c_port, h->cfg.ticksToWaitForOne) != pdTRUE) {
+			continue;
+		}
 		//Receiving packets if there are any
 		_imi_recv_all(h);
-		xSemaphoreGive(h->mutex);
+		i2c_master_postend(h->cfg.i2c_port);
 
 		vTaskDelay(IMI_CYCLE_DELAY / portTICK_RATE_MS);
 	}
@@ -263,7 +263,6 @@ void imi_install(imi_config_t *cfg, imi_port_t port) {
 	if (!h->adds) {
 		ESP_LOGE(TAG, "can't allocate memory");
 	}
-	h->mutex = xSemaphoreCreateMutex();
 
 	h->state = IMI_STATE_INSTALLED;
 }
@@ -275,7 +274,6 @@ void imi_install_static(imi_config_t *cfg, imi_port_t port, uint8_t *addrs) {
 	h->cfg = *cfg;
 	h->adds = addrs;
 	h->add_count = cfg->address_count;
-	h->mutex = xSemaphoreCreateMutex();
 
 	h->state = IMI_STATE_INSTALLED;
 }
@@ -324,11 +322,11 @@ int imi_send(imi_port_t port, uint8_t address, uint8_t *data, uint16_t size, Tic
 		.timeout = ticksToWait
 	};
 
-	if (xSemaphoreTake(h->mutex, ticksToWait) == pdFALSE) {
+	if (i2c_master_prestart(h->cfg.i2c_port, ticksToWait) == pdFALSE) {
 		return 1;
 	}
 	rc = imi_msg_send(&himi, data, size);
-	xSemaphoreGive(h->mutex);
+	i2c_master_postend(h->cfg.i2c_port);
 	return rc;
 }
 /*
@@ -343,7 +341,7 @@ int imi_send_all(imi_port_t port, uint8_t *data, uint16_t size, TickType_t ticks
 	h = &imi_device[port];
 	assert(h->state == IMI_STATE_STARTED);
 
-	if (xSemaphoreTake(h->mutex, ticksToWaitForOne) == pdFALSE) {
+	if (i2c_master_prestart(h->cfg.i2c_port, ticksToWaitForOne) == pdFALSE) {
 		return 1;
 	}
 	for (int i = 0; i < h->add_count; i++) {
@@ -356,7 +354,7 @@ int imi_send_all(imi_port_t port, uint8_t *data, uint16_t size, TickType_t ticks
 		rc = imi_msg_send(&himi, data, size);
 	}
 
-	xSemaphoreGive(h->mutex);
+	i2c_master_postend(h->cfg.i2c_port);
 	return rc;
 }
 /*

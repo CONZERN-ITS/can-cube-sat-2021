@@ -210,6 +210,8 @@ int its_bme280_read(its_bme280_id_t id, mavlink_pld_bme280_data_t * data)
 
 	data->time_s = tv.tv_sec;
 	data->time_us = tv.tv_usec;
+	data->time_steady = HAL_GetTick();
+
 	data->pressure = bme280_data.pressure;
 	data->temperature = bme280_data.temperature;
 	data->humidity = bme280_data.humidity;

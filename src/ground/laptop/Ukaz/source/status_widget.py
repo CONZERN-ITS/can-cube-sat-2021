@@ -57,7 +57,8 @@ class StatusWidget(QtWidgets.QWidget):
                     self.start_time = time.time()
                     self.stop_time = 0
                 else:
-                    self.stop_time = time.time()
+                    if self.stop_time == 0:
+                        self.stop_time = time.time()
 
             def get_enabled(self):
                 return self.enabled
@@ -74,15 +75,19 @@ class StatusWidget(QtWidgets.QWidget):
             self.cmd_list = cmd_list
 
         def set_background_color(self, color):
+            print(color)
             self.background_brush = QtGui.QBrush(color)
 
         def set_background_success_color(self, color):
+            print(color)
             self.background_success_brush = QtGui.QBrush(color)
 
         def set_background_processing_color(self, color):
+            print(color)
             self.background_processing_brush = QtGui.QBrush(color)
 
         def set_background_failure_color(self, color):
+            print(color)
             self.background_failure_brush = QtGui.QBrush(color)
 
         def is_event_enabled(self, row):
@@ -139,14 +144,14 @@ class StatusWidget(QtWidgets.QWidget):
             elif role == QtCore.Qt.BackgroundRole:
                 cmd = self.cmd_list[index.row()]
                 status_type = cmd.get_status_type()
-                if status_type == StatusWidget.StatusModel.Command.STATUS_PROCESSING:
-                    return self.background_processing_brush
-                elif status_type == StatusWidget.StatusModel.Command.STATUS_SUCCSESS:
-                    return self.background_success_brush
-                elif status_type == StatusWidget.StatusModel.Command.STATUS_FAILURE:
-                    return self.background_failure_brush
-                else:
-                    return self.background_brush
+                #if status_type == StatusWidget.StatusModel.Command.STATUS_PROCESSING:
+                    #return self.background_processing_brush
+                #elif status_type == StatusWidget.StatusModel.Command.STATUS_SUCCSESS:
+                    #return self.background_success_brush
+                #elif status_type == StatusWidget.StatusModel.Command.STATUS_FAILURE:
+                    #return self.background_failure_brush
+                #else:
+                    #return self.background_brush
 
             return QtCore.QVariant()
 

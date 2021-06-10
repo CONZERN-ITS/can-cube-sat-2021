@@ -82,10 +82,7 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
-I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
-DMA_HandleTypeDef hdma_i2c1_rx;
-DMA_HandleTypeDef hdma_i2c1_tx;
 
 RTC_HandleTypeDef hrtc;
 
@@ -424,6 +421,58 @@ int check_SINS_state(void)
 		return 0;
 }
 
+
+static uint16_t _fetch_reset_cause(void)
+{
+	int rc = 0;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST))
+		rc |= MCU_RESET_PIN;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST))
+		rc |= MCU_RESET_POR;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST))
+		rc |= MCU_RESET_SW;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))
+		rc |= MCU_RESET_WATCHDOG;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST))
+		rc |= MCU_RESET_WATCHDOG2;
+
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_LPWRRST))
+		rc |= MCU_RESET_LOWPOWER;
+
+	__HAL_RCC_CLEAR_RESET_FLAGS();
+	return rc;
+}
+
+
+#define RTC_BKP_DR1                     0x00000001U
+
+static uint32_t RTC_BAK_GetRegister(RTC_TypeDef *RTCx, uint32_t BackupRegister)
+{
+	register uint32_t tmp = 0U;
+
+	  tmp = (uint32_t)(&(RTCx->BKP0R));
+	  tmp += (BackupRegister * 4U);
+
+	  /* Read the specified register */
+	  return (*(__IO uint32_t *)tmp);
+}
+
+
+static void RTC_BAK_SetRegister(RTC_TypeDef *RTCx, uint32_t BackupRegister, uint32_t Data)
+{
+  register uint32_t tmp = 0U;
+
+  tmp = (uint32_t)(&(RTCx->BKP0R));
+  tmp += (BackupRegister * 4U);
+
+  /* Write the specified register */
+  *(__IO uint32_t *)tmp = (uint32_t)Data;
+}
 /* USER CODE END 0 */
 
 /**
@@ -511,18 +560,18 @@ int main(void)
   	}
   	else*/
   	{
+  		// Грузим из бэкап регистров количество рестартов, которое с нами случилось
+		error_system.reset_counter = RTC_BAK_GetRegister(RTC, RTC_BKP_DR1);
+		error_system.reset_counter += 1;
+		RTC_BAK_SetRegister(RTC, RTC_BKP_DR1, error_system.reset_counter);
+
+		// Смотрим причину последнего резета
+		error_system.reset_cause = _fetch_reset_cause();
+
 
   		//iwdg_init(&transfer_uart_iwdg_handle);
 
   		time_svc_steady_init();
-
-
-  		//backup_sram_enable_after_reset();
-  		//backup_sram_read_zero_state(&state_zero);
-
-  		//backup_sram_read_reset_counter(&error_system.reset_counter);
-  		//error_system.reset_counter++;
-  		//backup_sram_write_reset_counter(&error_system.reset_counter);
 
   		int error = time_svc_world_preinit_with_rtc();
   		error_system.rtc_error = error;
@@ -665,6 +714,7 @@ int main(void)
 
   			error_mems_read();
   			mavlink_errors_packet();
+  			mavlink_its_link_stats();
   			commissar_work();
   		}
   	}
@@ -701,9 +751,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;//|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  //RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -727,12 +777,13 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  /*
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
   PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
-  }
+  }*/
   /** Enables the Clock Security System
   */
   HAL_RCC_EnableCSS();
@@ -800,22 +851,88 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 0 */
 
+  LL_I2C_InitTypeDef I2C_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
+  /**I2C1 GPIO Configuration
+  PB8   ------> I2C1_SCL
+  PB9   ------> I2C1_SDA
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_8|LL_GPIO_PIN_9;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_4;
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C1);
+
+  /* I2C1 DMA Init */
+
+  /* I2C1_RX Init */
+  LL_DMA_SetChannelSelection(DMA1, LL_DMA_STREAM_0, LL_DMA_CHANNEL_1);
+
+  LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_STREAM_0, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
+
+  LL_DMA_SetStreamPriorityLevel(DMA1, LL_DMA_STREAM_0, LL_DMA_PRIORITY_LOW);
+
+  LL_DMA_SetMode(DMA1, LL_DMA_STREAM_0, LL_DMA_MODE_NORMAL);
+
+  LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_STREAM_0, LL_DMA_PERIPH_NOINCREMENT);
+
+  LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_STREAM_0, LL_DMA_MEMORY_INCREMENT);
+
+  LL_DMA_SetPeriphSize(DMA1, LL_DMA_STREAM_0, LL_DMA_PDATAALIGN_BYTE);
+
+  LL_DMA_SetMemorySize(DMA1, LL_DMA_STREAM_0, LL_DMA_MDATAALIGN_BYTE);
+
+  LL_DMA_DisableFifoMode(DMA1, LL_DMA_STREAM_0);
+
+  /* I2C1_TX Init */
+  LL_DMA_SetChannelSelection(DMA1, LL_DMA_STREAM_6, LL_DMA_CHANNEL_1);
+
+  LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_STREAM_6, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+
+  LL_DMA_SetStreamPriorityLevel(DMA1, LL_DMA_STREAM_6, LL_DMA_PRIORITY_LOW);
+
+  LL_DMA_SetMode(DMA1, LL_DMA_STREAM_6, LL_DMA_MODE_NORMAL);
+
+  LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_STREAM_6, LL_DMA_PERIPH_NOINCREMENT);
+
+  LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_STREAM_6, LL_DMA_MEMORY_INCREMENT);
+
+  LL_DMA_SetPeriphSize(DMA1, LL_DMA_STREAM_6, LL_DMA_PDATAALIGN_BYTE);
+
+  LL_DMA_SetMemorySize(DMA1, LL_DMA_STREAM_6, LL_DMA_MDATAALIGN_BYTE);
+
+  LL_DMA_DisableFifoMode(DMA1, LL_DMA_STREAM_6);
+
+  /* I2C1 interrupt Init */
+  NVIC_SetPriority(I2C1_EV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+  NVIC_EnableIRQ(I2C1_EV_IRQn);
+  NVIC_SetPriority(I2C1_ER_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+  NVIC_EnableIRQ(I2C1_ER_IRQn);
+
   /* USER CODE BEGIN I2C1_Init 1 */
 
   /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 244;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  /** I2C Initialization
+  */
+  LL_I2C_DisableOwnAddress2(I2C1);
+  LL_I2C_DisableGeneralCall(I2C1);
+  LL_I2C_EnableClockStretching(I2C1);
+  I2C_InitStruct.PeripheralMode = LL_I2C_MODE_I2C;
+  I2C_InitStruct.ClockSpeed = 400000;
+  I2C_InitStruct.DutyCycle = LL_I2C_DUTYCYCLE_2;
+  I2C_InitStruct.OwnAddress1 = 244;
+  I2C_InitStruct.TypeAcknowledge = LL_I2C_ACK;
+  I2C_InitStruct.OwnAddrSize = LL_I2C_OWNADDRESS1_7BIT;
+  LL_I2C_Init(I2C1, &I2C_InitStruct);
+  LL_I2C_SetOwnAddress2(I2C1, 0);
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
@@ -865,6 +982,7 @@ static void MX_RTC_Init(void)
 {
 
   /* USER CODE BEGIN RTC_Init 0 */
+	return;
 
   /* USER CODE END RTC_Init 0 */
 
@@ -967,11 +1085,11 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+  NVIC_SetPriority(DMA1_Stream0_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+  NVIC_EnableIRQ(DMA1_Stream0_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+  NVIC_SetPriority(DMA1_Stream6_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+  NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 
 }
 
@@ -1056,7 +1174,7 @@ static void read_ldiods(float arr[ITS_SINS_LDS_COUNT]) {
     for (int i = 0; i < ITS_SINS_LDS_COUNT; i++)
     {
         uint16_t value;
-        int rc = analog_get_raw(order[i], &value);
+        int rc = analog_get_raw(order[i], 5, &value);
         assert(0 == rc);
         float v = ((float)value / (1 << 12)) * 3.3;
         arr[i] = v;

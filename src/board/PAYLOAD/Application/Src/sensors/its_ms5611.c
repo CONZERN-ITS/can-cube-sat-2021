@@ -5,6 +5,7 @@
 #include <util.h>
 
 #include <sensors/ms5611.h>
+#include <icao_table_calc.h>
 
 
 extern I2C_HandleTypeDef hi2c1;
@@ -222,8 +223,11 @@ int its_ms5611_read_and_calculate(its_ms5611_id_t id, mavlink_pld_ms5611_data_t 
 
 	data->time_s = tv.tv_sec;
 	data->time_us = tv.tv_usec;
+	data->time_steady = HAL_GetTick();
+
 	data->temperature = temp / 100.0;
 	data->pressure = press;
+	data->altitude = icao_table_alt_for_pressure(press);
 
 	return 0;
 }

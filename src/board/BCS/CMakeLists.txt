@@ -28,4 +28,5 @@ set(EXTRA_COMPONENT_DIRS "components/imi"
                          "ds18b20"
                          "sensors"
                          "log_collector"
-                         "operator")
+                         "operator"
+                         "components/operator2")

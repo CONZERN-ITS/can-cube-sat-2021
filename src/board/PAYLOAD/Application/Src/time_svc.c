@@ -23,6 +23,10 @@ static struct timeval _last_sync_tmv_1;
 static struct timeval _last_sync_tmv_2;
 static struct timeval * _last_sync_tmv_inner = &_last_sync_tmv_1;
 static struct timeval * _last_sync_tmv_outer = &_last_sync_tmv_2;
+// Откуда мы взяли время
+static uint8_t _my_timebase = TIME_BASE_TYPE_NONE;
+// Количество раз сколько мы синхронизовали время
+static uint16_t _time_syncs_count = 0;
 
 // Ожидается ли
 static bool _sync_pending = false;
@@ -53,6 +57,18 @@ void time_svc_init(void)
 	// Таймер настроен так, что тикает два раза в секунду
 	// и переполняется раз в секунду.
 	// (частота на входе таймера 2 кГц, период 2000 циклов)
+}
+
+
+uint8_t time_svc_get_time_base()
+{
+	return _my_timebase;
+}
+
+
+uint16_t time_svc_get_time_syncs_count(void)
+{
+	return _time_syncs_count;
 }
 
 
@@ -119,6 +135,15 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	if (!_check_swap_sync())
 		return;
 
+	// Смотрим откуда хост взял это время вообще
+	uint8_t time_base = mavlink_msg_timestamp_get_time_base(msg);
+	if (time_base >= TIME_BASE_TYPE_ENUM_END)
+		return;  // Это какая-то лажа
+
+	// Если у нас качество метки лучше чем у хоста, то мы забиваем
+	if (_my_timebase > time_base)
+		return;
+
 	const struct timeval * local_sync_stamp = _last_sync_tmv_inner;
 
 	// Смотрим сколько времени было у хоста, когда он бросал нам sync метку
@@ -159,4 +184,7 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	// Делаем это время текущим
 	// FIXME: нужно бы добавить сколько-то микросекунд на все эти операции
 	time_svc_settimeofday(&current_time);
+	// Запоминаем наш таймбейс
+	_my_timebase = time_base;
+	_time_syncs_count++;
 }

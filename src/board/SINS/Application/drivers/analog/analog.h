@@ -11,17 +11,13 @@
 #include <stdint.h>
 
 
-// Напряжение со встроенного термистра при 25 градусах (в милливольта)
-#define INTERNAL_TEMP_V25 (760.0f)
-// Коэффициент k внутренного термистра (мВ/C
-#define INTERNAL_TEMP_AVG_SLOPE (2.5f)
-
-
 //! Целевой аналоговый сенсор, с которым требуется работать
 typedef enum analog_target_t
 {
 	//! Интегрированный в stm32 термистр
 	ANALOG_TARGET_INTEGRATED_TEMP,
+	//! Напряжение на VBAT
+	ANALOG_TARGET_VBAT,
 	// Фотоидиоды
 	ANALOG_TARGET_LED_0,
 	ANALOG_TARGET_LED_1,
@@ -44,7 +40,9 @@ int analog_init(void);
 int analog_restart(void);
 
 //! Чтение сырого значения АЦП для указанного датчика
-int analog_get_raw(analog_target_t target, uint16_t * value);
+int analog_get_raw(analog_target_t target, uint16_t oversampling, uint16_t * value);
 
+//! Чтение и расчет сырого значения VDDA
+int analog_get_vdda_mv(uint16_t oversampling, uint16_t * value);
 
 #endif /* INC_ADC_H_ */

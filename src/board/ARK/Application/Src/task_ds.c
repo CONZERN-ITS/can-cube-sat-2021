@@ -23,10 +23,10 @@ static int _is_valid[TDS_TEMP_MAX_COUNT];
 	static ds18b20_config_t hds[TDS_TEMP_MAX_COUNT] =
 	{
 			// Из-за путаницы при сборке в первом кубе стоит вторая АКБ
-			{ .rom = 0xf900000b4d77cb28 }, // банка 1
-			{ .rom = 0x4800000b4ded0428 }, // банка 2
-			{ .rom = 0xe800000b4df6e328 }, // банка 3
-			{ .rom = 0xf400000b4de78128 }  // банка 4
+			{ .rom = 0xa601206bf929d228 }, // банка 1
+			{ .rom = 0xe501206c06262828 }, // банка 2
+			{ .rom = 0x8101206bffd48f28 }, // банка 3
+			{ .rom = 0x0000000b4dbaca28 }  // банка 4
 	};
 	static const int ds_count = 4;
 

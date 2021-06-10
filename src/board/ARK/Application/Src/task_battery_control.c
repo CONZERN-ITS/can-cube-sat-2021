@@ -80,11 +80,8 @@ static void update_temp(battery_row_t *bat, int size) {
             bat[i / BATTERY_IN_ROW].temp[i % BATTERY_IN_ROW] = temp[i];
         } else {
             bat[i / BATTERY_IN_ROW].temp[i % BATTERY_IN_ROW] = NAN;
-            bat[i / BATTERY_IN_ROW].last_working[i % BATTERY_IN_ROW] = now - 2 * BATTERY_DEAD_TIMEOUT;
+            //bat[i / BATTERY_IN_ROW].last_working[i % BATTERY_IN_ROW] = now - 2 * BATTERY_DEAD_TIMEOUT;
         }
-    }
-    for (; i < size * BATTERY_IN_ROW; i++) {
-        bat[i / BATTERY_IN_ROW].last_working[i % BATTERY_IN_ROW] = now - 2 * BATTERY_DEAD_TIMEOUT;
     }
 }
 
@@ -150,8 +147,8 @@ void update_dcdc(void) {
 
 void task_battery_control_update(void *arg) {
     volatile int rc = ad527x_setResistaneRaw(&had_out, 0);
-    return;
     update_temp(bat_row, BATTERY_MAX_ROW_COUNT);
+    return;
     for (int i = 0; i < BATTERY_MAX_ROW_COUNT; i++) {
         update_state(&bat_row[i]);
         HAL_GPIO_WritePin(BATTERY_BASE_PORT, BATTERY_BASE_PIN + i, bat_row[i].state == NORMAL);

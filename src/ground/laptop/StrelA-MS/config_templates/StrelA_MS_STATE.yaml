@@ -25,6 +25,14 @@ CentralWidget:
         name: BCU C5 THERMAL_STATE
         sourse_id: '10_5'
         message_id: 'THERMAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_0:
+        name: BCU C0 ELECTRICAL_STATE
+        sourse_id: '10_0'
+        message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_1:
+        name: BCU C1 ELECTRICAL_STATE
+        sourse_id: '10_1'
+        message_id: 'ELECTRICAL_STATE'
       SINS_OWN_TEMP:
         name: SINS OWN_TEMP
         sourse_id: '11_0'
@@ -64,6 +72,14 @@ CentralWidget:
         name: BCU C5 THERMAL_STATE
         sourse_id: '10_5'
         message_id: 'THERMAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_0:
+        name: BCU C0 ELECTRICAL_STATE
+        sourse_id: '10_0'
+        message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_1:
+        name: BCU C1 ELECTRICAL_STATE
+        sourse_id: '10_1'
+        message_id: 'ELECTRICAL_STATE'
       CUBE_1_PCU_OWN_TEMP:
         is_on: false
         name: cube 1 PCU OWN_TEMP
@@ -282,6 +298,66 @@ CentralWidget:
         - 1
         - 1
         units: C
+      Voltage:
+        Packets:
+          CUBE_1_BCU_EL_STATE_COMP_0:
+            sourse_id: '10_0'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - voltage
+            field_name:
+            - component 0
+            color:
+            - '#FF4646'
+          CUBE_1_BCU_EL_STATE_COMP_1:
+            sourse_id: '10_1'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - voltage
+            field_name:
+            - component 1
+            color:
+            - '#0096FF'
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        name: "Voltage"
+        position:
+        - 1
+        - 1
+        - 1
+        - 1
+        units: V
+      Current:
+        Packets:
+          CUBE_1_BCU_EL_STATE_COMP_0:
+            sourse_id: '10_0'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - current
+            field_name:
+            - component 0
+            color:
+            - '#FF4646'
+          CUBE_1_BCU_EL_STATE_COMP_1:
+            sourse_id: '10_1'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - current
+            field_name:
+            - component 1
+            color:
+            - '#0096FF'
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        name: "Current"
+        position:
+        - 0
+        - 1
+        - 1
+        - 1
+        units: A
       Own_temperature:
         Packets:
           PLD_TEMP:

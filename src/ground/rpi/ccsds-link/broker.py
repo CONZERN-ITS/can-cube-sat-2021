@@ -33,40 +33,46 @@ def generate_logfile_name():
 def main():
     # TODO: Сделать красивую остановку по ctrl+c
     ctx = zmq.Context()
-
     logfile_name = generate_logfile_name()
     _log.info("using logfile \"%s\"", logfile_name)
     logfile_writer = LogfileWriter(logfile_name)
 
-    bus_sub = ITS_GBUS_BSCP_ENDPOINT
-    bus_pub = ITS_GBUS_BPCS_ENDPOINT
+    try:
+        bus_sub = ITS_GBUS_BSCP_ENDPOINT
+        bus_pub = ITS_GBUS_BPCS_ENDPOINT
 
-    sub_socket, pub_socket = ctx.socket(zmq.SUB), ctx.socket(zmq.PUB)
+        sub_socket, pub_socket = ctx.socket(zmq.SUB), ctx.socket(zmq.PUB)
 
-    _log.info("binding sub to %s", bus_sub)
-    _log.info("binding pub to %s", bus_pub)
-    sub_socket.bind(bus_sub)
-    pub_socket.bind(bus_pub)
+        _log.info("binding sub to %s", bus_sub)
+        _log.info("binding pub to %s", bus_pub)
+        sub_socket.bind(bus_sub)
+        pub_socket.bind(bus_pub)
 
-    # Подписываемся на все на sub сокете
-    sub_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        # Подписываемся на все на sub сокете
+        sub_socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
-    poller = zmq.Poller()
-    poller.register(sub_socket, zmq.POLLIN)
-    last_log_flush_timepoint = time.time()
-    while True:
-        events = dict(poller.poll(1000))
-        if sub_socket in events:
-            msgs = sub_socket.recv_multipart()
-            _log.info("got messages: %r", msgs)
-            pub_socket.send_multipart(msgs)
-            logfile_writer.write(msgs)
-            now = time.time()
-            if now - last_log_flush_timepoint >= LOGFILE_FLUSH_PERIOD:
-                logfile_writer.flush()
+        poller = zmq.Poller()
+        poller.register(sub_socket, zmq.POLLIN)
+        last_log_flush_timepoint = time.time()
+        while True:
+            events = dict(poller.poll(1000))
+            if sub_socket in events:
+                msgs = sub_socket.recv_multipart()
+                _log.info("got messages: %r", msgs)
+                pub_socket.send_multipart(msgs)
+                logfile_writer.write(msgs)
+                now = time.time()
+                if now - last_log_flush_timepoint >= LOGFILE_FLUSH_PERIOD:
+                    logfile_writer.flush()
 
-    del ctx
-    logfile_writer.close()
+    except KeyboardInterrupt:
+        _log.info("Shutting Down...")
+        pass
+
+    finally:
+        del ctx
+        logfile_writer.close()
+
     return 0
 
 

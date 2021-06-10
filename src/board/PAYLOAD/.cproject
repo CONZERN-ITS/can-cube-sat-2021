@@ -59,7 +59,7 @@
                             							
                             <option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain_path.1157386162" name="Path" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain_path" useByScannerDiscovery="false" value="${gnu_tools_for_stm32_compiler_path}" valueType="string"/>
                             							
-                            <option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.1158260976" name="Toolchain" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain" useByScannerDiscovery="false" value="normal" valueType="string"/>
+                            <option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.1158260976" name="Toolchain" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.value.workspace" valueType="string"/>
                             							
                             <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.814515381" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
                             							
@@ -90,8 +90,6 @@
                                     <listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
                                     									
                                     <listOptionValue builtIn="false" value="DEBUG"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="PROCESS_TO_PRINTF=1"/>
                                     								
                                 </option>
                                 								
@@ -109,7 +107,7 @@
                                     									
                                     <listOptionValue builtIn="false" value="../../../common/mavlink/generated/mavlink/its"/>
                                     									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link}&quot;"/>
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link/Inc}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/BME280_driver-bme280_v3.4.3}&quot;"/>
                                     									
@@ -283,7 +281,7 @@
                                     									
                                     <listOptionValue builtIn="false" value="../../../common/mavlink/generated/mavlink/its"/>
                                     									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link}&quot;"/>
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/its-i2c-link/Inc}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/PAYLOAD/Drivers/BME280_driver-bme280_v3.4.3}&quot;"/>
                                     									

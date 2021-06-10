@@ -51,7 +51,7 @@ void app_main(void)
 	ESP_LOGI("SYSTEM", "Tasks created");
 
 }
-
+__attribute__((unused))
 static void task_send_telemetry_wifi(void *pvParameters) {
 
 	its_rt_task_identifier tid = {
@@ -87,7 +87,7 @@ static void task_send_telemetry_wifi(void *pvParameters) {
 	}
 	vTaskDelete(NULL);
 }
-
+__attribute__((unused))
 static void task_recv_telemetry_wifi(void *pvParameters) {
 	int sin;
 	sin = socket(AF_INET, SOCK_DGRAM, 0);

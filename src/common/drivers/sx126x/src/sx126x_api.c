@@ -100,7 +100,7 @@ int sx126x_api_stop_rx_timer_on_preamble(sx126x_api_t * api, bool enable)
 {
 	int rc;
 
-	const uint8_t arg = enable;
+	const uint8_t arg = enable ? 1 : 0;
 	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_SET_STOPRXTIMERONPREAMBLE, &arg, sizeof(arg));
 	SX126X_RETURN_IF_NONZERO(rc);
 
@@ -465,7 +465,7 @@ int sx126x_api_set_lora_packet_params(sx126x_api_t * api, const sx126x_lora_pack
 	const uint8_t args[6] = {
 			/* 1 */(params->preamble_length >> 8) & 0xFF,
 			/* 2 */(params->preamble_length     ) & 0xFF,
-			/* 3 */params->explicit_header ? 0x01 : 0x00,
+			/* 3 */params->explicit_header ? 0x00 : 0x01,
 			/* 4 */params->payload_length,
 			/* 5 */params->use_crc ? 0x01 : 0x00,
 			/* 6 */params->invert_iq ? 0x01 : 0x00,
@@ -633,23 +633,23 @@ int sx126x_api_reset_stats(sx126x_api_t * api)
 }
 
 
-int sx126x_get_device_errors(sx126x_api_t * api, uint16_t device_errors)
+int sx126x_api_get_device_errors(sx126x_api_t * api, uint16_t * device_errors)
 {
 	int rc;
 	uint8_t raw[2];
 	rc = sx126x_brd_cmd_read(api->board, SX126X_CMD_GET_ERROR, NULL, raw, sizeof(raw));
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	device_errors = ((uint16_t)raw[0] << 8) | raw[1];
-	(void) device_errors;
+	*device_errors = ((uint16_t)raw[0] << 8) | raw[1];
 	return 0;
 }
 
 
-int sx126x_clear_device_errors(sx126x_api_t * api)
+int sx126x_api_clear_device_errors(sx126x_api_t * api)
 {
 	int rc;
-	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_CLR_ERROR, NULL, 0);
+	uint8_t dummy[1] = { 0x00 };
+	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_CLR_ERROR, dummy, sizeof(dummy));
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;

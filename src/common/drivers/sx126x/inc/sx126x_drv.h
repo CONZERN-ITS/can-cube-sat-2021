@@ -267,5 +267,13 @@ int sx126x_drv_poll_irq(sx126x_drv_t * drv);
 /*! Очевидно имеет смысл вызывать только в RX/CAD режимах работы модуля */
 int sx126x_drv_rssi_inst(sx126x_drv_t * drv, int8_t * value);
 
+//! Получение статистики, накопленной модулем
+int sx126x_drv_get_stats(sx126x_drv_t * drv, sx126x_stats_t * stats);
+
+//! Получение ошибок радио
+int sx126x_drv_get_device_errors(sx126x_drv_t * drv, uint16_t * error_bits);
+
+//! Сброс флагов ошибок устройства
+int sx126x_drv_clear_device_errors(sx126x_drv_t * drv);
 
 #endif /* RADIO_SX126X_DRV_H_ */

@@ -1,29 +1,40 @@
-#ifndef I2C_LINK_CONF_H_
-#define I2C_LINK_CONF_H_
+
+#ifndef ITS_I2C_LINK_CONF_H_
+#define ITS_I2C_LINK_CONF_H_
 
 #include <stm32f4xx_hal.h>
 
+//! Адрес ведомого в 7мибитном формате, с выравниванием по правому краю
+#define I2C_LINK_ADDR (0x1a)
+
+// Проритеты I2C прерываний
+#define I2C_LINK_EV_IRQ_PREEM_PRIORITY 1
+#define I2C_LINK_EV_IRQ_SUB_PRIORITY 0
+
+#define I2C_LINK_ER_IRQ_PREEM_PRIORITY 1
+#define I2C_LINK_ER_IRQ_SUB_PRIORITY 0
+
 //! Размер пакета передаваемого/принимаемого за одну транзакцию
-#define I2C_LINK_PACKET_SIZE	(279)
+#define I2C_LINK_MAX_PACKET_SIZE	(279)
 
 //! Количество приёмных буферов (каждый по I2C_LINK_PACKET_SIZE байт)
 #define I2C_LINK_RXBUF_COUNT	(5)
-//! Размер мусорки для "приёма" лишних байт
-/*! В эту мусорку отправляем то, что мастер нам даёт, но что нам некуда принять
-	Размер имеет смысл ставить побольше, чтобы ради него было не стыдно запускать DMA */
-#define I2C_LINK_RX_DUMP_SIZE	(20)
-
 //! Количество отправных буферов (каждый по I2C_LINK_PACKET_SIZE байт)
 #define I2C_LINK_TXBUF_COUNT (5)
-//! Размер пачки нулей для отправки вместо пакетов
-/*! Массив такого размера инициализируется нулями и циклически отправляется
-	в тех случаях, когда мастер чего-то просит, но отправлять нам нечего.
-Размер имеет смысл ставить побольше, чтобы ради него было не стыдно запускать DMA */
-#define I2C_LINK_TX_ZEROS_SIZE	(20)
 
-extern I2C_HandleTypeDef hi2c1;
+//! LL i2c-handle (I2C_Typedef)
+#define I2C_LINK_BUS_HANDLE (I2C1)
+#define I2C_LINK_DMA_HANDLE (DMA1)
+#define I2C_LINK_DMA_STREAM_TX (LL_DMA_STREAM_6)
+#define I2C_LINK_DMA_CHANNEL_TX (LL_DMA_CHANNEL_1)
+#define I2C_LINK_DMA_STREAM_RX (LL_DMA_STREAM_0)
+#define I2C_LINK_DMA_CHANNEL_RX (LL_DMA_CHANNEL_1)
 
-//! халовский i2c-handle на котором осуществляется обмен
-#define I2C_LINK_BUS_HANDLE (&hi2c1)
+#define I2C_LINK_SDA_PORT GPIOB
+#define I2C_LINK_SDA_PIN GPIO_PIN_7
 
-#endif /* I2C_LINK_CONF_H_ */
+#define I2C_LINK_SCL_PORT GPIOB
+#define I2C_LINK_SCL_PIN GPIO_PIN_6
+
+
+#endif /* ITS_I2C_LINK_CONF_H_ */

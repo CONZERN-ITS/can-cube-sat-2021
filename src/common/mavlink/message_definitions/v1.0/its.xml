@@ -49,6 +49,15 @@
         <description>time based on GPS</description>
       </entry>
     </enum>
+    <enum name="ACTIVE_OSCILLATOR">
+      <description>Active oscillator on stm32 controllers</description>
+      <entry value="0" name="ACTIVE_OSCILLATOR_HSE">
+        <description>Working on HSE</description>
+      </entry>
+      <entry value="1" name="ACTIVE_OSCILLATOR_HSI">
+        <description>Working on HSI</description>
+      </entry>
+    </enum>
     <enum name="COMP_ANY">
       <description>Used for any data with simple definition (there is just one source or sources' definitions are similar)</description>
       <entry value="0" name="COMP_ANY_0"></entry>
@@ -113,14 +122,31 @@
         <description>Internal sensors</description>
       </entry>
     </enum>
+    <enum name="ROZE_LOCATION">
+      <description>Location of PLD sensors </description>
+      <entry value="1" name="BSK_1_ROZE_LOCATION">
+        <description>BSK 1 Roze mechanism</description>
+      </entry>
+      <entry value="2" name="BSK_2_ROZE_LOCATION">
+        <description>BSK 2 Roze mechanism</description>
+      </entry>
+      <entry value="3" name="BSK_3_ROZE_LOCATION">
+        <description>BSK 3 Roze mechanism</description>
+      </entry>
+      <entry value="4" name="BSK_4_ROZE_LOCATION">
+        <description>BSK 4 Roze mechanism</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
 
-  	<!--  Messages for all systems. Id range: 50000 - 50099  -->
+    <!--  Messages for all systems. Id range: 50000 - 50099  -->
     <message id="50001" name="THERMAL_STATE">
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="float" name="temperature" units="degC">Area temperature</field>
     </message>
 
@@ -128,6 +154,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="float" name="current" units="A">Area Current</field>
       <field type="float" name="voltage" units="V">Area Voltage</field>
     </message>
@@ -136,6 +164,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="uint8_t" name="time_base" enum="TIME_BASE_TYPE">Time base</field>
     </message>
 
@@ -147,27 +177,50 @@
       </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+      
       <field type="float" name="deg">Temperature of a computer</field>
+      <field type="float" name="vdda">Voltage over VDDA input of computer</field>
+      <field type="float" name="vbat">Voltage at VBAT input of computer</field>
     </message>
 
     <message id="50005" name="I2C_LINK_STATS">
       <description>
-        This message contains a statistics for its-i2c-link module which is present in BCU, ARK and PAYLOAD subsystems 
+        This message contains a statistics for its-i2c-link module which is present in BCU, ARK, SINS and PAYLOAD subsystems 
       </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
 
-      <field type="uint16_t" name="rx_done_cnt">received packets count</field>
-      <field type="uint16_t" name="rx_dropped_cnt">received and dropped packets count (no free buffers)</field>
-      <field type="uint16_t" name="rx_error_cnt">errors count on packet receival</field>
-      <field type="uint16_t" name="tx_done_cnt">sent packets count</field>
-      <field type="uint16_t" name="tx_zeroes_cnt">amount of situations where master requested data, but we had not any</field>
-      <field type="uint16_t" name="tx_overrun_cnt">amount of situations where we wanted to send data, but there were no space</field>
-      <field type="uint16_t" name="tx_error_cnt">errors count on packet transmission</field>
-      <field type="uint16_t" name="restarts_cnt">i2c peripheral restarts count</field>
-      <field type="uint16_t" name="listen_done_cnt">listen done HAL events count</field>
-      <field type="uint32_t" name="last_error">last error code</field>
+      <field type="uint16_t" name="rx_packet_start_cnt"></field>
+      <field type="uint16_t" name="rx_packet_done_cnt"></field>
+      <field type="uint16_t" name="rx_cmds_start_cnt"></field>
+      <field type="uint16_t" name="rx_cmds_done_cnt"></field>
+      <field type="uint16_t" name="rx_drops_start_cnt"></field>
+      <field type="uint16_t" name="rx_drops_done_cnt"></field>
+
+      <field type="uint16_t" name="tx_psize_start_cnt"></field>
+      <field type="uint16_t" name="tx_psize_done_cnt"></field>
+      <field type="uint16_t" name="tx_packet_start_cnt"></field>
+      <field type="uint16_t" name="tx_packet_done_cnt"></field>
+      <field type="uint16_t" name="tx_zeroes_start_cnt"></field>
+      <field type="uint16_t" name="tx_zeroes_done_cnt"></field>
+      <field type="uint16_t" name="tx_empty_buffer_cnt"></field>
+      <field type="uint16_t" name="tx_overruns_cnt"></field>
+
+      <field type="uint16_t" name="cmds_get_size_cnt"></field>
+      <field type="uint16_t" name="cmds_get_packet_cnt"></field>
+      <field type="uint16_t" name="cmds_set_packet_cnt"></field>
+      <field type="uint16_t" name="cmds_invalid_cnt"></field>
+
+      <field type="uint16_t" name="restarts_cnt"></field>
+      <field type="uint16_t" name="berr_cnt"></field>
+      <field type="uint16_t" name="arlo_cnt"></field>
+      <field type="uint16_t" name="ovf_cnt"></field>
+      <field type="uint16_t" name="af_cnt"></field>
+      <field type="uint16_t" name="btf_cnt"></field>
+      <field type="uint16_t" name="tx_wrong_size_cnt"></field>
+      <field type="uint16_t" name="rx_wrong_size_cnt"></field>
     </message>
 
     <message id="50006" name="RSSI">
@@ -182,6 +235,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="float[10]" name="value" units="V">Light diode value</field>
     </message>
 
@@ -189,12 +244,33 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady board time</field>
+
       <field type="float" name="x" units="">Vector x component</field>
       <field type="float" name="y" units="">Vector y component</field>
       <field type="float" name="z" units="">Vector z component</field>
       <field type="float" name="error" units="%">relative error</field>      
     </message>
 
+    <message id="50009" name="COMMISSAR_REPORT">
+      <description>
+        This message contains report by onboard commisar about a paricullar subject.
+        Subject ID is encoded as a component ID field
+      </description>
+
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+
+      <field type="uint32_t" name="last_report_time">Last report time of a subject</field>
+      <field type="uint32_t" name="last_good_report_time">Last good report time of a subject</field>
+      <field type="uint32_t" name="reports_counter">Total amount of received reports</field>
+      <field type="uint32_t" name="bad_reports_counter">Amount of bad reports receved from this subject</field>
+      <field type="int32_t"  name="last_mistake">Code of last error, detected in subject report</field>
+      <field type="uint32_t" name="ignorance_depth">Length of uninterruptable error sequence for this subject</field>
+      <field type="uint32_t" name="punishments_counter">Counter for punishments issued for this subject</field>
+      <field type="uint32_t" name="last_punishment_time">timestamp of last executed punishment</field>
+    </message>
 
 
     <!--  SINS messages. Id range: 50100 - 50199  -->
@@ -202,6 +278,8 @@
       <description></description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch.</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>      
+
       <field type="uint32_t" name="iTOW" units="ms">Time of week of the navigation epoch</field>
       <field type="int32_t" name="fTOW" units="ns">Fractorial part of iTOW</field>
       <field type="int16_t" name="week">GPS week number of the navigation epoch</field>
@@ -234,6 +312,8 @@
       <description>SINS data in ISC</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch).</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+
       <field type="float[3]" name="accel">accelerations</field>
       <field type="float[3]" name="compass">magnetometer vector</field>
       <field type="float[4]" name="quaternion">quaternion for translating RSC into ISC (scalar part first)</field>
@@ -245,6 +325,7 @@
       </description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="int32_t" name="gps_init_error"> last gps init error </field>
       <field type="int32_t" name="gps_config_error"> last gps config error </field>
@@ -264,33 +345,40 @@
       <field type="int32_t" name="lis3mdl_error_counter"> counter lis errors</field>
       <field type="int32_t" name="gps_reconfig_counter"> gps reconfiguration counter</field>
 
-      <field type="uint8_t" name="reset_counter"> reset counter</field>
+      <field type="uint16_t" name="reset_counter"> reset counter</field>
+      <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
     </message>
 
-    
-    
+
     <!--  Payload messages. Id range: 50200 - 50299  -->
     <message id="50200" name="PLD_BME280_DATA">
       <description>Payload module message with bme280 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
       <field type="double" name="temperature" units="deg">Atmospheric temerapture</field>
       <field type="double" name="pressure" units="Pa">Atmospheric pressure</field>
       <field type="double" name="humidity" units="percent">Atmospheric relative humidity</field>
-      <field type="double" name="altitude" units="m">Cube altitude relative to cube power-on location</field>
+      <field type="float"  name="altitude" units="m">Barometric altitude</field>
     </message>
 
     <message id="50202" name="PLD_MICS_6814_DATA">
       <description>Payload module message with MiCS-6814 gas sensors data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
-      <field type="float" name="red_sensor_raw">MiCS-6814 RED sensor raw readings in a form for rs/r0</field>
+      <field type="uint16_t[3]" name="red_sensor_raw">MiCS-6814 RED sensor raw readings in a form for rs/r0</field>
+      <field type="uint8_t" name="red_rb">amount of registers in upper half of divider</field>
       <field type="float" name="co_conc" units="ppm">C0 concetration from MiCS-6814 RED sensor</field>
-      <field type="float" name="ox_sensor_raw">MiCS-6814 OX sensor raw readings in a form for rs/r0</field>
+
+      <field type="uint16_t[3]" name="ox_sensor_raw">MiCS-6814 OX sensor raw readings in a form for rs/r0</field>
+      <field type="uint8_t" name="ox_rb">amount of registers in upper half of divider</field>
       <field type="float" name="no2_conc" units="ppm">NO2 concentration from MiCS-6814 OX sensor</field>
-      <field type="float" name="nh3_sensor_raw">MiCS-6814 NH3 sensor raw readings in a form of rs/s0</field>
+
+      <field type="uint16_t[3]" name="nh3_sensor_raw">MiCS-6814 NH3 sensor raw readings in a form of rs/s0</field>
+      <field type="uint8_t" name="nh3_rb">amount of registers in upper half of divider</field>
       <field type="float" name="nh3_conc" units="ppm">NH3 concentration from MiCS-6814 NH3 sensor</field>
     </message>
 
@@ -298,44 +386,40 @@
       <description>Payload module message with ME2-O2-F20 gas sensor data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="float" name="o2_conc" units="percent">O2 concetration</field>
     </message>
 
     <message id="50204" name="PLD_STATS">
-      <description>
-        This message contains internal statistics of PAYLOAD subsystem
-      </description>
-
+      <description>This message contains internal statistics of PAYLOAD subsystem</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-
-      <field type="int32_t" name="int_bme_last_error">last error of internal bme280</field>
-      <field type="uint16_t" name="int_bme_error_counter">internal bme280 errors counter</field>
-
-      <field type="int32_t" name="ext_bme_last_error">last error of external bme280</field>
-      <field type="uint16_t" name="ext_bme_error_counter">external bme280 errors counter</field>
-
-      <field type="int32_t" name="adc_last_error">adc last error code</field>
-      <field type="uint16_t" name="adc_error_counter">adc errors counter</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="uint16_t" name="resets_count">mcu reset counter</field>
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
+      <field type="uint8_t"  name="time_base">time base for on board time service</field>
+      <field type="uint8_t"  name="active_oscillator">Active oscillator for this computer</field>
+      <field type="uint16_t" name="time_syncs_count">How many times a world time scale was corrected</field>
     </message>
 
     <message id="50205" name="PLD_MS5611_DATA">
       <description>Payload module message with ms5611 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
       <field type="float" name="temperature" units="deg">Atmospheric temperature</field>
-      <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>`
+      <field type="int32_t" name="pressure" units="Pa">Atmospheric pressure</field>
+      <field type="float"  name="altitude" units="m">Barometric altitude</field>
     </message>  
 
     <message id="50207" name="PLD_DOSIM_DATA">
       <description>Payload module message with dosimeter data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
       <field type="uint32_t" name="count_tick" units="tick">Count ticks</field>
       <field type="uint32_t" name="delta_time" units="ms">Time for count ticks</field>
@@ -345,10 +429,21 @@
       <description>Payload module message with external ms5611 related data</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
       <field type="float" name="dna_temp" units="deg">DNA temperature</field>
       <field type="uint8_t" name="heater_is_on" units="bool">Heater is on or off</field>
     </message> 
+
+    <message id="50209" name="PLD_COMPRESSOR_DATA">
+      <description>Message containing data about compressor control algorithm</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+
+      <field type="uint8_t" name="pump_on">is pump enabled</field>
+      <field type="uint8_t" name="valve_open">is valve opened</field>
+    </message>
 
 
     <!--  BCU messages. Id range 50300 - 50399  -->
@@ -359,6 +454,7 @@
 
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
       <field type="int32_t" name="sd_last_error">last error of sdio component</field>
       <field type="uint32_t" name="sd_error_count">count of sdio errors</field>
@@ -413,7 +509,7 @@
       <description>Antenna system manual control without angle recording</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-
+      
       <field type="float" name="azimuth" units="grad">Azimuth angle delta</field>
       <field type="float" name="elevation" units="grad">Elevation angle delta</field>
     </message>
@@ -503,5 +599,13 @@
       <field type="float" name="motors_timeout" units="s">Motors auto disable timeout</field>
     </message>
 
+    <message id="51010" name="ROZE_ACTIVATE_COMMAND">
+      <description>Roze mechanism activate command</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+
+      <field type="uint8_t" name="area_id">Roze mechanism area id</field>
+      <field type="uint8_t" name="active_time" units="s">Roze mechanism active phase time</field>
+    </message>
   </messages>
 </mavlink>

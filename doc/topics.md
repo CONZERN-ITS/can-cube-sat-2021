@@ -246,6 +246,62 @@ RSSI значение передается JSON объектом, содержа
 Вместе с получаемым пакетом.
 
 
+#### radio.stats
+
+Это сообщение со статистикой радио и его состоянием в целом.
+
+**Структура**
+
+Сообщение состоит из двух частей:
+1. Топик
+2. Собстсвенно статистика и состояние
+
+Состяние передается в виде джсона с целой кучей полей, названия которых говорят сами за себя.
+
+Схема:
+
+```json
+{
+	"type": "object",
+	"properties": {
+		"pkt_received": { "type": "integer", "minimum": 0, "maximum": 65535 },
+		"pkt_errors": { "type": "integer", "minimum": 0, "maximum": 65535 },
+		"hdr_errors": { "type": "integer", "minimum": 0, "maximum": 65535 },
+
+		"error_rc64k_calib": { "type": "boolean" },
+		"error_rc13m_calib": { "type": "boolean" },
+		"error_pll_calib": { "type": "boolean" },
+		"error_adc_calib": { "type": "boolean" },
+		"error_img_calib": { "type": "boolean" },
+		"error_xosc_calib": { "type": "boolean" },
+		"error_pll_lock": { "type": "boolean" },
+		"error_pa_ramp": { "type": "boolean" },
+	}
+}
+```
+
+Пример:
+```json
+{
+	"pkt_received": 0,
+	"crc_errors": 0,
+	"hdr_errors": 0,
+	"error_rc64k_calib": false,
+	"error_rc13m_calib": false,
+	"error_pll_calib": false,
+	"error_adc_calib": false,
+	"error_img_calib": false,
+	"error_xosc_calib": true,
+	"error_pll_lock": false,
+	"error_pa_ramp": false
+}
+```
+
+**Условия генерации**
+
+Генерируются сервером-радио периодически.
+
+
 ### Сообщения сервера USLP стека
 
 Эти сообщения связаны с управлением виртуальными каналами, на которые разбит общий физический канал связи. Разбиение на каналы сделано через CCSDS USLP протокол, а виртуальные каналы в наземной станции обслуживаются специальным приложением-сервером. Для упрощения разработки - USLP каналы и их идентификаторы инкапсулированы от потребителей и генераторов данных, путешествующих по линкам и представлены в виде отдельных специализированных каналов.

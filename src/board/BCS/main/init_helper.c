@@ -40,6 +40,8 @@
 #include "log_collector.h"
 #include "input_op.h"
 #include "operator_ip.h"
+#include <operator2.h>
+
 
 static i2c_config_t init_pin_i2c_tm  = {
 	.mode = I2C_MODE_MASTER,
@@ -66,15 +68,7 @@ static gpio_config_t init_pin_pl_kvcc = {
 	.pin_bit_mask = 1ULL << ITS_PIN_PL_VCC
 };
 */
-static uart_config_t init_pin_uart = {
-	.baud_rate = 57600,
-	.data_bits = UART_DATA_8_BITS,
-	.parity = UART_PARITY_DISABLE,
-	.stop_bits = UART_STOP_BITS_1,
-	.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-	.source_clk = UART_SCLK_APB,
-};
-static QueueHandle_t quart;
+
 static mavlink_channel_t i2c_chan;
 
 static uart_config_t init_pin_uart0 = {
@@ -99,7 +93,7 @@ static imi_config_t imi_config = {
 	.alloc = common_imi_alloc
 };
 
-static op_ip_t hop;
+op_ip_t hop;
 shift_reg_handler_t hsr;
 
 
@@ -165,6 +159,7 @@ void init_basic(void) {
 	}
 	ESP_ERROR_CHECK(ret);
 
+	i2c_master_mutex_init(ITS_I2CTM_PORT);
 	i2c_param_config(ITS_I2CTM_PORT, &init_pin_i2c_tm);
 	i2c_driver_install(ITS_I2CTM_PORT, I2C_MODE_MASTER, 0, 0, 0);
 
@@ -261,8 +256,7 @@ void init_helper(void) {
 	imi_start(ITS_IMI_PORT);
 
 	printf("HEELLLO6!!!!\n");
-	//Связь с SINS
-	//uart_mavlink_install(ITS_UARTE_PORT, quart);
+
 #ifndef ITS_ESP_DEBUG
 	shift_reg_init_spi(&hsr, ITS_SPISR_PORT, 16, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_CS_SR);
 	ESP_LOGD("SYSTEM", "Shift reg inited");
@@ -333,6 +327,9 @@ void init_helper(void) {
 	//op_config_ip(&hop, 53597);
 	//op_init((op_handler_t *)&hop);
 	//input_init((op_handler_t *)&hop);
+
+
+	op2_init();
 }
 
 uint8_t mv_packet[MAVLINK_MAX_PACKET_LEN];
