@@ -649,7 +649,7 @@ static int _radio_init(server_t * server)
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 24,
+			.preamble_length = 16,
 			.explicit_header = true,
 			.payload_length = RADIO_PACKET_SIZE,
 			.use_crc = true,
@@ -664,7 +664,7 @@ static int _radio_init(server_t * server)
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
 			.stop_timer_on_preable = false,
-			.lora_symb_timeout = 24*10
+			.lora_symb_timeout = 0,
 	};
 
 
@@ -714,7 +714,7 @@ static int _radio_init(server_t * server)
 		goto bad_exit;
 
 
-	//rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
+	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
 	sx126x_drv_get_device_errors(radio, &device_errors);
 	log_info("configure lora rx timeout; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
@@ -828,7 +828,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 	case SX126X_EVTKIND_RX_DONE:
 		if (arg->rx_done.timed_out)
 		{
-			log_trace("rx timedout event");
+			log_trace("rx timedout event %d", (int)server->rx_timedout_cnt);
 			// Значит мы ничего не получили и эфир свободный
 			server->rx_timedout_cnt++;
 			// Это странно конечно, мы уже много раз так так сделали?

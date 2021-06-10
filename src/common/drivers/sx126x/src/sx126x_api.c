@@ -100,7 +100,7 @@ int sx126x_api_stop_rx_timer_on_preamble(sx126x_api_t * api, bool enable)
 {
 	int rc;
 
-	const uint8_t arg = enable;
+	const uint8_t arg = enable ? 1 : 0;
 	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_SET_STOPRXTIMERONPREAMBLE, &arg, sizeof(arg));
 	SX126X_RETURN_IF_NONZERO(rc);
 
