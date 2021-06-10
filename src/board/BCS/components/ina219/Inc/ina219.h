@@ -13,269 +13,219 @@
 #include <my_i2c.h>
 #include <esp_err.h>
 
-#ifdef __cplusplus
-extern "C" {
+#include <stdint.h>
+#include <stdbool.h>
+
+
+//! Тип с плавающей точкой
+#ifdef INA219_FLT_DOUBLE
+	typedef double ina219_float_t;
+#else
+	typedef float ina219_float_t;
 #endif
 
-#define INA219_ADDR_GND_GND 0x40 //!< I2C address, A1 pin - GND, A0 pin - GND
-#define INA219_ADDR_GND_VS  0x41 //!< I2C address, A1 pin - GND, A0 pin - VS+
-#define INA219_ADDR_GND_SDA 0x42 //!< I2C address, A1 pin - GND, A0 pin - SDA
-#define INA219_ADDR_GND_SCL 0x43 //!< I2C address, A1 pin - GND, A0 pin - SCL
-#define INA219_ADDR_VS_GND  0x44 //!< I2C address, A1 pin - VS+, A0 pin - GND
-#define INA219_ADDR_VS_VS   0x45 //!< I2C address, A1 pin - VS+, A0 pin - VS+
-#define INA219_ADDR_VS_SDA  0x46 //!< I2C address, A1 pin - VS+, A0 pin - SDA
-#define INA219_ADDR_VS_SCL  0x47 //!< I2C address, A1 pin - VS+, A0 pin - SCL
-#define INA219_ADDR_SDA_GND 0x48 //!< I2C address, A1 pin - SDA, A0 pin - GND
-#define INA219_ADDR_SDA_VS  0x49 //!< I2C address, A1 pin - SDA, A0 pin - VS+
-#define INA219_ADDR_SDA_SDA 0x4a //!< I2C address, A1 pin - SDA, A0 pin - SDA
-#define INA219_ADDR_SDA_SCL 0x4b //!< I2C address, A1 pin - SDA, A0 pin - SCL
-#define INA219_ADDR_SCL_GND 0x4c //!< I2C address, A1 pin - SCL, A0 pin - GND
-#define INA219_ADDR_SCL_VS  0x4d //!< I2C address, A1 pin - SCL, A0 pin - VS+
-#define INA219_ADDR_SCL_SDA 0x4e //!< I2C address, A1 pin - SCL, A0 pin - SDA
-#define INA219_ADDR_SCL_SCL 0x4f //!< I2C address, A1 pin - SCL, A0 pin - SCL
 
-/**
- * Bus voltage range
- */
-typedef enum {
-    INA219_BUS_RANGE_16V = 0, //!< 16V FSR
-    INA219_BUS_RANGE_32V      //!< 32V FSR (default)
-} ina219_bus_voltage_range_t;
+//! Значение LSB для регистра с напряжением на шунте
+#define INA219_SHUNTV_LSB_MKV (10)
 
-/**
- * PGA gain for shunt voltage
- */
-typedef enum {
-    INA219_GAIN_1 = 0, //!< Gain: 1, Range: +-40 mV
-    INA219_GAIN_0_5,   //!< Gain: 1/2, Range: +-80 mV
-    INA219_GAIN_0_25,  //!< Gain: 1/4, Range: +-160 mV
-    INA219_GAIN_0_125  //!< Gain: 1/8, Range: +-320 mV (default)
-} ina219_gain_t;
+//! Значение LSB для регистра для напряжения на шине питанмия
+#define INA219_BUSV_LSB_MV (4)
 
-/**
- * ADC resolution/averaging
- */
-typedef enum {
-    INA219_RES_9BIT_1S    = 0,  //!< 9 bit, 1 sample, conversion time 84 us
-    INA219_RES_10BIT_1S   = 1,  //!< 10 bit, 1 sample, conversion time 148 us
-    INA219_RES_11BIT_1S   = 2,  //!< 11 bit, 1 sample, conversion time 276 us
-    INA219_RES_12BIT_1S   = 3,  //!< 12 bit, 1 sample, conversion time 532 us (default)
-    INA219_RES_12BIT_2S   = 9,  //!< 12 bit, 2 samples, conversion time 1.06 ms
-    INA219_RES_12BIT_4S   = 10, //!< 12 bit, 4 samples, conversion time 2.13 ms
-    INA219_RES_12BIT_8S   = 11, //!< 12 bit, 8 samples, conversion time 4.26 ms
-    INA219_RES_12BIT_16S  = 12, //!< 12 bit, 16 samples, conversion time 8.51 ms
-    INA219_RES_12BIT_32S  = 13, //!< 12 bit, 32 samples, conversion time 17.02 ms
-    INA219_RES_12BIT_64S  = 14, //!< 12 bit, 64 samples, conversion time 34.05 ms
-    INA219_RES_12BIT_128S = 15, //!< 12 bit, 128 samples, conversion time 68.1 ms
-} ina219_resolution_t;
+//! Набор допустимых I2C адресов для ina219
+/*! Адреса выровнены по 0 биту без учета места под RW бит I2C */
+// TODO: перегнать значения в хексы, написать комментарии
+typedef enum
+{
+	INA219_I2CADDR_A1_GND_A0_GND = 0b1000000,
+	INA219_I2CADDR_A1_GND_A0_VSP = 0b1000001,
+	INA219_I2CADDR_A1_GND_A0_SDA = 0b1000010,
+	INA219_I2CADDR_A1_GND_A0_SCL = 0b1000011,
 
-/**
- * Operating mode
- */
-typedef enum {
-    INA219_MODE_POWER_DOWN = 0, //!< Power-done
-    INA219_MODE_TRIG_SHUNT,     //!< Shunt voltage, triggered
-    INA219_MODE_TRIG_BUS,       //!< Bus voltage, triggered
-    INA219_MODE_TRIG_SHUNT_BUS, //!< Shunt and bus, triggered
-    INA219_MODE_DISABLED,       //!< ADC off (disabled)
-    INA219_MODE_CONT_SHUNT,     //!< Shunt voltage, continuous
-    INA219_MODE_CONT_BUS,       //!< Bus voltage, continuous
-    INA219_MODE_CONT_SHUNT_BUS  //!< Shunt and bus, continuous (default)
+	INA219_I2CADDR_A1_VSP_A0_GND = 0b1000100,
+	INA219_I2CADDR_A1_VSP_A0_VSP = 0b1000101,
+	INA219_I2CADDR_A1_VSP_A0_SDA = 0b1000110,
+	INA219_I2CADDR_A1_VSP_A0_SCL = 0b1000111,
+
+	INA219_I2CADDR_A1_SDA_A0_GND = 0b1001000,
+	INA219_I2CADDR_A1_SDA_A0_VSP = 0b1001001,
+	INA219_I2CADDR_A1_SDA_A0_SDA = 0b1001010,
+	INA219_I2CADDR_A1_SDA_A0_SCL = 0b1001011,
+
+	INA219_I2CADDR_A1_SCL_A0_GND = 0b1001100,
+	INA219_I2CADDR_A1_SCL_A0_VSP = 0b1001101,
+	INA219_I2CADDR_A1_SCL_A0_SDA = 0b1001110,
+	INA219_I2CADDR_A1_SCL_A0_SCL = 0b1001111,
+
+} ina219_i2c_addr_t;
+
+
+//! Диапазон измерения напряжения на шине питания
+typedef enum
+{
+	INA219_BUS_RANGE_16V    = 0x00000,
+	INA219_BUS_RANGE_32V    = 0x00001,
+} ina219_bus_range_t;
+
+
+//! Делитель для измерения напражения на шунте
+/*! Задает диапазон измерения напряжения на шунте
+	На сырые данные влияет слабо, но позволяет бороться с шумами */
+typedef enum
+{
+	INA219_SHUNT_RANGE_40MV    = 0x0000,   //!< делитель == /1, диапазон 40 мВ
+	INA219_SHUNT_RANGE_80MV    = 0x0001,   //!< делитель == /2, диапазон 80 мВ
+	INA219_SHUNT_RANGE_160MV   = 0x0002,   //!< делитель == /4, диапазон 160 мВ
+	INA219_SHUNT_RANGE_320MV   = 0x0003,   //!< делитель == /8, диапазон 320 мВ
+} ina219_shunt_range_t;
+
+//! Разрешение АЦП / количество перезамеров значений АЦП
+/*! Этой опцией можно достигать различных компромиисов между точностью/скорость измерения
+	Для самые малых времен измерения можно регулирать разрешение АЦП
+	Для большей "точности" на максимальном разрешении АЦП можно использовать усреднение
+	с нескольких замеров */
+typedef enum
+{
+	// для последующих 4ех значений бит 2 (считая с 0) может принимать любое значение
+	INA219_ADC_RES_9_BIT_OVS_1 = 0x0000,    //! Разрешение АЦП 9 бит,  нет уср., время замера 84 мкс
+	INA219_ADC_RES_10_BIT_OVS_1 = 0x0001,   //! Разрешение АЦП 10 бит, нет уср., время замера 148 мкс
+	INA219_ADC_RES_11_BIT_OVS_1 = 0x0002,   //! Разрешение АЦП 11 бит, нет уср., время замера 276 мкс
+	INA219_ADC_RES_12_BIT_OVS_1 = 0x0003,   //! Разрешение АЦП 12 бит, нет уср., время замера 532 мкс
+	// для INA219_ADC_RES_12_BIT_OVS_1 так же допустимо значение 0x0008
+	INA219_ADC_RES_12_BIT_OVS_2 = 0x0009,   //! Разрешение АЦП 12 бит, уср. с 2 замеров, время замера 1.06 мс
+	INA219_ADC_RES_12_BIT_OVS_4 = 0x000A,   //! Разрешение АЦП 12 бит, уср. с 4 замеров, время замера 2.13 мс
+	INA219_ADC_RES_12_BIT_OVS_8 = 0x000B,   //! Разрешение АЦП 12 бит, уср. с 8 замеров, время замера 4.26 мс
+	INA219_ADC_RES_12_BIT_OVS_16 = 0x000C,  //! Разрешение АЦП 12 бит, уср. с 16 замеров, время замера 8.51 мс
+	INA219_ADC_RES_12_BIT_OVS_32 = 0x000D,  //! Разрешение АЦП 12 бит, уср. с 32 замеров, время замера 17.02 мс
+	INA219_ADC_RES_12_BIT_OVS_64 = 0x000E,  //! Разрешение АЦП 12 бит, уср. с 64 замеров, время замера 34.05 мс
+	INA219_ADC_RES_12_BIT_OVS_128 = 0x000F, //! Разрешение АЦП 12 бит, уср. с 128 замеров, время замера 68.10 мс
+} ina219_adc_res_t;
+
+
+//! Режим работы устройства
+typedef enum
+{
+	INA219_MODE_POWER_DOWN = 0x0000,            //!< Устройство выключено
+	INA219_MODE_SHUNT_TRIG = 0x0001,            //!< Замер напряжения шунта по запросу
+	INA219_MODE_BUS_TRIG = 0x0002,              //!< Замер напряжения на шине питания по запросу
+	INA219_MODE_SHUNT_AND_BUS_TRIG = 0x0003,    //!< Замер напряжения на шунте и шине питания по запросу
+	INA219_MODE_ADC_OFF = 0x0004,               //!< Ацп выключено (более "мягкий" power down)
+	INA219_MODE_SHUNT_CONT = 0x0005,            //!< Замер напряжения на шунте постоянно
+	INA219_MODE_BUS_CONT = 0x0006,              //!< Замер напряжения на шине питания постоянно
+	INA219_MODE_SHUNT_AND_BUS_CONT = 0x0007,    //!< Замер напряжения на шунте и на шине питания постоянно
 } ina219_mode_t;
 
-/**
- * Device descriptor
- */
+
+//! Конфигурация устройства
 typedef struct
 {
-    i2c_port_t i2c_port;
-    uint8_t i2c_address;
-    int tick_timeout;
+	ina219_bus_range_t bus_range;       //!< Диапазон измерения напряжения шине питания
+	ina219_adc_res_t bus_res;           //!< Настройки АЦП при измерении напряжения на шине питания
 
-    uint16_t config;
-    float i_lsb, p_lsb;
+	ina219_shunt_range_t shunt_range;   //!< Диапазон измерения напряжения на шунте
+	ina219_adc_res_t shunt_res;         //!< Настройки АЦП при измерении напряжения на шине
+
+	ina219_mode_t mode;                 //!< Режим работы датчика
+
+	/*  Далее идут значения, необходимые для расчета калидробовчного регистра
+		Калибровочный регистр необходим для расчета значений тока и мощности
+		Без установки этого регистра эти значения не рассчитываются
+
+		current_lsb - "вес" значения самого младшего бита регистра current
+		power_lsb - "вес" значения самого младешго бита регистра power, автоматически
+		принимает значение = 20*current_lsb
+		shunt_r - сопротивление шунта (Ом)
+
+		Наилучшее разрешение достигается, если выбирать значение current_lsb по формуле
+		current_lsb = максимальный ожидаемый ток (А)/2**15
+
+		Если shunt_r == 0.0 или current_lsb == 0.0 => калибровочный регистр программируется в 0x0000,
+		что отключает расчеты тока и мощности */
+	ina219_float_t shunt_r;
+	ina219_float_t current_lsb;
+} ina219_cfg_t;
+
+
+//! Дескриптор устройства
+/*! Поля дескриптора не предназначены для прямого доступа */
+typedef struct
+{
+	i2c_port_t i2c_port;
+	uint8_t i2c_address;
+    uint32_t tick_timeout;
+	ina219_cfg_t cfg;
 } ina219_t;
 
-/**
- * @brief Initialize device descriptor
- *
- * @param dev Device descriptor
- * @param addr Device I2C address
- * @param port I2C port
- * @param sda_gpio SDA GPIO
- * @param scl_gpio SCL GPIO
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_init_desc(ina219_t *dev, uint8_t addr, i2c_port_t port, int tickTimeout);
 
-/**
- * @brief Free device descriptor
- *
- * @param dev Device descriptor
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_free_desc(ina219_t *dev);
-
-/**
- * @brief Init device
- *
- * Read current device configuration into `dev->config`
- *
- * @param dev Device descriptor
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_init(ina219_t *dev);
-
-/**
- * @brief Reset device
- *
- * Same as power-on reset. Resets all registers to default values.
- * You still need to calibrate device to read current, otherwise
- * only shunt voltage readings will be valid.
- *
- * @param dev Device descriptor
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_reset(ina219_t *dev);
-
-/**
- * @brief Set device configuration
- *
- * @param dev Device descriptor
- * @param u_range Bus voltage range
- * @param gain Shunt voltage gain
- * @param u_res Bus voltage resolution and averaging
- * @param i_res Shunt voltage resolution and averaging
- * @param mode Device operational mode
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_configure(ina219_t *dev, ina219_bus_voltage_range_t u_range,
-        ina219_gain_t gain, ina219_resolution_t u_res,
-        ina219_resolution_t i_res, ina219_mode_t mode);
-
-/**
- * @brief Get bus voltage range
- *
- * @param dev Device descriptor
- * @param[out] range Bus voltage range
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_bus_voltage_range(ina219_t *dev, ina219_bus_voltage_range_t *range);
-
-/**
- * @brief Get shunt voltage gain
- *
- * @param dev Device descriptor
- * @param[out] gain Shunt voltage gain
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_gain(ina219_t *dev, ina219_gain_t *gain);
-
-/**
- * @brief Get bus voltage resolution and averaging
- *
- * @param dev Device descriptor
- * @param[out] res Bus voltage resolution and averaging
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_bus_voltage_resolution(ina219_t *dev, ina219_resolution_t *res);
-
-/**
- * @brief Get shunt voltage resolution and averaging
- *
- * @param dev Device descriptor
- * @param[out] res Shunt voltage resolution and averaging
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_shunt_voltage_resolution(ina219_t *dev, ina219_resolution_t *res);
-
-/**
- * @brief Get operating mode
- *
- * @param dev Device descriptor
- * @param[out] mode Operating mode
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_mode(ina219_t *dev, ina219_mode_t *mode);
-
-/**
- * @brief Perform calibration
- *
- * Current readings will be valid only after calibration
- *
- * @param dev Device descriptor
- * @param i_expected_max Maximum expected current, A
- * @param r_shunt Shunt resistance, Ohm
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_calibrate(ina219_t *dev, float i_expected_max, float r_shunt);
-
-/**
- * @brief Trigger single conversion
- *
- * Function will return an error if current operating
- * mode is not `INA219_MODE_TRIG_SHUNT`/`INA219_MODE_TRIG_BUS`/`INA219_MODE_TRIG_SHUNT_BUS`
- *
- * @param dev Device descriptor
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_trigger(ina219_t *dev);
-
-/**
- * @brief Read bus voltage
- *
- * @param dev Device descriptor
- * @param[out] voltage Bus voltage, V
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_bus_voltage(ina219_t *dev, float *voltage);
-
-/**
- * @brief Read shunt voltage
- *
- * @param dev Device descriptor
- * @param[out] voltage Shunt voltage, V
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_shunt_voltage(ina219_t *dev, float *voltage);
-
-/**
- * @brief Read current
- *
- * This function works properly only after calibration.
- *
- * @param dev Device descriptor
- * @param[out] current Current, A
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_current(ina219_t *dev, float *current);
-
-/**
- * @brief Read power
- *
- * This function works properly only after calibration.
- *
- * @param dev Device descriptor
- * @param[out] power Power, W
- * @return `ESP_OK` on success
- */
-esp_err_t ina219_get_power(ina219_t *dev, float *power);
+//! Первичные данные с устройства в сыром виде
+typedef struct
+{
+	//! Содержит напряжение на шунте c величиной LSB в 10мкВ (INA219_SHUNTV_LSB_MKV)
+	int16_t shuntv;
+	//! Содержит напряжение на шине питания с LSB в 4мВ (INA219_BUSV_LSB_MV)
+	/*! Занимает не больше 13 бит */
+	uint16_t busv;
+	//! Флаг завершения преобразования.
+	/*! Используется при замерах по заросу. Означает что все замеры и расчеты завершены */
+	bool cnvr;
+	//! Флаг арифтемтического переполнения при расчетах.
+	/*! При значени в 1 показывает, что значения тока и мощности могут быть не верны */
+	bool ovf;
+} ina219_primary_data_t;
 
 
+//! Рассчитанные устройством данные в сыром виде
+typedef struct
+{
+	//! Ток через шунт устройства. Величина LSB задается при калибровке (ina219_set_cal)
+	int16_t current;
+	//! Мощность нагрузки на шине питания. Величина LSB задается при калибровке (ina219_set_cal)
+	uint16_t power;
+} ina219_secondary_data_t;
 
-//----------------------------NEW FUNCTION-----------------------------------------------
-//---------------------------------------------------------------------------------------
 
-esp_err_t ina219_getVCP(ina219_t *dev, float *value1,float *value2,float *value3 );
-
+//! Загрузка в структуру конфига значений по-умолчанию
+void ina219_load_default_cfg(ina219_cfg_t * cfg);
 
 
+//! инициализация дескриптора устройства
+void ina219_init(ina219_t * device, i2c_port_t port, uint8_t i2c_addr, uint32_t timeout);
+
+//! деинициализация дескриптора устройства
+void ina219_deinit(ina219_t * device);
 
 
+//! Программный reset устройства
+/*! После резета следует подождать FIXME сколько времени) */
+int ina219_sw_reset(ina219_t * device);
 
-#ifdef __cplusplus
-}
-#endif
+//! Запись калибровочного регистра
+int ina219_set_cal(ina219_t * device, float current_lsb, float shunt_r);
+
+//! Установка параметров конфигурации устойства
+/*! И сохранение параметров в дескрипторе */
+int ina219_set_cfg(ina219_t * device, const ina219_cfg_t * cfg);
+
+//! Получение конфигурации из дескриптора (которая теоретически совпадает с фактической)
+const ina219_cfg_t * ina219_get_cfg(ina219_t * device);
+
+//! Устанавливает режим работы датчика
+/*! Конфигурация при этом перезаписывается конфигурацеий из дескриптора.
+	В целом этот вызов аналогичен ina219_set_cfg, но не пишет калибрационный регистр */
+int ina219_set_mode(ina219_t * device, const ina219_mode_t mode);
+
+
+//! чтение первичных данных с устройства в сыром виде
+int ina219_read_primary(ina219_t * device, ina219_primary_data_t * data);
+
+//! чтение рассчитанных данных с устройства в сыром виде
+int ina219_read_secondary(ina219_t * device, ina219_secondary_data_t * data);
+
+//! Чтение всех данных с устройства в сыром виде
+int ina219_read_all(ina219_t * device, ina219_primary_data_t * prim_data,
+		ina219_secondary_data_t * secondary_data);
+
+int ina219_read_reg(ina219_t * device, uint8_t regaddr, uint16_t * regdata);
+
 
 
 #endif  // INA219_H
