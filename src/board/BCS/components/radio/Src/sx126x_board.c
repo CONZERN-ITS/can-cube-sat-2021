@@ -30,7 +30,6 @@
 
 struct sx126x_board_t {
 	spi_device_handle_t hspi;
-	uint32_t timeout;
 };
 
 static sx126x_board_t _brd;
@@ -56,7 +55,6 @@ int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg) {
 	if (ret != ESP_OK) {
 		return ret;
 	}
-	_brd.timeout = 100; //ms
 
 	gpio_set_level(ITS_PIN_RADIO_RESET, 1);
 	gpio_set_level(ITS_PIN_RADIO_TX_EN, 0);
@@ -74,12 +72,14 @@ int sx126x_brd_get_time(sx126x_board_t * brd, uint32_t * value) {
 }
 
 int sx126x_brd_get_chip_type(sx126x_board_t * brd, sx126x_chip_type_t * chip_type) {
+	ESP_LOGD("sx126x_board", "sx126x_brd_get_chip_type");
 	// У нас используется именно такой
 	*chip_type = SX126X_CHIPTYPE_SX1268;
 	return 0;
 }
 
 int sx126x_brd_reset(sx126x_board_t * brd) {
+	ESP_LOGD("sx126x_board", "sx126x_brd_reset");
 	gpio_set_level(ITS_PIN_SPISR_CS_RA, 0);
 	vTaskDelay(50 / portTICK_RATE_MS);
 	gpio_set_level(ITS_PIN_SPISR_CS_RA, 1);
@@ -87,6 +87,7 @@ int sx126x_brd_reset(sx126x_board_t * brd) {
 }
 
 int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout) {
+	ESP_LOGD("sx126x_board", "sx126x_brd_wait_on_busy");
 	int64_t start = esp_timer_get_time();
 	int ret = 0;
 	while (1) {
@@ -94,7 +95,7 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout) {
 			ret = 0;
 			break;
 		}
-		if (esp_timer_get_time() - start >= brd->timeout * 1000) {
+		if (esp_timer_get_time() - start >= timeout * 1000) {
 			ret = -1;
 			break;
 		}
@@ -108,6 +109,7 @@ int sx126x_brd_cleanup_irq(sx126x_board_t * brd) {
 }
 
 int sx126x_brd_antenna_mode(sx126x_board_t * brd, sx126x_antenna_mode_t mode) {
+	ESP_LOGD("sx126x_board", "sx126x_brd_antenna_mode %d", mode);
 	gpio_set_level(ITS_PIN_RADIO_TX_EN, 0);
 	gpio_set_level(ITS_PIN_RADIO_RX_EN, 0);
 

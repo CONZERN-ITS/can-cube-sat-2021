@@ -349,7 +349,7 @@ static int _radio_init(radio_t * server)
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 24,
+			.preamble_length = 16,
 			.explicit_header = true,
 			.payload_length = RADIO_PACKET_SIZE,
 			.use_crc = true,
@@ -364,7 +364,7 @@ static int _radio_init(radio_t * server)
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
 			.stop_timer_on_preable = false,
-			.lora_symb_timeout = 24*5
+			.lora_symb_timeout = 24 * 5
 	};
 
 
@@ -377,31 +377,61 @@ static int _radio_init(radio_t * server)
 	if (0 != rc)
 		goto bad_exit;
 
+	uint16_t device_errors = 0;
 	rc = sx126x_drv_reset(radio);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("after reset; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
+	device_errors = 0;
 	rc = sx126x_drv_configure_basic(radio, &basic_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure basic; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
+	device_errors = 0;
+	sx126x_drv_get_device_errors(radio, &device_errors);
 	rc = sx126x_drv_configure_lora_modem(radio, &modem_cfg);
+	log_info("configure lora modem; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
+
+	device_errors = 0;
 	rc = sx126x_drv_configure_lora_packet(radio, &packet_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure lora packet; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
+
 
 	rc = sx126x_drv_configure_lora_cad(radio, &cad_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure lora cad; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
+
 
 	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure lora rx timeout; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
+
+	device_errors = 0;
 	rc = sx126x_drv_mode_standby_rc(radio);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure standby_rc; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	if (0 != rc)
+		goto bad_exit;
+
+	device_errors = 0;
+	rc = sx126x_drv_mode_standby(radio);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("configure standby default; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -442,7 +472,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 				if (mavlink_parse_char(radio_server->mavlink_chan, buf[i], &msg, &st)) {
 					log_trace("yay! we've got a message %d", msg.msgid);
 					its_rt_sender_ctx_t ctx = {0};
-					its_rt_route(&ctx, &msg, SERVER_SMALL_TIMEOUT_MS);
+					its_rt_route(&ctx, &msg, 0);
 				}
 			}
 		} else {
@@ -482,7 +512,7 @@ static void task_send(void *arg) {
 			.name = "radio_send"
 	};
 	//Регистрируем на сообщения всех типов
-	tid.queue = xQueueCreate(20, MAVLINK_MAX_PACKET_LEN);
+	tid.queue = xQueueCreate(60, MAVLINK_MAX_PACKET_LEN);
 	its_rt_register_for_all(tid);
 
 
@@ -525,14 +555,14 @@ static void task_send(void *arg) {
 			rc = sx126x_drv_payload_write(&radio_server->dev, radio_server->radio_buf.buf, ITS_RADIO_PACKET_SIZE);
 			if (0 != rc) {
 				log_error("unable to write tx payload to radio: %d. Dropping frame", rc);
-				return;
+				continue;
 			}
 
 			ESP_LOGV("radio", "writed");
 			rc = sx126x_drv_mode_tx(&radio_server->dev, 0);
 			if (0 != rc) {
 				log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
-				return;
+				continue;
 			}
 
 			ESP_LOGV("radio", "txed");
