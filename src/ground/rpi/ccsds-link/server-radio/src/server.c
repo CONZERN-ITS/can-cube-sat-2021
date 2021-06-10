@@ -714,7 +714,7 @@ static int _radio_init(server_t * server)
 		goto bad_exit;
 
 
-	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
+	//rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
 	sx126x_drv_get_device_errors(radio, &device_errors);
 	log_info("configure lora rx timeout; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
@@ -782,9 +782,11 @@ end:
 
 static void _radio_go_rx(server_t * server)
 {
-	int rc = sx126x_drv_mode_rx(&server->dev, RADIO_RX_TIMEOUT_MS);
+	int rc = sx126x_drv_mode_rx(&server->dev, server->rx_timeout_ms);
 	if (0 != rc)
 		log_error("unable to switch radio to rx: %d", rc);
+
+	log_trace("rx begun");
 }
 
 
@@ -969,31 +971,35 @@ void _server_sync_radio_stats(server_t * server)
 		return;
 	}
 
-	if (device_errors)
+	// К сожалению у нас на практике дофига ошибок SX126X_DEVICE_ERROR_XOSC_START
+	// Они проявляются на каждом модуле и никак не удается их снять
+	// Поэтому мы просто будем их игнорировать
+	const uint16_t masked_errors = device_errors & ~server->ignored_errors;
+	if (masked_errors)
 	{
 		char errors_str[1024] = {0};
-		if (device_errors & SX126X_DEVICE_ERROR_RC64K_CALIB)
+		if (masked_errors & SX126X_DEVICE_ERROR_RC64K_CALIB)
 			strcat(errors_str, ", SX126X_DEVICE_ERROR_RC64K_CALIB");
 
-		if (device_errors & SX126X_DEVICE_ERROR_RC13M_CALIB)
+		if (masked_errors & SX126X_DEVICE_ERROR_RC13M_CALIB)
 			strcat(errors_str, ", SX126X_DEVICE_ERROR_RC13M_CALIB");
 
-		if (device_errors & SX126X_DEVICE_ERROR_PLL_CALIB)
+		if (masked_errors & SX126X_DEVICE_ERROR_PLL_CALIB)
 			strcat(errors_str, ", SX126X_DEVICE_ERROR_PLL_CALIB");
 
-		if (device_errors & SX126X_DEVICE_ERROR_ADC_CALIB)
+		if (masked_errors & SX126X_DEVICE_ERROR_ADC_CALIB)
 			strcat(errors_str, ", SX126X_DEVICE_ERROR_ADC_CALIB");
 
-		if (device_errors & SX126X_DEVICE_ERROR_IMG_CALIB)
+		if (masked_errors & SX126X_DEVICE_ERROR_IMG_CALIB)
 			strcat(errors_str, ", SX126X_DEVICE_ERROR_IMG_CALIB");
 
-		if (device_errors & SX126X_DEVICE_ERROR_XOSC_START)
+		if (masked_errors & SX126X_DEVICE_ERROR_XOSC_START)
 			strcat(errors_str, ", SX126X_DEVICE_ERROR_XOSC_START");
 
-		if (device_errors & SX126X_DEVICE_ERROR_PLL_LOCK)
+		if (masked_errors & SX126X_DEVICE_ERROR_PLL_LOCK)
 			strcat(errors_str, ", SX126X_DEVICE_ERROR_PLL_LOCK");
 
-		if (device_errors & SX126X_DEVICE_ERROR_PA_RAMP)
+		if (masked_errors & SX126X_DEVICE_ERROR_PA_RAMP)
 			strcat(errors_str, ", SX126X_DEVICE_ERROR_PA_RAMP");
 
 		const char * errors_str_begin = errors_str + 2; // Сдвигаем 2 символа на первые ", "
@@ -1039,7 +1045,8 @@ int server_init(server_t * server)
 
 	server->rssi_report_period = RADIO_RSSI_PERIOD_MS;
 	server->radio_stats_report_period = RADIO_STATS_PERIOD_MS;
-	
+	server->ignored_errors = SERVER_IGNORED_ERRORS;
+
 	server->tx_buffer_capacity = RADIO_PACKET_SIZE;
 	server->tx_timeout_ms = RADIO_TX_TIMEOUT_MS;
 
@@ -1106,7 +1113,7 @@ void server_run(server_t * server)
 		_server_sync_tx_state(server);
 		_server_sync_rx_data(server);
 		_server_sync_rssi(server);
-		_server_sync_radio_stats(server);
+		//_server_sync_radio_stats(server);
 	} // while (1)
 }
 
