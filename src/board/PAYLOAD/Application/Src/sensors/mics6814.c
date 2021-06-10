@@ -64,8 +64,8 @@
 // Значение R0 (сопротивление сенсора в калибровочной атмосфере)
 #define MICS6814_CO_R0	(350*1000)
 // Значение резистора в верхнем плече делителя сенсора
-#define MICS6814_CO_RB_1	(292*1000)
-#define MICS6814_CO_RB_2	(292*1000)
+#define MICS6814_CO_RB_1	(0)
+#define MICS6814_CO_RB_2	(0)
 #define MICS6814_CO_RB_3	(292*1000)
 
 //FIXME: поменять пины
@@ -91,8 +91,8 @@
 // Значение R0 (сопротивление сенсора в калибровочной атмосфере)
 #define MICS6814_NO2_R0	(4.30*1000)
 // Значение резистора в верхнем плече делителя сенсора
-#define MICS6814_NO2_RB_1	(4.26*1000)
-#define MICS6814_NO2_RB_2	(4.26*1000)
+#define MICS6814_NO2_RB_1	(0)
+#define MICS6814_NO2_RB_2	(0)
 #define MICS6814_NO2_RB_3	(4.26*1000)
 
 // Второй порт/пин для управления балансирующими резисторами
@@ -117,8 +117,8 @@
 // Значение R0 (сопротивление сенсора в калибровочной атмосфере)
 #define MICS6814_NH3_R0	(98.30*1000)
 // Значение резистора в верхнем плече делителя сенсора
-#define MICS6814_NH3_RB_1	(18.78*1000)
-#define MICS6814_NH3_RB_2	(18.78*1000)
+#define MICS6814_NH3_RB_1	(0)
+#define MICS6814_NH3_RB_2	(0)
 #define MICS6814_NH3_RB_3	(18.78*1000)
 
 // Второй порт/пин для управления балансирующими резисторами
@@ -195,7 +195,7 @@ static void _pin_to_high_output(GPIO_TypeDef * port, uint32_t pin)
 // Устанавливаем верхнее плечо делителя для указанного сенсора
 int _divider_upper_half_set_mode(mics6814_sensor_t target, mics6814_divider_upper_half_mode_t mode)
 {
-	int error;
+	int error = 0;
 	GPIO_TypeDef * port1, * port2;
 	uint32_t pin1, pin2;
 
