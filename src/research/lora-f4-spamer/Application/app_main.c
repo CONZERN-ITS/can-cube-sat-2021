@@ -65,19 +65,24 @@ static void _event_handler(sx126x_drv_t * drv, void * user_arg, sx126x_evt_kind_
 		if (0 != rc) break;
 
 		// Уходим в цикл RX
-		rc = sx126x_drv_mode_rx(drv, 5000);
+		rc = sx126x_drv_mode_rx(drv, 100);
 		break;
 
 	case SX126X_EVTKIND_RX_DONE:
 		if (!arg->rx_done.timed_out)
 		{
+			sx126x_lora_packet_status_t packet_status;
+			rc = sx126x_drv_lora_packet_status(drv, &packet_status);
+			if (0 != rc)
+				printf("unable to fetch packet status: %d\n", rc);
+
 			printf(
 				"%d, rx done. crc: %s, prssi %d, snr: %d, srssi: %d\n",
 				(int)now,
 				arg->rx_done.crc_valid ? "true" : "false",
-				arg->rx_done.packet_status.lora.rssi_pkt,
-				arg->rx_done.packet_status.lora.signal_rssi_pkt,
-				arg->rx_done.packet_status.lora.snr_pkt
+				packet_status.rssi_pkt,
+				packet_status.signal_rssi_pkt,
+				packet_status.snr_pkt
 			);
 			rc = _fetch_packet(drv);
 			if (0 != rc) break;
@@ -132,11 +137,11 @@ int app_main(void)
 			// Параметры усилителей и частот
 			.frequency = 435125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
-			.pa_power = 20,
-			.lna_boost = true,
+			.pa_power = 10,
+			.lna_boost = false,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_6,
+			.spreading_factor = SX126X_LORA_SF_7,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
@@ -145,7 +150,7 @@ int app_main(void)
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 24,
+			.preamble_length = 16,
 			.explicit_header = true,
 			.payload_length = APP_PACKET_SIZE,
 			.use_crc = true,
@@ -159,8 +164,8 @@ int app_main(void)
 	};
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
-			.stop_timer_on_preable = false,
-			.lora_symb_timeout = 255 //24*10
+			.stop_timer_on_preamble = false,
+			.lora_symb_timeout = 0
 	};
 
 	rc = sx126x_drv_ctor(&_radio, NULL);
