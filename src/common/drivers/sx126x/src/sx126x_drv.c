@@ -5,7 +5,7 @@
 #include "sx126x_drv.h"
 
 
-#define SX126X_TCXO_STARTUP_TIMEOUT_MS (10)
+#define SX126X_TCXO_STARTUP_TIMEOUT_MS (500)
 #define SX126X_WAIT_BUSY_DEFAULT_TIMEOUT (1000)
 
 #define SX126X_RETURN_IF_NONZERO(rc) if (0 != rc) return rc
