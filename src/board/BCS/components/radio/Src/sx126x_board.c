@@ -126,7 +126,7 @@ static int _write_data(sx126x_board_t * brd, const uint8_t * data, uint16_t data
 
 static int _read_data(sx126x_board_t * brd, uint8_t * data, uint16_t data_size) {
 	ESP_LOGD("sx126x_board", "spi read  %d", data_size);
-	memset(data, 0xFF, data_size);
+	memset(data, 0x00, data_size);
 	spi_transaction_t tran = {0};
 	tran.rx_buffer = data;
 	tran.rxlength = 8 * data_size;
@@ -161,7 +161,7 @@ end:
 int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status_, uint8_t * data, uint16_t data_size) {
 	uint8_t dummy_status;
 	uint8_t * status = status_ ? status_ : &dummy_status;
-	*status = 0xFF; // Гоним единички на TX
+	*status = 0x00; // Гоним NOP на TX
 
 	int rc = 0;
 	ESP_LOGD("sx126x_board", "spi cmdr  0x%02X", cmd_code);
@@ -176,16 +176,20 @@ end:
 	return rc;
 }
 
+
 int sx126x_brd_reg_write(sx126x_board_t * brd, uint16_t addr, const uint8_t * data, uint16_t data_size) {
 	const uint8_t cmd_code = SX126X_CMD_WRITE_REGISTER;
 
-	addr = ((addr >> 8) & 0xFF) | ((addr >> 0) & 0xFF);
+	const uint8_t addr_bytes[2] = {
+		(addr >> 8) & 0xFF,
+		(addr >> 0) & 0xFF,
+	};
 
 	int rc = 0;
 	ESP_LOGD("sx126x_board", "spi regw  0x%02X", cmd_code);
 	_start_trans(brd);
 	CHECK(_write_data(brd, (uint8_t * const) &cmd_code, 1));
-	CHECK(_write_data(brd, (uint8_t * const) &addr, 2));
+	CHECK(_write_data(brd, (uint8_t * const) &addr_bytes, sizeof(addr_bytes)));
 	CHECK(_write_data(brd, data, data_size));
 
 end:
@@ -193,14 +197,22 @@ end:
 
 	return rc;
 }
+
+
 int sx126x_brd_reg_read(sx126x_board_t * brd, uint16_t addr, uint8_t * data, uint16_t data_size) {
 	const uint8_t cmd_code = SX126X_CMD_READ_REGISTER;
 
+	const uint8_t addr_bytes[2] = {
+		(addr >> 8) & 0xFF,
+		(addr >> 0) & 0xFF,
+	};
+
 	int rc = 0;
-	uint8_t status = 0xFF;
+	uint8_t status = 0x00;
 	ESP_LOGD("sx126x_board", "spi regr  0x%02X", cmd_code);
 	_start_trans(brd);
 	CHECK(_write_data(brd, (uint8_t * const) &cmd_code, 1));
+	CHECK(_write_data(brd, (uint8_t * const) &addr_bytes, sizeof(addr_bytes)));
 	CHECK(_read_data(brd, &status, 1));
 	CHECK(_read_data(brd, data, data_size));
 
@@ -228,7 +240,7 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 	const uint8_t cmd_code = SX126X_CMD_READ_BUFFER;
 
 	int rc = 0;
-	uint8_t status = 0xFF;
+	uint8_t status = 0x00;
 	ESP_LOGD("sx126x_board", "spi bufr  0x%02X", cmd_code);
 	_start_trans(brd);
 	CHECK(_write_data(brd, (uint8_t * const) &cmd_code, 1));
