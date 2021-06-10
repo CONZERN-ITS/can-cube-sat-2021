@@ -46,7 +46,7 @@ class GraphWidget(PyQtGraph.GraphicsLayoutWidget):
 
                 def clear(self):
                     self.arr = None
-                    self.curve.setData(NumPy.array([[0, 0]]))
+                    self.curve.clear()
 
 
             def __init__(self, plot, packet_id, colors=None):
