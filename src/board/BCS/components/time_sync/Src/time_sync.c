@@ -40,6 +40,9 @@ void sntp_notify(struct timeval *tv);
  *	Таск, синхронизирующийся с SINS, если пришло
  *	от него сообщение и пришел pps сигнал
  */
+
+static ts_sync __ts;
+
 static void time_sync_task(void *arg) {
 	ts_sync *ts = (ts_sync *)arg;
 
@@ -81,11 +84,21 @@ static void time_sync_task(void *arg) {
 				.tv_sec = there.tv_sec - ts->here.tv_sec,
 				.tv_usec = 0 - ts->here.tv_usec
 		};
-		if (fabs(delta.tv_sec) > 3600) {
-			settimeofday(&there, 0);
+		if (mts.time_base >= ts->base) {
+			if (fabs(delta.tv_sec) > 3600) {
+				settimeofday(&there, 0);
+				ts->cnt = 0;
+				ts->diff_total = 0;
+				ts->base = mts.time_base;
+				ts->min_collected_base = TIME_BASE_TYPE_GPS;
+			} else {
+				ts->diff_total += delta.tv_sec * 1000000 + delta.tv_usec;
+				ts->cnt++;
+				if (ts->min_collected_base > mts.time_base) {
+					ts->min_collected_base = mts.time_base;
+				}
+			}
 		}
-		ts->diff_total += delta.tv_sec * 1000000 + delta.tv_usec;
-		ts->cnt++;
 
 		ESP_LOGV("TIME", "from sinc: %d.%06d\n", (int)there.tv_sec, (int)there.tv_usec);
 		ESP_LOGV("TIME", "here:      %d.%06d\n", (int)ts->here.tv_sec, (int)ts->here.tv_usec);
@@ -99,7 +112,7 @@ static void time_sync_task(void *arg) {
 		struct timeval t;
 		gettimeofday(&t, 0);
 		int64_t now = t.tv_sec * 1000000 + t.tv_usec;
-		if (ts->cnt > 2 &&
+		if (ts->cnt >= 1 &&
 				now - ts->last_changed > ts->period / 2 &&
 				now < ((int)(now / ts->period)) * ts->period + 0.03 * ts->period) {
 			int64_t estimated = now + ts->diff_total / ts->cnt;
@@ -108,6 +121,8 @@ static void time_sync_task(void *arg) {
 			settimeofday(&t, 0);
 			ts->last_changed = now;
 			ts->cnt = 0;
+			ts->base = ts->min_collected_base;
+			ts->min_collected_base = TIME_BASE_TYPE_GPS;
 		}
 		ts->is_updated = 0;
 	}
@@ -131,7 +146,8 @@ static void IRAM_ATTR isr_handler(void *arg) {
 void time_sync_from_sins_install(ts_sync *cfg) {
 	cfg->is_updated = 0;
 	//xTaskCreatePinnedToCore(ntp_server_task, "SNTP server", configMINIMAL_STACK_SIZE + 4000, 0, 1, 0, tskNO_AFFINITY);
-	xTaskCreate(time_sync_task, "timesync", 4096, cfg, 1, NULL);
+	__ts = *cfg;
+	xTaskCreate(time_sync_task, "timesync", 4096, &__ts, 1, NULL);
 	gpio_config_t init_pin_int = {
 		.mode = GPIO_MODE_INPUT,
 		.pull_up_en = GPIO_PULLUP_DISABLE,
@@ -140,7 +156,7 @@ void time_sync_from_sins_install(ts_sync *cfg) {
 		.pin_bit_mask = 1ULL << cfg->pin
 	};
 	gpio_config(&init_pin_int);
-	gpio_isr_handler_add(cfg->pin, isr_handler, cfg);
+	gpio_isr_handler_add(cfg->pin, isr_handler, &__ts);
 }
 
 /*
@@ -164,4 +180,7 @@ void sntp_notify(struct timeval *tv) {
 	ESP_LOGI("SNTP", "We've just synced");
 }
 
-
+uint8_t time_sync_get_base() {
+	return __ts.base;
+	return 0;
+}
