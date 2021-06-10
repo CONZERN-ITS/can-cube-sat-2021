@@ -677,8 +677,8 @@ static int _radio_init(server_t * server)
 		goto bad_exit;
 
 	uint16_t device_errors = 0;
-	rc = sx126x_drv_reset(radio);
 	sx126x_drv_get_device_errors(radio, &device_errors);
+	rc = sx126x_drv_reset(radio);
 	log_info("after reset; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
@@ -693,8 +693,8 @@ static int _radio_init(server_t * server)
 
 	device_errors = 0;
 	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure lora modem; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	rc = sx126x_drv_configure_lora_modem(radio, &modem_cfg);
+	log_info("configure lora modem; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
