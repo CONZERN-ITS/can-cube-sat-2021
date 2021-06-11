@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <stm32f4xx_hal.h>
+
 #include <its-i2c-link.h>
 
 #include "common.h"
@@ -127,9 +127,13 @@ int uplink_write_mav(const mavlink_message_t * msg)
 		// откладываем сообщение на потом
 		_store_message_if_injected(msg_buffer, msg->msgid, len);
 	}
-	// FIXME: Возможно iwdg стоит перезапускать при успешной отправке сообщения?
-	// Например добавить if (0 == error)
-	//iwdg_reload(&transfer_uart_iwdg_handle);
+
+	if (0 == error)
+	{
+		// Перезапускаем iwdg после успешной отпраки сообщения
+		HAL_IWDG_Refresh(&hiwdg);
+	}
+
 
 	// its_i2c_link_write возвращает количество байт в случае успеха. Нам тут это не надо
 	// Сводим ответ до 0 в случае успеха

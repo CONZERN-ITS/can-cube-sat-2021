@@ -8,6 +8,8 @@
 #ifndef DRIVERS_UPLINK_H_
 #define DRIVERS_UPLINK_H_
 
+#include <stm32f4xx_hal.h>
+
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
@@ -16,6 +18,9 @@
 // Мы доверяем мавлинку в том, что он не сгенерит ничего невыровненого, поэтому давим эти варнинги
 #include <its/mavlink.h>
 #pragma GCC diagnostic pop
+
+
+extern IWDG_HandleTypeDef hiwdg;
 
 
 //! Инициализация
