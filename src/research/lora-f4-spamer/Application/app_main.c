@@ -37,13 +37,13 @@ int app_main(void)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 433125*1000,
+			.frequency = 434125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
 			.pa_power = 10,
-			.lna_boost = false,
+			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_10,
+			.spreading_factor = SX126X_LORA_SF_7,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,

@@ -278,27 +278,38 @@ static int _set_rf_frequency(sx126x_drv_t * drv, uint32_t frequency)
 	// Вобще говоря тут должна быть несколько разная стратегия для разных конкретных sx126x
 	// но разница не сильно большая и конкретные цифры взятые из примеров - не сильно очевидны
 	// поэтому попробуем так
-	if( frequency > 900*1000*1000)
+	sx126x_chip_type_t chip_type;
+	rc = sx126x_brd_get_chip_type(drv->api.board, &chip_type);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	if (chip_type != SX126X_CHIPTYPE_SX1268)
+		return SX126X_ERROR_NOT_IMPLEMENTED;
+
+	if (frequency > 787*1000*1000)
 	{
-		args[0] = 0xE1;
-		args[1] = 0xE9;
+		rc = SX126X_ERROR_INVALID_VALUE;
 	}
-	else if(frequency > 850*1000*1000)
+	else if (frequency >= 779*1000*1000)
 	{
-		args[0] = 0xD7;
-		args[1] = 0xD8;
-	}
-	else if(frequency > 770*1000*1000)
-	{
+		// range 779..787 MHz
 		args[0] = 0xC1;
 		args[1] = 0xC5;
 	}
-	else if(frequency > 460*1000*1000)
+	else if (frequency > 510*1000*1000)
 	{
+		rc = SX126X_ERROR_INVALID_VALUE;
+	}
+	else if (frequency >= 470*1000*1000)
+	{
+		// range 470..510 MHZ
 		args[0] = 0x75;
 		args[1] = 0x81;
 	}
-	else if(frequency > 425*1000*1000)
+	else if (frequency > 440*1000*1000)
+	{
+		rc = SX126X_ERROR_INVALID_VALUE;
+	}
+	else if (frequency >= 430*1000*1000)
 	{
 		args[0] = 0x6B;
 		args[1] = 0x6F;
@@ -307,7 +318,7 @@ static int _set_rf_frequency(sx126x_drv_t * drv, uint32_t frequency)
 	{
 		// Так же, нам нельзя опускаться ниже 400, так как
 		// это запрещено нашими конфигурациями PA усилителя
-		rc = SX126X_ERROR_INVALID_FREQUENCY;
+		rc = SX126X_ERROR_INVALID_VALUE;
 	}
 	SX126X_RETURN_IF_NONZERO(rc);
 
@@ -415,7 +426,7 @@ static int _switch_state_to_standby(sx126x_drv_t * drv, sx126x_drv_standby_switc
 		break;
 
 	default:
-		return SX126X_ERROR_INTERNAL;
+		return SX126x_ERROR_UNEXPECTED_VALUE;
 		break;
 	};
 
@@ -548,7 +559,38 @@ int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t 
 	// Теперь включаем TCXO, если нужно
 	if (config->use_dio3_for_tcxo)
 	{
+		// Если используется tcxo, то после power on reset
+		// в ошибках устройства зажгется XOSC_START_FAIL
+		// что вообще говоря логично, так на TCXO генератор не запустишь - оно само генератор
+		// Это ошибку нужно снять
+		uint16_t device_errors;
+		rc = sx126x_api_get_device_errors(&drv->api, &device_errors);
+		SX126X_RETURN_IF_NONZERO(rc);
+
+		// Если есть какие-то ошибки кроме XOSC_START_FAIL - сообщим об этом
+		if (device_errors & ~(uint16_t)SX126X_DEVICE_ERROR_XOSC_START != 0)
+			return SX126X_ERROR_CHIP_FAILURE;
+
+		rc = sx126x_api_clear_device_errors(&drv->api);
+		SX126X_RETURN_IF_NONZERO(rc);
+
+		// Теперь наконец-то включаем TCXO
 		rc = sx126x_api_set_dio3_as_tcxo_ctl(&drv->api, config->tcxo_v, SX126X_TCXO_STARTUP_TIMEOUT_MS);
+		SX126X_RETURN_IF_NONZERO(rc);
+		rc = _wait_busy(drv);
+		SX126X_RETURN_IF_NONZERO(rc);
+
+		// При переходе на TCXO калибровка сделанная до этого развалится
+		rc = sx126x_api_calibrate(
+				&drv->api,
+				SX126X_CALIB_FLAG_RC64K
+				| SX126X_CALIB_FLAG_RC13M
+				| SX126X_CALIB_FLAG_PLL
+				| SX126X_CALIB_FLAG_ADCP
+				| SX126X_CALIB_FLAG_ADCBN
+				| SX126X_CALIB_FLAG_ADCBP
+				| SX126X_CALIB_FLAG_IMAGE
+		);
 		SX126X_RETURN_IF_NONZERO(rc);
 		rc = _wait_busy(drv);
 		SX126X_RETURN_IF_NONZERO(rc);
@@ -997,7 +1039,7 @@ int sx126x_drv_wait_event(sx126x_drv_t * drv, uint32_t timeout_ms, sx126x_drv_ev
 
 		// Не пора ли сворачиваться то?
 		if (!infinite && now > deadline)
-			return SX126X_ERROR_TIMEOUT; // Пора
+			break; // Пора
 
 		// TODO: sleep
 	} // for

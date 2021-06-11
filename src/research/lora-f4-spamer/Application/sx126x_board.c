@@ -84,7 +84,6 @@ int sx126x_brd_reset(sx126x_board_t * brd)
 
 int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 {
-	//HAL_Delay(100);
 	uint32_t start = HAL_GetTick();
 	while(1)
 	{
@@ -94,7 +93,7 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 
 		uint32_t now = HAL_GetTick();
 		if (now - start >= timeout)
-			return SX126X_ERROR_TIMEOUT;
+			return SX126X_ERROR_TIMED_OUT;
 	}
 
 	return 0;

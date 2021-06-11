@@ -294,7 +294,7 @@ int sx126x_api_set_dio3_as_tcxo_ctl(sx126x_api_t * api, sx126x_tcxo_v_t tcxo_vol
 	const uint32_t timeout = SX126X_MS_TO_TIME_U(timeout_ms);
 
 	uint8_t args[4] = {
-			tcxo_voltage & 0x7F,
+			tcxo_voltage & 0x07,
 			(uint8_t)((timeout >> 16) & 0xFF),
 			(uint8_t)((timeout >>  8) & 0xFF),
 			(uint8_t)((timeout      ) & 0xFF)
