@@ -13,6 +13,10 @@ add_executable(server-radio
 	${_src_dir}/main.c
 	${_src_dir}/server.h
 	${_src_dir}/server.c
+	${_src_dir}/server-zmq.h
+	${_src_dir}/server-zmq.c
+	${_src_dir}/server-config.h
+	${_src_dir}/server-config.c
 )
 
 

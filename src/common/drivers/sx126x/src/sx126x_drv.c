@@ -316,6 +316,18 @@ static int _set_rf_frequency(sx126x_drv_t * drv, uint32_t frequency)
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
+	rc = sx126x_api_calibrate(
+			&drv->api,
+			SX126X_CALIB_FLAG_RC64K
+			| SX126X_CALIB_FLAG_RC13M
+			| SX126X_CALIB_FLAG_PLL
+			| SX126X_CALIB_FLAG_ADCP
+			| SX126X_CALIB_FLAG_ADCBN
+			| SX126X_CALIB_FLAG_ADCBP
+			| SX126X_CALIB_FLAG_IMAGE
+	);
+	SX126X_RETURN_IF_NONZERO(rc);
+
 	rc = sx126x_api_set_rf_frequency(&drv->api, frequency);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
@@ -806,6 +818,13 @@ int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size)
 }
 
 
+int sx126x_drv_payload_rx_crc_valid(sx126x_drv_t * drv, bool * value)
+{
+	*value = drv->_rx_crc_valid;
+	return 0;
+}
+
+
 int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size)
 {
 	int rc;
@@ -841,7 +860,8 @@ static int _check_event(sx126x_drv_t * drv, sx126x_drv_evt_t * event)
 
 			event->kind = SX126X_EVTKIND_RX_DONE;
 			event->arg.rx_done.timed_out = false;
-			event->arg.rx_done.crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
+			drv-> _rx_crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;;
+			event->arg.rx_done.crc_valid = drv->_rx_crc_valid;
 		}
 		else if (irq_status & SX126X_IRQ_TIMEOUT)
 		{

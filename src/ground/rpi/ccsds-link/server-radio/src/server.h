@@ -7,64 +7,39 @@
 
 #include "sx126x_drv.h"
 
+#include "server-zmq.h"
+#include "server-config.h"
 
-#define RADIO_PACKET_SIZE 200
-#define RADIO_RX_TIMEDOUT_LIMIT 5
-#define RADIO_TX_TIMEOUT_MS (50000)
-#define RADIO_RX_TIMEOUT_MS (1000)
-#define RADIO_RSSI_PERIOD_MS (500)
-#define RADIO_STATS_PERIOD_MS (1000)
-#define SERVER_TX_STATE_PERIOD_MS (500)
-#define SERVER_POLL_TIMEOUT_MS (1000)
 
-#define SERVER_IGNORED_ERRORS (SX126X_DEVICE_ERROR_XOSC_START|0)
-
-typedef uint64_t msg_cookie_t;
-#define MSG_COOKIE_T_PLSHOLDER PRIu64
+//! Максимальный размер пакета sx126x. Больше оно просто не может
+#define SERVER_MAX_PACKET_SIZE (255)
 
 
 typedef struct server_t
 {
-	sx126x_drv_t dev;
+	server_config_t config;
+	sx126x_drv_t radio;
+	zserver_t zserver;
 
-	uint8_t rx_buffer[255];
-	size_t rx_buffer_capacity;
-	size_t rx_buffer_size;
-	msg_cookie_t rx_buffer_cookie;
-	bool rx_crc_valid;
-	int8_t rx_rssi_pkt;
-	int8_t rx_snr_pkt;
-	int8_t rx_signal_rssi_pkt;
-	uint32_t rx_timeout_ms;
+	msg_cookie_t rx_cookie;
 	size_t rx_timedout_cnt;
-	size_t rx_timedout_limit;
 
-	uint32_t rssi_report_period;
-	struct timespec rssi_report_block_deadline;
-	uint32_t radio_stats_report_period;
-	struct timespec radio_stats_report_block_deadline;
-	uint16_t ignored_errors;
-
-	uint8_t tx_buffer[255];
-	size_t tx_buffer_capacity;
+	uint8_t tx_buffer[SERVER_MAX_PACKET_SIZE];
 	size_t tx_buffer_size;
 	msg_cookie_t tx_cookie_wait;
 	msg_cookie_t tx_cookie_in_progress;
 	msg_cookie_t tx_cookie_sent;
 	msg_cookie_t tx_cookie_dropped;
 	bool tx_cookies_updated;
-	uint32_t tx_timeout_ms;
 
-	uint32_t tx_state_report_period_ms;
-	struct timespec tx_state_report_block_deadline;
+	struct timespec rssi_last_report_timepoint;
+	struct timespec radio_stats_last_report_timepoint;
+	struct timespec tx_state_last_report_timepoint;
 
-	void * zmq;
-	void * sub_socket;
-	void * pub_socket;
 } server_t;
 
 
-int server_init(server_t * server);
+int server_init(server_t * server, const server_config_t * config);
 
 void server_run(server_t * server);
 

@@ -184,6 +184,7 @@ typedef struct sx126x_drv_t
 
 	sx126x_standby_mode_t _default_standby;
 	bool _infinite_rx;
+	bool _rx_crc_valid;
 
 	union
 	{
@@ -272,8 +273,14 @@ int sx126x_drv_payload_write(sx126x_drv_t * drv, const uint8_t * data, uint8_t d
 //! Получение размера последнего полученного пакета
 int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size);
 
+//! Сошлались ли контрольная сумма для последнего полученного радио пакета
+/*! Значение не получается из самого радио, а хранится в драйвере
+    Хранимое значение обновляется по получению события RX_DONE */
+int sx126x_drv_payload_rx_crc_valid(sx126x_drv_t * drv, bool * value);
+
 //! Чтение содержимого буфера
 int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size);
+
 
 // Функции для режимов передачи данных и приёма
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

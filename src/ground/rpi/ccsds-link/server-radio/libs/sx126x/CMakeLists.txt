@@ -8,7 +8,6 @@ add_library(sx126x STATIC
 	${_remote_src_dir}/inc/sx126x_board.h
 	${_remote_src_dir}/inc/sx126x_defs.h
 	${_remote_src_dir}/inc/sx126x_drv.h
-	${_remote_src_dir}/inc/sx126x_events.h
 
 	${_remote_src_dir}/src/sx126x_api.c
 	${_remote_src_dir}/src/sx126x_drv.c
