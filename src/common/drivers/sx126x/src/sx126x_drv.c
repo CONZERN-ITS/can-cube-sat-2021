@@ -27,6 +27,10 @@ typedef enum sx126x_drv_standby_switch_t
 } sx126x_drv_standby_switch_t;
 
 
+//! Сигнатура функции для перевода приёмника в какой-нибудь там для блокирующего режима
+typedef int (*blocking_mode_switch_call_t)(sx126x_drv_t * /* drv */, uint32_t /* timeout_ms */);
+
+
 //! Удобный шорткат для ожидания busy состояния чипа
 inline static int _wait_busy(sx126x_drv_t * drv)
 {
@@ -814,7 +818,7 @@ int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer
 
 
 //! Выгребание события из устройства
-static int _check_event(sx126x_drv_t * drv, sx126x_evt_kind_t * evt_kind, sx126x_evt_arg_t * evt_arg)
+static int _check_event(sx126x_drv_t * drv, sx126x_drv_evt_t * event)
 {
 	int rc;
 
@@ -823,7 +827,7 @@ static int _check_event(sx126x_drv_t * drv, sx126x_evt_kind_t * evt_kind, sx126x
 	rc = _fetch_clear_irq(drv, &irq_status);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	*evt_kind = SX126X_EVTKIND_NONE;
+	event->kind = SX126X_EVTKIND_NONE;
 	switch (drv->_state)
 	{
 	case SX126X_DRV_STATE_RX:
@@ -835,17 +839,17 @@ static int _check_event(sx126x_drv_t * drv, sx126x_evt_kind_t * evt_kind, sx126x
 				SX126X_RETURN_IF_NONZERO(rc);
 			}
 
-			evt_arg->rx_done.timed_out = false;
-			evt_arg->rx_done.crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
-			*evt_kind = SX126X_EVTKIND_RX_DONE;
+			event->kind = SX126X_EVTKIND_RX_DONE;
+			event->arg.rx_done.timed_out = false;
+			event->arg.rx_done.crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;
 		}
 		else if (irq_status & SX126X_IRQ_TIMEOUT)
 		{
 			rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_DEFAULT);
 			SX126X_RETURN_IF_NONZERO(rc);
 
-			evt_arg->rx_done.timed_out = true;
-			*evt_kind = SX126X_EVTKIND_RX_DONE;
+			event->kind = SX126X_EVTKIND_RX_DONE;
+			event->arg.rx_done.timed_out = true;
 		}
 		break;
 
@@ -855,8 +859,8 @@ static int _check_event(sx126x_drv_t * drv, sx126x_evt_kind_t * evt_kind, sx126x
 			rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_DEFAULT);
 			SX126X_RETURN_IF_NONZERO(rc);
 
-			*evt_kind = SX126X_EVTKIND_TX_DONE;
-			evt_arg->tx_done.timed_out = (irq_status & SX126X_IRQ_TIMEOUT) != 0;
+			event->kind = SX126X_EVTKIND_TX_DONE;
+			event->arg.tx_done.timed_out = (irq_status & SX126X_IRQ_TIMEOUT) != 0;
 		}
 		break;
 
@@ -934,27 +938,17 @@ int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms)
 }
 
 
-int sx126x_drv_poll_event(
-		sx126x_drv_t * drv,
-		sx126x_evt_kind_t * evt_kind, sx126x_evt_arg_t * evt_arg
-)
+int sx126x_drv_poll_event(sx126x_drv_t * drv, sx126x_drv_evt_t * evt)
 {
 	int rc;
-
-	sx126x_evt_kind_t kind = SX126X_EVTKIND_NONE;
-	sx126x_evt_arg_t arg;
-
-	rc = _check_event(drv, &kind, &arg);
+	rc = _check_event(drv, evt);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;
 }
 
 
-int sx126x_drv_wait_event(
-		sx126x_drv_t * drv, uint32_t sw_timeout_ms,
-		sx126x_evt_kind_t * evt_kind, sx126x_evt_arg_t * evt_arg
-)
+int sx126x_drv_wait_event(sx126x_drv_t * drv, uint32_t timeout_ms, sx126x_drv_evt_t * evt)
 {
 	int rc;
 
@@ -963,18 +957,17 @@ int sx126x_drv_wait_event(
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	uint32_t deadline = 0;
-	const bool infinite = 0 == sw_timeout_ms ? true : false;
-	if (!infinite)
-		deadline = start + sw_timeout_ms;
+	const bool infinite = 0 == timeout_ms ? true : false;
+	deadline = start + timeout_ms;
 
 	for(;;)
 	{
 		// Окей, смотрим чего там по событиям
-		rc = _check_event(drv, evt_kind, evt_arg);
+		rc = _check_event(drv, evt);
 		SX126X_RETURN_IF_NONZERO(rc);
 
 		// Событие произошло?
-		if (*evt_kind != SX126X_EVTKIND_NONE)
+		if (evt->kind != SX126X_EVTKIND_NONE)
 			break; // да
 
 		// Еще нет. Так, сколько времени прошло?
@@ -984,13 +977,63 @@ int sx126x_drv_wait_event(
 
 		// Не пора ли сворачиваться то?
 		if (!infinite && now > deadline)
-		{
-			// RX еще не закончился (вот почему?), но заканчивать как-то пора
-			return SX126X_ERROR_TIMEOUT;
-		}
+			return SX126X_ERROR_TIMEOUT; // Пора
+
+		// TODO: sleep
 	} // for
 
 	return 0;
+}
+
+
+//! Общая функция для блокирующего rx или tx или еще какого режима
+static int _invoke_blocking(sx126x_drv_t * drv,
+		blocking_mode_switch_call_t modeswitch_call,
+		uint32_t hw_timeout_ms, uint32_t sw_timeout_ms,
+		sx126x_drv_evt_t * termination_event
+)
+{
+	int rc;
+	int modeswitch_rc;
+
+	if (!_is_in_standby(drv))
+		return SX126X_ERROR_BAD_STATE;
+
+	// Уходим в режим приёма или перадачи
+	rc = modeswitch_call(drv, hw_timeout_ms);
+	SX126X_RETURN_IF_NONZERO(rc);
+
+	// Теперь ждем события
+	rc = sx126x_drv_wait_event(drv, sw_timeout_ms, termination_event);
+	if (0 != rc)
+		goto return_to_standby;
+
+	// оказалось что тут нам делать нечего совершенно
+
+return_to_standby:
+	modeswitch_rc = sx126x_drv_mode_standby(drv);
+	if (0 == rc)
+		rc = modeswitch_rc;
+
+	return rc;
+}
+
+
+int sx126x_drv_tx_blocking(sx126x_drv_t * drv,
+		uint32_t hw_timeout_ms, uint32_t sw_timeout_ms,
+		sx126x_drv_evt_t * termination_event
+)
+{
+	return _invoke_blocking(drv, sx126x_drv_mode_tx, hw_timeout_ms, sw_timeout_ms, termination_event);
+}
+
+
+int sx126x_drv_rx_blocking(sx126x_drv_t * drv,
+		uint32_t hw_timeout_ms, uint32_t sw_timeout_ms,
+		sx126x_drv_evt_t * termination_event
+)
+{
+	return _invoke_blocking(drv, sx126x_drv_mode_rx, hw_timeout_ms, sw_timeout_ms, termination_event);
 }
 
 

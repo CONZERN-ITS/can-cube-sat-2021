@@ -7,7 +7,50 @@
 
 #include "sx126x_defs.h"
 #include "sx126x_api.h"
-#include "sx126x_events.h"
+
+
+//! Тип события драйвера
+typedef enum sx126x_drv_evt_kind_t
+{
+	//! Никакого события не произошло
+	SX126X_EVTKIND_NONE = 0x00,
+	//! Передача закончена
+	SX126X_EVTKIND_TX_DONE,
+	//! Приём закончен
+	SX126X_EVTKIND_RX_DONE
+} sx126x_drv_evt_kind_t;
+
+
+//! параметры события драйвера
+typedef union sx126x_drv_evt_arg_t
+{
+	//! параметры события rx_done
+	struct
+	{
+		//! Случился ли аппаратный таймаут
+		bool timed_out;
+		//! Верна ли контрольная сумма пакета
+		bool crc_valid;
+	} rx_done;
+
+	//! Параметры события tx_done
+	struct
+	{
+		//! случился ли аппаратный таймаут
+		bool timed_out;
+	} tx_done;
+
+} sx126x_drv_evt_arg_t;
+
+
+//! Событие драйвера
+typedef struct sx126x_drv_evt_t
+{
+	//! тип случившегося события
+	sx126x_drv_evt_kind_t kind;
+	//! Его аргументы
+	sx126x_drv_evt_arg_t arg;
+} sx126x_drv_evt_t;
 
 
 //! Тип модема на который настроен модуль
@@ -142,9 +185,6 @@ typedef struct sx126x_drv_t
 	sx126x_standby_mode_t _default_standby;
 	bool _infinite_rx;
 
-	sx126x_evt_handler_t _evt_handler;
-	void * _evt_handler_user_arg;
-
 	union
 	{
 		struct
@@ -249,11 +289,27 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms);
 /*! Если таймаут указан 0, то таймаута нет и модуль останется в TX до полной передачи пакета */
 int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms);
 
+// Функции для работы с событиями драйвера
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 //! Опрос модуля на предмет новых событий в радио
-int sx126x_drv_poll_event(sx126x_drv_t * drv, sx126x_evt_kind_t * evt_kind, sx126x_evt_arg_t * evt_arg);
+int sx126x_drv_poll_event(sx126x_drv_t * drv, sx126x_drv_evt_t * evt);
 
 //! Блокирующее ожидание новых событий в радио
-int sx126x_drv_wait_event(sx126x_drv_t * drv, uint32_t timeout_ms, sx126x_evt_kind_t * evt_kind, sx126x_evt_arg_t * evt_arg);
+int sx126x_drv_wait_event(sx126x_drv_t * drv, uint32_t timeout_ms, sx126x_drv_evt_t * evt);
+
+// Функции для блокирующего интерфейса
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+int sx126x_drv_tx_blocking(sx126x_drv_t * drv,
+		uint32_t hw_timeout_ms, uint32_t sw_timeout_ms,
+		sx126x_drv_evt_t * termination_event
+);
+
+int sx126x_drv_rx_blocking(sx126x_drv_t * drv,
+		uint32_t hw_timeout_ms, uint32_t sw_timeout_ms,
+		sx126x_drv_evt_t * termination_event
+);
 
 // Функции для различных опросов модуля
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

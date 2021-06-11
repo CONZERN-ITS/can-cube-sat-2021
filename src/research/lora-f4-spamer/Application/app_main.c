@@ -11,104 +11,6 @@
 
 
 static sx126x_drv_t _radio;
-static uint8_t _pbuff[255] = {0};
-static uint8_t _psize;
-
-
-static int _push_packet(sx126x_drv_t * radio)
-{
-	int rc;
-	static uint8_t serial = 0;
-	for (size_t i = 0; i < APP_PACKET_SIZE; i++)
-		_pbuff[i] = serial++;
-
-	_psize = APP_PACKET_SIZE;
-
-	rc = sx126x_drv_payload_write(radio, _pbuff, _psize);
-	if (0 != rc) return rc;
-
-	return 0;
-}
-
-
-static int _fetch_packet(sx126x_drv_t * radio)
-{
-	int rc;
-
-	rc = sx126x_drv_payload_rx_size(radio, &_psize);
-	if (0 != rc) return rc;
-
-	// К сожалению яхз как вытащить фактическую цифру из радио
-	_psize = APP_PACKET_SIZE;
-
-	rc = sx126x_drv_payload_read(radio, _pbuff, _psize);
-	if (0 != rc) return rc;
-
-	printf("got packet %d\n", (int)_pbuff[0]);
-	return 0;
-}
-
-
-static void _event_handler(sx126x_drv_t * drv, void * user_arg, sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg)
-{
-	int rc = 0;
-	uint32_t now = HAL_GetTick();
-
-	switch (kind)
-	{
-	case SX126X_EVTKIND_TX_DONE:
-		printf("%d tx done\n", (int)now);
-		if (arg->tx_done.timed_out)
-			printf("tx timed out!\n");
-
-		rc = sx126x_drv_mode_standby(drv);
-		if (0 != rc) break;
-
-		// Уходим в цикл RX
-		rc = sx126x_drv_mode_rx(drv, 100);
-		break;
-
-	case SX126X_EVTKIND_RX_DONE:
-		if (!arg->rx_done.timed_out)
-		{
-			sx126x_lora_packet_status_t packet_status;
-			rc = sx126x_drv_lora_packet_status(drv, &packet_status);
-			if (0 != rc)
-				printf("unable to fetch packet status: %d\n", rc);
-
-			printf(
-				"%d, rx done. crc: %s, prssi %d, snr: %d, srssi: %d\n",
-				(int)now,
-				arg->rx_done.crc_valid ? "true" : "false",
-				packet_status.rssi_pkt,
-				packet_status.signal_rssi_pkt,
-				packet_status.snr_pkt
-			);
-			rc = _fetch_packet(drv);
-			if (0 != rc) break;
-
-		}
-		rc = sx126x_drv_mode_standby(drv);
-		if (0 != rc) break;
-
-		rc = _push_packet(drv);
-		if (0 != rc) break;
-
-		rc = sx126x_drv_mode_tx(drv, 0);
-		if (0 != rc) break;
-		break;
-
-	case SX126X_EVTKIND_CAD_DONE:
-		printf("%d cad done?\n", (int)now);
-		break;
-
-	default:
-		printf("unknown event: %d\n", kind);
-	};
-
-	if (0 != rc)
-		printf("event handler error: %d\n", rc);
-}
 
 
 static void print_status(void)
@@ -135,13 +37,13 @@ int app_main(void)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 435125*1000,
+			.frequency = 433125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
 			.pa_power = 10,
 			.lna_boost = false,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_7,
+			.spreading_factor = SX126X_LORA_SF_10,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
@@ -172,10 +74,6 @@ int app_main(void)
 	printf("ctor: %d\n", rc);
 	print_status();
 
-	rc = sx126x_drv_set_event_handler(&_radio, _event_handler, NULL);
-	printf("register_event_handler: %d\n", rc);
-	print_status();
-
 	rc = sx126x_drv_reset(&_radio);
 	printf("reset: %d\n", rc);
 	print_status();
@@ -204,22 +102,38 @@ int app_main(void)
 	printf("went to standby: %d\n", rc);
 	print_status();
 
-	// Начинаем с того, что начинаем приём
-	rc = _push_packet(&_radio);
-	printf("first packet pushed: %d\n", rc);
-	print_status();
-
-	rc = sx126x_drv_mode_tx(&_radio, 0);
-	printf("first tx: %d\n", rc);
-	print_status();
-
-	while(1)
+	uint8_t packet[APP_PACKET_SIZE];
+	uint8_t i;
+	for (i = 0; ; i++)
 	{
-		rc = sx126x_drv_poll_irq(&_radio);
-		if (rc)
-			printf("poll error: %d\n", rc);
+		memset(packet, i, sizeof(packet));
+		rc = sx126x_drv_payload_write(&_radio, packet, APP_PACKET_SIZE);
+		printf("payload write error: %d\n", rc);
 
-		HAL_Delay(50);
+		sx126x_drv_evt_t event;
+		rc = sx126x_drv_tx_blocking(&_radio, 10*1000, 15*1000, &event);
+		printf("tx blocking: rc: %d, ek: %d, to: %d\n", rc, (int)event.kind, (int)event.arg.tx_done.timed_out);
+
+		rc = sx126x_drv_rx_blocking(&_radio, 5*1000, 1500, &event);
+		printf(
+				"rx blocking rc: %d; ek: %d; to: %d; crc: %d\n",
+				rc, (int)event.kind, (int)event.arg.rx_done.timed_out,
+				(int)event.arg.rx_done.crc_valid
+		);
+
+		if (event.kind == SX126X_EVTKIND_RX_DONE && !event.arg.rx_done.timed_out)
+		{
+			printf("rx done!\n");
+			uint8_t packet_size;
+			rc = sx126x_drv_payload_rx_size(&_radio, &packet_size);
+			printf("payload size rc = %d; size = %d\n", (int)rc, (int)packet_size);
+
+			rc = sx126x_drv_payload_read(&_radio, packet, APP_PACKET_SIZE);
+			printf("payload read = %d\n", (int)packet_size);
+		}
+
+
+		HAL_Delay(100);
 	}
 
 	return 0;
