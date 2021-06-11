@@ -76,6 +76,8 @@
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Application/include}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Application/drivers}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Drivers/madgwick_lds}&quot;"/>
                                     								
                                 </option>
                                 								
@@ -146,6 +148,8 @@
                                     <listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
                                     									
                                     <listOptionValue builtIn="false" value="../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Drivers/madgwick_lds}&quot;"/>
                                     								
                                 </option>
                                 								
@@ -344,8 +348,6 @@
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Application/include}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Application/drivers}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="/home/developer/can-cube-sat-2021/src/common/mavlink/generated/mavlink"/>
                                     								
                                 </option>
                                 								
@@ -414,6 +416,8 @@
                                     <listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
                                     									
                                     <listOptionValue builtIn="false" value="../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Drivers/madgwick_lds/Inc}&quot;"/>
                                     								
                                 </option>
                                 								

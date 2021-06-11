@@ -19,6 +19,7 @@
 #include <its/mavlink.h>
 #pragma GCC diagnostic pop
 
+#include "state.h"
 
 extern IWDG_HandleTypeDef hiwdg;
 
