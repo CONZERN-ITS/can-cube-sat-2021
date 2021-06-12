@@ -9,6 +9,7 @@ import math
 import numpy as NumPy
 import struct
 import zmq
+import json
 
 
 from source.functions.wgs84 import wgs84_xyz_to_latlonh as wgs84_conv
@@ -104,9 +105,9 @@ class MAVDataSource():
 
             header = msg.get_header()
             msg_list.append(Message(message_id=msg.get_type(),
-                                source_id=(str(header.srcSystem) + '_' + str(header.srcComponent)),
-                                msg_time=msg_time,
-                                msg_data=data))
+                                    source_id=(str(header.srcSystem) + '_' + str(header.srcComponent)),
+                                    msg_time=msg_time,
+                                    msg_data=data))
             #print(msg_list[-1].get_time())
             #print(msg_list[-1].get_message_id())
             #print(msg_list[-1].get_source_id())
@@ -155,7 +156,7 @@ class MAVLogDataSource():
 
 
 class ZMQDataSource():
-    def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", topics=["its.telemetry_packet"], log_path="./", notimestamps=True):
+    def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", topics=[], log_path="./", notimestamps=True):
         self.notimestamps = notimestamps
         self.bus_bpcs = bus_bpcs
         self.topics = topics
@@ -181,6 +182,17 @@ class ZMQDataSource():
         events = dict(self.poller.poll(1000))
         if self.sub_socket in events:
             zmq_msg = self.sub_socket.recv_multipart()
+
+            if zmq_msg[0] == b'radio.rssi_instant':
+                return [Message(message_id='radio.rssi_instant',
+                                source_id=('1_0'),
+                                msg_time=time.time(),
+                                msg_data=json.loads(zmq_msg[1].decode("utf-8")))]
+            elif zmq_msg[0] == b'radio.rssi_packet':
+                return [Message(message_id='radio.rssi_packet',
+                                source_id=('1_0'),
+                                msg_time=time.time(),
+                                msg_data=json.loads(zmq_msg[1].decode("utf-8")))]
 
             msg_buf = zmq_msg[2]
 
