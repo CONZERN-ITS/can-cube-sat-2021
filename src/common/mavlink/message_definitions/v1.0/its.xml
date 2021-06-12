@@ -509,7 +509,10 @@
 
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
-      <field type="uint32_t" name="time_steady">Steady time scale</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+      
+      <field type="uint32_t" name="update_time_operator" units="ms">Steady time scale when operator set it's fields</field>
+      <field type="uint32_t" name="update_time_radio" units="ms">Steady time scale when radio set it's fields</field>
 
       <field type="uint32_t" name="last_packet_time">Steady time scale of last receved packet</field>
       <field type="int8_t" name="last_packet_rssi">Last receved packet rssi</field>
@@ -517,6 +520,7 @@
       <field type="int8_t" name="last_packet_signal_rssi">Last receved packet signal rssi</field>
       
       <field type="uint16_t" name="radio_error_bits">Radio driver error bits</field>
+      <field type="uint8_t" name="radio_state">Radio state</field>
       
       <field type="uint16_t" name="count_packet_recieved">Count of received radio packets</field>
       <field type="uint16_t" name="count_crc_errors">Count of crc errors</field>
@@ -525,11 +529,6 @@
       <field type="uint16_t" name="count_operator_cmds_recieved">Count of recieved commands by operator</field>
       <field type="uint16_t" name="count_operator_cmds_executed">Count of executed commands by operator</field>
       <field type="uint16_t" name="count_operator_errors">Count of operator errors</field>
-      
-      
-      
-      
-      
     </message>
     
 
