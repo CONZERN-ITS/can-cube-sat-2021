@@ -77,6 +77,7 @@ class MAVDataSource():
                 continue
             data = msg.to_dict()
             data.pop('mavpackettype', None)
+            data.pop('time_steady', None)
             msg_time = data.pop("time_s", time.time()) + data.pop("time_us", 0)/1000000
 
             for item in list(data.items()):
