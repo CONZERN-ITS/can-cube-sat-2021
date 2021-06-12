@@ -502,6 +502,35 @@
       <field type="uint32_t" name="shift_reg_last_state">last state of shift_reg</field>
     </message>
 
+    <message id="50301" name="BCU_RADIO_CONN_STATS">
+      <description>
+        This message contains internal statistics of BCU subsystem
+      </description>
+
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady">Steady time scale</field>
+
+      <field type="uint32_t" name="last_packet_time">Steady time scale of last receved packet</field>
+      <field type="int8_t" name="last_packet_rssi">Last receved packet rssi</field>
+      <field type="int8_t" name="last_packet_snr">Last receved packet snr</field>
+      <field type="int8_t" name="last_packet_signal_rssi">Last receved packet signal rssi</field>
+      
+      <field type="uint16_t" name="radio_error_bits">Radio driver error bits</field>
+      
+      <field type="uint16_t" name="count_packet_recieved">Count of received radio packets</field>
+      <field type="uint16_t" name="count_crc_errors">Count of crc errors</field>
+      <field type="uint16_t" name="count_hdr_errors">Count of hdr errors</field>
+      <field type="uint16_t" name="count_mavlink_msgs_recieved">Count of recieved mavlink messages</field>
+      <field type="uint16_t" name="count_operator_cmds_recieved">Count of recieved commands by operator</field>
+      <field type="uint16_t" name="count_operator_cmds_executed">Count of executed commands by operator</field>
+      <field type="uint16_t" name="count_operator_errors">Count of operator errors</field>
+      
+      
+      
+      
+      
+    </message>
     
 
     <!--  Antenna system messages. Id range: 51000 - 51099  -->
