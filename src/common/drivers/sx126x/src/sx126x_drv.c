@@ -1058,7 +1058,7 @@ static int _invoke_blocking(sx126x_drv_t * drv,
 )
 {
 	int rc;
-	int modeswitch_rc;
+	int second_rc;
 
 	if (!_is_in_standby(drv))
 		return SX126X_ERROR_BAD_STATE;
@@ -1075,9 +1075,15 @@ static int _invoke_blocking(sx126x_drv_t * drv,
 	// оказалось что тут нам делать нечего совершенно
 
 return_to_standby:
-	modeswitch_rc = sx126x_drv_mode_standby(drv);
+	second_rc = sx126x_drv_mode_standby(drv);
 	if (0 == rc)
-		rc = modeswitch_rc;
+		rc = second_rc;
+
+	// Вычищаем прерывание, которое могло успеть в закрывающуюся дверь
+	uint16_t irq_status;
+	second_rc = _fetch_clear_irq(drv, &irq_status);
+	if (0 == rc)
+		rc = second_rc;
 
 	return rc;
 }

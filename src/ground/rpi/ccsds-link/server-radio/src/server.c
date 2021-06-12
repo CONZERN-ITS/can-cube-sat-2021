@@ -330,12 +330,10 @@ static void _radio_event_handler(server_t * server, const sx126x_drv_evt_t * eve
 			if (server->rx_timedout_cnt >= server->config.rx_timeout_limit)
 			{
 				if (server->rx_timedout_cnt % server->config.rx_timeout_limit == 0)
-					log_warn("no rx");
+					log_warn("no rx for %d cycles", (int)server->rx_timedout_cnt);
 
 				// Мы уже долго ждали, будем отправлять
 				went_tx = _go_tx(server);
-				if (went_tx)
-					server->rx_timedout_cnt = 0;
 			}
 		}
 		else
