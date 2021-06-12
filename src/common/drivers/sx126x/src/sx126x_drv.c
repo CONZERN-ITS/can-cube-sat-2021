@@ -6,7 +6,7 @@
 
 
 //! Таймаут, который дается TCXO для запуска
-#define SX126X_TCXO_STARTUP_TIMEOUT_MS (20)
+#define SX126X_TCXO_STARTUP_TIMEOUT_MS (10)
 
 //! Таймаут для нахождения чипа в состоянии busy
 #define SX126X_WAIT_BUSY_DEFAULT_TIMEOUT_MS (1000)
@@ -568,7 +568,7 @@ int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t 
 		SX126X_RETURN_IF_NONZERO(rc);
 
 		// Если есть какие-то ошибки кроме XOSC_START_FAIL - сообщим об этом
-		if (device_errors & ~(uint16_t)SX126X_DEVICE_ERROR_XOSC_START != 0)
+		if ((device_errors & (~(uint16_t)SX126X_DEVICE_ERROR_XOSC_START)) != 0)
 			return SX126X_ERROR_CHIP_FAILURE;
 
 		rc = sx126x_api_clear_device_errors(&drv->api);

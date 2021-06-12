@@ -52,7 +52,7 @@ int app_main(void)
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 16,
+			.preamble_length = 48,
 			.explicit_header = true,
 			.payload_length = APP_PACKET_SIZE,
 			.use_crc = true,
@@ -106,7 +106,9 @@ int app_main(void)
 	uint8_t i;
 	for (i = 0; ; i++)
 	{
-		memset(packet, i, sizeof(packet));
+		memset(packet, 0x00, sizeof(packet));
+		sprintf((char*)packet, "hello lora!");
+		//memset(packet, i, sizeof(packet));
 		rc = sx126x_drv_payload_write(&_radio, packet, APP_PACKET_SIZE);
 		printf("payload write error: %d\n", rc);
 
@@ -114,7 +116,7 @@ int app_main(void)
 		rc = sx126x_drv_tx_blocking(&_radio, 10*1000, 15*1000, &event);
 		printf("tx blocking: rc: %d, ek: %d, to: %d\n", rc, (int)event.kind, (int)event.arg.tx_done.timed_out);
 
-		rc = sx126x_drv_rx_blocking(&_radio, 5*1000, 1500, &event);
+		rc = sx126x_drv_rx_blocking(&_radio, 1*1000, 2*1000, &event);
 		printf(
 				"rx blocking rc: %d; ek: %d; to: %d; crc: %d\n",
 				rc, (int)event.kind, (int)event.arg.rx_done.timed_out,
