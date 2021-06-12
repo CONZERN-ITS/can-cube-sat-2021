@@ -702,6 +702,7 @@ int main(void)
   		uint32_t prew_time = HAL_GetTick();
   		uint32_t time = 0;
 
+  		commissar_init();
 
   		// Пашем, работяги
   		for (; ; )

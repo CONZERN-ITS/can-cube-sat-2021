@@ -5,10 +5,20 @@
  *      Author: developer
  */
 
+#include <stdint.h>
+
 #include <analog/analog.h>
 #include "mav_packet.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+// Тут генерируется множество вот таких сообщений
+// warning: taking address of packed member of 'struct __mavlink_vision_speed_estimate_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
+// Мы доверяем мавлинку в том, что он не сгенерит ничего невыровненого, поэтому давим эти варнинги
 #include <its/mavlink.h>
+#pragma GCC diagnostic pop
+
+#include "commissar.h"
 
 #include "drivers/time_svc/time_svc.h"
 #include "its-i2c-link.h"
@@ -294,4 +304,17 @@ int mavlink_its_link_stats(void)
 	uplink_write_mav(&generic_msg);
 
 	return 0;
+}
+
+
+int mavlink_comissar_report()
+{
+	mavlink_commissar_report_t report;
+	uint8_t component_id;
+	commissar_provide_report(&component_id, &report);
+
+	mavlink_message_t msg;
+	mavlink_msg_commissar_report_encode(SYSTEM_ID, component_id, &msg, &report);
+	int error = uplink_write_mav(&msg);
+	return error;
 }
