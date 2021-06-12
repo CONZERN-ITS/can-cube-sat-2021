@@ -38,7 +38,7 @@ int app_main(void)
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
 			.frequency = 434125*1000,
-			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
+			.pa_ramp_time = SX126X_PA_RAMP_3400_US,
 			.pa_power = 10,
 			.lna_boost = true,
 
@@ -107,8 +107,14 @@ int app_main(void)
 	for (i = 0; ; i++)
 	{
 		memset(packet, 0x00, sizeof(packet));
-		sprintf((char*)packet, "hello lora!");
-		//memset(packet, i, sizeof(packet));
+		const char sample[] = "lora";
+		const char * sample_walker = sample;
+		for (int j = 0; j < sizeof(packet); j++)
+		{
+			packet[j] = *sample_walker++;
+			if (0 == *sample_walker)
+				sample_walker = sample;
+		}
 		rc = sx126x_drv_payload_write(&_radio, packet, APP_PACKET_SIZE);
 		printf("payload write error: %d\n", rc);
 
@@ -116,6 +122,7 @@ int app_main(void)
 		rc = sx126x_drv_tx_blocking(&_radio, 30*1000, 45*1000, &event);
 		printf("tx blocking: rc: %d, ek: %d, to: %d\n", rc, (int)event.kind, (int)event.arg.tx_done.timed_out);
 
+		/*
 		rc = sx126x_drv_rx_blocking(&_radio, 1*1000, 2*1000, &event);
 		printf(
 				"rx blocking rc: %d; ek: %d; to: %d; crc: %d\n",
@@ -133,9 +140,9 @@ int app_main(void)
 			rc = sx126x_drv_payload_read(&_radio, packet, APP_PACKET_SIZE);
 			printf("payload read = %d\n", (int)packet_size);
 		}
+		*/
 
-
-		HAL_Delay(100);
+		HAL_Delay(200);
 	}
 
 	return 0;
