@@ -14,7 +14,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-#define SHIFT_REG_MAX_BYTES 3
+#define SHIFT_REG_MAX_BYTES 4
 
 typedef struct {
 	spi_device_handle_t hspi;

@@ -258,17 +258,24 @@ void init_helper(void) {
 	printf("HEELLLO6!!!!\n");
 
 #ifndef ITS_ESP_DEBUG
-	shift_reg_init_spi(&hsr, ITS_SPISR_PORT, 16, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_CS_SR);
+	shift_reg_init_spi(&hsr, ITS_SPISR_PORT, 27, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_CS_SR);
 	ESP_LOGD("SYSTEM", "Shift reg inited");
-/*
-	control_vcc_init(&hsr, 0, ITS_PIN_PL_VCC);
-	control_vcc_bsk_enable(0, 1);
-	control_vcc_bsk_enable(1, 1);
-	control_vcc_bsk_enable(2, 1);
-	control_vcc_bsk_enable(3, 1);
-	control_vcc_bsk_enable(4, 1);
-	control_vcc_bsk_enable(5, 1);
-	vTaskDelay(1000/portTICK_PERIOD_MS);
+
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK1_VCC, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK2_VCC, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK3_VCC, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK4_VCC, 0);
+
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_SINS_VCC, 1);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_SD_VCC, 1);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_RADIO_VCC, 1);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL1_VCC, 1);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL2_VCC, 1);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL3_VCC, 1);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL4_VCC, 1);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL5_VCC, 1);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL6_VCC, 1);
+	/*vTaskDelay(1000/portTICK_PERIOD_MS);
 	//control_vcc_pl_enable(1);
 
 	int t = gpio_set_level(ITS_PIN_PL_VCC, 1);
@@ -306,7 +313,7 @@ void init_helper(void) {
 
 	printf("@ %d\n", (int) &hsr);
 	fflush(stdout);
-	xTaskCreate(task_test, "test task", configMINIMAL_STACK_SIZE + 2000, &hsr, 3, 0);
+	//xTaskCreate(task_test, "test task", configMINIMAL_STACK_SIZE + 2000, &hsr, 3, 0);
 	sensors_init();
 #endif
 
