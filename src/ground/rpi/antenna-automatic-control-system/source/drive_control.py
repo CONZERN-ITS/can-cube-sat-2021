@@ -94,6 +94,12 @@ class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
             return phi
         return None
 
+    def get_vertical_limits(self):
+        return self.vertical_limits
+
+    def get_horizontal_limits(self):
+        return self.horizontal_limits
+
     def get_last_vertical_limit(self):
         return self.last_vertical_limit
 
