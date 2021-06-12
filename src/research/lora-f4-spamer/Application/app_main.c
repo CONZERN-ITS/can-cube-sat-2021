@@ -123,7 +123,7 @@ int app_main(void)
 				(int)event.arg.rx_done.crc_valid
 		);
 
-		if (event.kind == SX126X_EVTKIND_RX_DONE && !event.arg.rx_done.timed_out)
+		if (event.kind == SX126X_DRV_EVTKIND_RX_DONE && !event.arg.rx_done.timed_out)
 		{
 			printf("rx done!\n");
 			uint8_t packet_size;

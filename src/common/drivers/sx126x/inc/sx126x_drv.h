@@ -13,11 +13,11 @@
 typedef enum sx126x_drv_evt_kind_t
 {
 	//! Никакого события не произошло
-	SX126X_EVTKIND_NONE = 0x00,
+	SX126X_DRV_EVTKIND_NONE = 0x00,
 	//! Передача закончена
-	SX126X_EVTKIND_TX_DONE,
+	SX126X_DRV_EVTKIND_TX_DONE,
 	//! Приём закончен
-	SX126X_EVTKIND_RX_DONE
+	SX126X_DRV_EVTKIND_RX_DONE
 } sx126x_drv_evt_kind_t;
 
 

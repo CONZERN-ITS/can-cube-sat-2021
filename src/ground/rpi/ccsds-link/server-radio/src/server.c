@@ -320,7 +320,7 @@ static void _radio_event_handler(server_t * server, const sx126x_drv_evt_t * eve
 	bool went_tx = false;
 	switch (event->kind)
 	{
-	case SX126X_EVTKIND_RX_DONE:
+	case SX126X_DRV_EVTKIND_RX_DONE:
 		if (event->arg.rx_done.timed_out)
 		{
 			log_trace("rx timedout event %d", (int)server->rx_timedout_cnt);
@@ -350,7 +350,7 @@ static void _radio_event_handler(server_t * server, const sx126x_drv_evt_t * eve
 		}
 		break;
 
-	case SX126X_EVTKIND_TX_DONE:
+	case SX126X_DRV_EVTKIND_TX_DONE:
 		_process_tx_done(server, !event->arg.tx_done.timed_out);
 		break;
 	}

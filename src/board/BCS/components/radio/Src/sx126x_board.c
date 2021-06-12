@@ -95,7 +95,7 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout) {
 			break;
 		}
 		if (esp_timer_get_time() - start >= brd->timeout * 1000) {
-			ret = -1;
+			ret = SX126X_ERROR_TIMED_OUT;
 			break;
 		}
 		vTaskDelay(1);
@@ -161,7 +161,7 @@ end:
 int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status_, uint8_t * data, uint16_t data_size) {
 	uint8_t dummy_status;
 	uint8_t * status = status_ ? status_ : &dummy_status;
-	*status = 0x00; // Гоним NOP на TX
+	*status = SX126X_BRD_NOP; // Гоним NOP на TX
 
 	int rc = 0;
 	ESP_LOGD("sx126x_board", "spi cmdr  0x%02X", cmd_code);
@@ -208,7 +208,7 @@ int sx126x_brd_reg_read(sx126x_board_t * brd, uint16_t addr, uint8_t * data, uin
 	};
 
 	int rc = 0;
-	uint8_t status = 0x00;
+	uint8_t status = SX126X_BRD_NOP;
 	ESP_LOGD("sx126x_board", "spi regr  0x%02X", cmd_code);
 	_start_trans(brd);
 	CHECK(_write_data(brd, (uint8_t * const) &cmd_code, 1));
@@ -240,7 +240,7 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 	const uint8_t cmd_code = SX126X_CMD_READ_BUFFER;
 
 	int rc = 0;
-	uint8_t status = 0x00;
+	uint8_t status = SX126X_BRD_NOP;
 	ESP_LOGD("sx126x_board", "spi bufr  0x%02X", cmd_code);
 	_start_trans(brd);
 	CHECK(_write_data(brd, (uint8_t * const) &cmd_code, 1));

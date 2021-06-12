@@ -888,7 +888,7 @@ static int _check_event(sx126x_drv_t * drv, sx126x_drv_evt_t * event)
 	rc = _fetch_clear_irq(drv, &irq_status);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	event->kind = SX126X_EVTKIND_NONE;
+	event->kind = SX126X_DRV_EVTKIND_NONE;
 	switch (drv->_state)
 	{
 	case SX126X_DRV_STATE_RX:
@@ -900,7 +900,7 @@ static int _check_event(sx126x_drv_t * drv, sx126x_drv_evt_t * event)
 				SX126X_RETURN_IF_NONZERO(rc);
 			}
 
-			event->kind = SX126X_EVTKIND_RX_DONE;
+			event->kind = SX126X_DRV_EVTKIND_RX_DONE;
 			event->arg.rx_done.timed_out = false;
 			drv-> _rx_crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;;
 			event->arg.rx_done.crc_valid = drv->_rx_crc_valid;
@@ -910,7 +910,7 @@ static int _check_event(sx126x_drv_t * drv, sx126x_drv_evt_t * event)
 			rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_DEFAULT);
 			SX126X_RETURN_IF_NONZERO(rc);
 
-			event->kind = SX126X_EVTKIND_RX_DONE;
+			event->kind = SX126X_DRV_EVTKIND_RX_DONE;
 			event->arg.rx_done.timed_out = true;
 			drv-> _rx_crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;;
 			event->arg.rx_done.crc_valid = drv->_rx_crc_valid;
@@ -923,7 +923,7 @@ static int _check_event(sx126x_drv_t * drv, sx126x_drv_evt_t * event)
 			rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_DEFAULT);
 			SX126X_RETURN_IF_NONZERO(rc);
 
-			event->kind = SX126X_EVTKIND_TX_DONE;
+			event->kind = SX126X_DRV_EVTKIND_TX_DONE;
 			event->arg.tx_done.timed_out = (irq_status & SX126X_IRQ_TIMEOUT) != 0;
 		}
 		break;
@@ -1031,7 +1031,7 @@ int sx126x_drv_wait_event(sx126x_drv_t * drv, uint32_t timeout_ms, sx126x_drv_ev
 		SX126X_RETURN_IF_NONZERO(rc);
 
 		// Событие произошло?
-		if (evt->kind != SX126X_EVTKIND_NONE)
+		if (evt->kind != SX126X_DRV_EVTKIND_NONE)
 			break; // да
 
 		// Еще нет. Так, сколько времени прошло?

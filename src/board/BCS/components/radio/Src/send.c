@@ -302,9 +302,7 @@ int fill_packet(radio_t * server) {
 	return server->radio_buf.index == server->radio_buf.size;
 }
 
-static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
-		sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg
-);
+static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx126x_drv_evt_t * event);
 
 
 static void _radio_deinit(radio_t * server)
@@ -334,7 +332,7 @@ static int _radio_init(radio_t * server)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 435125*1000,
+			.frequency = 434125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
 			.pa_power = 10,
 			.lna_boost = true,
@@ -363,17 +361,13 @@ static int _radio_init(radio_t * server)
 	};
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
-			.stop_timer_on_preable = false,
+			.stop_timer_on_preamble = false,
 			.lora_symb_timeout = 24*5
 	};
 
 
 	rc = sx126x_drv_ctor(radio, NULL);
 
-	if (0 != rc)
-		goto bad_exit;
-
-	rc = sx126x_drv_set_event_handler(radio, _radio_event_handler, server);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -414,19 +408,16 @@ bad_exit:
 }
 
 
-static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
-		sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg
-)
+static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx126x_drv_evt_t * event)
 {
 	int rc;
 	log_trace("Event handler");
-	radio_t * radio_server = (radio_t*)user_arg;
 
 
-	switch (kind)
+	switch (event->kind)
 	{
-	case SX126X_EVTKIND_RX_DONE:
-		if (!arg->rx_done.timed_out) {
+	case SX126X_DRV_EVTKIND_RX_DONE:
+		if (!event->arg.rx_done.timed_out) {
 			log_trace("rx done");
 
 			uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
@@ -451,8 +442,8 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 		radio_server->is_ready_to_send = 1;
 		break;
 
-	case SX126X_EVTKIND_TX_DONE:
-		if (arg->tx_done.timed_out)
+	case SX126X_DRV_EVTKIND_TX_DONE:
+		if (event->arg.tx_done.timed_out)
 		{
 			// Ой, что-то пошло не так
 			log_error("TX TIMED OUT!");
@@ -494,12 +485,15 @@ static void task_send(void *arg) {
 		ESP_LOGV("radio", "STEP");
 		uint32_t dummy = 0;
 		xTaskNotifyWait(0, 0, &dummy, 50 / portTICK_PERIOD_MS);
-		int rc = sx126x_drv_poll_irq(&radio_server->dev);
-
+		sx126x_drv_evt_t event;
+		int rc = sx126x_drv_poll_event(&radio_server->dev, &event);
 		ESP_LOGV("radio", "poll");
 		if (rc) {
 			ESP_LOGE("radio", "poll %d", rc);
 		}
+
+		if (0 == rc && event.kind != SX126X_DRV_EVTKIND_NONE)
+			_radio_event_handler(&radio_server->dev, radio_server, &event);
 
 		ESP_LOGV("radio", "recieving");
 		mavlink_message_t incoming_msg = {0};
