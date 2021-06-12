@@ -289,7 +289,7 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 			return SX126X_ERROR_BOARD;
 
 		if (now - start > timeout)
-			return SX126X_ERROR_TIMEOUT;
+			return SX126X_ERROR_TIMED_OUT;
 
 	} while(gpio_value != 0);
 
