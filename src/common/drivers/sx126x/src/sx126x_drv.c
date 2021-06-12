@@ -912,6 +912,8 @@ static int _check_event(sx126x_drv_t * drv, sx126x_drv_evt_t * event)
 
 			event->kind = SX126X_EVTKIND_RX_DONE;
 			event->arg.rx_done.timed_out = true;
+			drv-> _rx_crc_valid = (irq_status & SX126X_IRQ_CRC_ERROR) ? false : true;;
+			event->arg.rx_done.crc_valid = drv->_rx_crc_valid;
 		}
 		break;
 

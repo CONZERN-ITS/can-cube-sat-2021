@@ -43,8 +43,8 @@ int app_main(void)
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_7,
-			.bandwidth = SX126X_LORA_BW_250,
+			.spreading_factor = SX126X_LORA_SF_12,
+			.bandwidth = SX126X_LORA_BW_125,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
 	};
@@ -113,7 +113,7 @@ int app_main(void)
 		printf("payload write error: %d\n", rc);
 
 		sx126x_drv_evt_t event;
-		rc = sx126x_drv_tx_blocking(&_radio, 10*1000, 15*1000, &event);
+		rc = sx126x_drv_tx_blocking(&_radio, 30*1000, 45*1000, &event);
 		printf("tx blocking: rc: %d, ek: %d, to: %d\n", rc, (int)event.kind, (int)event.arg.tx_done.timed_out);
 
 		rc = sx126x_drv_rx_blocking(&_radio, 1*1000, 2*1000, &event);
