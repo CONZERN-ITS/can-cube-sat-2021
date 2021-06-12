@@ -289,21 +289,9 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 			return SX126X_ERROR_BOARD;
 
 		if (now - start > timeout)
-			return SX126X_ERROR_TIMEOUT;
+			return SX126X_ERROR_TIMED_OUT;
 
 	} while(gpio_value != 0);
-
-	return 0;
-}
-
-
-int sx126x_brd_cleanup_irq(sx126x_board_t * brd)
-{
-	struct gpiod_line_event event;
-
-	int rc = gpiod_line_event_read(brd->line_dio1, &event);
-	if (0 != rc)
-		return SX126X_ERROR_BOARD;
 
 	return 0;
 }
@@ -529,3 +517,13 @@ int sx126x_brd_rpi_get_event_fd(sx126x_board_t * brd)
 	return gpiod_line_event_get_fd(brd->line_dio1);
 }
 
+
+int sx126x_brd_rpi_cleanup_event(sx126x_board_t * brd)
+{
+	struct gpiod_line_event event;
+	int rc = gpiod_line_event_read(brd->line_dio1, &event);
+	if (0 != rc)
+		return rc;
+
+	return 0;
+}

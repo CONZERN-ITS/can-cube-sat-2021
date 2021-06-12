@@ -7,7 +7,50 @@
 
 #include "sx126x_defs.h"
 #include "sx126x_api.h"
-#include "sx126x_events.h"
+
+
+//! Тип события драйвера
+typedef enum sx126x_drv_evt_kind_t
+{
+	//! Никакого события не произошло
+	SX126X_DRV_EVTKIND_NONE = 0x00,
+	//! Передача закончена
+	SX126X_DRV_EVTKIND_TX_DONE,
+	//! Приём закончен
+	SX126X_DRV_EVTKIND_RX_DONE
+} sx126x_drv_evt_kind_t;
+
+
+//! параметры события драйвера
+typedef union sx126x_drv_evt_arg_t
+{
+	//! параметры события rx_done
+	struct
+	{
+		//! Случился ли аппаратный таймаут
+		bool timed_out;
+		//! Верна ли контрольная сумма пакета
+		bool crc_valid;
+	} rx_done;
+
+	//! Параметры события tx_done
+	struct
+	{
+		//! случился ли аппаратный таймаут
+		bool timed_out;
+	} tx_done;
+
+} sx126x_drv_evt_arg_t;
+
+
+//! Событие драйвера
+typedef struct sx126x_drv_evt_t
+{
+	//! тип случившегося события
+	sx126x_drv_evt_kind_t kind;
+	//! Его аргументы
+	sx126x_drv_evt_arg_t arg;
+} sx126x_drv_evt_t;
 
 
 //! Тип модема на который настроен модуль
@@ -118,7 +161,7 @@ typedef struct sx126x_drv_lora_rx_timeout_cfg_t
 	//! Дополнительный таймаут на количество обнаруженных LoRa символов
 	uint8_t lora_symb_timeout;
 	//! Разрешает остановку rx таймаут таймера по получению символов преамбулы
-	bool stop_timer_on_preable;
+	bool stop_timer_on_preamble;
 } sx126x_drv_lora_rx_timeout_cfg_t;
 
 
@@ -141,9 +184,7 @@ typedef struct sx126x_drv_t
 
 	sx126x_standby_mode_t _default_standby;
 	bool _infinite_rx;
-
-	sx126x_evt_handler_t _evt_handler;
-	void * _evt_handler_user_arg;
+	bool _rx_crc_valid;
 
 	union
 	{
@@ -174,9 +215,6 @@ int sx126x_drv_ctor(sx126x_drv_t * drv, void * board_ctor_arg);
 
 //! Деструктор драйвера
 void sx126x_drv_dtor(sx126x_drv_t * drv);
-
-//! Установка колбека - обработчика событий драйвера
-int sx126x_drv_set_event_handler(sx126x_drv_t * drv, sx126x_evt_handler_t handler, void * cb_user_arg);
 
 //! Состояние драйвера
 sx126x_drv_state_t sx126x_drv_state(sx126x_drv_t * drv);
@@ -217,12 +255,13 @@ int sx126x_drv_configure_lora_modem(sx126x_drv_t * drv, const sx126x_drv_lora_mo
 int sx126x_drv_configure_lora_packet(sx126x_drv_t * drv, const sx126x_drv_lora_packet_cfg_t * config);
 
 //! Настройка CAD параметров LoRa модема
-
 int sx126x_drv_configure_lora_cad(sx126x_drv_t * drv, const sx126x_drv_cad_cfg_t * config);
 
 //! Настройки rx таймаут таймера LoRa модема
 int sx126x_drv_configure_lora_rx_timeout(sx126x_drv_t * drv, const sx126x_drv_lora_rx_timeout_cfg_t * config);
 
+//! Параметры последнего полученного пакета
+int sx126x_drv_lora_packet_status(sx126x_drv_t * drv, sx126x_lora_packet_status_t * status);
 
 // Функции для работы с буффером данных
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -233,6 +272,11 @@ int sx126x_drv_payload_write(sx126x_drv_t * drv, const uint8_t * data, uint8_t d
 
 //! Получение размера последнего полученного пакета
 int sx126x_drv_payload_rx_size(sx126x_drv_t * drv, uint8_t * data_size);
+
+//! Сошлались ли контрольная сумма для последнего полученного радио пакета
+/*! Значение не получается из самого радио, а хранится в драйвере
+    Хранимое значение обновляется по получению события RX_DONE */
+int sx126x_drv_payload_rx_crc_valid(sx126x_drv_t * drv, bool * value);
 
 //! Чтение содержимого буфера
 int sx126x_drv_payload_read(sx126x_drv_t * drv, uint8_t * buffer, uint8_t buffer_size);
@@ -252,16 +296,30 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms);
 /*! Если таймаут указан 0, то таймаута нет и модуль останется в TX до полной передачи пакета */
 int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms);
 
+// Функции для работы с событиями драйвера
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+//! Опрос модуля на предмет новых событий в радио
+int sx126x_drv_poll_event(sx126x_drv_t * drv, sx126x_drv_evt_t * evt);
+
+//! Блокирующее ожидание новых событий в радио
+int sx126x_drv_wait_event(sx126x_drv_t * drv, uint32_t timeout_ms, sx126x_drv_evt_t * evt);
+
+// Функции для блокирующего интерфейса
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+int sx126x_drv_tx_blocking(sx126x_drv_t * drv,
+		uint32_t hw_timeout_ms, uint32_t sw_timeout_ms,
+		sx126x_drv_evt_t * termination_event
+);
+
+int sx126x_drv_rx_blocking(sx126x_drv_t * drv,
+		uint32_t hw_timeout_ms, uint32_t sw_timeout_ms,
+		sx126x_drv_evt_t * termination_event
+);
 
 // Функции для различных опросов модуля
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-//! Опрос модуля на предмет новых событий и прерываний
-/*! Функция выгребает из модуля IRQ флаги и на их основании вызывает event_handler переданный в драйвер
-    Так же управляет состоянием драйвера в целом.
-    Предполагается, что эту функцию следует вызывать либо по получению прерывания от модуля
-    либо просто пеориодически, если прерывания не используются */
-int sx126x_drv_poll_irq(sx126x_drv_t * drv);
 
 //! Получение текущего значения RSSI, определяеого модулем.
 /*! Очевидно имеет смысл вызывать только в RX/CAD режимах работы модуля */

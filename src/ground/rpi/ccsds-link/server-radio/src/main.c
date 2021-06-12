@@ -18,9 +18,17 @@ static server_t server;
 int main(void)
 {
 	int rc;
-	log_set_level(LOG_INFO);
+	log_set_level(LOG_TRACE);
 
-	rc = server_init(&server);
+	server_config_t config;
+	rc = server_config_load(&config);
+	if (0 != rc)
+	{
+		log_fatal("unable to load server config: %d", rc);
+		return EXIT_FAILURE;
+	}
+
+	rc = server_init(&server, &config);
 	if (rc != 0)
 	{
 		log_fatal("server init failed: %d", rc);

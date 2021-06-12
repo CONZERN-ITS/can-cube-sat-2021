@@ -3,8 +3,13 @@
 
 #include "sx126x_defs.h"
 
+
+#define SX126X_BRD_NOP (0x00)
+
+
 struct sx126x_board_t;
 typedef struct sx126x_board_t sx126x_board_t;
+
 
 int sx126x_brd_ctor(sx126x_board_t ** brd, void * user_arg);
 void sx126x_brd_dtor(sx126x_board_t * brd);
@@ -16,8 +21,6 @@ int sx126x_brd_get_chip_type(sx126x_board_t * brd, sx126x_chip_type_t * chip_typ
 int sx126x_brd_reset(sx126x_board_t * brd);
 
 int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout);
-
-int sx126x_brd_cleanup_irq(sx126x_board_t * brd);
 
 int sx126x_brd_antenna_mode(sx126x_board_t * brd, sx126x_antenna_mode_t mode);
 

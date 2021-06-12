@@ -302,9 +302,7 @@ int fill_packet(radio_t * server) {
 	return server->radio_buf.index == server->radio_buf.size;
 }
 
-static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
-		sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg
-);
+static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx126x_drv_evt_t * event);
 
 
 static void _radio_deinit(radio_t * server)
@@ -334,7 +332,7 @@ static int _radio_init(radio_t * server)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 435125*1000,
+			.frequency = 434125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
 			.pa_power = 10,
 			.lna_boost = true,
@@ -349,7 +347,7 @@ static int _radio_init(radio_t * server)
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 16,
+			.preamble_length = 24,
 			.explicit_header = true,
 			.payload_length = RADIO_PACKET_SIZE,
 			.use_crc = true,
@@ -363,8 +361,8 @@ static int _radio_init(radio_t * server)
 	};
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
-			.stop_timer_on_preable = false,
-			.lora_symb_timeout = 24 * 5
+			.stop_timer_on_preamble = false,
+			.lora_symb_timeout = 24*5
 	};
 
 
@@ -373,65 +371,31 @@ static int _radio_init(radio_t * server)
 	if (0 != rc)
 		goto bad_exit;
 
-	rc = sx126x_drv_set_event_handler(radio, _radio_event_handler, server);
-	if (0 != rc)
-		goto bad_exit;
-
-	uint16_t device_errors = 0;
 	rc = sx126x_drv_reset(radio);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("after reset; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
-	device_errors = 0;
 	rc = sx126x_drv_configure_basic(radio, &basic_cfg);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure basic; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
-	device_errors = 0;
-	sx126x_drv_get_device_errors(radio, &device_errors);
 	rc = sx126x_drv_configure_lora_modem(radio, &modem_cfg);
-	log_info("configure lora modem; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
-
-	device_errors = 0;
 	rc = sx126x_drv_configure_lora_packet(radio, &packet_cfg);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure lora packet; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
-
 
 	rc = sx126x_drv_configure_lora_cad(radio, &cad_cfg);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure lora cad; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
-
 
 	rc = sx126x_drv_configure_lora_rx_timeout(radio, &rx_timeout_cfg);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure lora rx timeout; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
-
-	device_errors = 0;
 	rc = sx126x_drv_mode_standby_rc(radio);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure standby_rc; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
-	if (0 != rc)
-		goto bad_exit;
-
-	device_errors = 0;
-	rc = sx126x_drv_mode_standby(radio);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure standby default; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -444,19 +408,16 @@ bad_exit:
 }
 
 
-static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
-		sx126x_evt_kind_t kind, const sx126x_evt_arg_t * arg
-)
+static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx126x_drv_evt_t * event)
 {
 	int rc;
 	log_trace("Event handler");
-	radio_t * radio_server = (radio_t*)user_arg;
 
 
-	switch (kind)
+	switch (event->kind)
 	{
-	case SX126X_EVTKIND_RX_DONE:
-		if (!arg->rx_done.timed_out) {
+	case SX126X_DRV_EVTKIND_RX_DONE:
+		if (!event->arg.rx_done.timed_out) {
 			log_trace("rx done");
 
 			uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
@@ -472,7 +433,7 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 				if (mavlink_parse_char(radio_server->mavlink_chan, buf[i], &msg, &st)) {
 					log_trace("yay! we've got a message %d", msg.msgid);
 					its_rt_sender_ctx_t ctx = {0};
-					its_rt_route(&ctx, &msg, 0);
+					its_rt_route(&ctx, &msg, SERVER_SMALL_TIMEOUT_MS);
 				}
 			}
 		} else {
@@ -481,8 +442,8 @@ static void _radio_event_handler(sx126x_drv_t * drv, void * user_arg,
 		radio_server->is_ready_to_send = 1;
 		break;
 
-	case SX126X_EVTKIND_TX_DONE:
-		if (arg->tx_done.timed_out)
+	case SX126X_DRV_EVTKIND_TX_DONE:
+		if (event->arg.tx_done.timed_out)
 		{
 			// Ой, что-то пошло не так
 			log_error("TX TIMED OUT!");
@@ -512,7 +473,7 @@ static void task_send(void *arg) {
 			.name = "radio_send"
 	};
 	//Регистрируем на сообщения всех типов
-	tid.queue = xQueueCreate(60, MAVLINK_MAX_PACKET_LEN);
+	tid.queue = xQueueCreate(20, MAVLINK_MAX_PACKET_LEN);
 	its_rt_register_for_all(tid);
 
 
@@ -524,12 +485,15 @@ static void task_send(void *arg) {
 		ESP_LOGV("radio", "STEP");
 		uint32_t dummy = 0;
 		xTaskNotifyWait(0, 0, &dummy, 50 / portTICK_PERIOD_MS);
-		int rc = sx126x_drv_poll_irq(&radio_server->dev);
-
+		sx126x_drv_evt_t event;
+		int rc = sx126x_drv_poll_event(&radio_server->dev, &event);
 		ESP_LOGV("radio", "poll");
 		if (rc) {
 			ESP_LOGE("radio", "poll %d", rc);
 		}
+
+		if (0 == rc && event.kind != SX126X_DRV_EVTKIND_NONE)
+			_radio_event_handler(&radio_server->dev, radio_server, &event);
 
 		ESP_LOGV("radio", "recieving");
 		mavlink_message_t incoming_msg = {0};
@@ -555,14 +519,14 @@ static void task_send(void *arg) {
 			rc = sx126x_drv_payload_write(&radio_server->dev, radio_server->radio_buf.buf, ITS_RADIO_PACKET_SIZE);
 			if (0 != rc) {
 				log_error("unable to write tx payload to radio: %d. Dropping frame", rc);
-				continue;
+				return;
 			}
 
 			ESP_LOGV("radio", "writed");
 			rc = sx126x_drv_mode_tx(&radio_server->dev, 0);
 			if (0 != rc) {
 				log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
-				continue;
+				return;
 			}
 
 			ESP_LOGV("radio", "txed");

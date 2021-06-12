@@ -84,7 +84,6 @@ int sx126x_brd_reset(sx126x_board_t * brd)
 
 int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 {
-	//HAL_Delay(100);
 	uint32_t start = HAL_GetTick();
 	while(1)
 	{
@@ -94,28 +93,10 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 
 		uint32_t now = HAL_GetTick();
 		if (now - start >= timeout)
-			return SX126X_ERROR_TIMEOUT;
+			return SX126X_ERROR_TIMED_OUT;
 	}
 
 	return 0;
-}
-
-
-int sx126x_brd_cleanup_irq(sx126x_board_t * brd)
-{
-	return 0;
-}
-
-
-void sx126x_brd_enable_irq(sx126x_board_t * brd)
-{
-	return;
-}
-
-
-void sx126x_brd_disable_irq(sx126x_board_t * brd)
-{
-	return;
 }
 
 
@@ -162,7 +143,7 @@ int sx126x_brd_cmd_write(sx126x_board_t * brd, uint8_t cmd_code, const uint8_t *
 int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status, uint8_t * data, uint16_t data_size)
 {
 	uint8_t _status = 0xFF;
-	memset(data, 0xFF, data_size);
+	memset(data, SX126X_BRD_NOP, data_size);
 
 	_cs_down();
 
@@ -207,8 +188,8 @@ int sx126x_brd_reg_read(sx126x_board_t * brd, uint16_t addr, uint8_t * data, uin
 			(addr >> 0) & 0xFF,
 	};
 
-	uint8_t _status = 0xFF;
-	memset(data, 0xFF, data_size);
+	uint8_t _status = SX126X_BRD_NOP;
+	memset(data, SX126X_BRD_NOP, data_size);
 
 	_cs_down();
 
@@ -243,8 +224,8 @@ int sx126x_brd_buf_read(sx126x_board_t * brd, uint8_t offset, uint8_t * data, ui
 {
 	const uint8_t cmd_code = SX126X_CMD_READ_BUFFER;
 
-	uint8_t _status = 0xFF;
-	memset(data, 0xFF, data_size);
+	uint8_t _status = SX126X_BRD_NOP;
+	memset(data, SX126X_BRD_NOP, data_size);
 
 	_cs_down();
 
