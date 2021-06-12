@@ -37,13 +37,13 @@ int app_main(void)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 434125*1000,
-			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
+			.frequency = 438125*1000,
+			.pa_ramp_time = SX126X_PA_RAMP_3400_US,
 			.pa_power = 10,
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_7,
+			.spreading_factor = SX126X_LORA_SF_8,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
@@ -52,7 +52,7 @@ int app_main(void)
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 48,
+			.preamble_length = 8,
 			.explicit_header = true,
 			.payload_length = APP_PACKET_SIZE,
 			.use_crc = true,
@@ -107,8 +107,14 @@ int app_main(void)
 	for (i = 0; ; i++)
 	{
 		memset(packet, 0x00, sizeof(packet));
-		sprintf((char*)packet, "hello lora!");
-		//memset(packet, i, sizeof(packet));
+		const char sample[] = "lora";
+		const char * sample_walker = sample;
+		for (int j = 0; j < sizeof(packet); j++)
+		{
+			packet[j] = *sample_walker++;
+			if (0 == *sample_walker)
+				sample_walker = sample;
+		}
 		rc = sx126x_drv_payload_write(&_radio, packet, APP_PACKET_SIZE);
 		printf("payload write error: %d\n", rc);
 
