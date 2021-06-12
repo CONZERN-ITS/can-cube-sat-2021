@@ -10,9 +10,10 @@
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "pinout_cfg.h"
+#include "log_collector.h"
 
 #define RADIO_SEND_DELAY 50
 #define RADIO_SLEEP_AWAKE_LEGNTH 300 //ms
@@ -332,13 +333,13 @@ static int _radio_init(radio_t * server)
 
 	const sx126x_drv_lora_modem_cfg_t modem_cfg = {
 			// Параметры усилителей и частот
-			.frequency = 434125*1000,
+			.frequency = 438125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
 			.pa_power = 10,
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_7,
+			.spreading_factor = SX126X_LORA_SF_8,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
@@ -347,7 +348,7 @@ static int _radio_init(radio_t * server)
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 24,
+			.preamble_length = 8,
 			.explicit_header = true,
 			.payload_length = RADIO_PACKET_SIZE,
 			.use_crc = true,
@@ -427,11 +428,16 @@ static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx1
 				log_error("unable to read frame from radio buffer: %d", rc);
 				return;
 			}
+			radio_server->stats.last_packet_time = esp_timer_get_time() / 1000;
+
 			mavlink_message_t msg = {0};
 			mavlink_status_t st = {0};
 			for (int i = 0; i < sizeof(buf); i++) {
 				if (mavlink_parse_char(radio_server->mavlink_chan, buf[i], &msg, &st)) {
 					log_trace("yay! we've got a message %d", msg.msgid);
+
+					radio_server->stats.count_recieved_mavlink_msgs++;
+
 					its_rt_sender_ctx_t ctx = {0};
 					its_rt_route(&ctx, &msg, SERVER_SMALL_TIMEOUT_MS);
 				}
@@ -536,6 +542,34 @@ static void task_send(void *arg) {
 		}
 
 
+		if (log_collector_take(10 / portTICK_PERIOD_MS) == pdTRUE) {
+			mavlink_bcu_radio_conn_stats_t *conn_stats = log_collector_get_conn_stats();
+
+			sx126x_drv_state_t drv_state = 0;
+			sx126x_stats_t drv_stats = {0};
+			sx126x_lora_packet_status_t drv_packet = {0};
+			uint16_t drv_bits;
+
+			sx126x_drv_get_stats(&radio_server->dev, &drv_stats);
+			sx126x_drv_lora_packet_status(&radio_server->dev, &drv_packet);
+			sx126x_drv_get_device_errors(&radio_server->dev, &drv_bits);
+			drv_state = sx126x_drv_state(&radio_server->dev);
+
+			conn_stats->last_packet_time = radio_server->stats.last_packet_time;
+			conn_stats->last_packet_rssi = drv_packet.rssi_pkt;
+			conn_stats->last_packet_signal_rssi = drv_packet.signal_rssi_pkt;
+			conn_stats->last_packet_snr = drv_packet.snr_pkt;
+
+			conn_stats->count_packet_recieved = drv_stats.pkt_received;
+			conn_stats->count_crc_errors = drv_stats.crc_errors;
+			conn_stats->count_hdr_errors = drv_stats.hdr_errors;
+			conn_stats->count_mavlink_msgs_recieved = radio_server->stats.count_recieved_mavlink_msgs;
+
+			conn_stats->radio_error_bits = drv_bits;
+			conn_stats->radio_state = drv_state;
+			conn_stats->update_time_radio = esp_timer_get_time() / 1000;
+			log_collector_give();
+		}
 
 		ESP_LOGV("radio", "sleep?");
 

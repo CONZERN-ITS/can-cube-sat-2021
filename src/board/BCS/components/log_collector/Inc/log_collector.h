@@ -13,6 +13,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
+#include "mavlink/its/mavlink.h"
 
 #define LOG_COLLECTOR_SEND_PERIOD 1000 //ms
 #define LOG_COLLECTOR_ADD_PERIOD_COMMON LOG_COLLECTOR_SEND_PERIOD //ms
@@ -45,6 +46,7 @@ typedef enum {
 
 typedef struct {
 	log_data_t log_data[log_comp_name_size];
+	mavlink_bcu_radio_conn_stats_t conn_stats;
 	SemaphoreHandle_t mutex;
 } log_collector_t;
 
@@ -68,5 +70,10 @@ void log_collector_add_to(log_collector_t *hlc, log_comp_id_t id, const log_data
 void log_collector_add(log_comp_id_t id, const log_data_t *data);
 
 void log_collector_log_task(log_data_t *data);
+
+BaseType_t log_collector_take(uint32_t tickTimeout);
+BaseType_t log_collector_give();
+
+mavlink_bcu_radio_conn_stats_t *log_collector_get_conn_stats();
 
 #endif /* COMPONENTS_LOG_COLLECTOR_INC_LOG_COLLECTOR_H_ */

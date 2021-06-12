@@ -12,6 +12,12 @@
 #include "init_helper.h"
 #include "shift_reg.h"
 
+
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#include "esp_log.h"
+
+const static char *TAG = "log";
+
 static log_collector_t _coll;
 
 extern shift_reg_handler_t hsr;
@@ -22,14 +28,22 @@ static void log_collector_task(void *arg) {
 
 	xLastWakeTime = xTaskGetTickCount();
 	while (1) {
+		ESP_LOGV(TAG, "log_collector_task");
 		mavlink_bcu_stats_t mbs = {0};
 		mavlink_message_t msg = {0};
 		struct timeval tv = {0};
 
 		xSemaphoreTake(coll->mutex, portMAX_DELAY);
+		ESP_LOGV(TAG, "1");
 		gettimeofday(&tv, 0);
+		uint32_t now = esp_timer_get_time() / 1000;
+		coll->conn_stats.time_s = tv.tv_sec;
+		coll->conn_stats.time_us = tv.tv_usec;
+		coll->conn_stats.time_steady = now;
+
 		mbs.time_s = tv.tv_sec;
 		mbs.time_us = tv.tv_usec;
+		mbs.time_steady = now;
 
 		mbs.sd_elapsed_time_from_msg 			= coll->log_data[LOG_COMP_ID_SD].ellapsed_time;
 		mbs.sd_error_count 						= coll->log_data[LOG_COMP_ID_SD].error_count;
@@ -41,20 +55,36 @@ static void log_collector_task(void *arg) {
 		mbs.sins_comm_last_error 				= coll->log_data[LOG_COMP_ID_SINC_COMM].last_error;
 		mbs.sins_comm_last_state 				= coll->log_data[LOG_COMP_ID_SINC_COMM].last_state;
 
+		ESP_LOGV(TAG, "2");
 		if (hsr.mutex) {
-			xSemaphoreTake(hsr.mutex, 0);
-			mbs.shift_reg_last_state = *((uint32_t *)hsr.byte_arr);
-			xSemaphoreGive(hsr.mutex);
+			ESP_LOGV(TAG, "3");
+			if (xSemaphoreTake(hsr.mutex, 0) == pdTRUE) {
+				mbs.shift_reg_last_state = *((uint32_t *)hsr.byte_arr);
+				xSemaphoreGive(hsr.mutex);
+			}
 		}
+
+		ESP_LOGV(TAG, "4");
 		mbs.shift_reg_elapsed_time_from_msg 	= coll->log_data[LOG_COMP_ID_SHIFT_REG].ellapsed_time;
 		mbs.shift_reg_error_count 				= coll->log_data[LOG_COMP_ID_SHIFT_REG].error_count;
 		mbs.shift_reg_last_error 				= coll->log_data[LOG_COMP_ID_SHIFT_REG].last_error;
 
+
 		xSemaphoreGive(coll->mutex);
-		mavlink_msg_bcu_stats_encode(mavlink_system, COMP_ANY_0, &msg, &mbs);
+
+		ESP_LOGV(TAG, "5");
 		its_rt_sender_ctx_t ctx = {0};
 		ctx.from_isr = 0;
+
+		mavlink_msg_bcu_stats_encode(mavlink_system, COMP_ANY_0, &msg, &mbs);
 		its_rt_route(&ctx, &msg, 0);
+
+		ESP_LOGV(TAG, "6");
+		mavlink_msg_bcu_radio_conn_stats_encode(mavlink_system, COMP_ANY_0, &msg, &coll->conn_stats);
+		its_rt_route(&ctx, &msg, 0);
+
+		ESP_LOGV(TAG, "7");
+
 		vTaskDelayUntil(&xLastWakeTime, LOG_COLLECTOR_SEND_PERIOD / portTICK_PERIOD_MS);
 	}
 }
@@ -69,16 +99,19 @@ void log_collector_init(log_collector_t * coll) {
 }
 
 void log_collector_add_to(log_collector_t *hlc, log_comp_id_t id, const log_data_t *data) {
+	ESP_LOGV(TAG, "log_collector_add_to id: %d", id);
 	xSemaphoreTake(hlc->mutex, portMAX_DELAY);
 	hlc->log_data[id] = *data;
 	xSemaphoreGive(hlc->mutex);
 }
 
 void log_collector_add(log_comp_id_t id, const log_data_t *data) {
+	ESP_LOGV(TAG, "log_collector_add id: %d", id);
 	xSemaphoreTake(_coll.mutex, portMAX_DELAY);
 	_coll.log_data[id] = *data;
 	xSemaphoreGive(_coll.mutex);
 }
+/*
 void log_collector_log_task(log_data_t *data) {
 	while (1) {
 		if (data && data->last_state == LOG_STATE_OFF) {
@@ -87,4 +120,17 @@ void log_collector_log_task(log_data_t *data) {
 		log_collector_add(LOG_COMP_ID_SHIFT_REG, data);
 		vTaskDelay(LOG_COLLECTOR_ADD_PERIOD_COMMON / portTICK_PERIOD_MS);
 	}
+}*/
+
+BaseType_t log_collector_take(uint32_t tickTimeout) {
+	return xSemaphoreTake(_coll.mutex, tickTimeout);
+}
+BaseType_t log_collector_give() {
+	return xSemaphoreGive(_coll.mutex);
+}
+
+
+mavlink_bcu_radio_conn_stats_t *log_collector_get_conn_stats() {
+	ESP_LOGV(TAG, "log_collector_get_conn_stats");
+	return &_coll.conn_stats;
 }

@@ -49,6 +49,11 @@ typedef struct {
 	uint8_t buf[];
 } radio_buf_t;
 
+typedef struct {
+	uint16_t count_recieved_mavlink_msgs;
+	uint32_t last_packet_time;
+} radio_stats_t;
+
 typedef struct radio_t {
 	sx126x_drv_t dev;
 	radio_buf_t mav_buf;
@@ -60,6 +65,8 @@ typedef struct radio_t {
 	uint8_t mavlink_chan;
 	uint32_t msg_count;
 	int is_ready_to_send;
+
+	radio_stats_t stats;
 } radio_t;
 
 

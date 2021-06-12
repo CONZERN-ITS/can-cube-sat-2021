@@ -234,7 +234,7 @@ void init_basic(void) {
 }
 
 void init_helper(void) {
-	//log_collector_init(0);
+	log_collector_init(0);
 	init_basic();
 	printf("HEELLLO3.5!!!!\n");
 	fflush(stdout);
