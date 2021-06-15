@@ -160,25 +160,6 @@ static void _load_tx(server_t * server)
 }
 
 
-static void _process_tx_done(server_t * server, bool succeed)
-{
-	// Все очень просто
-	if (succeed)
-	{
-		log_debug("tx done");
-		server->tx_cookie_sent = server->tx_cookie_in_progress;
-	}
-	else
-	{
-		log_error("TX TIMED OUT");
-		server->tx_cookie_dropped = server->tx_cookie_in_progress;
-	}
-
-	server->tx_cookie_in_progress = 0;
-}
-
-
-
 static void _fetch_rx(server_t * server)
 {
 	sx126x_drv_t * const radio = &server->radio;
@@ -364,7 +345,7 @@ static void _do_periodic_jobs(server_t * server)
 	};
 
 	rc = zmq_poll(pollitems, 1, 0);
-	if (0 == rc)
+	if (rc >= 0)
 	{
 		if (pollitems[0].revents & ZMQ_POLLIN)
 			_load_tx(server);
@@ -400,11 +381,35 @@ static void _do_periodic_jobs(server_t * server)
 }
 
 
+static int _sleep_poll_radio_interrupt(server_t * server, uint32_t timeout_ms)
+{
+	int rc;
+	sx126x_drv_t * const radio = &server->radio;
+	int radio_interrupt_fd = sx126x_brd_rpi_get_event_fd(radio->api.board);
+
+	struct pollfd pfd = { .fd = radio_interrupt_fd, .events = POLLIN};
+	rc = poll(&pfd, 1, timeout_ms);
+	if (rc < 0)
+	{
+		log_fatal("radio poll failed. rc: %d, errno: %d", rc, errno);
+		return rc;
+	}
+
+	if (pfd.revents & POLLIN)
+	{
+		// Интеррупт был, нужно его почистить
+		sx126x_brd_rpi_cleanup_event(radio->api.board);
+	}
+
+	return 0;
+}
+
+
 static int _go_rx(server_t * server)
 {
 	int rc;
 	sx126x_drv_t * const radio = &server->radio;
-	const uint32_t hw_timeout = server->config.tx_timeout_ms;
+	const uint32_t hw_timeout = server->config.rx_timeout_ms;
 
 	// Уходим в RX
 	rc = sx126x_drv_mode_rx(radio, hw_timeout);
@@ -422,7 +427,6 @@ static int _wait_for_rx(server_t * server, bool * got_packet)
 {
 	int rc;
 	sx126x_drv_t * const radio = &server->radio;
-	int radio_interrput_fd = sx126x_brd_rpi_get_event_fd(radio->api.board);
 
 	const int poll_timeout = server->config.poll_timeout_ms;
 	const uint32_t watchdog_limit = server->config.rx_watchdog_ms;
@@ -435,17 +439,9 @@ static int _wait_for_rx(server_t * server, bool * got_packet)
 		_do_periodic_jobs(server);
 
 		// Чуток поспим с условим проснуться по прерыванию
-		struct pollfd pfd = { .fd = radio_interrput_fd, .events = POLLIN};
-		rc = poll(&pfd, 1, poll_timeout);
-		if (rc < 0)
-		{
-			log_fatal("radio poll (in rx) failed. rc: %d, errno: %d", rc, errno);
+		rc = _sleep_poll_radio_interrupt(server, poll_timeout);
+		if (0 != rc)
 			return rc;
-		}
-
-		// Дальше не особо анализируем. Если POLL закончился
-		// то либо пришло прерывание, либо случился таймаут.
-		// Собственно не важно что произошло - исход один
 
 		// Проверяем события драйвера
 		sx126x_drv_evt_t event;
@@ -458,15 +454,15 @@ static int _wait_for_rx(server_t * server, bool * got_packet)
 
 		if (SX126X_DRV_EVTKIND_RX_DONE == event.kind)
 		{
-			if (!event.arg.rx_done.timed_out)
+			if (event.arg.rx_done.timed_out)
+			{
+				*got_packet = false;
+			}
+			else
 			{
 				// Есть пакет! Выграебаем!
 				_fetch_rx(server);
 				*got_packet = true;
-			}
-			else
-			{
-				*got_packet = false;
 			}
 
 			// Вне зависимости - был ли таймаут, отсюда выходим
@@ -476,7 +472,6 @@ static int _wait_for_rx(server_t * server, bool * got_packet)
 		{
 			// Ничего не произошло в радио
 			// штош, ничего и не делаем, пойдем дальше по телу цикла
-			log_trace("rx event none");
 		}
 		else
 		{
@@ -489,6 +484,7 @@ static int _wait_for_rx(server_t * server, bool * got_packet)
 		if (_timespec_diff_ms_now(&wait_start) > watchdog_limit)
 		{
 			// Слишком!
+			log_error("RX CYCLE WATCHDOG FIRED");
 			return -ETIMEDOUT;
 		}
 	} // while
@@ -521,7 +517,7 @@ static int _go_tx(server_t * server)
 }
 
 
-static int _wait_for_tx(server_t * server, int * succeed)
+static int _wait_for_tx(server_t * server, bool * succeed)
 {
 	int rc;
 	sx126x_drv_t * const radio = &server->radio;
@@ -538,17 +534,9 @@ static int _wait_for_tx(server_t * server, int * succeed)
 		_do_periodic_jobs(server);
 
 		// Чуток поспим с условим проснуться по прерыванию
-		struct pollfd pfd = { .fd = radio_interrput_fd, .events = POLLIN};
-		rc = poll(&pfd, 1, poll_timeout);
-		if (rc < 0)
-		{
-			log_fatal("radio poll (in tx) failed. rc: %d, errno: %d", rc, errno);
+		rc = _sleep_poll_radio_interrupt(server, poll_timeout);
+		if (0 != rc)
 			return rc;
-		}
-
-		// Дальше не особо анализируем. Если POLL закончился
-		// то либо пришло прерывание, либо случился таймаут.
-		// Собственно не важно что произошло - исход один
 
 		// Проверяем события драйвера
 		sx126x_drv_evt_t event;
@@ -561,14 +549,14 @@ static int _wait_for_tx(server_t * server, int * succeed)
 
 		if (SX126X_DRV_EVTKIND_TX_DONE == event.kind)
 		{
-			if (!event.arg.rx_done.timed_out)
-			{
-				*succeed = true;
-			}
-			else
+			if (event.arg.tx_done.timed_out)
 			{
 				log_error("TX TIMED OUT!!!11");
 				*succeed = false;
+			}
+			else
+			{
+				*succeed = true;
 			}
 
 			// Вне зависимости - был ли таймаут, отсюда выходим
@@ -578,7 +566,6 @@ static int _wait_for_tx(server_t * server, int * succeed)
 		{
 			// Ничего не произошло в радио
 			// штош, ничего и не делаем, пойдем дальше по телу цикла
-			log_trace("rx event none");
 		}
 		else
 		{
@@ -591,6 +578,7 @@ static int _wait_for_tx(server_t * server, int * succeed)
 		if (_timespec_diff_ms_now(&wait_start) > watchdog_limit)
 		{
 			// Слишком!
+			log_error("TX CYCLE WATCHDOG FIRED");
 			return -ETIMEDOUT;
 		}
 	} // while
@@ -603,12 +591,7 @@ static int _server_loop(server_t * server)
 {
 	int rc;
 	sx126x_drv_t * const radio = &server->radio;
-
-	// Если пакета нет вот столько времени - нам разрешено передавать
-	const int silence_before_tx_ms = server->config.rx_timeout_ms;
 	const size_t rx_timeout_limit = server->config.rx_timeout_limit;
-
-	bool got_packet;
 
 begin_rx:
 	do
@@ -626,15 +609,17 @@ begin_rx:
 		if (0 != rc)
 			return rc;
 
-		log_trace("rx operation_complete");
+		log_trace("rx operation complete");
 		if (got_packet)
 		{
 			server->rx_packet_received = _timespec_now();
 			server->rx_timeout_count = 0;
+			log_trace("rx yielded packet");
 		}
 		else
 		{
 			server->rx_timeout_count++;
+			log_trace("rx timed out");
 		}
 
 		// Крутимся тут пока не убедимся что эфир свободен
@@ -642,7 +627,7 @@ begin_rx:
 
 
 	// Раз мы оказались тут, то это означает что эфир свободен
-	log_info("rx cycle complete");
+	log_warn("no rx, channel free. Ready for TX");
 
 
 	// А есть чего передавать то?
@@ -669,7 +654,7 @@ begin_rx:
 
 	// Ждем завершения
 	bool tx_succeed;
-	rc = _wait_for_rx(server, &tx_succeed);
+	rc = _wait_for_tx(server, &tx_succeed);
 	if (0 != rc)
 	{
 		log_error("TX FAILED SPECTACULAR: %d\n");
@@ -679,7 +664,14 @@ begin_rx:
 		return rc;
 	}
 
-	if (!tx_succeed)
+	if (tx_succeed)
+	{
+		log_info("tx completed");
+		server->tx_cookie_sent = server->tx_cookie_in_progress;
+		server->tx_cookie_in_progress = 0;
+		server->tx_cookies_updated = true;
+	}
+	else
 	{
 		log_error("tx failed, but not so spectacular (hw timeout?)");
 		server->tx_cookie_dropped = server->tx_cookie_in_progress;
@@ -707,10 +699,11 @@ again:
 	rc = _radio_init(server);
 	if (rc != 0)
 	{
-		log_error("unable to initialize radio. Will retry");
+		log_error("unable to initialize radio: %d. Will retry", rc);
 		sleep(1);
 		goto again;
 	}
+	log_info("radio intialized");
 
 	// Крутимся!
 	_server_loop(server);

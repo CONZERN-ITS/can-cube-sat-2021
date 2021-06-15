@@ -65,7 +65,7 @@ int server_config_load(server_config_t * config)
 
 
 	config->rx_timeout_ms = 600;
-	config->rx_timeout_limit = 3;
+	config->rx_timeout_limit = 0;
 
 	config->tx_timeout_ms = 0;
 
