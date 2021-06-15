@@ -19,319 +19,331 @@
 
 
 static const char *TAG = "INA219";
+/*
+ * ina219.c
+ *
+ *  Created on: 18 марта 2017 г.
+ *      Author: developer
+ */
+#include <stdlib.h>
+#include <stdbool.h>
 
-#define REG_CONFIG      0
-#define REG_SHUNT_U     1
-#define REG_BUS_U       2
-#define REG_POWER       3
-#define REG_CURRENT     4
-#define REG_CALIBRATION 5
+#include <stdio.h>
 
-#define BIT_RST   15
-#define BIT_BRNG  13
-#define BIT_PG0   11
-#define BIT_BADC0 7
-#define BIT_SADC0 3
-#define BIT_MODE  0
-
-#define MASK_PG   (3 << BIT_PG0)
-#define MASK_BADC (0xf << BIT_BADC0)
-#define MASK_SADC (0xf << BIT_SADC0)
-#define MASK_MODE (7 << BIT_MODE)
-#define MASK_BRNG (1 << BIT_BRNG)
-
-#define DEF_CONFIG 0x399f
-#define INA226_ASUKIAAA_DEFAULT_CONFIG 0x4127
-
-#define CHECK(x) do { esp_err_t __; if ((__ = x) != ESP_OK) return __; } while (0)
-#define CHECK_ARG(VAL) do { if (!(VAL)) return ESP_ERR_INVALID_ARG; } while (0)
-
-static const float u_shunt_max[] = {
-    [INA219_GAIN_1]     = 0.04,
-    [INA219_GAIN_0_5]   = 0.08,
-    [INA219_GAIN_0_25]  = 0.16,
-    [INA219_GAIN_0_125] = 0.32,
-};
+#include "ina219.h"
 
 
+#ifdef INA219_FLT_DOUBLE
+#define INA219_FLOAT(x) x
+#else
+#define INA219_FLOAT(x) x##f
+#endif
 
-static esp_err_t read_reg_16(ina219_t *dev, uint8_t reg, uint16_t *val)
-{
-	ESP_LOGV(TAG, "read_reg_16 %d %d", dev->i2c_address, reg);
-    CHECK_ARG(val);
-    if (i2c_master_prestart(dev->i2c_port, dev->tick_timeout) != pdTRUE) {
+
+#define INA219_SET_BITS(reg_data, bitname, data) \
+				((reg_data & ~(bitname##_MSK)) | \
+				((data << bitname##_POS) & bitname##_MSK))
+
+#define INA219_GET_BITS(reg_data, bitname)  ((reg_data & (bitname##_MSK)) >> \
+							(bitname##_POS))
+
+#define INA219_CFGREG_ADDR         (0x00)
+
+#define INA219_CFGREG__RESET_POS   (15)
+#define INA219_CFGREG__RESET_MSK    (0x0001 << 15)
+
+#define INA219_CFGREG__BRNG_POS    (13)
+#define INA219_CFGREG__BRNG_MSK    (0x0001 << 13)
+
+#define INA219_CFGREG__PG_POS      (11)
+#define INA219_CFGREG__PG_MSK      (0x0003 << 11)
+
+#define INA219_CFGREG__BADC_POS    (7)
+#define INA219_CFGREG__BADC_MSK    (0x000f << 7)
+
+#define INA219_CFGREG__SADC_POS    (3)
+#define INA219_CFGREG__SADC_MSK    (0x000f << 3)
+
+#define INA219_CFGREG__MODE_POS    (0)
+#define INA219_CFGREG__MODE_MSK    (0x0007 << 0)
+
+
+#define INA219_SHUNTVREG_ADDR      (0x01)
+
+
+#define INA219_BUSVREG_ADDR        (0x02)
+
+#define INA219_BUSVREG__BUSV_POS   (3)
+#define INA219_BUSVREG__BUSV_MSK   (0x1fff << 3)
+
+#define INA219_BUSVREG__CNVR_POS   (1)
+#define INA219_BUSVREG__CNVR_MSK   (0x0001 << 1)
+
+#define INA219_BUSVREG__OVF_POS    (0)
+#define INA219_BUSVREG__OVF_MSK    (0x0001 << 0)
+
+
+#define INA219_POWERREG_ADDR       (0x03)
+
+
+#define INA219_CURRENTREG_ADDR     (0x04)
+
+
+#define INA219_CALREG_ADDR         (0x05)
+// формально тут следует написать, что CALREG имеет поле CAL, которые начинается с 1ого бита
+// а не с нулевого, но это настолько частный случай, что не будем этим заниматься -
+// опишем в коде как << 1
+
+
+//! Запись одного регистра ины в I2C шину
+static int _write_reg(ina219_t * device, uint8_t reg_addr, uint16_t reg_value) {
+	ESP_LOGV(TAG, "write_reg_16 %d %d %d", device->i2c_address, reg_addr, reg_value);
+    uint16_t v = (reg_value >> 8) | (reg_value << 8);
+
+    if (i2c_master_prestart(device->i2c_port, device->tick_timeout) != pdTRUE) {
     	return ESP_ERR_TIMEOUT;
     }
 	i2c_cmd_handle_t cmd =  i2c_cmd_link_create();
 
 	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (dev->i2c_address << 1) | I2C_MASTER_WRITE, 1);
-	i2c_master_read(cmd, (uint8_t*) val, sizeof(*val), 1);
-	i2c_master_stop(cmd);
-	esp_err_t err = i2c_master_cmd_begin(dev->i2c_port, cmd, dev->tick_timeout);
-	i2c_cmd_link_delete(cmd);
-	i2c_master_postend(dev->i2c_port);
-
-    *val = (*val >> 8) | (*val << 8);
-
-    return err;
-}
-
-
-static esp_err_t write_reg_16(ina219_t *dev, uint8_t reg, uint16_t val)
-{
-	ESP_LOGV(TAG, "write_reg_16 %d %d %d", dev->i2c_address, reg, val);
-    uint16_t v = (val >> 8) | (val << 8);
-
-    if (i2c_master_prestart(dev->i2c_port, dev->tick_timeout) != pdTRUE) {
-    	return ESP_ERR_TIMEOUT;
-    }
-	i2c_cmd_handle_t cmd =  i2c_cmd_link_create();
-
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (dev->i2c_address << 1) | I2C_MASTER_WRITE, 1);
+	i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_WRITE, 1);
 	i2c_master_write(cmd, (uint8_t*) &v, sizeof(v), 1);
 	i2c_master_stop(cmd);
-	esp_err_t err = i2c_master_cmd_begin(dev->i2c_port, cmd, dev->tick_timeout);
+	esp_err_t err = i2c_master_cmd_begin(device->i2c_port, cmd, device->tick_timeout);
 	i2c_cmd_link_delete(cmd);
-	i2c_master_postend(dev->i2c_port);
+	i2c_master_postend(device->i2c_port);
 
 
     return err;
 }
 
-static esp_err_t read_conf_bits(ina219_t *dev, uint16_t mask, uint8_t bit, uint16_t *res)
-{
-    CHECK_ARG(dev && res);
 
-    uint16_t raw;
-    CHECK(read_reg_16(dev, REG_CONFIG, &raw));
+//! Чтение регистра ины из I2C шины
+/*! К сожалению ина не умеет читать несколько регистров за раз */
+static esp_err_t _read_reg(ina219_t * device, uint8_t reg_addr, uint16_t * reg_value){
 
-    *res = (raw & mask) >> bit;
+	ESP_LOGV(TAG, "read_reg_16 %d %d", device->i2c_address, reg_addr);
 
-    return ESP_OK;
-}
+	if (i2c_master_prestart(device->i2c_port, device->tick_timeout) != pdTRUE) {
+		return ESP_ERR_TIMEOUT;
+	}
+	i2c_cmd_handle_t cmd =  i2c_cmd_link_create();
 
-///////////////////////////////////////////////////////////////////////////////
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_WRITE, 1);
+	i2c_master_write_byte(cmd, reg_addr, 1);
 
-esp_err_t ina219_init_desc(ina219_t *dev, uint8_t addr, i2c_port_t port, int tickTimeout)
-{
-    CHECK_ARG(dev);
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_READ, 1);
+	i2c_master_read(cmd, (uint8_t*) reg_value, sizeof(*reg_value), 1);
+	i2c_master_stop(cmd);
+	esp_err_t err = i2c_master_cmd_begin(device->i2c_port, cmd, device->tick_timeout);
+	i2c_cmd_link_delete(cmd);
+	i2c_master_postend(device->i2c_port);
 
-    if (addr < INA219_ADDR_GND_GND || addr > INA219_ADDR_SCL_SCL)
-    {
-        ESP_LOGE(TAG, "Invalid I2C address");
-        return ESP_ERR_INVALID_ARG;
-    }
+	*reg_value = (*reg_value >> 8) | (*reg_value << 8);
 
-    dev->i2c_port = port;
-    dev->i2c_address = addr;
-    dev->tick_timeout = tickTimeout;
-
-    return ESP_OK;
-}
-
-esp_err_t ina219_free_desc(ina219_t *dev)
-{
-    CHECK_ARG(dev);
-    return ESP_OK;
-}
-
-esp_err_t ina219_init(ina219_t *dev)
-{
-    CHECK_ARG(dev);
-
-    CHECK(read_reg_16(dev, REG_CONFIG, &dev->config));
-
-    ESP_LOGD(TAG, "Initialize, config: 0x%04x", dev->config);
-
-    return ESP_OK;
-}
-
-esp_err_t ina219_reset(ina219_t *dev)
-{
-    CHECK_ARG(dev);
-    CHECK(write_reg_16(dev, REG_CONFIG, 1 << BIT_RST));
-
-    //dev->config = DEF_CONFIG;
-
-    dev->config = INA226_ASUKIAAA_DEFAULT_CONFIG;
-
-    ESP_LOGD(TAG, "Device reset");
-
-    return ESP_OK;
-}
-
-esp_err_t ina219_configure(ina219_t *dev, ina219_bus_voltage_range_t u_range,
-        ina219_gain_t gain, ina219_resolution_t u_res,
-        ina219_resolution_t i_res, ina219_mode_t mode)
-{
-    CHECK_ARG(dev);
-    CHECK_ARG(u_range <= INA219_BUS_RANGE_32V);
-    CHECK_ARG(gain <= INA219_GAIN_0_125);
-    CHECK_ARG(u_res <= INA219_RES_12BIT_128S);
-    CHECK_ARG(i_res <= INA219_RES_12BIT_128S);
-    CHECK_ARG(mode <= INA219_MODE_CONT_SHUNT_BUS);
-
-    dev->config = (u_range << BIT_BRNG) |
-                  (gain << BIT_PG0) |
-                  (u_res << BIT_BADC0) |
-                  (i_res << BIT_SADC0) |
-                  (mode << BIT_MODE);
-
-    ESP_LOGD(TAG, "Config: 0x%04x", dev->config);
-
-    return write_reg_16(dev, REG_CONFIG, dev->config);
-}
-
-esp_err_t ina219_get_bus_voltage_range(ina219_t *dev, ina219_bus_voltage_range_t *range)
-{
-    return read_conf_bits(dev, MASK_BRNG, BIT_BRNG, (uint16_t *)range);
-}
-
-esp_err_t ina219_get_gain(ina219_t *dev, ina219_gain_t *gain)
-{
-    return read_conf_bits(dev, MASK_PG, BIT_PG0, (uint16_t *)gain);
-}
-
-esp_err_t ina219_get_bus_voltage_resolution(ina219_t *dev, ina219_resolution_t *res)
-{
-    return read_conf_bits(dev, MASK_BADC, BIT_BADC0, (uint16_t *)res);
-}
-
-esp_err_t ina219_get_shunt_voltage_resolution(ina219_t *dev, ina219_resolution_t *res)
-{
-    return read_conf_bits(dev, MASK_SADC, BIT_SADC0, (uint16_t *)res);
-}
-
-esp_err_t ina219_get_mode(ina219_t *dev, ina219_mode_t *mode)
-{
-    return read_conf_bits(dev, MASK_MODE, BIT_MODE, (uint16_t *)mode);
-}
-
-esp_err_t ina219_calibrate(ina219_t *dev, float i_expected_max, float r_shunt)
-{
-    CHECK_ARG(dev);
-
-    ina219_gain_t gain;
-    CHECK(ina219_get_gain(dev, &gain));
-
-  dev->i_lsb = (uint16_t)(u_shunt_max[gain] / r_shunt / 32767 * 100000000);
-    dev->i_lsb /= 100000000;
-    dev->i_lsb /= 0.0001;
-    dev->i_lsb = ceil(dev->i_lsb);
-    dev->i_lsb *= 0.001;
-    dev->p_lsb = dev->i_lsb * 20;
-    //uint16_t cal = (uint16_t)((0.04096) / (dev->i_lsb * r_shunt));
-
-
-    //ina226 :
-    dev->i_lsb =(i_expected_max/pow(2,15));//Current_LSB
-
-    dev->p_lsb = dev->i_lsb * 25;//Power : 25mw * Current_LSB
-
-    uint16_t cal = (uint16_t)((0.00512) / (dev->i_lsb * r_shunt));
-
-    ESP_LOGD(TAG, "Calibration: %.04f A, %.04f Ohm, 0x%04x", i_expected_max, r_shunt, cal);
-
-    return write_reg_16(dev, REG_CALIBRATION, cal);
-}
-
-esp_err_t ina219_trigger(ina219_t *dev)
-{
-    CHECK_ARG(dev);
-
-    uint16_t mode = (dev->config & MASK_MODE) >> BIT_MODE;
-    if (mode < INA219_MODE_TRIG_SHUNT || mode > INA219_MODE_TRIG_SHUNT_BUS)
-    {
-        ESP_LOGE(TAG, "Could not trigger conversion in this mode: %d", mode);
-        return ESP_ERR_INVALID_STATE;
-    }
-
-    return write_reg_16(dev, REG_CONFIG, dev->config);
-}
-
-esp_err_t ina219_get_bus_voltage(ina219_t *dev, float *voltage)
-{
-    CHECK_ARG(dev && voltage);
-
-    int16_t raw;
-    CHECK(read_reg_16(dev, REG_BUS_U, (uint16_t *)&raw));
-
-    *voltage = raw *1.25;//LSB: 1.25mV;
-
-    return ESP_OK;
-}
-
-esp_err_t ina219_get_shunt_voltage(ina219_t *dev, float *voltage)
-{
-    CHECK_ARG(dev && voltage);
-
-    int16_t raw;
-    CHECK(read_reg_16(dev, REG_SHUNT_U, (uint16_t *)&raw));
-
-    *voltage = raw * 0.0025; //LSB : 2.5uV
-    return ESP_OK;
-}
-
-esp_err_t ina219_get_current(ina219_t *dev, float *current)
-{
-    CHECK_ARG(dev && current);
-
-    int16_t raw;
-    CHECK(read_reg_16(dev, REG_CURRENT, (uint16_t *)&raw));
-
-    *current = raw * dev->i_lsb; //return in ma *0.001; //LSB : 1mA
-
-    return ESP_OK;
-}
-
-esp_err_t ina219_get_power(ina219_t *dev, float *power)
-{
-    CHECK_ARG(dev && power);
-
-    int16_t raw;
-    CHECK(read_reg_16(dev, REG_POWER, (uint16_t *)&raw));
-
-    *power = raw * dev->p_lsb;//LSB :25mW
-
-    return ESP_OK;
-}
-
-//----------------------------NEW FUNCTION-----------------------------------------------
-//---------------------------------------------------------------------------------------
-
-static esp_err_t read_AllReg(ina219_t *dev, uint8_t reg1, uint8_t reg2,uint8_t reg3,uint16_t *val1, uint16_t *val2,uint16_t *val3)
-{
-/*    CHECK_ARG(val1 && val2 && val3);
-
-    I2C_DEV_TAKE_MUTEX(&dev->i2c_dev);
-    I2C_DEV_CHECK(&dev->i2c_dev, i2c_dev_readmulti_reg(&dev->i2c_dev, reg1,reg2,reg3, val1, val2,val3, 2));
-
-    I2C_DEV_GIVE_MUTEX(&dev->i2c_dev);
-
-    *val1 = (*val1 >> 8) | (*val1 << 8);
-    *val2 = (*val2 >> 8) | (*val2 << 8);
-    *val3 = (*val3 >> 8) | (*val3 << 8);*/
-
-    return ESP_FAIL;
+	return err;
 }
 
 
-esp_err_t ina219_getVCP(ina219_t *dev, float *value1, float *value2, float *value3)
+//! Построение значения калибровочного регистра из его базовых значений
+static uint16_t _make_cal_reg(ina219_float_t current_lsb, ina219_float_t shunt_r)
 {
-/*
-    CHECK_ARG(dev && value1 && value2 && value3);
+	// Если что-то задано по нулям, то калибровки не будет
+	if (current_lsb == INA219_FLOAT(0.0) || shunt_r == INA219_FLOAT(0.0))
+		return 0x00;
 
-    int16_t raw1,raw2,raw3;
-    CHECK(read_AllReg(dev, REG_BUS_U, REG_CURRENT,REG_POWER, (uint16_t *)&raw1, (uint16_t *)&raw2, (uint16_t *)&raw3));
-
-    *value1 = raw1 * 1.25;//LSB: 1.25mV;
-    *value2 = raw2 * dev->i_lsb; //current in mA
-    *value3 = raw3 * dev->p_lsb;// power in mw
-*/
-
-    return ESP_FAIL;
+	// волшебные цифры из даташита
+	const ina219_float_t calib = INA219_FLOAT(0.04096)/(current_lsb * shunt_r);
+	return ((uint16_t)calib);
+	// << 1 так как нулевой бит регистра резервирован, а фактическое значение идет с бита 1
 }
+
+
+//! Построение значения cfg регистра из структуры конфигурации
+static uint16_t _make_cfg_reg(const ina219_cfg_t * cfg)
+{
+	uint16_t retval = 0;
+
+	retval = INA219_SET_BITS(retval, INA219_CFGREG__BRNG, cfg->bus_range);
+	retval = INA219_SET_BITS(retval, INA219_CFGREG__PG, cfg->shunt_range);
+	retval = INA219_SET_BITS(retval, INA219_CFGREG__BADC, cfg->bus_res);
+	retval = INA219_SET_BITS(retval, INA219_CFGREG__SADC, cfg->shunt_res);
+	retval = INA219_SET_BITS(retval, INA219_CFGREG__MODE, cfg->mode);
+
+	return retval;
+}
+
+
+//! нарезка значения "первичных" регистров на "исходные" данные
+inline static void _slice_prim_data(const uint16_t * primregs, ina219_primary_data_t * primdata)
+{
+	// тут нужно хитро. нужно скопировать байты из uint16_t так, чтобы они воспринимались
+	// как int16_t
+	uint16_t * const uintptr = (uint16_t *)&primdata->shuntv;
+	*uintptr = primregs[0];
+
+	const uint16_t busvreg = primregs[1];
+	primdata->busv = INA219_GET_BITS(busvreg, INA219_BUSVREG__BUSV);
+	primdata->cnvr = INA219_GET_BITS(busvreg, INA219_BUSVREG__CNVR);
+	primdata->ovf = INA219_GET_BITS(busvreg, INA219_BUSVREG__OVF);
+
+}
+
+
+//! нарезка значений "расчетных" регистров на "расчетные" данные
+inline static void _slice_sec_data(const uint16_t * secregs, ina219_secondary_data_t * secdata)
+{
+	// все очень просто
+	secdata->power = secregs[0];
+
+	// тут нужно хитро. нужно скопировать бфайты из uint16_t так, чтобы они воспринимались
+	// как int16_t
+	uint16_t * const uintptr = (uint16_t *)&secdata->current;
+	*uintptr = secregs[1];
+}
+
+
+
+void ina219_load_default_cfg(ina219_cfg_t * cfg)
+{
+	cfg->bus_range = INA219_BUS_RANGE_32V;
+	cfg->bus_res = INA219_ADC_RES_12_BIT_OVS_1;
+
+	cfg->shunt_range = INA219_SHUNT_RANGE_320MV;
+	cfg->shunt_res = INA219_ADC_RES_12_BIT_OVS_1;
+
+	cfg->mode = INA219_MODE_SHUNT_AND_BUS_CONT;
+
+	cfg->shunt_r = 0.0f;
+	cfg->current_lsb = 0.0f;
+}
+
+
+void ina219_init(ina219_t * device, i2c_port_t port, uint8_t i2c_addr, uint32_t timeout)
+{
+	device->i2c_port = port;
+	device->i2c_address = i2c_addr;
+	device->tick_timeout = timeout;
+	ina219_load_default_cfg(&device->cfg);
+}
+
+
+void ina219_deinit(ina219_t * device)
+{
+	(void)device;
+	// нечего делать..,
+}
+
+
+int ina219_sw_reset(ina219_t * device)
+{
+	uint16_t cfgreg = 0;
+	cfgreg = INA219_SET_BITS(cfgreg, INA219_CFGREG__RESET, 1);
+	return _write_reg(device, INA219_CFGREG_ADDR, cfgreg);
+}
+
+
+int ina219_set_cfg(ina219_t * device, const ina219_cfg_t * cfg)
+{
+	uint16_t cfgreg = _make_cfg_reg(cfg);
+	int error = _write_reg(device, INA219_CFGREG_ADDR, cfgreg);
+	if (error)
+		return error;
+
+	device->cfg = *cfg;
+	// FIXME: не все копировать
+
+	uint16_t calreg = _make_cal_reg(cfg->current_lsb, cfg->shunt_r);
+	error = _write_reg(device, INA219_CALREG_ADDR, calreg);
+	if (error)
+		return error;
+
+
+	device->cfg.current_lsb = cfg->current_lsb;
+	device->cfg.shunt_r = cfg->shunt_r;
+
+	return 0;
+}
+
+
+const ina219_cfg_t * ina219_get_cfg(ina219_t * device)
+{
+	return &device->cfg;
+}
+
+
+int ina219_set_mode(ina219_t * device, const ina219_mode_t mode)
+{
+	// запоминаем старый режим, на случай если что-то пойдет не так
+	const ina219_mode_t old_mode = device->cfg.mode;
+	// пробуем обновить режим в дескрипторе
+	device->cfg.mode = mode;
+
+	// пробуем зашить новый конфиг регистр
+	uint16_t cfgreg = _make_cfg_reg(&device->cfg);
+	int error = _write_reg(device, INA219_CFGREG_ADDR, cfgreg);
+
+	// Если что-то пошло не так - восстанавливаем старый режим
+	// он наиболее соответствует действительности
+	if (error)
+		device->cfg.mode = old_mode;
+
+	return error;
+}
+
+
+int ina219_read_primary(ina219_t * device, ina219_primary_data_t * data)
+{
+	uint16_t raw_reg_data[2];
+	int error = _read_reg(device, INA219_SHUNTVREG_ADDR, &raw_reg_data[0]);
+	if (error)
+		return error;
+
+	error = _read_reg(device, INA219_BUSVREG_ADDR, &raw_reg_data[1]);
+	if (error)
+		return error;
+
+
+	_slice_prim_data(raw_reg_data, data);
+	return 0;
+}
+
+
+int ina219_read_secondary(ina219_t * device, ina219_secondary_data_t * data)
+{
+	uint16_t raw_reg_data[2];
+	int error = _read_reg(device, INA219_POWERREG_ADDR, &raw_reg_data[0]);
+	if (error)
+		return error;
+
+	error = _read_reg(device, INA219_CURRENTREG_ADDR, &raw_reg_data[1]);
+		if (error)
+			return error;
+
+
+	_slice_sec_data(raw_reg_data, data);
+	return 0;
+}
+
+
+int ina219_read_all(ina219_t * device, ina219_primary_data_t * prim_data,
+		ina219_secondary_data_t * secondary_data)
+{
+	int error = ina219_read_primary(device, prim_data);
+	if (error)
+		return error;
+
+	error = ina219_read_secondary(device, secondary_data);
+	return error;
+}
+
+int ina219_read_reg(ina219_t * device, uint8_t regaddr, uint16_t * regdata)
+{
+	return _read_reg(device, regaddr, regdata);
+}
+
+
 
 

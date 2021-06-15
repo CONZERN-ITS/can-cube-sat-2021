@@ -24,6 +24,7 @@
 #define LSM6DS3			0
 #define LIS3MDL			0
 
+
 // if error set value and go to end
 #define PROCESS_ERROR(x) if (0 != (error = (x))) { goto end; }
 

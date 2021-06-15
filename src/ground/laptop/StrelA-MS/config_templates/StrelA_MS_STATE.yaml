@@ -33,6 +33,10 @@ CentralWidget:
         name: BCU C1 ELECTRICAL_STATE
         sourse_id: '10_1'
         message_id: 'ELECTRICAL_STATE'
+      CUBE_1_RADIO_CONN_STATS:
+        name: BCU C0 BCU_RADIO_CONN_STATS
+        sourse_id: '10_0'
+        message_id: 'BCU_RADIO_CONN_STATS'
       SINS_OWN_TEMP:
         name: SINS OWN_TEMP
         sourse_id: '11_0'
@@ -41,6 +45,14 @@ CentralWidget:
         name: PLD OWN_TEMP
         sourse_id: '13_0'
         message_id: OWN_TEMP
+      GCS_RADIO_RSSI_PACKET:
+        name: GCS RADIO PACKET RSSI
+        sourse_id: '1_0'
+        message_id: 'radio.rssi_packet'
+      GCS_RADIO_RSSI_INSTANT:
+        name: GCS RADIO INSTANT RSSI
+        sourse_id: '1_0'
+        message_id: 'radio.rssi_instant'
       is_on: true
       def_time_limit: 20
     Packet_table:
@@ -80,36 +92,10 @@ CentralWidget:
         name: BCU C1 ELECTRICAL_STATE
         sourse_id: '10_1'
         message_id: 'ELECTRICAL_STATE'
-      CUBE_1_PCU_OWN_TEMP:
-        is_on: false
-        name: cube 1 PCU OWN_TEMP
-        sourse_id: '12_0'
-        message_id: OWN_TEMP
-      CUBE_1_PCU_TEMP_COMP_0:
-        is_on: false
-        name: cube 1 PCU comp 0 THERMAL_STATE
-        sourse_id: '12_0'
-        message_id: THERMAL_STATE
-      CUBE_1_PCU_TEMP_COMP_1:
-        is_on: false
-        name: cube 1 PCU comp 1 THERMAL_STATE
-        sourse_id: '12_1'
-        message_id: THERMAL_STATE
-      CUBE_1_PCU_TEMP_COMP_2:
-        is_on: false
-        name: cube 1 PCU comp 2 THERMAL_STATE
-        sourse_id: '12_2'
-        message_id: THERMAL_STATE
-      CUBE_1_PCU_TEMP_COMP_3:
-        is_on: false
-        name: cube 1 PCU comp 3 THERMAL_STATE
-        sourse_id: '12_3'
-        message_id: THERMAL_STATE
-      CUBE_1_PCU_VOLT_COMP_0:
-        is_on: false
-        name: PCU C0 ELECTRICAL_STATE
-        sourse_id: '12_0'
-        message_id: ELECTRICAL_STATE
+      CUBE_1_RADIO_CONN_STATS:
+        name: BCU C0 BCU_RADIO_CONN_STATS
+        sourse_id: '10_0'
+        message_id: 'BCU_RADIO_CONN_STATS'
       PLD_DOSIM_DATA:
         name: PLD C0 PLD_DOSIM_DATA
         sourse_id: '13_0'
@@ -178,12 +164,15 @@ CentralWidget:
         name: SINS C0 OWN_TEMP
         sourse_id: '11_0'
         message_id: OWN_TEMP
-      GCS_RADIO:
-        is_on: false
-        name: GCS RADIO RSSI
+      GCS_RADIO_RSSI_PACKET:
+        name: GCS RADIO PACKET RSSI
         sourse_id: '1_0'
-        message_id: RSSI
-      is_on: trueF
+        message_id: 'radio.rssi_packet'
+      GCS_RADIO_RSSI_INSTANT:
+        name: GCS RADIO INSTANT RSSI
+        sourse_id: '1_0'
+        message_id: 'radio.rssi_instant'
+      is_on: true
     Time_table:
       CUBE_1_BCU:
         is_on: true
@@ -388,6 +377,39 @@ CentralWidget:
         - 1
         - 1
         units: C
+      RSSI:
+        Packets:
+          GCS_RADIO_RSSI_PACKET:
+            sourse_id: '1_0'
+            message_id: 'radio.rssi_packet'
+            field_id:
+            - rssi_pkt
+            - rssi_signal
+            field_name:
+            - rssi packet
+            - rssi signal
+            color:
+            - '#FF4646'
+            - '#0096FF'
+          GCS_RADIO_RSSI_INSTANT:
+            sourse_id: '1_0'
+            message_id: 'radio.rssi_instant'
+            field_id:
+            - rssi
+            field_name:
+            - instant rssi
+            color:
+            - g
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        name: "RSSI"
+        position:
+        - 2
+        - 0
+        - 1
+        - 2
+        units: dB
     is_on: true
     position:
     - 0
@@ -532,6 +554,8 @@ MainWindow:
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
+      - 'radio.rssi_instant'
+      - 'radio.rssi_packet'
       notimestamps: true
     type: ZMQ
   size:

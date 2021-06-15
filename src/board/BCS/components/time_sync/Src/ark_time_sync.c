@@ -6,7 +6,7 @@
  */
 
 #include "ark_time_sync.h"
-
+#include "time_sync.h"
 #include "esp_log.h"
 
 #include "mavlink/its/mavlink.h"
@@ -31,7 +31,7 @@ int ark_tsync_send_signal(uint8_t *data, size_t *size) {
 	mts.time_s = tp.tv_sec;
 	mts.time_us = tp.tv_usec;
 	mts.time_steady = xTaskGetTickCount();
-	mts.time_base = 0;
+	mts.time_base = time_sync_get_base();
 	mts.time_steady = (uint32_t) esp_timer_get_time();
 
 	mavlink_msg_timestamp_encode(CUBE_1_BCU, 0, &msg, &mts);

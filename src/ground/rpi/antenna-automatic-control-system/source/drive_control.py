@@ -37,9 +37,9 @@ class AbstractElectromechanicalDrive():
 
 
 class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
-    def __init__(self):
-        self.vertical_motor = None
-        self.horizontal_motor = None
+    def __init__(self, vertical_motor=None, horizontal_motor=None):
+        self.vertical_motor = vertical_motor
+        self.horizontal_motor = horizontal_motor
         self.vertical_position = 0
         self.horizontal_position = 0
         self.last_vertical_limit = None

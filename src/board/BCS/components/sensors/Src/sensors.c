@@ -226,27 +226,29 @@ static void sensors_task(void *arg) {
 
 static void sensors_ina_task(void *arg) {
 #define INA_MAX 1
+#define INA_VOLTAGE_BUS_LSB     0.004
 	ina219_t ina[INA_MAX];
 	int timeout = 50 / portTICK_PERIOD_MS;
-	ina219_init_desc(&ina[0], INA219_ADDR_GND_GND, ITS_I2CTM_PORT, timeout);
-	/*ina219_init_desc(&ina[1], INA219_ADDR_GND_SCL, ITS_I2CTM_PORT, timeout);
-	ina219_init_desc(&ina[2], INA219_ADDR_GND_SDA, ITS_I2CTM_PORT, timeout);
-	ina219_init_desc(&ina[3], INA219_ADDR_GND_VS, ITS_I2CTM_PORT, timeout);
-	ina219_init_desc(&ina[4], INA219_ADDR_SCL_GND, ITS_I2CTM_PORT, timeout);
-	ina219_init_desc(&ina[5], INA219_ADDR_SDA_SDA, ITS_I2CTM_PORT, timeout);
-*/
-	int rc = 0;
-	for (int i = 0; i < INA_MAX; i++) {
-		rc = ina219_init(&ina[i]);
-		ESP_LOGD(TAG, "ina0: %d", rc);
-		rc = ina219_configure(&ina[i], INA219_BUS_RANGE_16V, INA219_GAIN_1,
-				INA219_RES_12BIT_128S, INA219_RES_12BIT_128S, INA219_MODE_CONT_SHUNT_BUS);
 
-		ESP_LOGD(TAG, "ina1: %d", rc);
-		rc = ina219_init(&ina[i]);
+	ina219_init(&ina[0], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_GND, timeout);
+
+	for (int i = 0; i < INA_MAX; i++) {
+		ina219_sw_reset(&ina[i]);
+	}
+	vTaskDelay(timeout);
+	int rc = 0;
+	ina219_cfg_t cfg = {0};
+	cfg.bus_range = INA219_BUS_RANGE_16V;
+	cfg.bus_res = INA219_ADC_RES_12_BIT_OVS_128;
+	cfg.shunt_range = INA219_SHUNT_RANGE_320MV;
+	cfg.shunt_res = INA219_ADC_RES_12_BIT_OVS_1;
+	cfg.mode = INA219_MODE_SHUNT_AND_BUS_CONT;
+	cfg.current_lsb =  ((ina219_float_t)(0.1f/0x8000));
+	cfg.shunt_r = 0.01;
+	for (int i = 0; i < INA_MAX; i++) {
+
+		rc = ina219_set_cfg(&ina[i], &cfg);
 		ESP_LOGD(TAG, "ina2: %d", rc);
-		rc = ina219_calibrate(&ina[i], 10, 0.1);
-		ESP_LOGD(TAG, "ina3: %d", rc);
 	}
 	while (1) {
 		struct timeval tp = {0};
@@ -254,12 +256,13 @@ static void sensors_ina_task(void *arg) {
 		mavlink_electrical_state_t mes[INA_MAX];
 		int64_t now = esp_timer_get_time();
 		for (int i = 0; i < INA_MAX; i++) {
-			if (ina219_get_bus_voltage(&ina[i], &mes[i].voltage) != ESP_OK) {
-				mes[i].voltage = NAN;
-			}
-			if (ina219_get_current(&ina[i], &mes[i].current) != ESP_OK) {
-				mes[i].current = NAN;
-			}
+			ina219_primary_data_t pr = {0};
+			ina219_secondary_data_t sec = {0};
+
+			ina219_read_all(&ina[0], &pr, &sec);
+			mes[i].current = sec.current * cfg.current_lsb;
+			mes[i].voltage = pr.busv * INA_VOLTAGE_BUS_LSB;
+
 			ESP_LOGD("SENSORS", "[%d] current: %f, voltage: %0.2f", i, mes[i].current, mes[i].voltage);
 			mes[i].time_s = tp.tv_sec;
 			mes[i].time_us = tp.tv_usec;
@@ -274,6 +277,6 @@ static void sensors_ina_task(void *arg) {
 			ctx.from_isr = 0;
 			its_rt_route(&ctx, &msg, 0);
 		}
-		vTaskDelay(2000 / portTICK_PERIOD_MS);
+		vTaskDelay(4000 / portTICK_PERIOD_MS);
 	}
 }
