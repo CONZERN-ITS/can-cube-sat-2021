@@ -502,7 +502,7 @@ int sx126x_api_set_cad_params(sx126x_api_t * api,
 }
 
 
-int sx126x_api_buffer_base_address(sx126x_api_t * api, uint8_t tx_base_addr, uint8_t rx_base_addr)
+int sx126x_api_set_buffer_base_address(sx126x_api_t * api, uint8_t tx_base_addr, uint8_t rx_base_addr)
 {
 	int rc;
 	const uint8_t args[2] = { tx_base_addr, rx_base_addr };
@@ -648,7 +648,7 @@ int sx126x_api_get_device_errors(sx126x_api_t * api, uint16_t * device_errors)
 int sx126x_api_clear_device_errors(sx126x_api_t * api)
 {
 	int rc;
-	uint8_t dummy[1] = { 0x00 };
+	uint8_t dummy[2] = { 0x00 };
 	rc = sx126x_brd_cmd_write(api->board, SX126X_CMD_CLR_ERROR, dummy, sizeof(dummy));
 	SX126X_RETURN_IF_NONZERO(rc);
 
