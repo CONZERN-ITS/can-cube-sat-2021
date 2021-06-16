@@ -258,7 +258,7 @@ class PositionControlWidget(QtWidgets.QWidget):
 
         self.mode_true_btn.toggled.connect(self.mode_true_btn_action)
         self.mode_false_btn.toggled.connect(self.mode_false_btn_action)
-        
+
         frame = self.setup_frame(self.layout)
         frame_layout = QtWidgets.QGridLayout(frame)
         text_list = ['Azimuth:', 'Elevation:']

@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
 import os
 os.environ['MAVLINK_DIALECT'] = "its"
-os.environ['MAVLINK20'] = "its"
+os.environ['its_mav0'] = "its"
 from pymavlink.dialects.v20 import its as its_mav
 from pymavlink import mavutil
 import json
@@ -89,8 +89,11 @@ class AbstractAntennaInterface(QtCore.QObject):
 
 
 class MAVITSInterface(AbstractAntennaInterface):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(MAVITSInterface, self).__init__(*args, **kwargs)
         self.control_mode = True
+        self.mav = its_mav.MAVLink(file=None)
+        self.set_angle_control_mode()
 
     def msg_reaction(self, msg):
         if msg.get_type() == 'AS_STATE':
@@ -111,7 +114,7 @@ class MAVITSInterface(AbstractAntennaInterface):
 
     def convert_time_from_s_to_s_us(self, current_time):
         current_time = math.modf(current_time)
-        return (int(current_time[1]), int(current_time[0] * 1000000))
+        return [int(current_time[1]), int(current_time[0] * 1000000)]
 
     def convert_time_from_s_us_to_s(self, time_s, time_us):
         return time_s + time_us/1000000
@@ -122,15 +125,15 @@ class MAVITSInterface(AbstractAntennaInterface):
         self.send_msg(msg)
         self.command_sent(str(msg))
 
-    def set_angle_control_mode(self, mode):
+    def set_angle_control_mode(self, mode=False):
         self.angle_control_mode = mode
 
     def set_antenna_angle(self, azimuth, elevation):
         args = self.convert_time_from_s_to_s_us(time.time()) + [azimuth, elevation]
         if self.angle_control_mode:
-            self.send_message(mavlink2.MAVLink_as_hard_manual_control_message(*args))
+            self.send_message(its_mav.MAVLink_as_hard_manual_control_message(*args))
         else:
-            self.send_message(mavlink2.MAVLink_as_soft_manual_control_message(*args))
+            self.send_message(its_mav.MAVLink_as_soft_manual_control_message(*args))
 
     def put_up(self, num):
         angle = self.count_angle(num)
@@ -149,44 +152,47 @@ class MAVITSInterface(AbstractAntennaInterface):
         self.set_antenna_angle(angle, 0)
 
     def automatic_control_on(self):
-        self.send_message(mavlink2.MAVLink_as_automatic_control_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
+        self.send_message(its_mav.MAVLink_as_automatic_control_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
 
     def automatic_control_off(self):
-        self.send_message(mavlink2.MAVLink_as_automatic_control_message(*(self.convert_time_from_s_to_s_us(time.time()) + [False])))
+        self.send_message(its_mav.MAVLink_as_automatic_control_message(*(self.convert_time_from_s_to_s_us(time.time()) + [False])))
 
     def turn_motors_on(self):
-        self.send_message(mavlink2.MAVLink_as_motors_enable_mode_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
+        self.send_message(its_mav.MAVLink_as_motors_enable_mode_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
 
     def turn_motors_off(self):
-        self.send_message(mavlink2.MAVLink_as_motors_enable_mode_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
+        self.send_message(its_mav.MAVLink_as_motors_enable_mode_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
 
     def motors_auto_disable_on(self):
-        self.send_message(mavlink2.MAVLink_as_motors_auto_disable_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
+        self.send_message(its_mav.MAVLink_as_motors_auto_disable_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
 
     def motors_auto_disable_off(self):
-        self.send_message(mavlink2.MAVLink_as_motors_auto_disable_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
+        self.send_message(its_mav.MAVLink_as_motors_auto_disable_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
 
     def set_motors_timeout(self, timeout):
-        self.send_message(mavlink2.MAVLink_as_set_motors_timeout_message(*(self.convert_time_from_s_to_s_us(time.time()) + [timeout])))
+        self.send_message(its_mav.MAVLink_as_set_motors_timeout_message(*(self.convert_time_from_s_to_s_us(time.time()) + [timeout])))
 
     def set_aiming_period(self, period):
-        self.send_message(mavlink2.MAVLink_as_aiming_period_message(*(self.convert_time_from_s_to_s_us(time.time()) + [period])))
+        self.send_message(its_mav.MAVLink_as_aiming_period_message(*(self.convert_time_from_s_to_s_us(time.time()) + [period])))
 
     def setup_elevation_zero(self):
-        self.send_message(mavlink2.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [0])))
+        self.send_message(its_mav.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [0])))
 
     def target_to_north(self):
-        self.send_message(mavlink2.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [1])))
+        self.send_message(its_mav.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [1])))
 
     def setup_coord_system(self):
-        self.send_message(mavlink2.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [2])))
+        self.send_message(its_mav.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [2])))
+
+    def park(self):
+        self.setup_elevation_zero()
+        self.target_to_north()
 
     def state_request(self):
-        self.send_message(mavlink2.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [3])))
+        self.send_message(its_mav.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [3])))
 
 
 class ZMQITSInterface(MAVITSInterface):
-
     def msg_reaction(self, msg):
         topic = msg[0].decode('utf-8')
         if topic == 'antenna.telemetry_packet':
@@ -195,10 +201,11 @@ class ZMQITSInterface(MAVITSInterface):
             self.rssi_changed(json.loads(msg[1]).get('rssi', None))
 
     def send_message(self, msg):
+        print(msg)
         msg.get_header().srcSystem = 0
         msg.get_header().srcComponent = 3
         multipart = ["antenna.command_packet".encode("utf-8"),
                      bytes(),
-                     msg.get_msgbuf()]
-        self.send_msg(multipart)
-        self.command_sent(str(msg))
+                     msg.pack(self.mav)]
+        self.send_msg.emit(multipart)
+        self.command_sent.emit(str(msg))

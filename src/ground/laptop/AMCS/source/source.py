@@ -60,7 +60,7 @@ class CentralWidget(QtWidgets.QWidget):
         self.position_control_widget.pos_control_panel.left_btn_clicked.connect(self.antenna.turn_left)
         self.position_control_widget.pos_control_panel.central_btn_clicked.connect(self.antenna.park)
         self.position_control_widget.control_btn.clicked.connect(self.control_btn_action)
-        self.position_control_widget.mode_true_btn.toggled.connect(self.antenna.set_mode)
+        self.position_control_widget.mode_true_btn.toggled.connect(self.antenna.set_angle_control_mode)
         self.position_control_widget.set_aiming_period_btn.clicked.connect(self.set_aiming_period_btn_action)
         self.position_control_widget.set_motors_timeout_btn.clicked.connect(self.set_motors_timeout_btn_action)
 
@@ -74,7 +74,7 @@ class CentralWidget(QtWidgets.QWidget):
 
     def control_btn_action(self):
         try:
-            self.antenna.manual_control(*[float(line.text()) for line in self.position_control_widget.pos_control_line_edit])
+            self.antenna.set_antenna_angle(*[float(line.text()) for line in self.position_control_widget.pos_control_line_edit])
         except ValueError:
             pass
 
@@ -93,7 +93,7 @@ class CentralWidget(QtWidgets.QWidget):
 
 class MainWindow(QtWidgets.QMainWindow):
     class DataManager(QtCore.QObject):
-        new_data = QtCore.pyqtSignal(list)
+        new_msg = QtCore.pyqtSignal(list)
         autoclose = QtCore.pyqtSignal(str)
         def __init__(self, data_obj):
             super(MainWindow.DataManager, self).__init__()
@@ -176,10 +176,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.target_to_north_btn.triggered.connect(self.antenna.target_to_north)
 
         self.motors_enable_pin_high = self.toolbar.addAction('Enable motors')
-        self.motors_enable_pin_high.triggered.connect(self.antenna.pull_motors_enable_pin_high)
+        self.motors_enable_pin_high.triggered.connect(self.antenna.turn_motors_on)
 
         self.motors_enable_pin_low = self.toolbar.addAction('Disable motors')
-        self.motors_enable_pin_low.triggered.connect(self.antenna.pull_motors_enable_pin_low)
+        self.motors_enable_pin_low.triggered.connect(self.antenna.turn_motors_off)
 
         self.auto_control_on_btn = self.toolbar.addAction('Turn on motors\nauto disable mode')
         self.auto_control_on_btn.triggered.connect(self.antenna.motors_auto_disable_on)
@@ -228,10 +228,9 @@ class MainWindow(QtWidgets.QMainWindow):
                                  connection_str_out=self.settings.value('MAVLink/connection_out'),
                                  log_path=LOG_FOLDER_PATH)
         elif sourse == 'ZMQ':
-            data = ZMQDataSource(bus_pub=self.settings.value('ZMQ/bus_bpcs'),
-                                 bus_sub=self.settings.value('ZMQ/bus_bscp'),
-                                 topics=self.settings.value('ZMQ/topics'),
-                                 log_path=LOG_FOLDER_PATH)
+            data = ZMQDataSource(bus_bpcs=self.settings.value('ZMQ/bus_bpcs'),
+                                 bus_bscp=self.settings.value('ZMQ/bus_bscp'),
+                                 topics=self.settings.value('ZMQ/topics'))
         self.settings.endGroup()
         return data
 
@@ -241,7 +240,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if sourse == 'MAVITS':
             interface = MAVITSInterface()
         elif sourse == 'ZMQITS':
-            interface = ZMQitsInterface()
+            interface = ZMQITSInterface()
         self.settings.endGroup()
         return interface
 
