@@ -83,9 +83,15 @@ if __name__ == '__main__':
 
     # Control interface (protocol) initialization
     if CONTROL_INTERFACE_TYPE == 'MAVITS':
-        ctrl_interface = control_interface.MAVITSControlInterface()
+        ctrl_interface = control_interface.MAVITSControlInterface(drive_object=drive,
+                                                                  auto_guidance_math=guidance_math,
+                                                                  aiming_period=DEFAULT_ANTENNA_AIMING_PERIOD,
+                                                                  min_rotation_angle=MIN_ROTATION_ANGLE)
     elif CONTROL_INTERFACE_TYPE == 'ZMQITS':
-        ctrl_interface = control_interface.ZMQITSInterface()
+        ctrl_interface = control_interface.ZMQITSInterface(drive_object=drive,
+                                                           auto_guidance_math=guidance_math,
+                                                           aiming_period=DEFAULT_ANTENNA_AIMING_PERIOD,
+                                                           min_rotation_angle=MIN_ROTATION_ANGLE)
 
     # Preparation block
     try:
