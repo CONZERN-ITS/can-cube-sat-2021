@@ -71,9 +71,11 @@ HSM_STOP_STATE = 0
 HSM_POS_LIMIT_PINS_MAP = {}
 HSM_NEG_LIMIT_PINS_MAP = {}
 
-# Antenna
+# Antenna settings
 DEFAULT_ANTENNA_AIMING_PERIOD = 1
 
-
+# Drive settings
 MOTORS_TIMEOUT = 20
+
+# Auto guidance settings
 MIN_ROTATION_ANGLE = 0.2
