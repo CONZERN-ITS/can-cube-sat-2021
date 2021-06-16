@@ -43,9 +43,7 @@
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-int app_main(void);
-int init_clock_hsi(void);
-int switch_to_hse(void);
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,7 +51,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+int clock_control__high_clocks_startup(void);
+int app_main(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -85,7 +84,7 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 #endif
-  init_clock_hsi(); // Начинаем на HSI
+  clock_control__high_clocks_startup();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
