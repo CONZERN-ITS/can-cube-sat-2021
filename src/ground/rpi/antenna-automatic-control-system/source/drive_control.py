@@ -81,7 +81,7 @@ class AbstractElectromechanicalDrive():
 
 class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
     def __init__(self, *args, **kwargs):
-        super(EventWidget.AbstractEvent, self).__init__(*args, **kwargs)
+        super(BowElectromechanicalDrive, self).__init__(*args, **kwargs)
 
     def setup_vertical_limits(self, positive_limits, negative_limits):
         if self.vertical_motor is not None:
