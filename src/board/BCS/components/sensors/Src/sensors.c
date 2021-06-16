@@ -239,7 +239,7 @@ static void sensors_ina_task(void *arg) {
 	int rc = 0;
 	ina219_cfg_t cfg = {0};
 	cfg.bus_range = INA219_BUS_RANGE_16V;
-	cfg.bus_res = INA219_ADC_RES_12_BIT_OVS_128;
+	cfg.bus_res = INA219_ADC_RES_12_BIT_OVS_1;
 	cfg.shunt_range = INA219_SHUNT_RANGE_320MV;
 	cfg.shunt_res = INA219_ADC_RES_12_BIT_OVS_1;
 	cfg.mode = INA219_MODE_SHUNT_AND_BUS_CONT;
@@ -248,6 +248,8 @@ static void sensors_ina_task(void *arg) {
 	for (int i = 0; i < INA_MAX; i++) {
 
 		rc = ina219_set_cfg(&ina[i], &cfg);
+		ESP_LOGD(TAG, "ina2: %d", rc);
+		rc = ina219_get_cfg(&ina[i], &cfg);
 		ESP_LOGD(TAG, "ina2: %d", rc);
 	}
 	while (1) {
@@ -265,7 +267,7 @@ static void sensors_ina_task(void *arg) {
 				mes[i].voltage = data.busv;
 			}
 
-			ESP_LOGD("SENSORS", "[%d] current: %f, voltage: %0.2f", i, mes[i].current, mes[i].voltage);
+			ESP_LOGD("SENSORS", "[%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
 			mes[i].time_s = tp.tv_sec;
 			mes[i].time_us = tp.tv_usec;
 			mes[i].time_steady = (uint32_t) now;

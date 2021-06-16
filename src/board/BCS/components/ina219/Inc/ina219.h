@@ -240,8 +240,8 @@ int ina219_set_cal(ina219_t * device, float current_lsb, float shunt_r);
 /*! И сохранение параметров в дескрипторе */
 int ina219_set_cfg(ina219_t * device, const ina219_cfg_t * cfg);
 
-//! Получение конфигурации из дескриптора (которая теоретически совпадает с фактической)
-const ina219_cfg_t * ina219_get_cfg(ina219_t * device);
+//! Получение конфигурации из ины
+int ina219_get_cfg(ina219_t * device, ina219_cfg_t *cfg);
 
 //! Устанавливает режим работы датчика
 /*! Конфигурация при этом перезаписывается конфигурацеий из дескриптора.

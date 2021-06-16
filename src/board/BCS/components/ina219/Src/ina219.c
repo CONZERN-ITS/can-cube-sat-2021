@@ -11,7 +11,7 @@
 */
 
 
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include <esp_log.h>
 #include <math.h>
 #include <esp_err.h>
@@ -107,6 +107,7 @@ static int _write_reg(ina219_t * device, uint8_t reg_addr, uint16_t reg_value) {
 
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_WRITE, 1);
+	i2c_master_write_byte(cmd, reg_addr, 1);
 	i2c_master_write(cmd, (uint8_t*) &v, sizeof(v), 1);
 	i2c_master_stop(cmd);
 	esp_err_t err = i2c_master_cmd_begin(device->i2c_port, cmd, device->tick_timeout);
@@ -127,21 +128,29 @@ static esp_err_t _read_reg(ina219_t * device, uint8_t reg_addr, uint16_t * reg_v
 	if (i2c_master_prestart(device->i2c_port, device->tick_timeout) != pdTRUE) {
 		return ESP_ERR_TIMEOUT;
 	}
-	i2c_cmd_handle_t cmd =  i2c_cmd_link_create();
+	esp_err_t err;
+	{
+		i2c_cmd_handle_t cmd =  i2c_cmd_link_create();
 
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_WRITE, 1);
-	i2c_master_write_byte(cmd, reg_addr, 1);
-
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_READ, 1);
-	i2c_master_read(cmd, (uint8_t*) reg_value, sizeof(*reg_value), 1);
-	i2c_master_stop(cmd);
-	esp_err_t err = i2c_master_cmd_begin(device->i2c_port, cmd, device->tick_timeout);
-	i2c_cmd_link_delete(cmd);
-	i2c_master_postend(device->i2c_port);
+		i2c_master_start(cmd);
+		i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_WRITE, 1);
+		i2c_master_write_byte(cmd, reg_addr, 1);
+		i2c_master_stop(cmd);
+		err = i2c_master_cmd_begin(device->i2c_port, cmd, 300);
+		i2c_cmd_link_delete(cmd);
+	}
+	{
+		i2c_cmd_handle_t cmd =  i2c_cmd_link_create();
+		i2c_master_start(cmd);
+		i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_READ, 1);
+		i2c_master_read(cmd, (uint8_t*) reg_value, sizeof(*reg_value), 1);
+		i2c_master_stop(cmd);
+		err = i2c_master_cmd_begin(device->i2c_port, cmd, 300);
+		i2c_master_postend(device->i2c_port);
+	}
 
 	*reg_value = (*reg_value >> 8) | (*reg_value << 8);
+	ESP_LOGV(TAG, "read_reg_16 val = %d", *reg_value);
 
 	return err;
 }
@@ -156,7 +165,7 @@ static uint16_t _make_cal_reg(ina219_float_t current_lsb, ina219_float_t shunt_r
 
 	// волшебные цифры из даташита
 	const ina219_float_t calib = INA219_FLOAT(0.04096)/(current_lsb * shunt_r);
-	return ((uint16_t)calib);
+	return ((uint16_t)calib) << 1;
 	// << 1 так как нулевой бит регистра резервирован, а фактическое значение идет с бита 1
 }
 
@@ -173,6 +182,16 @@ static uint16_t _make_cfg_reg(const ina219_cfg_t * cfg)
 	retval = INA219_SET_BITS(retval, INA219_CFGREG__MODE, cfg->mode);
 
 	return retval;
+}
+//! Построение значения cfg регистра из структуры конфигурации
+static void _parse_cfg_reg(uint16_t reg, ina219_cfg_t *cfg)
+{
+
+	cfg->bus_range = INA219_GET_BITS(reg, INA219_CFGREG__BRNG);
+	cfg->shunt_range = INA219_GET_BITS(reg, INA219_CFGREG__PG);
+	cfg->bus_res = INA219_GET_BITS(reg, INA219_CFGREG__BADC);
+	cfg->shunt_res = INA219_GET_BITS(reg, INA219_CFGREG__SADC);
+	cfg->mode = INA219_GET_BITS(reg, INA219_CFGREG__MODE);
 }
 
 
@@ -268,9 +287,16 @@ int ina219_set_cfg(ina219_t * device, const ina219_cfg_t * cfg)
 }
 
 
-const ina219_cfg_t * ina219_get_cfg(ina219_t * device)
+int ina219_get_cfg(ina219_t * device, ina219_cfg_t *cfg)
 {
-	return &device->cfg;
+	ina219_cfg_t _cfg = {0};
+	uint16_t raw = 0;;
+	int error = _read_reg(device, INA219_CFGREG_ADDR, &raw);
+	if (error)
+		return error;
+	_parse_cfg_reg(raw, &_cfg);
+	*cfg = _cfg;
+	return 0;
 }
 
 
