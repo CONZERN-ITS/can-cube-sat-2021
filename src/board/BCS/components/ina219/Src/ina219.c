@@ -311,6 +311,45 @@ int ina219_read_primary(ina219_t * device, ina219_primary_data_t * data)
 }
 
 
+int ina219_read_all_data(ina219_t *device, ina219_data_t *data) {
+	int err = 0;
+	uint16_t raw[4];
+
+	err = _read_reg(device, INA219_BUSVREG_ADDR, &raw[0]);
+	if (err) {
+		return 1;
+	} else {
+		int16_t t = *(int16_t *)&raw[0];
+		data->busv = (t >> 3) * 0.004;
+		data->ovf = raw[0] & 1;
+		data->cnvr = (raw[0] >> 1) & 1;
+	}
+
+	err = _read_reg(device, INA219_SHUNTVREG_ADDR, &raw[1]);
+	if (err) {
+		data->shuntv = NAN;
+	} else {
+		data->shuntv = raw[1] * 0.00001;
+	}
+
+	err = _read_reg(device, INA219_CURRENTREG_ADDR, &raw[2]);
+	if (err) {
+		data->current = NAN;
+	} else {
+		data->current = device->cfg.current_lsb * *(int16_t *)&raw[2];
+	}
+
+	err = _read_reg(device, INA219_POWERREG_ADDR, &raw[3]);
+	if (err) {
+		data->power = NAN;
+	} else {
+		data->power = device->cfg.current_lsb * raw[3] * 20;
+	}
+
+	return 0;
+}
+
+
 int ina219_read_secondary(ina219_t * device, ina219_secondary_data_t * data)
 {
 	uint16_t raw_reg_data[2];

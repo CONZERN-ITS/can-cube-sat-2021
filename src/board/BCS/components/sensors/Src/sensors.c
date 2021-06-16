@@ -256,12 +256,14 @@ static void sensors_ina_task(void *arg) {
 		mavlink_electrical_state_t mes[INA_MAX];
 		int64_t now = esp_timer_get_time();
 		for (int i = 0; i < INA_MAX; i++) {
-			ina219_primary_data_t pr = {0};
-			ina219_secondary_data_t sec = {0};
-
-			ina219_read_all(&ina[0], &pr, &sec);
-			mes[i].current = sec.current * cfg.current_lsb;
-			mes[i].voltage = pr.busv * INA_VOLTAGE_BUS_LSB;
+			ina219_data_t data = {0};
+			if (ina219_read_all_data(&ina[i], &data)) {
+				mes[i].current = NAN;
+				mes[i].voltage = NAN;
+			} else {
+				mes[i].current = data.current;
+				mes[i].voltage = data.busv;
+			}
 
 			ESP_LOGD("SENSORS", "[%d] current: %f, voltage: %0.2f", i, mes[i].current, mes[i].voltage);
 			mes[i].time_s = tp.tv_sec;
