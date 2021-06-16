@@ -1,20 +1,45 @@
+
+
 class AbstractElectromechanicalDrive():
+    def __init__(self, vertical_motor=None, horizontal_motor=None):
+        # Subsystems
+        self.vertical_motor = vertical_motor
+        self.horizontal_motor = horizontal_motor
+
+        # Variables default value
+        self.vertical_position = 0
+        self.horizontal_position = 0
+
+        self.vertical_limits = {}
+        self.horizontal_limits = {}
+        self.last_vertical_limit = None
+        self.last_horizontal_limit = None
+
+        self.setup_drive_timeout()
+        self.set_drive_auto_disable_mode()
+
     def setup_vertical_motor(self, vertical_motor):
-        pass
+        self.vertical_motor = vertical_motor
 
     def setup_horizontal_motor(self, horizontal_motor):
-        pass
-
-    def set_vertical_motor_enabled(self, mode):
-        pass
-
-    def set_horizontal_motor_enabled(self, mode):
-        pass
+        self.horizontal_motor = horizontal_motor
 
     def setup_vertical_limits(self, positive_limits, negative_limits):
         pass
 
     def setup_horizontal_limits(self, positive_limits, negative_limits):
+        pass
+
+    def setup_drive_timeout(self, timeout=1):
+        self.drive_timeout = timeout
+
+    def set_drive_auto_disable_mode(self, mode=False):
+        self.drive_auto_disable_mode = mode
+
+    def set_vertical_motor_enabled(self, mode):
+        pass
+
+    def set_horizontal_motor_enabled(self, mode):
         pass
 
     def vertical_rotation(self, angle):
@@ -23,39 +48,40 @@ class AbstractElectromechanicalDrive():
     def horizontal_rotation(self, angle):
         return None
 
+    def get_vertical_limits(self):
+        return self.vertical_limits
+
+    def get_horizontal_limits(self):
+        return self.horizontal_limits
+
     def get_last_vertical_limit(self):
-        return None
+        return self.last_vertical_limit
 
     def get_last_horizontal_limit(self):
-        return None
+        return self.last_horizontal_limit
 
     def get_vertical_position(self):
-        return None
+        return self.vertical_position
 
     def get_horizontal_position(self):
+        return self.horizontal_position
+
+    def get_vertical_enable_state(self):
         return None
+
+    def get_horizontal_enable_state(self):
+        return None
+
+    def get_drive_timeout(self):
+        return self.drive_timeout
+
+    def get_drive_auto_disable_mode(self):
+        return self.drive_auto_disable_mode
 
 
 class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
-    def __init__(self, vertical_motor=None, horizontal_motor=None):
-        self.vertical_motor = vertical_motor
-        self.horizontal_motor = horizontal_motor
-        self.vertical_position = 0
-        self.horizontal_position = 0
-        self.last_vertical_limit = None
-        self.last_horizontal_limit = None
-        
-    def setup_vertical_motor(self, vertical_motor):
-        self.vertical_motor = vertical_motor
-
-    def setup_horizontal_motor(self, horizontal_motor):
-        self.horizontal_motor = horizontal_motor
-
-    def set_vertical_motor_enabled(self, mode):
-        self.vertical_motor.set_enable(mode)
-
-    def set_horizontal_motor_enabled(self, mode):
-        self.horizontal_motor.set_enable(mode)
+    def __init__(self, *args, **kwargs):
+        super(EventWidget.AbstractEvent, self).__init__(*args, **kwargs)
 
     def setup_vertical_limits(self, positive_limits, negative_limits):
         if self.vertical_motor is not None:
@@ -68,6 +94,12 @@ class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
             self.horizontal_motor.setup_stop_triggers(list(positive_limits.keys()), list(negative_limits.keys()))
             self.horizontal_limits = positive_limits
             self.horizontal_limits.update(negative_limits)
+
+    def set_vertical_motor_enabled(self, mode):
+        self.vertical_motor.set_enable(mode)
+
+    def set_horizontal_motor_enabled(self, mode):
+        self.horizontal_motor.set_enable(mode)
 
     def vertical_rotation(self, angle):
         if self.vertical_motor is not None:
@@ -94,20 +126,12 @@ class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
             return phi
         return None
 
-    def get_vertical_limits(self):
-        return self.vertical_limits
+    def get_vertical_enable_state(self):
+        if self.vertical_motor is not None:
+            return self.vertical_motor.get_enable_state()
+        return None
 
-    def get_horizontal_limits(self):
-        return self.horizontal_limits
-
-    def get_last_vertical_limit(self):
-        return self.last_vertical_limit
-
-    def get_last_horizontal_limit(self):
-        return self.last_horizontal_limit
-
-    def get_vertical_position(self):
-        return self.vertical_position
-
-    def get_horizontal_position(self):
-        return self.horizontal_position
+    def get_horizontal_enable_state(self):
+        if self.horizontal_motor is not None:
+            return self.horizontal_motor.get_enable_state()
+        return None
