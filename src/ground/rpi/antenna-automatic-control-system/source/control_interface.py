@@ -9,11 +9,32 @@ import time
 
 
 class AbstractControlInterface():
-	def __init__(self, drive_object, math, aiming_period=1):
+	def __init__(self, drive_object, auto_guidance_math, aiming_period=1, min_rotation_angle=1):
+        # Subsystems
         self.drive_object = drive_object
-        self.aiming_period = aiming_period
+        self.auto_guidance_math = auto_guidance_math
 
-        self.math = math
+        # Autoguidance parameters
+        self.aiming_period = aiming_period
+        self.min_rotation_angle = min_rotation_angle
+
+    def set_aiming_period(self, period):
+        self.aiming_period = period
+
+    def set_min_rotation_angle(self, angle=1):
+        self.min_rotation_angle = angle
+
+    def get_aiming_period(self):
+        return self.aiming_period
+
+    def get_min_rotation_angle(self):
+        return self.min_rotation_angle
+
+    def target_to_north(self):
+        pass
+
+    def setup_elevation_zero(self):
+        pass
 
     def msg_reaction(self, msgs):
         pass
@@ -21,15 +42,22 @@ class AbstractControlInterface():
     def generate_state_message(self):
         pass
 
+    def update_target_position_WGS84_DEC(self, position):
+        pass
+
+    def update_target_position_WGS84_VEC(self, vector):
+        pass
+
+    def update_target_position_GCSCS_VEC(self, vector):
+        pass
+
+    def update_target_position(self, azimuth, elevation):
+        pass
+
 
 class MAVITSControlInterface(AbstractAntennaInterface):
-    def __init__(self, drive_object, auto_guidance_math, aiming_period=1):
-        # Subsystems
-        self.drive_object = drive_object
-        self.auto_guidance_math = auto_guidance_math
-
-        # Autoguidance parameters
-        self.aiming_period = aiming_period
+    def __init__(self, *args, **kwargs):
+        super(MAVITSControlInterface, self).__init__(*args, **kwargs)
 
         # Variables default value
         self.last_rotation_time = 0
@@ -144,11 +172,14 @@ class MAVITSControlInterface(AbstractAntennaInterface):
 
     def update_target_position(self, azimuth, elevation):
         if ((self.auto_control_mode) and ((time.time() + self.aiming_period) > self.last_rotation_time)):
-            self.drive_object.horizontal_rotation(azimuth)
-            self.drive_object.vertical_rotation(elevation)
-            self.azimuth = self.drive_object.get_horizontal_position() + self.azimuth_delta
-            self.elevation = self.drive_object.get_vertical_position() + self.elevation_delta
-            self.last_rotation_time = time.time()
+            if azimuth >= self.min_rotation_angle:
+                self.drive_object.horizontal_rotation(azimuth)
+                self.azimuth = self.drive_object.get_horizontal_position() + self.azimuth_delta
+             if elevation >= self.min_rotation_angle:
+                self.drive_object.vertical_rotation(elevation)
+                self.elevation = self.drive_object.get_vertical_position() + self.elevation_delta
+            if ((azimuth >= self.min_rotation_angle) or (elevation >= self.min_rotation_angle)):
+                self.last_rotation_time = time.time()
 
 class ZMQITSControlInterface(MAVITSControlInterface):
     def msg_reaction(self, msgs):
