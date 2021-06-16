@@ -95,6 +95,8 @@ class GraphWidget(PyQtGraph.GraphicsLayoutWidget):
                     flag = True
                     for curve in self.curves:
                         if curve.get_field_id() == item[0]:
+                            if NumPy.isnan(item[1]):
+                                continue
                             curve.add_data(NumPy.array([[time, item[1]]]))
                             flag = False
                             break
