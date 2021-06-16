@@ -10,7 +10,7 @@
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
 #include "pinout_cfg.h"
 #include "log_collector.h"
@@ -481,7 +481,6 @@ static void task_send(void *arg) {
 	//Регистрируем на сообщения всех типов
 	tid.queue = xQueueCreate(20, MAVLINK_MAX_PACKET_LEN);
 	its_rt_register_for_all(tid);
-
 
 
 	sx126x_drv_mode_rx(&radio_server->dev, 0);
