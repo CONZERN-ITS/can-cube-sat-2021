@@ -70,17 +70,18 @@ static void log_collector_task(void *arg) {
 		mbs.shift_reg_last_error 				= coll->log_data[LOG_COMP_ID_SHIFT_REG].last_error;
 
 
-		xSemaphoreGive(coll->mutex);
 
 		ESP_LOGV(TAG, "5");
 		its_rt_sender_ctx_t ctx = {0};
 		ctx.from_isr = 0;
 
-		mavlink_msg_bcu_stats_encode(mavlink_system, COMP_ANY_0, &msg, &mbs);
+		mavlink_msg_bcu_radio_conn_stats_encode(mavlink_system, COMP_ANY_0, &msg, &coll->conn_stats);
 		its_rt_route(&ctx, &msg, 0);
 
+		xSemaphoreGive(coll->mutex);
+
 		ESP_LOGV(TAG, "6");
-		mavlink_msg_bcu_radio_conn_stats_encode(mavlink_system, COMP_ANY_0, &msg, &coll->conn_stats);
+		mavlink_msg_bcu_stats_encode(mavlink_system, COMP_ANY_0, &msg, &mbs);
 		its_rt_route(&ctx, &msg, 0);
 
 		ESP_LOGV(TAG, "7");
@@ -98,18 +99,19 @@ void log_collector_init(log_collector_t * coll) {
 	xTaskCreate(log_collector_task, "Log collector", configMINIMAL_STACK_SIZE + 2500, coll, 2, 0);
 }
 
-void log_collector_add_to(log_collector_t *hlc, log_comp_id_t id, const log_data_t *data) {
+/*void log_collector_add_to(log_collector_t *hlc, log_comp_id_t id, const log_data_t *data) {
 	ESP_LOGV(TAG, "log_collector_add_to id: %d", id);
 	xSemaphoreTake(hlc->mutex, portMAX_DELAY);
 	hlc->log_data[id] = *data;
 	xSemaphoreGive(hlc->mutex);
-}
+}*/
 
 void log_collector_add(log_comp_id_t id, const log_data_t *data) {
 	ESP_LOGV(TAG, "log_collector_add id: %d", id);
-	xSemaphoreTake(_coll.mutex, portMAX_DELAY);
-	_coll.log_data[id] = *data;
-	xSemaphoreGive(_coll.mutex);
+	if (_coll.mutex && xSemaphoreTake(_coll.mutex, portMAX_DELAY) == pdTRUE) {
+		_coll.log_data[id] = *data;
+		xSemaphoreGive(_coll.mutex);
+	}
 }
 /*
 void log_collector_log_task(log_data_t *data) {
@@ -123,10 +125,18 @@ void log_collector_log_task(log_data_t *data) {
 }*/
 
 BaseType_t log_collector_take(uint32_t tickTimeout) {
-	return xSemaphoreTake(_coll.mutex, tickTimeout);
+	if (_coll.mutex) {
+		return xSemaphoreTake(_coll.mutex, tickTimeout);
+	} else {
+		return pdFALSE;
+	}
 }
 BaseType_t log_collector_give() {
-	return xSemaphoreGive(_coll.mutex);
+	if (_coll.mutex) {
+		return xSemaphoreGive(_coll.mutex);
+	} else {
+		return pdFALSE;
+	}
 }
 
 

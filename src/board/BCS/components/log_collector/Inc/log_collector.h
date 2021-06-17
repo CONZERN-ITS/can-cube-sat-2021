@@ -19,10 +19,6 @@
 #define LOG_COLLECTOR_ADD_PERIOD_COMMON LOG_COLLECTOR_SEND_PERIOD //ms
 
 
-#define LOG_COLLECTOR_INIT(name) \
-		xTaskCreatePinnedToCore(_log, name, configMINIMAL_STACK_SIZE + 1500, 0, 1, &log_task, tskNO_AFFINITY)
-#define LOG_COLLECTOR_DEINIT() \
-		vTaskDelay(log_task)
 
 typedef struct {
 	int32_t last_error;

@@ -45,13 +45,14 @@ static void op_task(void *arg) {
 				stats.count_recieved_cmds++;
 			}
 		}
-		log_collector_take(50 / portTICK_RATE_MS);
-		mavlink_bcu_radio_conn_stats_t *conn_stats = log_collector_get_conn_stats();
-		conn_stats->count_operator_cmds_executed = stats.count_executed_cmds;
-		conn_stats->count_operator_cmds_recieved = stats.count_recieved_cmds;
-		conn_stats->count_operator_errors = stats.count_errors;
-		conn_stats->update_time_operator = esp_timer_get_time() / 1000;
-		log_collector_give();
+		if (log_collector_take(50 / portTICK_RATE_MS) == pdTRUE) {
+			mavlink_bcu_radio_conn_stats_t *conn_stats = log_collector_get_conn_stats();
+			conn_stats->count_operator_cmds_executed = stats.count_executed_cmds;
+			conn_stats->count_operator_cmds_recieved = stats.count_recieved_cmds;
+			conn_stats->count_operator_errors = stats.count_errors;
+			conn_stats->update_time_operator = esp_timer_get_time() / 1000;
+			log_collector_give();
+		}
 	}
 }
 void op2_init() {
