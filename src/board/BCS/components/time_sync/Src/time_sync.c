@@ -124,8 +124,8 @@ static void time_sync_task(void *arg) {
 					}
 				}
 			}
-			ESP_LOGV("TIME", "from sinc: %d.%06d\n", (int)there.tv_sec, (int)there.tv_usec);
-			ESP_LOGV("TIME", "here:      %d.%06d\n", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000));
+			ESP_LOGV("TIME", "from sinc: %d.%06d", (int)there.tv_sec, (int)there.tv_usec);
+			ESP_LOGV("TIME", "here:      %d.%06d", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000));
 			xSemaphoreGive(ts->mutex);
 		}
 
