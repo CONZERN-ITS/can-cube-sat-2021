@@ -19,24 +19,16 @@
 
 #define TIME_SYNC_SMOOTH_THREASHOLD 60 //секунд
 
+
+
 typedef struct {
 	gpio_num_t pin;
 	int coef;
 	int period;
 
-	struct timeval here;
-	atomic_int is_updated;
-	int64_t diff_total;
-	int cnt;
-	int64_t last_changed;
+} ts_cfg;
 
-	atomic_int base;
-	uint8_t min_collected_base;
-
-
-} ts_sync;
-
-void time_sync_from_sins_install(ts_sync *cfg);
+void time_sync_from_sins_install(ts_cfg *cfg);
 
 void time_sync_from_bcs_install(const ip_addr_t *server_ip);
 

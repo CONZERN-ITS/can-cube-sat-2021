@@ -24,10 +24,30 @@
 #include "freertos/queue.h"
 
 #include "esp_system.h"
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "esp_sntp.h"
 
+typedef struct {
 
+	int base;
+	//struct timeval here;
+	int64_t isr_time;
+} ts_mutex_safe;
+
+typedef struct {
+
+	ts_cfg cfg;
+	ts_mutex_safe mutex_safe;
+	xSemaphoreHandle mutex;
+	TaskHandle_t task;
+	int64_t diff_total;
+	int cnt;
+	int64_t last_changed;
+
+	uint8_t min_collected_base;
+
+} ts_sync;
 
 
 
@@ -70,7 +90,7 @@ static void time_sync_task(void *arg) {
 			continue;
 		}
 		//Был ли pps сигнал
-		if (!ts->is_updated) {
+		if (ulTaskNotifyTake(pdTRUE, 0) == 0) {
 			ESP_LOGI("TIME SYNC","Where is signal?");
 			continue;
 		}
@@ -78,30 +98,37 @@ static void time_sync_task(void *arg) {
 		struct timeval there;
 		mavlink_timestamp_t mts;
 		mavlink_msg_timestamp_decode(&msg, &mts);
-		there.tv_sec = mts.time_s;
-		there.tv_usec = mts.time_us;
-		const struct timeval delta = {
-				.tv_sec = there.tv_sec - ts->here.tv_sec,
-				.tv_usec = 0 - ts->here.tv_usec
-		};
-		if (mts.time_base >= ts->base) {
-			if (fabs(delta.tv_sec) > 3600) {
-				settimeofday(&there, 0);
-				ts->cnt = 0;
-				ts->diff_total = 0;
-				ts->base = mts.time_base;
-				ts->min_collected_base = TIME_BASE_TYPE_GPS;
-			} else {
-				ts->diff_total += delta.tv_sec * 1000000 + delta.tv_usec;
-				ts->cnt++;
-				if (ts->min_collected_base > mts.time_base) {
-					ts->min_collected_base = mts.time_base;
+
+
+		if (xSemaphoreTake(ts->mutex, portMAX_DELAY) == pdTRUE) {
+			int64_t now1 = esp_timer_get_time();
+			struct timeval now;
+			gettimeofday(&now, 0);
+
+			there.tv_sec = mts.time_s;
+			there.tv_usec = mts.time_us;
+			int64_t diff_usec = now1 - ts->mutex_safe.isr_time + (there.tv_sec - now.tv_sec) * 1000000ll + (0 - now.tv_usec);
+
+			if (mts.time_base >= ts->mutex_safe.base) {
+				if (llabs(diff_usec) > 3600 * 1000000ll) {
+					settimeofday(&there, 0);
+					ts->cnt = 0;
+					ts->diff_total = 0;
+					ts->mutex_safe.base = mts.time_base;
+					ts->min_collected_base = TIME_BASE_TYPE_GPS;
+				} else {
+					ts->diff_total += diff_usec;
+					ts->cnt++;
+					if (ts->min_collected_base > mts.time_base) {
+						ts->min_collected_base = mts.time_base;
+					}
 				}
 			}
+			ESP_LOGV("TIME", "from sinc: %d.%06d\n", (int)there.tv_sec, (int)there.tv_usec);
+			ESP_LOGV("TIME", "here:      %d.%06d\n", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000));
+			xSemaphoreGive(ts->mutex);
 		}
 
-		ESP_LOGV("TIME", "from sinc: %d.%06d\n", (int)there.tv_sec, (int)there.tv_usec);
-		ESP_LOGV("TIME", "here:      %d.%06d\n", (int)ts->here.tv_sec, (int)ts->here.tv_usec);
 
 		/*
 		 * Мы хотим менять время лишь в четко заданные интервалы времени. Если период 5 минут, то мы хотим, чтобы
@@ -113,18 +140,21 @@ static void time_sync_task(void *arg) {
 		gettimeofday(&t, 0);
 		int64_t now = t.tv_sec * 1000000 + t.tv_usec;
 		if (ts->cnt >= 1 &&
-				now - ts->last_changed > ts->period / 2 &&
-				now < ((int)(now / ts->period)) * ts->period + 0.03 * ts->period) {
-			int64_t estimated = now + ts->diff_total / ts->cnt;
-			t.tv_sec = estimated / 1000000;
-			t.tv_usec = estimated % 1000000;
-			settimeofday(&t, 0);
-			ts->last_changed = now;
-			ts->cnt = 0;
-			ts->base = ts->min_collected_base;
-			ts->min_collected_base = TIME_BASE_TYPE_GPS;
+				now - ts->last_changed > ts->cfg.period / 2 &&
+				now < ((int)(now / ts->cfg.period)) * ts->cfg.period + 0.03 * ts->cfg.period) {
+
+			if (xSemaphoreTake(ts->mutex, portMAX_DELAY) == pdTRUE) {
+				int64_t estimated = now + ts->diff_total / ts->cnt;
+				t.tv_sec = estimated / 1000000;
+				t.tv_usec = estimated % 1000000;
+				settimeofday(&t, 0);
+				ts->last_changed = now;
+				ts->cnt = 0;
+				ts->mutex_safe.base = ts->min_collected_base;
+				ts->min_collected_base = TIME_BASE_TYPE_GPS;
+				xSemaphoreGive(ts->mutex);
+			}
 		}
-		ts->is_updated = 0;
 	}
 
 }
@@ -134,8 +164,18 @@ static void time_sync_task(void *arg) {
  */
 static void IRAM_ATTR isr_handler(void *arg) {
 	ts_sync *ts = (ts_sync *)arg;
-	gettimeofday(&ts->here, 0);
-	ts->is_updated = 1;
+
+	BaseType_t higherWoken = 0;
+	xSemaphoreTakeFromISR(ts->mutex, &higherWoken);
+	ts->mutex_safe.isr_time = esp_timer_get_time();
+	//gettimeofday(&ts->mutex_safe.here, 0);
+	xSemaphoreGiveFromISR(ts->mutex, &higherWoken);
+
+
+	vTaskNotifyGiveFromISR(ts->task, &higherWoken);
+	if (higherWoken) {
+		portYIELD_FROM_ISR();
+	}
 }
 
 /*
@@ -143,11 +183,12 @@ static void IRAM_ATTR isr_handler(void *arg) {
  * через uart/mavlink и pps сигнал. В cfg необходимо
  * инициализировать номер пина.
  */
-void time_sync_from_sins_install(ts_sync *cfg) {
-	cfg->is_updated = 0;
+void time_sync_from_sins_install(ts_cfg *cfg) {
+	__ts.cfg = *cfg;
+	__ts.mutex = xSemaphoreCreateMutex();
 	//xTaskCreatePinnedToCore(ntp_server_task, "SNTP server", configMINIMAL_STACK_SIZE + 4000, 0, 1, 0, tskNO_AFFINITY);
-	__ts = *cfg;
-	xTaskCreate(time_sync_task, "timesync", 4096, &__ts, 1, NULL);
+
+	xTaskCreate(time_sync_task, "timesync", 4096, &__ts, 1, &__ts.task);
 	gpio_config_t init_pin_int = {
 		.mode = GPIO_MODE_INPUT,
 		.pull_up_en = GPIO_PULLUP_DISABLE,
@@ -181,6 +222,10 @@ void sntp_notify(struct timeval *tv) {
 }
 
 uint8_t time_sync_get_base() {
-	return __ts.base;
-	return 0;
+
+	volatile uint8_t t;
+	xSemaphoreTake(__ts.mutex, portMAX_DELAY);
+	t = __ts.mutex_safe.base;
+	xSemaphoreGive(__ts.mutex);
+	return t;
 }
