@@ -189,7 +189,10 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	time_svc_settimeofday(&current_time);
 	// Запоминаем наш таймбейс
 	_my_timebase = time_base;
-	_last_sync_delta = diff.tv_sec * 1000 + diff.tv_usec / 1000;
+	if (diff.tv_sec > 0)
+		_last_sync_delta = diff.tv_sec * 1000 + diff.tv_usec / 1000;
+	else
+		_last_sync_delta = diff.tv_sec * 1000 - diff.tv_usec / 1000;
 	_time_syncs_count++;
 }
 
