@@ -31,6 +31,9 @@ uint8_t time_svc_get_time_base(void);
 //! Сколько раз мы синхронизовали своё время
 uint16_t time_svc_get_time_syncs_count(void);
 
+//! Количество миллисеунд исправленное последней коррекцией
+int64_t time_svc_last_correction_delta(void);
+
 //! Получение текущего времени
 void time_svc_gettimeofday(struct timeval * tmv);
 

@@ -324,6 +324,7 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg)
 	msg->time_base = time_svc_get_time_base();
 	msg->active_oscillator = ACTIVE_OSCILLATOR_HSE;
 	msg->time_syncs_count = time_svc_get_time_syncs_count();
+	msg->time_sync_delta = time_svc_last_correction_delta();
 }
 
 

@@ -27,6 +27,8 @@ static struct timeval * _last_sync_tmv_outer = &_last_sync_tmv_2;
 static uint8_t _my_timebase = TIME_BASE_TYPE_NONE;
 // Количество раз сколько мы синхронизовали время
 static uint16_t _time_syncs_count = 0;
+// Величина последней коррекции
+static int64_t _last_sync_delta = 0;
 
 // Ожидается ли
 static bool _sync_pending = false;
@@ -181,10 +183,18 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 		current_time.tv_usec -= 1000 * 1000;
 	}
 
+
 	// Делаем это время текущим
 	// FIXME: нужно бы добавить сколько-то микросекунд на все эти операции
 	time_svc_settimeofday(&current_time);
 	// Запоминаем наш таймбейс
 	_my_timebase = time_base;
+	_last_sync_delta = diff.tv_sec * 1000 + diff.tv_usec / 1000;
 	_time_syncs_count++;
+}
+
+
+int64_t time_svc_last_correction_delta(void)
+{
+	return _last_sync_delta;
 }

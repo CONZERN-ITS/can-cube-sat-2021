@@ -402,6 +402,7 @@
       <field type="uint8_t"  name="time_base">time base for on board time service</field>
       <field type="uint8_t"  name="active_oscillator">Active oscillator for this computer</field>
       <field type="uint16_t" name="time_syncs_count">How many times a world time scale was corrected</field>
+      <field type="int64_t"  name="time_sync_delta" unit="ms">Correction delta during last time sync</field>
     </message>
 
     <message id="50205" name="PLD_MS5611_DATA">
