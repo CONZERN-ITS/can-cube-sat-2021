@@ -73,7 +73,7 @@ int sx126x_api_set_cad_params(sx126x_api_t * api,
 		sx126x_cad_exit_mode_t exit_mode, uint32_t cad_timeout_ms
 );
 
-int sx126x_api_buffer_base_address(sx126x_api_t * api, uint8_t tx_base_addr, uint8_t rx_base_addr);
+int sx126x_api_set_buffer_base_address(sx126x_api_t * api, uint8_t tx_base_addr, uint8_t rx_base_addr);
 int sx126x_api_set_lora_symb_num_timeout(sx126x_api_t * api, uint8_t symb_num);
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

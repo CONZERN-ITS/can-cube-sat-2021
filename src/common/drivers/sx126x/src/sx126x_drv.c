@@ -944,7 +944,7 @@ int sx126x_drv_mode_rx(sx126x_drv_t * drv, uint32_t timeout_ms)
 
 	int rc;
 	// Выставляем указатели буфера
-	rc = sx126x_api_buffer_base_address(&drv->api, 0, 0);
+	rc = sx126x_api_set_buffer_base_address(&drv->api, 0, 0);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
@@ -978,7 +978,7 @@ int sx126x_drv_mode_tx(sx126x_drv_t * drv, uint32_t timeout_ms)
 
 	int rc;
 	// Выставляем указатели буфера
-	rc = sx126x_api_buffer_base_address(&drv->api, 0, 0);
+	rc = sx126x_api_set_buffer_base_address(&drv->api, 0, 0);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);

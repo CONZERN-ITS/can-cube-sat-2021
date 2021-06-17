@@ -18,7 +18,7 @@ static server_t server;
 int main(void)
 {
 	int rc;
-	log_set_level(LOG_TRACE);
+	log_set_level(LOG_INFO);
 
 	server_config_t config;
 	rc = server_config_load(&config);
@@ -28,18 +28,12 @@ int main(void)
 		return EXIT_FAILURE;
 	}
 
-	rc = server_init(&server, &config);
+	rc = server_task(&server, &config);
 	if (rc != 0)
 	{
 		log_fatal("server init failed: %d", rc);
 		return EXIT_FAILURE;
 	}
-
-	log_info("server initialization complete");
-	server_run(&server);
-
-	log_info("server loop ended");
-	server_deinit(&server);
 
 	log_info("server destroyed");
 	return EXIT_SUCCESS;

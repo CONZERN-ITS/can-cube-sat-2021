@@ -21,8 +21,9 @@ typedef struct server_t
 	sx126x_drv_t radio;
 	zserver_t zserver;
 
+	struct timespec rx_packet_received;
+	size_t rx_timeout_count;
 	msg_cookie_t rx_cookie;
-	size_t rx_timedout_cnt;
 
 	uint8_t tx_buffer[SERVER_MAX_PACKET_SIZE];
 	size_t tx_buffer_size;
@@ -32,6 +33,8 @@ typedef struct server_t
 	msg_cookie_t tx_cookie_dropped;
 	bool tx_cookies_updated;
 
+	uint16_t radio_errors;
+
 	struct timespec rssi_last_report_timepoint;
 	struct timespec radio_stats_last_report_timepoint;
 	struct timespec tx_state_last_report_timepoint;
@@ -39,11 +42,7 @@ typedef struct server_t
 } server_t;
 
 
-int server_init(server_t * server, const server_config_t * config);
-
-void server_run(server_t * server);
-
-void server_deinit(server_t * server);
+int server_task(server_t * server, const server_config_t * config);
 
 
 #endif /* SERVER_RADIO_SRC_RADIO_CONFIG_H_ */
