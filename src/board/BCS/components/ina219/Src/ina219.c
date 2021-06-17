@@ -167,7 +167,7 @@ static uint16_t _make_cal_reg(ina219_float_t current_lsb, ina219_float_t shunt_r
 
 	// волшебные цифры из даташита
 	const ina219_float_t calib = INA219_FLOAT(0.04096)/(current_lsb * shunt_r);
-	return ((uint16_t)calib) << 1;
+	return ((uint16_t)calib);
 	// << 1 так как нулевой бит регистра резервирован, а фактическое значение идет с бита 1
 }
 

@@ -29,7 +29,7 @@
 #define ITS_PIN_RADIO_TX_EN	25
 #define ITS_PIN_RADIO_RX_EN	26
 
-#define ITS_PIN_LED			2
+#define ITS_PIN_LED			5
 #define ITS_PIN_OWB			27
 
 //-------------------------------------------

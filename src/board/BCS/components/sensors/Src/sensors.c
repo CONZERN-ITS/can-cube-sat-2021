@@ -239,12 +239,12 @@ static void sensors_ina_task(void *arg) {
 	int rc = 0;
 	ina219_cfg_t cfg = {0};
 	cfg.bus_range = INA219_BUS_RANGE_16V;
-	cfg.bus_res = INA219_ADC_RES_12_BIT_OVS_1;
+	cfg.bus_res = INA219_ADC_RES_12_BIT_OVS_128;
 	cfg.shunt_range = INA219_SHUNT_RANGE_320MV;
-	cfg.shunt_res = INA219_ADC_RES_12_BIT_OVS_1;
+	cfg.shunt_res = INA219_ADC_RES_12_BIT_OVS_128;
 	cfg.mode = INA219_MODE_SHUNT_AND_BUS_CONT;
-	cfg.current_lsb =  ((ina219_float_t)(0.1f/0x8000));
-	cfg.shunt_r = 0.01;
+	cfg.current_lsb =  ((ina219_float_t)(10.0/0x8000));
+	cfg.shunt_r = 0.1;
 	for (int i = 0; i < INA_MAX; i++) {
 
 		rc = ina219_set_cfg(&ina[i], &cfg);
