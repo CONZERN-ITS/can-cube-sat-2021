@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import typing
 import sys
 import os
 import argparse
@@ -7,38 +8,39 @@ import struct
 from its_logfile import LogfileReader
 
 
-MAVLINK_DATA_TOPIC = b"radio.downlink_frame"
+DOWNLINK_DATA_TOPIC = "radio.downlink_frame"
 
 
-def iterate_frames(stream):
+def iterate_frames(stream, allowed_topics: typing.List[str]):
+	allowed_topics = list([x.encode("utf-8") for x in allowed_topics])
 	with LogfileReader(stream=stream) as reader:
 		while True:
-			frame = reader.read()
-			if not frame:
+			record = reader.read()
+			if not record:
 				break
 
-			frame_timestamp = frame[0]
-			topic = frame[1][0]
-			if topic != MAVLINK_DATA_TOPIC:
+			frame_timestamp = record[0]
+			topic = record[1][0]
+			if topic not in allowed_topics:
 				continue
 
-			payload = frame[1][2]
+			payload = record[1][2]
 			yield frame_timestamp, payload
 
 
-def process_simple(input_stream, output_stream):
-	for _, frame_payload in iterate_frames(input_stream):
+def process_simple(input_stream, output_stream, allowed_topics):
+	for _, frame_payload in iterate_frames(input_stream, allowed_topics):
 		output_stream.write(frame_payload)
 
 
-def process_with_mavlink(input_stream, output_stream, notimestamps):
+def process_with_mavlink(input_stream, output_stream, allowed_topics, notimestamps):
 	from pymavlink.dialects.v20.its import MAVLink, MAVLink_bad_data
 
 	mav = MAVLink(file=None)
 	mav.robust_parsing = True
 	mavlink_timestamp_struct = struct.Struct(">Q")
 
-	for frame_timestamp, frame_payload in iterate_frames(input_stream):
+	for frame_timestamp, frame_payload in iterate_frames(input_stream, allowed_topics):
 		for message in mav.parse_buffer(frame_payload) or []:
 			if isinstance(message, MAVLink_bad_data):
 				continue
@@ -58,12 +60,14 @@ def main(argv):
 	arg_parser.add_argument("-o", "--output", nargs='?', dest="output")
 	arg_parser.add_argument("--use-mavlink", action='store_true', dest='use_mavlink')
 	arg_parser.add_argument("--notimestamps", action='store_true', dest='notimestamps')
+	arg_parser.add_argument("--topic", nargs='?', default=DOWNLINK_DATA_TOPIC, dest="topic")
 
 	args = arg_parser.parse_args(argv)
 	input_path = args.input
 	output_path = args.output
 	use_mavlink = args.use_mavlink
 	notimestamps = args.notimestamps
+	allowed_topics = [args.topic]
 
 	if input_path == "-":
 		input_stream = sys.stdin
@@ -82,9 +86,9 @@ def main(argv):
 		output_stream = open(output_path, mode='wb')
 
 	if use_mavlink:
-		process_with_mavlink(input_stream, output_stream, notimestamps)
+		process_with_mavlink(input_stream, output_stream, allowed_topics, notimestamps)
 	else:
-		process_simple(input_stream, output_stream)
+		process_simple(input_stream, output_stream, allowed_topics)
 
 	return 0
 

@@ -35,7 +35,7 @@ class MdtGatherer:
 
 def main(argv):
 	arg_parser = argparse.ArgumentParser("broker log to mdt jsons", add_help=True)
-	arg_parser.add_argument("-i", "--input", nargs='?', required=False, dest="input", default="-")
+	arg_parser.add_argument("-i", "--input", nargs='?', required=False, dest="input")
 	arg_parser.add_argument("-o", "--output-dir", nargs='?', dest="output_dir")
 
 	args = arg_parser.parse_args(argv)
