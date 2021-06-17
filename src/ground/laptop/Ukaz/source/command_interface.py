@@ -11,6 +11,7 @@ from source import RES_ROOT, LOG_FOLDER_PATH
 import math
 import time
 
+
 class AbstractCommanInterface(QtCore.QObject):
     send_msg = QtCore.pyqtSignal(object)
 
@@ -27,7 +28,7 @@ class AbstractCommanInterface(QtCore.QObject):
     def msg_reaction(self, msg):
         pass
 
-    def send_command(self, msg):
+    def send_command(self, msg, cookie=None):
         pass
 
     def generate_message(self, name, data):
@@ -37,6 +38,7 @@ class AbstractCommanInterface(QtCore.QObject):
 class MAVITSInterface(AbstractCommanInterface):
     def __init__(self):
         super(MAVITSInterface, self).__init__()
+        self.cookie = 1
         self.control_mode = True
         self.mav = its_mav.MAVLink(file=None)
 
@@ -46,6 +48,10 @@ class MAVITSInterface(AbstractCommanInterface):
 
     def convert_time_from_s_us_to_s(self, time_s, time_us):
         return time_s + time_us/1000000
+
+    def msg_reaction(self, msg):
+        if msg.get_type() == 'BCU_RADIO_CONN_STATS':
+            pass #self.command_ststus_changed.emit([msg.seq, 'test', self.STATUS_UNKNOWN])
 
     def generate_message(self, name, data):
         command = None
@@ -63,8 +69,13 @@ class MAVITSInterface(AbstractCommanInterface):
             msg = None
         return msg
 
-    def send_command(self, msg):
+    def send_command(self, msg, cookie=None):
         if msg is not None:
+            if cookie is not None:
+                msg.seq = cookie
+            else:
+                msg.seq = self.cookie
+                self.cookie += 1
             msg.get_header().srcSystem = 0
             msg.get_header().srcComponent = 4
             self.send_msg(msg)
@@ -97,23 +108,22 @@ class ZMQITSUSLPInterface(MAVITSInterface):
                 else:
                     status_type = self.STATUS_UNKNOWN
                 self.command_ststus_changed.emit([cookie, status, status_type])
-            
 
     def send_command(self, msg, cookie=None):
         if msg is not None:
             msg.get_header().srcSystem = 0
             msg.get_header().srcComponent = 3
             if cookie is not None:
-                multipart = ["its.telecommand_request".encode("utf-8"),
-                             ('{ "cookie": %d }' % cookie).encode("utf-8"),
-                             msg.pack(self.mav)]
+                msg.seq = cookie
             else:
-                multipart = ["its.telecommand_request".encode("utf-8"),
-                             ('{ "cookie": %d }' % self.cookie).encode("utf-8"),
-                             msg.pack(self.mav)]
+                msg.seq = self.cookie
                 self.cookie += 1
 
+            multipart = ["its.telecommand_request".encode("utf-8"),
+                         ('{ "cookie": %d }' % msg.seq).encode("utf-8"),
+                         msg.pack(self.mav)]
             self.send_msg.emit(multipart)
+
 
 class ZMQITSInterface(MAVITSInterface):
     def __init__(self):
@@ -141,19 +151,24 @@ class ZMQITSInterface(MAVITSInterface):
             if cookie is not  None:
                 self.command_ststus_changed.emit([cookie, 'dropped', self.STATUS_FAILURE])
 
+        if msg[0] == b'radio.downlink_frame':
+            msg_buf = zmq_msg[2]
+            msgs = self.mav.parse_buffer(msg_buf)
+            if msgs is not  None:
+                for msg in msgs:
+                    super(ZMQITSInterface, self).msg_reaction(msg)
+
     def send_command(self, msg, cookie=None):
         if msg is not None:
             msg.get_header().srcSystem = 0
             msg.get_header().srcComponent = 3
             if cookie is not None:
-                multipart = ["radio.uplink_frame".encode("utf-8"),
-                             ('{ "cookie": %d }' % cookie).encode("utf-8"),
-                             msg.pack(self.mav)]
+                msg.seq = cookie
             else:
-                multipart = ["radio.uplink_frame".encode("utf-8"),
-                             ('{ "cookie": %d }' % self.cookie).encode("utf-8"),
-                             msg.pack(self.mav)]
+                msg.seq = self.cookie
                 self.cookie += 1
-
+            multipart = ["radio.uplink_frame".encode("utf-8"),
+                         ('{ "cookie": %d }' % msg.seq).encode("utf-8"),
+                         msg.pack(self.mav)]
             self.buf.append(multipart)
             print(self.buf)
