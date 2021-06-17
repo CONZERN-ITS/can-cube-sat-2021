@@ -1,6 +1,6 @@
 #include "ina219_helper.h"
 
-#define INA_CURRENT_LSB         ((ina219_float_t)(1.f/0x8000)) // считаем из расчета на 3 ампер максимум
+#define INA_CURRENT_LSB         ((ina219_float_t)(3.f/0x8000))
 #define INA_POWER_LSB           ((ina219_float_t)(20*INA_CURRENT_LSB))
 #define INA_VOLTAGE_BUS_LSB     0.004
 #define INA_VOLTAGE_SHUNT_LSB   0.01
@@ -22,8 +22,8 @@ int ina219_init_default(ina219_t * self, I2C_HandleTypeDef *hi2c, ina219_i2c_add
     ina219_cfg_t ina_cfg;
     ina_cfg.bus_range = INA219_BUS_RANGE_16V;
     ina_cfg.bus_res = INA219_ADC_RES_12_BIT_OVS_128;
-    ina_cfg.shunt_range = INA219_SHUNT_RANGE_40MV;
-    ina_cfg.shunt_res = INA219_ADC_RES_12_BIT_OVS_1;
+    ina_cfg.shunt_range = INA219_SHUNT_RANGE_320MV;
+    ina_cfg.shunt_res = INA219_ADC_RES_12_BIT_OVS_128;
     ina_cfg.mode = INA219_MODE_SHUNT_AND_BUS_CONT;
 
     ina_cfg.shunt_r = 0.01f; // 10 миллиом
