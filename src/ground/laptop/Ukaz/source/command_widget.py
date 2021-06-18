@@ -18,7 +18,7 @@ class CommandWidget(QtWidgets.QFrame):
             def __init__(self, name):
                 self.name = name
                 self.layout = QtWidgets.QHBoxLayout()
-                self.layout.addWidget(QtWidgets.QLabel(str(name)))
+                self.layout.addWidget(QtWidgets.QLabel(str(name)), 1)
 
             def get_name(self):
                 return self.name
@@ -27,6 +27,9 @@ class CommandWidget(QtWidgets.QFrame):
                 return None
 
             def clear(self):
+                pass
+
+            def update_data(self):
                 pass
 
             def get_qt_object(self):
@@ -38,7 +41,7 @@ class CommandWidget(QtWidgets.QFrame):
                 super(CommandWidget.CommandItem.CheckBoxCommandField, self).__init__(name)
                 self.qt_object = QtWidgets.QCheckBox()
                 self.qt_object.setTristate(false)
-                self.layout.addWidget(self.qt_object)
+                self.layout.addWidget(self.qt_object, 1)
 
             def get_data(self):
                 return bool(self.qt_object.checkState())
@@ -51,7 +54,7 @@ class CommandWidget(QtWidgets.QFrame):
             def __init__(self, name):
                 super(CommandWidget.CommandItem.StrCommandField, self).__init__(name)
                 self.qt_object = QtWidgets.QLineEdit()
-                self.layout.addWidget(self.qt_object)
+                self.layout.addWidget(self.qt_object, 1)
 
             def get_data(self):
                 return self.qt_object.text()
@@ -80,49 +83,48 @@ class CommandWidget(QtWidgets.QFrame):
                 return float(self.qt_object.text())
 
 
-        class TimeSCommandField(AbstractCommandField):
+        class AbstractTimeCommandField(AbstractCommandField):
             def __init__(self, name):
-                super(CommandWidget.CommandItem.TimeSCommandField, self).__init__(name)
-                self.qt_object = QtWidgets.QLCDNumber()
-                self.layout.addWidget(self.qt_object)
+                super(CommandWidget.CommandItem.AbstractTimeCommandField, self).__init__(name)
+                self.qt_object = QtWidgets.QFrame()
+                self.qt_object.setFrameStyle(QtWidgets.QFrame.Panel|QtWidgets.QFrame.Plain)
+                self.qt_object.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
+                self.container = QtWidgets.QLabel('None')
+                layout = QtWidgets.QVBoxLayout()
+                layout.addWidget(self.container)
+                self.qt_object.setLayout(layout)
+                self.layout.addWidget(self.qt_object, 1)
 
+            def count_time(self):
+                return None
+
+            def get_data(self):
+                return self.count_time()
+
+            def update_data(self):
+                self.container.setText(str(self.count_time()))
+
+            def clear(self):
+                self.container.setText('None')
+
+
+        class TimeSCommandField(AbstractTimeCommandField):
             def count_time(self):
                 return int(math.modf(time.time())[1])
 
-            def get_data(self):
-                return self.count_time()
 
-            def update_data(self):
-                self.qt_object.setDigitCount(self.count_time())
-
-            def clear(self):
-                self.qt_object.setDigitCount(0)
-
-
-        class TimeUSCommandField(AbstractCommandField):
-            def __init__(self, name):
-                super(CommandWidget.CommandItem.TimeUSCommandField, self).__init__(name)
-                self.qt_object = QtWidgets.QLCDNumber()
-                self.layout.addWidget(self.qt_object)
-
+        class TimeUSCommandField(AbstractTimeCommandField):
             def count_time(self):
                 return int(math.modf(time.time())[0] * 1000000)
-
-            def get_data(self):
-                return self.count_time()
-
-            def update_data(self):
-                self.qt_object.setDigitCount(self.count_time())
-
-            def clear(self):
-                self.qt_object.setDigitCount(0)
 
 
         def __init__(self, name, msg_name):
             super(CommandWidget.CommandItem, self).__init__()
             self.msg_name = msg_name
             self.item_layout = QtWidgets.QVBoxLayout(self)
-            self.item_layout.addWidget(QtWidgets.QLabel(str(name)))
+            self.label = QtWidgets.QLabel(str(name))
+            self.label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+            self.item_layout.addWidget(self.label)
             self.fields_layout = QtWidgets.QVBoxLayout()
             self.item_layout.addLayout(self.fields_layout)
             self.send_btn = QtWidgets.QPushButton('Send')
@@ -151,7 +153,7 @@ class CommandWidget(QtWidgets.QFrame):
             else:
                 self.fields.append(CommandWidget.CommandItem.AbstractCommandField(name))
 
-            self.fields_layout.addLayout(self.fields[-1].get_qt_object())
+            self.fields_layout.addLayout(self.fields[-1].get_qt_object(), 1)
 
         def update_data(self):
             for field in self.fields:
@@ -178,8 +180,10 @@ class CommandWidget(QtWidgets.QFrame):
 
     def setup_ui(self):
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.update)
+        self.timer.setInterval(200)
+        self.timer.timeout.connect(self.update_data)
+        self.timer.setSingleShot(False)
+        self.timer.start()
         self.layout = QtWidgets.QGridLayout(self)
         self.commands = []
 
