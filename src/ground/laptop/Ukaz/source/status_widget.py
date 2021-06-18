@@ -23,7 +23,6 @@ class StatusWidget(QtWidgets.QWidget):
                 self.cookie = cookie
                 self.status = status
                 self.set_enabled(True)
-                self.set_is_viewed(False)
                 self.set_status(status)
                 self.set_status_type(status_type)
 
@@ -44,12 +43,6 @@ class StatusWidget(QtWidgets.QWidget):
 
             def set_status_type(self, status_type=STATUS_UNKNOWN):
                 self.status_type = status_type
-
-            def set_is_viewed(self, is_viewed=False):
-                self.is_viewed = is_viewed
-
-            def get_is_viewed(self):
-                return self.is_viewed
 
             def set_enabled(self, enabled=True):
                 self.enabled = enabled
@@ -75,32 +68,25 @@ class StatusWidget(QtWidgets.QWidget):
             self.cmd_list = cmd_list
 
         def set_background_color(self, color):
-            print(color)
             self.background_brush = QtGui.QBrush(color)
 
         def set_background_success_color(self, color):
-            print(color)
             self.background_success_brush = QtGui.QBrush(color)
 
         def set_background_processing_color(self, color):
-            print(color)
             self.background_processing_brush = QtGui.QBrush(color)
 
         def set_background_failure_color(self, color):
-            print(color)
             self.background_failure_brush = QtGui.QBrush(color)
 
-        def is_event_enabled(self, row):
+        def is_command_enabled(self, row):
             return self.cmd_list[row].get_enabled()
-
-        def is_event_viewed(self, row):
-            return self.cmd_list[row].get_is_viewed()
 
         def rowCount(self, parent=QtCore.QModelIndex()):
             return len(self.cmd_list)
 
         def columnCount(self, parent=QtCore.QModelIndex()):
-            return 5
+            return 4
 
         def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
             if orientation != QtCore.Qt.Horizontal:
@@ -117,10 +103,8 @@ class StatusWidget(QtWidgets.QWidget):
                     return QtCore.QVariant("Status")
 
                 elif section == 3:
-                    return QtCore.QVariant("Start time")
+                    return QtCore.QVariant("Start time\nStop time")
 
-                elif section == 4:
-                    return QtCore.QVariant("Stop time")
             return QtCore.QVariant()
 
         def data(self, index, role):
@@ -136,22 +120,20 @@ class StatusWidget(QtWidgets.QWidget):
                     return QtCore.QVariant(cmd.get_status())
 
                 elif index.column() == 3:
-                    return QtCore.QVariant(self.get_cmd_time_str(cmd.get_start_time()))
-
-                elif index.column() == 4:
-                    return QtCore.QVariant(self.get_cmd_time_str(cmd.get_stop_time()))
+                    return QtCore.QVariant(self.get_cmd_time_str(cmd.get_start_time()) + '\n' +
+                                           self.get_cmd_time_str(cmd.get_stop_time()))
 
             elif role == QtCore.Qt.BackgroundRole:
                 cmd = self.cmd_list[index.row()]
                 status_type = cmd.get_status_type()
-                #if status_type == StatusWidget.StatusModel.Command.STATUS_PROCESSING:
-                    #return self.background_processing_brush
-                #elif status_type == StatusWidget.StatusModel.Command.STATUS_SUCCSESS:
-                    #return self.background_success_brush
-                #elif status_type == StatusWidget.StatusModel.Command.STATUS_FAILURE:
-                    #return self.background_failure_brush
-                #else:
-                    #return self.background_brush
+                if status_type == StatusWidget.StatusModel.Command.STATUS_PROCESSING:
+                    return self.background_processing_brush
+                elif status_type == StatusWidget.StatusModel.Command.STATUS_SUCCSESS:
+                    return self.background_success_brush
+                elif status_type == StatusWidget.StatusModel.Command.STATUS_FAILURE:
+                    return self.background_failure_brush
+                else:
+                    return self.background_brush
 
             return QtCore.QVariant()
 
@@ -161,7 +143,7 @@ class StatusWidget(QtWidgets.QWidget):
         def endReset(self):
             self.endResetModel()
 
-        def update_cmd(self, cookie, status, status_type):
+        def update_cmd(self, cookie, status='Undefined', status_type=Command.STATUS_UNKNOWN, name='Undefined'):
             for cmd in self.cmd_list:
                 if cmd.get_cookie() == cookie:
                     self.beginReset()
@@ -171,13 +153,11 @@ class StatusWidget(QtWidgets.QWidget):
                         cmd.set_enabled(False)
                     self.endReset()
                     return
-            self.add_command(cookie, status, status_type, name='Undefined')
 
-        def add_command(self, cookie, status='Undefined', status_type=Command.STATUS_UNKNOWN, name=''):
             cmd = StatusWidget.StatusModel.Command(name=name,
-                              cookie=cookie,
-                              status=status,
-                              status_type=status_type)
+                                                   cookie=cookie,
+                                                   status=status,
+                                                   status_type=status_type)
 
             self.beginReset()
             self.cmd_list.append(cmd)
@@ -201,7 +181,7 @@ class StatusWidget(QtWidgets.QWidget):
     class SortFilterProxyStatusModel(QtCore.QSortFilterProxyModel):
 
         def filterAcceptsRow(self, sourceRow, sourceParent):
-            return self.sourceModel().is_event_enabled(sourceRow) or self.sourceModel().is_event_enabled(sourceRow)
+            return self.sourceModel().is_command_enabled(sourceRow)
 
 
     def __init__(self):
@@ -225,9 +205,14 @@ class StatusWidget(QtWidgets.QWidget):
         self.processing_cmds_tree = QtWidgets.QTreeView()
         self.layout.addWidget(self.processing_cmds_tree)
         self.processing_cmds_tree.setModel(self.processing_cmds)
+        self.processing_cmds_tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.processing_cmds_tree.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.processing_cmds_tree.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.processing_cmds_tree.customContextMenuRequested.connect(self.menu_request)
 
-        self.viewed_btn = QtWidgets.QPushButton('Viewed')
-        self.layout.addWidget(self.viewed_btn)
+        self.context_menu = QtWidgets.QMenu()
+        self.delete_cmd_act = self.context_menu.addAction('&Delete command from viewer')
+        self.delete_cmd_act.triggered.connect(self.delete_command)
 
     def setup_ui_design(self):
         self.settings.beginGroup("CentralWidget/StatusWidget")
@@ -247,19 +232,18 @@ class StatusWidget(QtWidgets.QWidget):
             for i in range(5):
                 tree.resizeColumnToContents(i)
 
-        self.viewed_btn.clicked.connect(self.viewed_btn_action)
         self.settings.endGroup()
 
-    def add_command(self, name, cookie):
-        self.cmds.add_command(cookie=cookie,
-                                  name=name)
+    def menu_request(self, pos):
+        self.context_menu.popup(self.processing_cmds_tree.mapToGlobal(pos))
 
-    def viewed_btn_action(self):
-        self.cmds.beginReset()
-        for cmd in self.cmds.get_cmd_list():
-            if not cmd.is_viewed():
-                cmds.set_is_viewed(True)
-        self.cmds.endReset()
+    def add_command(self, name, cookie):
+        self.cmds.update_cmd(cookie=cookie,
+                             name=name)
+
+    def delete_command(self):
+        cmd = self.cmds.get_cmd_list()[self.processing_cmds.mapToSource(self.processing_cmds_tree.selectionModel().currentIndex()).row()]
+        self.cmds.update_cmd(cmd.get_cookie(), 'deleted by operator', StatusWidget.StatusModel.Command.STATUS_FAILURE)
 
     def new_msg_reaction(self, data):
         self.cmds.update_cmd(*data)
