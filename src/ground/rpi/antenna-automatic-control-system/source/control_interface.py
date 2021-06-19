@@ -9,7 +9,7 @@ import time
 
 
 class AbstractControlInterface():
-	def __init__(self, drive_object, auto_guidance_math, aiming_period=1, min_rotation_angle=1):
+    def __init__(self, drive_object, auto_guidance_math, aiming_period=1, min_rotation_angle=1):
         # Subsystems
         self.drive_object = drive_object
         self.auto_guidance_math = auto_guidance_math
@@ -55,7 +55,7 @@ class AbstractControlInterface():
         pass
 
 
-class MAVITSControlInterface(AbstractAntennaInterface):
+class MAVITSControlInterface(AbstractControlInterface):
     def __init__(self, *args, **kwargs):
         super(MAVITSControlInterface, self).__init__(*args, **kwargs)
 
@@ -71,7 +71,7 @@ class MAVITSControlInterface(AbstractAntennaInterface):
         self.target_last_time = (0, 0)
 
     def msg_reaction(self, msgs):
-    	for msg in msgs:
+        for msg in msgs:
             if msg.get_type() == "AS_AUTOMATIC_CONTROL":
                 self.auto_control_mode = bool(msg.mode)
             elif msg.get_type() == "AS_HARD_MANUAL_CONTROL":
@@ -96,7 +96,7 @@ class MAVITSControlInterface(AbstractAntennaInterface):
                 pass
             elif msg.get_type() == "AS_MOTORS_AUTO_DISABLE":
                 self.drive_object.set_drive_auto_disable_mode(msg.mode)
-                 pass
+                pass
             elif msg.get_type() == "AS_SEND_COMMAND":
                 enum = mavutil.mavlink.enums['AS_COMMANDS']
                 if enum[msg.command_id].name == 'AS_SETUP_ELEVATION_ZERO':
@@ -123,7 +123,7 @@ class MAVITSControlInterface(AbstractAntennaInterface):
 
     def generate_state_message(self):
         current_time = convert_time_from_s_to_s_us(time.time())
-        enable = [if self.drive_object.get_vertical_enable_state(), self.drive_object.get_horizontal_enable_state()]
+        enable = [self.drive_object.get_vertical_enable_state(), self.drive_object.get_horizontal_enable_state()]
         enable = [False if state is None else state for state in enable]
         msg = its_mav.MAVLink_as_state_message(time_s=current_time[0],
                                                time_us=current_time[1],
@@ -175,7 +175,7 @@ class MAVITSControlInterface(AbstractAntennaInterface):
             if azimuth >= self.min_rotation_angle:
                 self.drive_object.horizontal_rotation(azimuth)
                 self.azimuth = self.drive_object.get_horizontal_position() + self.azimuth_delta
-             if elevation >= self.min_rotation_angle:
+            if elevation >= self.min_rotation_angle:
                 self.drive_object.vertical_rotation(elevation)
                 self.elevation = self.drive_object.get_vertical_position() + self.elevation_delta
             if ((azimuth >= self.min_rotation_angle) or (elevation >= self.min_rotation_angle)):
