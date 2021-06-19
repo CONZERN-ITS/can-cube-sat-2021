@@ -267,6 +267,16 @@ void init_helper(void) {
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK3_VCC, 0);
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK4_VCC, 0);
 
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK1_ROZE, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK2_ROZE, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK3_ROZE, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK4_ROZE, 0);
+
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK1_CMD, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK2_CMD, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK3_CMD, 0);
+	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK4_CMD, 0);
+
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_SINS_VCC, 1);
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_SD_VCC, 1);
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_RADIO_VCC, 1);
@@ -276,15 +286,9 @@ void init_helper(void) {
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL4_VCC, 1);
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL5_VCC, 1);
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL6_VCC, 1);
-	/*vTaskDelay(1000/portTICK_PERIOD_MS);
-	//control_vcc_pl_enable(1);
+	shift_reg_load(&hsr);
 
-	int t = gpio_set_level(ITS_PIN_PL_VCC, 1);
-	ESP_LOGD("SYSTEM", "---------------------HEH: 0x%d", t);
-	control_magnet_init(&hsr, 2, 3);
 	control_heat_init(&hsr, 1, 1);
-
-
 	control_heat_set_max_consumption(1199);
 	control_heat_set_consumption(0, 300);
 	control_heat_set_consumption(1, 300);
@@ -292,25 +296,9 @@ void init_helper(void) {
 	control_heat_set_consumption(3, 300);
 	control_heat_set_consumption(4, 300);
 	control_heat_set_consumption(5, 300);
-
-	control_magnet_enable(ITS_BSK_1, 1);
-	control_magnet_enable(ITS_BSK_2A, -1);
-	control_magnet_enable(ITS_BSK_3, 1);
-	control_magnet_enable(ITS_BSK_4, -1);
-	control_magnet_enable(ITS_BSK_5, 1);
-	control_magnet_enable(ITS_BSK_2, -1);
-
-
-	control_heat_bsk_enable(ITS_BSK_1, 1);
-	control_heat_bsk_enable(ITS_BSK_2, 1);
-	control_heat_bsk_enable(ITS_BSK_2A, 1);
-	control_heat_bsk_enable(ITS_BSK_3, 1);
-	control_heat_bsk_enable(ITS_BSK_4, 1);
-	control_heat_bsk_enable(ITS_BSK_5, 1);
 //	hsr.byte_arr[0] = 0x99;
 //	hsr.byte_arr[1] = 0xBB;
 //	hsr.byte_arr[2] = 0xBB;
-	shift_reg_load(&hsr);*/
 
 	printf("@ %d\n", (int) &hsr);
 	fflush(stdout);

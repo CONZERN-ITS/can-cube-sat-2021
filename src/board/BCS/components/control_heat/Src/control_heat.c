@@ -11,6 +11,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 
 #include "router.h"
@@ -18,8 +19,19 @@
 #include "init_helper.h"
 #include "log_collector.h"
 #include "radio.h"
+#include "pinout_cfg.h"
 
 #include <math.h>
+
+#define HEAT_COUNT 6
+static const int heat_pin[] = {
+		ITS_PIN_SR_BCU_HEAT,
+		ITS_PIN_SR_BSK1_HEAT,
+		ITS_PIN_SR_BSK2_HEAT,
+		ITS_PIN_SR_BSK3_HEAT,
+		ITS_PIN_SR_BSK4_HEAT,
+		ITS_PIN_SR_BSK5_HEAT,
+};
 
 static void _task_recv(void *arg);
 
@@ -31,12 +43,12 @@ typedef enum {
 	OFF,
 	ON
 } state_t;
-static state_t state[ITS_BSK_COUNT];
+static state_t state[HEAT_COUNT];
 static shift_reg_handler_t *_hsr;
-static int consumption[ITS_BSK_COUNT] = {0}; //mA
+static int consumption[HEAT_COUNT] = {0}; //mA
 static int max_consumption = 1;
-static float temperature[ITS_BSK_COUNT] = {CONTROL_HEAT_LOWTHD + 1};
-int64_t last_time_finite[ITS_BSK_COUNT];
+static float temperature[HEAT_COUNT] = {CONTROL_HEAT_LOWTHD + 1};
+int64_t last_time_finite[HEAT_COUNT];
 
 #define FINITE_TIMEOUT 10000 //ms
 
@@ -48,7 +60,7 @@ static log_data_t log_data;
 
 
 int control_heat_init(shift_reg_handler_t *hsr, int shift, int task_on) {
-	for (int i = 0; i < ITS_BSK_COUNT; i++) {
+	for (int i = 0; i < HEAT_COUNT; i++) {
 		temperature[i] = CONTROL_HEAT_LOWTHD + 1;
 	}
 	memset(&log_data, 0, sizeof(log_data));
@@ -62,7 +74,7 @@ int control_heat_init(shift_reg_handler_t *hsr, int shift, int task_on) {
 			log_data.last_state = LOG_STATE_OFF;
 		}
 		int64_t now = esp_timer_get_time();
-		for (int i = 0; i < ITS_BSK_COUNT; i++) {
+		for (int i = 0; i < HEAT_COUNT; i++) {
 			last_time_finite[i] = now;
 		}
 
@@ -77,8 +89,8 @@ int control_heat_init(shift_reg_handler_t *hsr, int shift, int task_on) {
 	return -1;
 }
 
-void control_heat_bsk_enable(int bsk_number, int is_on) {
-	shift_reg_set_level_pin(_hsr, _shift + bsk_number * ITS_SR_PACK_SIZE, is_on > 0);
+void control_heat_bsk_enable(int pin, int is_on) {
+	shift_reg_set_level_pin(_hsr, pin, is_on > 0);
 }
 
 void control_heat_set_consumption(int id, int current) {
@@ -143,11 +155,11 @@ static void _task_recv(void *arg) {
 static void _task_update(void *arg) {
 	int64_t now = esp_timer_get_time();
 	//Массив для сортировки не сортируя
-	int arr[ITS_BSK_COUNT] = {0};
+	int arr[HEAT_COUNT] = {0};
 
 
 	while (1) {
-		for (int i = 0; i < ITS_BSK_COUNT; i++) {
+		for (int i = 0; i < HEAT_COUNT; i++) {
 			arr[i] = i;
 		}
 		//Поуправляем радио. Если плата слишком горячая, то...
@@ -167,7 +179,7 @@ static void _task_update(void *arg) {
 			ESP_LOGD("CONTROL_HEAT", "Cool! Radio ON");
 		}
 		//Выключим те, от которых ничего не слышно
-		for (int i = 0; i < ITS_BSK_COUNT; i++) {
+		for (int i = 0; i < HEAT_COUNT; i++) {
 			if ((now - last_time_finite[i]) / 1000 > FINITE_TIMEOUT) {
 				state[i] = OFF;
 				//Подправим температуру, чтобы оно не включилось из-за низкой температуры
@@ -176,12 +188,12 @@ static void _task_update(void *arg) {
 			}
 		}
 		//Отсортируем. Теперь temperature[arr[i]] отсортированно по i по возрастанию
-		_sort(temperature, arr, ITS_BSK_COUNT);
+		_sort(temperature, arr, HEAT_COUNT);
 		//Подготовим новые состояния
-		state_t new[ITS_BSK_COUNT] = {0};
+		state_t new[HEAT_COUNT] = {0};
 		//Масимальный ток потребления
 		int total_consumption = 0;
-		for (int i = 0; i < ITS_BSK_COUNT; i++) {
+		for (int i = 0; i < HEAT_COUNT; i++) {
 			ESP_LOGD("CONTROL_HEAT", "TEMP: %d %d %f", i, arr[i], temperature[arr[i]]);
 			//Если температура низкая и достаточно тока в запасе - вклчючаем.
 			//Самые холодные будут точно включены, так как они первые проходили эту проверку
@@ -194,25 +206,13 @@ static void _task_update(void *arg) {
 			}
 		}
 		//Запишем на сдвиговые регистры новое состояние
-		for (int sensor = 0; sensor < ITS_BSK_COUNT; sensor++) {
-			//Между порядком датчиков и порядком нагревателей не прямое соответствие
-			int heater = 0;
-			switch (sensor) {
-			case 0: heater = ITS_BSK_1; break;
-			case 1: heater = ITS_BSK_2; break;
-			case 2: heater = ITS_BSK_3; break;
-			case 3: heater = ITS_BSK_4; break;
-			case 4: heater = ITS_BSK_5; break;
-			case 5: heater = ITS_BSK_2A; break;
-			default: heater = -1;
-			}
-			if (heater >= 0) {
-				shift_reg_set_level_pin(_hsr, _shift + ITS_SR_PACK_SIZE * heater, new[sensor] == ON);
-			}
+		for (int sensor = 0; sensor < HEAT_COUNT; sensor++) {
+			shift_reg_set_level_pin(_hsr, heat_pin[sensor], new[sensor] == ON);
+
 		}
 		esp_err_t rc = shift_reg_load(_hsr);
 		if (rc == ESP_OK) {
-			for (int i = 0; i < ITS_BSK_COUNT; i++) {
+			for (int i = 0; i < HEAT_COUNT; i++) {
 				if (new[i] == ON && state[i] == OFF) {
 					ESP_LOGD("CONTROL_HEAT", "now ON %d %f", i, temperature[i]);
 				}
