@@ -1,0 +1,3 @@
+# install source/lib/native/build.sh
+# pymavlink @ can-cube-sat/src/common/mavlink/pymavlink/dist/pymavlink-2.4.15-py3-none-any.whl
+RPi.GPIO>=0.7.0
