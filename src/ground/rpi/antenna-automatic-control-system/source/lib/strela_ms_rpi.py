@@ -1,8 +1,8 @@
-import i2cdev
+import source.lib.i2cdev as i2cdev
 import ctypes
 import time
 
-srtela_ms_rpi_c = ctypes.CDLL("./native/build/libstrela-ms-rpi.so")
+srtela_ms_rpi_c = ctypes.CDLL("./source/lib/native/build/libstrela-ms-rpi.so")
 
 stmdev_ctx_func_type = ctypes.CFUNCTYPE(ctypes.c_uint32,
                                         ctypes.c_void_p,
