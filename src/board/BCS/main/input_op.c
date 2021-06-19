@@ -37,6 +37,7 @@ void input_init(op_handler_t *hop) {
 extern shift_reg_handler_t hsr;
 #define TOS(a) #a
 static int _sr_control(char *arg) {
+	/*
 	char c;
 	char name[20];
 	int mode;
@@ -82,11 +83,14 @@ static int _sr_control(char *arg) {
 	} else {
 		ESP_LOGE("INPUT", "no");
 		return -1;
-	}
+	}*/
+
+	return 0;
 }
 
 
 static int _sr_set(char *arg) {
+	/*
 	uint32_t t = 0;
 	int total_offset = 0;
 	int offset = 0;
@@ -95,11 +99,12 @@ static int _sr_set(char *arg) {
 		total_offset += offset;
 	}
 	shift_reg_load(&hsr);
-	ESP_LOGD("INPUT", "0x%X 0x%X 0x%X", hsr.byte_arr[0], hsr.byte_arr[1], hsr.byte_arr[2]);
+	ESP_LOGD("INPUT", "0x%X 0x%X 0x%X", hsr.byte_arr[0], hsr.byte_arr[1], hsr.byte_arr[2]);*/
 	return 0;
 }
 
 static int _radio_send(char *arg) {
+	/*
 	char *ptr = arg;
 	while (!isspace(*ptr)) {
 		ptr++;
@@ -109,7 +114,7 @@ static int _radio_send(char *arg) {
 		radio_send_suspend();
 	} else if (strcmp(arg, "resume") == 0) {
 		radio_send_resume();
-	}
+	}*/
 	return 0;
 }
 
