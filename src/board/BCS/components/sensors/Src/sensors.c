@@ -225,12 +225,15 @@ static void sensors_task(void *arg) {
 
 
 static void sensors_ina_task(void *arg) {
-#define INA_MAX 1
+#define INA_MAX 4
 #define INA_VOLTAGE_BUS_LSB     0.004
 	ina219_t ina[INA_MAX];
 	int timeout = 50 / portTICK_PERIOD_MS;
 
-	ina219_init(&ina[0], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_GND, timeout);
+	ina219_init(&ina[0], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_VSP, timeout);
+	ina219_init(&ina[1], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_SDA, timeout);
+	ina219_init(&ina[2], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_SCL, timeout);
+	ina219_init(&ina[3], ITS_I2CTM_PORT, INA219_I2CADDR_A1_VSP_A0_GND, timeout);
 
 	for (int i = 0; i < INA_MAX; i++) {
 		ina219_sw_reset(&ina[i]);
@@ -267,10 +270,12 @@ static void sensors_ina_task(void *arg) {
 				mes[i].voltage = data.busv;
 			}
 
-			ESP_LOGD("SENSORS", "[%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
 			mes[i].time_s = tp.tv_sec;
 			mes[i].time_us = tp.tv_usec;
 			mes[i].time_steady = (uint32_t) now;
+		}
+		for (int i = 0; i < INA_MAX; i++) {
+			ESP_LOGD("SENSORS", "[%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
 		}
 		for (int i = 0; i < INA_MAX; i++) {
 			mavlink_message_t msg;
