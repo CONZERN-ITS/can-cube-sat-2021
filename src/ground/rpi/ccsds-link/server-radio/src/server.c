@@ -136,6 +136,7 @@ static void _load_tx(server_t * server)
 	size_t packet_size;
 	msg_cookie_t packet_cookie;
 
+	memset(server->tx_buffer, 0x00, server->config.radio_packet_cfg.payload_length);
 	rc = zserver_recv_tx_packet(
 		&server->zserver,
 		server->tx_buffer, server->config.radio_packet_cfg.payload_length,
@@ -499,7 +500,7 @@ static int _go_tx(server_t * server)
 	sx126x_drv_t * const radio = &server->radio;
 	const uint32_t hw_timeout = server->config.tx_timeout_ms;
 
-	rc = sx126x_drv_payload_write(radio, server->tx_buffer, server->tx_buffer_size);
+	rc = sx126x_drv_payload_write(radio, server->tx_buffer, server->config.radio_packet_cfg.payload_length);
 	if (0 != rc)
 	{
 		log_error("unable to write tx payload to radio: %d", rc);
