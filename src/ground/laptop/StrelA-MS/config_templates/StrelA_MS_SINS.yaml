@@ -72,6 +72,14 @@ CentralWidget:
         name: BCU C1 ELECTRICAL_STATE
         sourse_id: '10_1'
         message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_2:
+        name: BCU C2 ELECTRICAL_STATE
+        sourse_id: '10_2'
+        message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_3:
+        name: BCU C3 ELECTRICAL_STATE
+        sourse_id: '10_3'
+        message_id: 'ELECTRICAL_STATE'
       CUBE_1_RADIO_CONN_STATS:
         name: BCU C0 BCU_RADIO_CONN_STATS
         sourse_id: '10_0'

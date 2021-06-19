@@ -33,6 +33,14 @@ CentralWidget:
         name: BCU C1 ELECTRICAL_STATE
         sourse_id: '10_1'
         message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_2:
+        name: BCU C2 ELECTRICAL_STATE
+        sourse_id: '10_2'
+        message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_3:
+        name: BCU C3 ELECTRICAL_STATE
+        sourse_id: '10_3'
+        message_id: 'ELECTRICAL_STATE'
       CUBE_1_RADIO_CONN_STATS:
         name: BCU C0 BCU_RADIO_CONN_STATS
         sourse_id: '10_0'
@@ -53,7 +61,6 @@ CentralWidget:
         name: GCS RADIO INSTANT RSSI
         sourse_id: '1_0'
         message_id: 'radio.rssi_instant'
-      is_on: true
       def_time_limit: 20
     Packet_table:
       CUBE_1_BCU_STATS:
@@ -91,6 +98,14 @@ CentralWidget:
       CUBE_1_BCU_EL_STATE_COMP_1:
         name: BCU C1 ELECTRICAL_STATE
         sourse_id: '10_1'
+        message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_2:
+        name: BCU C2 ELECTRICAL_STATE
+        sourse_id: '10_2'
+        message_id: 'ELECTRICAL_STATE'
+      CUBE_1_BCU_EL_STATE_COMP_3:
+        name: BCU C3 ELECTRICAL_STATE
+        sourse_id: '10_3'
         message_id: 'ELECTRICAL_STATE'
       CUBE_1_RADIO_CONN_STATS:
         name: BCU C0 BCU_RADIO_CONN_STATS
@@ -307,6 +322,24 @@ CentralWidget:
             - component 1
             color:
             - '#0096FF'
+          CUBE_1_BCU_EL_STATE_COMP_2:
+            sourse_id: '10_2'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - voltage
+            field_name:
+            - component 2
+            color:
+            - '#00FF00'
+          CUBE_1_BCU_EL_STATE_COMP_3:
+            sourse_id: '10_3'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - voltage
+            field_name:
+            - component 3
+            color:
+            - '#00FFFF'
         legend_is_on: true
         is_on: true
         max_data_length: 100
@@ -337,6 +370,24 @@ CentralWidget:
             - component 1
             color:
             - '#0096FF'
+          CUBE_1_BCU_EL_STATE_COMP_2:
+            sourse_id: '10_2'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - current
+            field_name:
+            - component 2
+            color:
+            - '#00FF00'
+          CUBE_1_BCU_EL_STATE_COMP_3:
+            sourse_id: '10_3'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - current
+            field_name:
+            - component 3
+            color:
+            - '#00FFFF'
         legend_is_on: true
         is_on: true
         max_data_length: 100
