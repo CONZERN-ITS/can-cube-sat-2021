@@ -40,6 +40,8 @@
 
 #define ITS_ESP_DEBUG
 
+//#define SENSORS_ONEWIRE_SEARCH
+
 static void sensors_ina_task(void *arg);
 static void sensors_task(void *arg);
 #define SAMPLE_PERIOD 1000
@@ -52,7 +54,6 @@ esp_err_t sensors_init(void) {
 	return 0;
 }
 
-static OneWireBus_ROMCode device_rom_codes[ITS_OWB_MAX_DEVICES];
 //#define USE_GPIO
 static void sensors_task(void *arg) {
 	OneWireBus * owb = 0;
@@ -67,21 +68,23 @@ static void sensors_task(void *arg) {
 #endif
 	owb_use_crc(owb, true);  // enable CRC check for ROM code
 
-#ifndef ITS_ESP_DEBUG
+#ifndef SENSORS_ONEWIRE_SEARCH
 	// Если это не стенд
 
 	const OneWireBus_ROMCode device_rom_codes[ITS_OWB_MAX_DEVICES] = {
-			{ .bytes = { 0x28, 0x52, 0x95, 0xE6, 0x0B, 0x00, 0x00, 0xBA } }, // БСК1
-			{ .bytes = { 0x28, 0x6E, 0x55, 0xE6, 0x0B, 0x00, 0x00, 0x08 } }, // БСК 2-2
-			{ .bytes = { 0x28, 0xD6, 0x96, 0xE6, 0x0B, 0x00, 0x00, 0xC2 } }, // БСК 3-2
-			{ .bytes = { 0x28, 0xE6, 0x89, 0xE6, 0x0B, 0x00, 0x00, 0x3C } }, // БСК 4-2
-			{ .bytes = { 0x28, 0x4F, 0x19, 0xAC, 0x0A, 0x00, 0x00, 0x11 } }  // БСК 5-2
+
+			{ .bytes = { 0x28, 0xC3, 0xA1, 0xE6, 0x0B, 0x00, 0x00, 0xA7 } }, // БКУ   +
+			{ .bytes = { 0x28, 0x6E, 0x55, 0xE6, 0x0B, 0x00, 0x00, 0x08 } }, // БСК 1
+			{ .bytes = { 0x28, 0xD6, 0x96, 0xE6, 0x0B, 0x00, 0x00, 0xC2 } }, // БСК 2
+			{ .bytes = { 0x28, 0x13, 0x4D, 0xAC, 0x0A, 0x00, 0x00, 0xC8 } }, // БСК 3 +
+			{ .bytes = { 0x28, 0x2F, 0x68, 0xAC, 0x0A, 0x00, 0x00, 0x72 } }, // БСК 4 +
+			{ .bytes = { 0x28, 0xD6, 0x96, 0xE6, 0x0B, 0x00, 0x00, 0xC2 } }  // БСК 5
 
 
 	};
 
-	const int num_devices = 5;
-#else // if defined ITS_ESP_DEBUG
+	const int num_devices = 6;
+#else // if defined SENSORS_ONEWIRE_SEARCH
 	// Если это стенд
 	// Find all connected devices
 	ESP_LOGD(TAG, "Find devices:");
@@ -95,7 +98,9 @@ static void sensors_task(void *arg) {
 	{
 		char rom_code_s[17];
 		owb_string_from_rom_code(search_state.rom_code, rom_code_s, sizeof(rom_code_s));
-		ESP_LOGD(TAG, "  %d : %s", num_devices, rom_code_s);
+		uint8_t *p = search_state.rom_code.bytes;
+		ESP_LOGD(TAG, "  %d : %s : 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+				num_devices, rom_code_s, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
 		device_rom_codes[num_devices] = search_state.rom_code;
 		++num_devices;
 		owb_search_next(owb, &search_state, &found);
@@ -191,6 +196,9 @@ static void sensors_task(void *arg) {
 			{
 				errors[i] = ds18b20_read_temp(devices[i], &readings[i]);
 			}
+			for (int i = 0; i < num_devices; i++) {
+				ESP_LOGV(TAG, "@ds  [%d] temp: %0.2f", i, readings[i]);
+			}
 
 			for (int i = 0; i < num_devices; ++i) {
 				mavlink_thermal_state_t mts = {0};
@@ -275,7 +283,7 @@ static void sensors_ina_task(void *arg) {
 			mes[i].time_steady = (uint32_t) now;
 		}
 		for (int i = 0; i < INA_MAX; i++) {
-			ESP_LOGD("SENSORS", "[%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
+			ESP_LOGD("SENSORS", "@ina [%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
 		}
 		for (int i = 0; i < INA_MAX; i++) {
 			mavlink_message_t msg;
