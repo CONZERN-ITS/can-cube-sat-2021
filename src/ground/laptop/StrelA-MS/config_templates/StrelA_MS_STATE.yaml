@@ -61,6 +61,10 @@ CentralWidget:
         name: GCS RADIO INSTANT RSSI
         sourse_id: '1_0'
         message_id: 'radio.rssi_instant'
+      GCS_RADIO_STATS:
+        name: GCS RADIO STATS
+        sourse_id: '1_0'
+        message_id: 'radio.stats'
       def_time_limit: 20
     Packet_table:
       CUBE_1_BCU_STATS:
@@ -187,6 +191,10 @@ CentralWidget:
         name: GCS RADIO INSTANT RSSI
         sourse_id: '1_0'
         message_id: 'radio.rssi_instant'
+      GCS_RADIO_STATS:
+        name: GCS RADIO STATS
+        sourse_id: '1_0'
+        message_id: 'radio.stats'
       is_on: true
     Time_table:
       CUBE_1_BCU:
@@ -436,12 +444,15 @@ CentralWidget:
             field_id:
             - rssi_pkt
             - rssi_signal
+            - snr_pkt
             field_name:
             - rssi packet
             - rssi signal
+            - snr pkt
             color:
             - '#FF4646'
             - '#0096FF'
+            - '#FFFFFF'
           GCS_RADIO_RSSI_INSTANT:
             sourse_id: '1_0'
             message_id: 'radio.rssi_instant'
@@ -601,12 +612,14 @@ MainWindow:
       connection: udpin:0.0.0.0:14540
       notimestamps: true
     ZMQ:
+      # bus_bpcs: "tcp://192.168.0.200:7778"
       bus_bpcs: "tcp://192.168.1.223:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
       - 'radio.rssi_instant'
       - 'radio.rssi_packet'
+      - 'radio.stats'
       notimestamps: true
     type: ZMQ
   size:

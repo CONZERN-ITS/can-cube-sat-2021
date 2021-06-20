@@ -1,3 +1,4 @@
+import typing
 import os
 os.environ['MAVLINK_DIALECT'] = "its"
 os.environ['MAVLINK20'] = "its"
@@ -157,6 +158,22 @@ class MAVLogDataSource():
 
 
 class ZMQDataSource():
+
+    def _extract_mdt_time(self, zmq_message: typing.List[bytes]) -> float:
+        """ Извлекает из сообщения на ZMQ шине таймштамп если он там есть
+            Если не удалось - возвращает time.time() """
+        mdt = zmq_message[1]
+        parsed = json.loads(mdt)  # type: typing.Dict
+
+        timestamp = None
+        if "time_s" in parsed and "time_us" in parsed:
+            try:
+                timestamp = int(parsed["time_s"]) + float(parsed["time_us"])/1000/1000
+            except:
+                pass
+
+        return timestamp if timestamp is not None else time.time()
+
     def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", topics=[], log_path="./", notimestamps=True):
         self.notimestamps = notimestamps
         self.bus_bpcs = bus_bpcs
@@ -187,12 +204,17 @@ class ZMQDataSource():
             if zmq_msg[0] == b'radio.rssi_instant':
                 return [Message(message_id='radio.rssi_instant',
                                 source_id=('1_0'),
-                                msg_time=time.time(),
+                                msg_time=self._extract_mdt_time(zmq_msg),
                                 msg_data=json.loads(zmq_msg[1].decode("utf-8")))]
             elif zmq_msg[0] == b'radio.rssi_packet':
                 return [Message(message_id='radio.rssi_packet',
                                 source_id=('1_0'),
-                                msg_time=time.time(),
+                                msg_time=self._extract_mdt_time(zmq_msg),
+                                msg_data=json.loads(zmq_msg[1].decode("utf-8")))]
+            elif zmq_msg[0] == b'radio.stats':
+                return [Message(message_id='radio.stats',
+                                source_id=('1_0'),
+                                msg_time=self._extract_mdt_time(zmq_msg),
                                 msg_data=json.loads(zmq_msg[1].decode("utf-8")))]
 
             msg_buf = zmq_msg[2]
