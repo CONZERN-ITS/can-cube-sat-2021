@@ -4,6 +4,8 @@
 
 Все сообщения состоят минимум из двух частей (zmq multipart). Первая часть - это просто строка, которая показывает топик сообщения на шине. Дальше идет одна или несколько частей собственно сообщения.
 
+В метаданных всех сообщений хранится время его формирования в стандартном формате time_s, time_us - целые части секунд POSIX таймштампа и дробные (микросекунды)
+
 
 ## Топики и сообщения
 
@@ -29,6 +31,8 @@
 {
 	"type": "object",
 	"properties": {
+		"time_s": { "type:" "integer" },
+		"time_us": { "type:" "integer" },
 		"cookie": {
 			"type": "integer",
 			"minimum": 1
@@ -40,6 +44,8 @@
 Пример:
 ```json
 {
+	"time_s": 1624224857,
+	"time_us": 428526,
 	"cookie": 10
 }
 ```
@@ -76,6 +82,8 @@
 {
 	"type": "object",
 	"properties": {
+		"time_s": { "type:" "integer" },
+		"time_us": { "type:" "integer" },
 		"cookie_in_wait": {
 			"type": "integer",
 			"minimum": 1
@@ -101,6 +109,8 @@
 
 ```json
 {
+	"time_s": 1624224857,
+	"time_us": 428526,
 	"cookie_in_wait": 0,
 	"cookie_in_progress": 3,
 	"cookie_sent": 1,
@@ -132,6 +142,8 @@
 {
 	"type": "object",
 	"properties": {
+		"time_s": { "type:" "integer" },
+		"time_us": { "type:" "integer" },
 		"checksum_valid": {
 			"type": ["boolean", "null"]
 		},
@@ -155,6 +167,8 @@
 Пример:
 ```json
 {
+	"time_s": 1624224857,
+	"time_us": 428526,
 	"checksum_valid": true,
 	"cookie": 42,
 	"rssi_pkt": -2,
@@ -187,6 +201,8 @@ RSSI значение передается JSON объектом, содержа
 {
 	"type": "object",
 	"properties": {
+		"time_s": { "type:" "integer" },
+		"time_us": { "type:" "integer" },
 		"rssi": {
 			"type": "integer"
 		}
@@ -197,6 +213,8 @@ RSSI значение передается JSON объектом, содержа
 Пример:
 ```json
 {
+	"time_s": 1624224857,
+	"time_us": 428526,
 	"rssi": -1
 }
 ```
@@ -224,6 +242,8 @@ RSSI значение передается JSON объектом, содержа
 {
 	"type": "object",
 	"properties": {
+		"time_s": { "type:" "integer" },
+		"time_us": { "type:" "integer" },
 		"cookie": {
 			"type": "integer",
 			"minimum": 1
@@ -238,6 +258,19 @@ RSSI значение передается JSON объектом, содержа
 			"type": "integer"
 		}
 	}
+}
+```
+
+Пример:
+```json
+{
+    "time_s": 1624224858,
+    "time_us": 439454,
+    "checksum_valid": true,
+    "cookie": 28,
+    "rssi_pkt": 0,
+    "snr_pkt": 13,
+    "rssi_signal": 0
 }
 ```
 
@@ -264,10 +297,17 @@ RSSI значение передается JSON объектом, содержа
 {
 	"type": "object",
 	"properties": {
+		"time_s": { "type:" "integer" },
+		"time_us": { "type:" "integer" },
+		
+		// Количество полученных пакетов по мнению радио
 		"pkt_received": { "type": "integer", "minimum": 0, "maximum": 65535 },
-		"pkt_errors": { "type": "integer", "minimum": 0, "maximum": 65535 },
+		// Ошибок контрольных сумм в телах полученных пакетах по мнению радио
+		"crc_errors": { "type": "integer", "minimum": 0, "maximum": 65535 },
+		// Ошибок контрольных сумм заголовков пакетов по мнению радио
 		"hdr_errors": { "type": "integer", "minimum": 0, "maximum": 65535 },
 
+		// Дальше идет массив аппаратных ошибок радио
 		"error_rc64k_calib": { "type": "boolean" },
 		"error_rc13m_calib": { "type": "boolean" },
 		"error_pll_calib": { "type": "boolean" },
@@ -276,6 +316,13 @@ RSSI значение передается JSON объектом, содержа
 		"error_xosc_calib": { "type": "boolean" },
 		"error_pll_lock": { "type": "boolean" },
 		"error_pa_ramp": { "type": "boolean" },
+
+		// Сколько циклов RX накрутил сервер
+		"srv_rx_done": { "type": "integer", "minimum": 0, "maximum": 4294967295},
+		// сколько пакетов выгреб из радио сервер
+		"srv_rx_frames": { "type": "integer", "minimum": 0, "maximum": 4294967295},
+		// Сколько пакетов отправил в небо сервер
+		"srv_tx_frames": { "type": "integer", "minimum": 0, "maximum": 4294967295}
 	}
 }
 ```
@@ -293,7 +340,10 @@ RSSI значение передается JSON объектом, содержа
 	"error_img_calib": false,
 	"error_xosc_calib": true,
 	"error_pll_lock": false,
-	"error_pa_ramp": false
+	"error_pa_ramp": false,
+	"srv_rx_done": 3,
+	"srv_rx_frames": 0,
+	"srv_tx_frames": 0 
 }
 ```
 
