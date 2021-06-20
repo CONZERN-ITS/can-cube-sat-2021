@@ -15,13 +15,16 @@ static sx126x_drv_t _radio;
 
 static void print_status(void)
 {
-	return;
+	HAL_Delay(2);
 
 	sx126x_status_t status;
 	int rc = sx126x_api_get_status(&_radio.api, &status);
+	HAL_Delay(2);
 
 	uint16_t device_errors;
 	rc = sx126x_drv_get_device_errors(&_radio, &device_errors);
+	HAL_Delay(2);
+
 	printf("status read; rc=%d, cmd_status=%d, dev_status=%d, errors=0x%04X\n",
 			rc, (int)status.bits.cmd_status, (int)status.bits.chip_mode,
 			(int)device_errors
@@ -46,7 +49,7 @@ int app_main(void)
 			.frequency = 438125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_3400_US,
 			.pa_power = 10,
-			.lna_boost = true,
+			.lna_boost = false,
 
 			// Параметры пакетирования
 			.spreading_factor = SX126X_LORA_SF_8,
@@ -112,23 +115,11 @@ int app_main(void)
 	uint8_t i;
 	for (i = 0; ; i++)
 	{
-		memset(packet, 0x00, sizeof(packet));
-		const char sample[] = "lora";
-		const char * sample_walker = sample;
-		for (int j = 0; j < sizeof(packet); j++)
-		{
-			packet[j] = *sample_walker++;
-			if (0 == *sample_walker)
-				sample_walker = sample;
-		}
-		rc = sx126x_drv_payload_write(&_radio, packet, APP_PACKET_SIZE);
-		printf("payload write error: %d\n", rc);
-
 		sx126x_drv_evt_t event;
-		rc = sx126x_drv_tx_blocking(&_radio, 60*1000, 120*1000, &event);
-		printf("tx blocking: rc: %d, ek: %d, to: %d\n", rc, (int)event.kind, (int)event.arg.tx_done.timed_out);
+		//rc = sx126x_drv_tx_blocking(&_radio, 30*1000, 45*1000, &event);
+		//printf("tx blocking: rc: %d, ek: %d, to: %d\n", rc, (int)event.kind, (int)event.arg.tx_done.timed_out);
 
-		rc = sx126x_drv_rx_blocking(&_radio, 30*1000, 50*1000, &event);
+		rc = sx126x_drv_rx_blocking(&_radio, 60*1000, 120*1000, &event);
 		printf(
 				"rx blocking rc: %d; ek: %d; to: %d; crc: %d\n",
 				rc, (int)event.kind, (int)event.arg.rx_done.timed_out,
@@ -148,10 +139,25 @@ int app_main(void)
 			packet[packet_size] = 0;
 			printf((char*)packet);
 			printf("\n");
+
+
+			memset(packet, 0x00, sizeof(packet));
+			const char sample[] = "cofe";
+			const char * sample_walker = sample;
+			for (int j = 0; j < APP_PACKET_SIZE; j++)
+			{
+				packet[j] = *sample_walker++;
+				if (0 == *sample_walker)
+					sample_walker = sample;
+			}
+			rc = sx126x_drv_payload_write(&_radio, packet, APP_PACKET_SIZE);
+			printf("payload write error: %d\n", rc);
+			rc = sx126x_drv_tx_blocking(&_radio, 30*1000, 45*1000, &event);
+			printf("tx blocking: rc: %d, ek: %d, to: %d\n", rc, (int)event.kind, (int)event.arg.tx_done.timed_out);
 		}
 
 
-		HAL_Delay(100);
+		//HAL_Delay(100);
 	}
 
 	return 0;

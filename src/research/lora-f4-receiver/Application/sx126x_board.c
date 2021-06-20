@@ -2,6 +2,8 @@
 
 #include <stm32f4xx_hal.h>
 
+#include <stdio.h>
+
 #include "main.h"
 #include "sx126x_board.h"
 
@@ -10,20 +12,20 @@ extern SPI_HandleTypeDef hspi1;
 #define hspi (&hspi1)
 
 
-#define SX126X_TXE_GPIO_Port GPIOC
-#define SX126X_TXE_Pin GPIO_PIN_4
+#define SX126X_TXE_GPIO_Port TXE_GPIO_Port
+#define SX126X_TXE_Pin TXE_Pin
 
-#define SX126X_RXE_GPIO_Port GPIOC
-#define SX126X_RXE_Pin GPIO_PIN_5
+#define SX126X_RXE_GPIO_Port RXE_GPIO_Port
+#define SX126X_RXE_Pin RXE_Pin
 
-#define SX126X_CS_GPIO_Port GPIOB
-#define SX126X_CS_Pin GPIO_PIN_0
+#define SX126X_CS_GPIO_Port NSS_GPIO_Port
+#define SX126X_CS_Pin NSS_Pin
 
-#define SX126X_NRST_GPIO_Port GPIOB
-#define SX126X_NRST_Pin GPIO_PIN_1
+#define SX126X_NRST_GPIO_Port RST_GPIO_Port
+#define SX126X_NRST_Pin RST_Pin
 
-#define SX126X_BUSY_GPIO_Port GPIOE
-#define SX126X_BUSY_Pin GPIO_PIN_7
+#define SX126X_BUSY_GPIO_Port BUSY_GPIO_Port
+#define SX126X_BUSY_Pin BUSY_Pin
 
 
 static void _cs_down(void)
@@ -97,6 +99,13 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 			return SX126X_ERROR_TIMED_OUT;
 	}
 
+	uint32_t now;
+	sx126x_brd_get_time(brd, &now);
+	//printf("was busy for %d ms\n", (int)(now - start));
+
+	//sx126x_status_t status;
+	//sx126x_brd_cmd_read(brd, SX126X_CMD_GET_STATUS, &status.value, NULL, 0);
+
 	return 0;
 }
 
@@ -137,6 +146,8 @@ int sx126x_brd_cmd_write(sx126x_board_t * brd, uint8_t cmd_code, const uint8_t *
 	HAL_SPI_Transmit(hspi, (uint8_t*)args, args_size, HAL_MAX_DELAY);
 
 	_cs_up();
+
+	//printf("cmd write 0x%02X\n", (int)cmd_code);
 	return 0;
 }
 
@@ -155,6 +166,14 @@ int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status
 	if (status) *status = _status;
 
 	_cs_up();
+
+
+	sx126x_status_t status_typed;
+	status_typed.value = *status;
+	//printf("cmd read 0x%02X cmd_status=%d, dev_status=%d\n",
+	//	(int)cmd_code, status_typed.bits.cmd_status, status_typed.bits.chip_mode
+	//);
+
 	return 0;
 }
 
