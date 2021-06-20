@@ -40,7 +40,13 @@ static int64_t _timespec_diff_ms_now(const struct timespec * then)
 }
 
 
-static void _radio_deinit(server_t * server)
+static void _reset_stats(server_stats_t * stats)
+{
+	memset(stats, 0x00, sizeof(*stats));
+}
+
+
+static void _radio_dtor(server_t * server)
 {
 	sx126x_drv_t * const radio = &server->radio;
 
@@ -52,27 +58,44 @@ static void _radio_deinit(server_t * server)
 }
 
 
-static int _radio_init(server_t * server)
+static int _radio_ctor(server_t * server)
 {
 	int rc;
 	sx126x_drv_t * const radio = &server->radio;
 
 	rc = sx126x_drv_ctor(radio, NULL);
 	if (0 != rc)
-		goto bad_exit;
+		return rc;
 
+	return 0;
+}
+
+
+static int _radio_configure(server_t * server)
+{
+	int rc;
 	uint16_t device_errors = 0;
+	sx126x_drv_t * const radio = &server->radio;
+
+	device_errors = 0;
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	if (0 == rc)
+		log_info("radio before reset; device_errors = 0x%04"PRIx16"", rc, device_errors);
+	else
+		log_warn("unable to fetch radio errors before reset: %d", rc);
+
 	rc = sx126x_drv_reset(radio);
 	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("after reset; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	log_info("radio after reset; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
+	_reset_stats(&server->stats);
 
 	device_errors = 0;
 	rc = sx126x_drv_configure_basic(radio, &server->config.radio_basic_cfg);
 	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure basic; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	log_info("radio configure basic; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -80,7 +103,7 @@ static int _radio_init(server_t * server)
 	device_errors = 0;
 	sx126x_drv_get_device_errors(radio, &device_errors);
 	rc = sx126x_drv_configure_lora_modem(radio, &server->config.radio_modem_cfg);
-	log_info("configure lora modem; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	log_info("radio configure lora modem; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -88,44 +111,35 @@ static int _radio_init(server_t * server)
 	device_errors = 0;
 	rc = sx126x_drv_configure_lora_packet(radio, &server->config.radio_packet_cfg);
 	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure lora packet; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	log_info("radio configure lora packet; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
 
 	rc = sx126x_drv_configure_lora_cad(radio, &server->config.radio_cad_cfg);
 	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure lora cad; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	log_info("radio configure lora cad; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
 
 	rc = sx126x_drv_configure_lora_rx_timeout(radio, &server->config.radio_rx_timeout_cfg);
 	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure lora rx timeout; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	log_info("radio configure lora rx timeout; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
-
-
-	device_errors = 0;
-	rc = sx126x_drv_mode_standby_rc(radio);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure standby_rc; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
-	if (0 != rc)
-		goto bad_exit;
-
 
 	device_errors = 0;
 	rc = sx126x_drv_mode_standby(radio);
 	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("configure standby default; rc = %d, device_errors: 0x%04"PRIx16"", rc, device_errors);
+	log_info("radio configure standby; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
 	return 0;
 
 bad_exit:
-	_radio_deinit(server);
+	_radio_dtor(server);
 	return -1;
 }
 
@@ -220,7 +234,11 @@ static void _fetch_rx(server_t * server)
 			packet_status.rssi_pkt, packet_status.snr_pkt, packet_status.signal_rssi_pkt
 	);
 
-	// Коды ошибки не проверяем. Черт с ним, мы пыталисьs
+	// Коды ошибки не проверяем. Черт с ним, мы пытались
+
+	server->stats.last_rx_rssi_pkt = packet_status.rssi_pkt;
+	server->stats.last_rx_rssi_signal = packet_status.signal_rssi_pkt;
+	server->stats.last_rx_snr = packet_status.snr_pkt;
 }
 
 
@@ -330,7 +348,27 @@ static void _report_radio_stats(server_t * server)
 		return;
 	}
 
-	zserver_send_radio_stats(&server->zserver, &stats, device_errors);
+	zserver_send_stats(&server->zserver, &stats, device_errors, &server->stats);
+
+	// А еще напишем в свою консоль что происходит
+	log_info("=-=-=-=-=-=-=-=-=-=-=-=-");
+
+	log_info(
+			"stats: rf_rcvd: %05"PRIu16", rf_bad_hdr: %05"PRIu16", rf_bad_crc: %05"PRIu16"",
+			stats.pkt_received, stats.hdr_errors, stats.crc_errors
+	);
+	log_info(
+			"stats: rx_frames: %05"PRIu32", rx_done: %05"PRIu32", tx_frames: %05"PRIu32"",
+			server->stats.rx_frame_counter,
+			server->stats.rx_done_counter,
+			server->stats.tx_frame_counter
+	);
+	log_info(
+			"stats: lrx_rssi_pkt: %d, lrx_rssi_sig: %d, lrx_rssi_snr: %d",
+			server->stats.last_rx_rssi_pkt, server->stats.last_rx_rssi_signal, server->stats.last_rx_snr
+	);
+
+	log_info("=-=-=-=-=-=-=-=-=-=-=-=-");
 }
 
 
@@ -462,8 +500,7 @@ static int _wait_for_rx(server_t * server, bool * got_packet)
 			}
 			else
 			{
-				// Есть пакет! Выграебаем!
-				_fetch_rx(server);
+				// Есть пакет!
 				*got_packet = true;
 			}
 
@@ -596,6 +633,9 @@ static int _server_loop(server_t * server)
 	const size_t rx_timeout_limit = server->config.rx_timeout_limit;
 
 begin_rx:
+	if (server->stop_requested)
+		return 0;
+
 	do
 	{
 		log_trace("going rx");
@@ -612,11 +652,15 @@ begin_rx:
 			return rc;
 
 		log_trace("rx operation complete");
+		server->stats.rx_done_counter++;
+
 		if (got_packet)
 		{
 			server->rx_packet_received = _timespec_now();
 			server->rx_timeout_count = 0;
 			log_trace("rx yielded packet");
+			_fetch_rx(server);
+			server->stats.rx_frame_counter++;
 		}
 		else
 		{
@@ -629,7 +673,7 @@ begin_rx:
 
 
 	// Раз мы оказались тут, то это означает что эфир свободен
-	log_warn("no rx, channel free. Ready for TX");
+	log_debug("no rx, channel free. Ready for TX");
 
 
 	// А есть чего передавать то?
@@ -672,6 +716,7 @@ begin_rx:
 		server->tx_cookie_sent = server->tx_cookie_in_progress;
 		server->tx_cookie_in_progress = 0;
 		server->tx_cookies_updated = true;
+		server->stats.tx_frame_counter++;
 	}
 	else
 	{
@@ -687,34 +732,79 @@ begin_rx:
 }
 
 
-int server_task(server_t * server, const server_config_t * config)
+int server_ctor(server_t * server, const server_config_t * config)
 {
 	int rc;
 	memset(server, 0x00, sizeof(*server));
 	server->config = *config;
 
 	rc = zserver_init(&server->zserver);
-	if (rc != 0)
-		return rc;
-
-again:
-	rc = _radio_init(server);
-	if (rc != 0)
+	if (0 != rc)
 	{
-		log_error("unable to initialize radio: %d. Will retry", rc);
-		sleep(1);
-		goto again;
+		log_fatal("zserver ctor failed: %d", rc);
+		return 1;
 	}
-	log_info("radio intialized");
 
-	// Крутимся!
-	_server_loop(server);
+	rc = _radio_ctor(server);
+	if (0 != rc)
+	{
+		log_fatal("radio ctor failed: %d", rc);
+		zserver_deinit(&server->zserver);
+		return 2;
+	}
 
-	log_info("server loop terminated");
-
-	zserver_deinit(&server->zserver);
-	_radio_deinit(server);
 	return 0;
 }
 
+
+void server_dtor(server_t * server)
+{
+	zserver_deinit(&server->zserver);
+	_radio_dtor(server);
+}
+
+
+int server_serve(server_t * server)
+{
+	int rc;
+	server->stop_requested = 0;
+
+again:
+	if (server->stop_requested)
+		return 0;
+
+	rc = _radio_configure(server);
+	if (rc != 0)
+	{
+		log_error("unable to configure radio: %d. Will retry", rc);
+		sleep(1);
+		goto again;
+	}
+	log_info("radio configured");
+
+	// Крутимся!
+	rc = _server_loop(server);
+	if (0 == rc)
+	{
+		// Если сервер вернул 0, значит он остановился вежливо
+		// Останавливаем его как есть
+		log_info("server loop stopped gracefully");
+	}
+	else
+	{
+		// Нет, сервер остановился грубо. Что-то пошло не так
+		// Перезапускаемся
+		log_error("server loop stopped by error: %d", rc);
+		goto again;
+	}
+
+	return 0;
+}
+
+
+int server_request_stop(server_t * server)
+{
+	server->stop_requested = 1;
+	return 0;
+}
 

@@ -1,6 +1,8 @@
 #ifndef SERVER_RADIO_SRC_RADIO_CONFIG_H_
 #define SERVER_RADIO_SRC_RADIO_CONFIG_H_
 
+#include <signal.h>
+
 #include <time.h>
 #include <stdbool.h>
 #include <inttypes.h>
@@ -15,11 +17,25 @@
 #define SERVER_MAX_PACKET_SIZE (255)
 
 
+typedef struct server_stats_t
+{
+	uint32_t rx_done_counter;
+	uint32_t rx_frame_counter;
+	uint32_t tx_frame_counter;
+
+	int8_t last_rx_rssi_pkt;
+	int8_t last_rx_rssi_signal;
+	int8_t last_rx_snr;
+} server_stats_t;
+
+
 typedef struct server_t
 {
 	server_config_t config;
 	sx126x_drv_t radio;
 	zserver_t zserver;
+
+	server_stats_t stats;
 
 	struct timespec rx_packet_received;
 	size_t rx_timeout_count;
@@ -39,10 +55,17 @@ typedef struct server_t
 	struct timespec radio_stats_last_report_timepoint;
 	struct timespec tx_state_last_report_timepoint;
 
+	volatile sig_atomic_t stop_requested;
 } server_t;
 
 
-int server_task(server_t * server, const server_config_t * config);
+int server_ctor(server_t * server, const server_config_t * config);
+
+void server_dtor(server_t * server);
+
+int server_serve(server_t * server);
+
+int server_request_stop(server_t * server);
 
 
 #endif /* SERVER_RADIO_SRC_RADIO_CONFIG_H_ */

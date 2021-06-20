@@ -22,8 +22,11 @@ typedef struct zserver_t
 } zserver_t;
 
 
-int zserver_init(zserver_t * zserver);
+struct server_stats_t;
+typedef struct server_stats_t server_stats_t;
 
+
+int zserver_init(zserver_t * zserver);
 
 void zserver_deinit(zserver_t * zserver);
 
@@ -56,8 +59,9 @@ int zserver_send_rx_packet(
 );
 
 
-int zserver_send_radio_stats(
-	zserver_t * zserver, const sx126x_stats_t * stats, uint16_t device_errors
+int zserver_send_stats(
+	zserver_t * zserver, const sx126x_stats_t * stats, uint16_t device_errors,
+	const server_stats_t * server_stats
 );
 
 int zserver_send_instant_rssi(zserver_t * zserver, int8_t rssi);

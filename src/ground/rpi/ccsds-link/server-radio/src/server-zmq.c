@@ -9,6 +9,9 @@
 #include <jsmin.h>
 
 
+#include "server.h"
+
+
 #define ITS_PUB_ENDPOINT_KEY "ITS_GBUS_BSCP_ENDPOINT"
 #define ITS_SUB_ENDPOINT_KEY "ITS_GBUS_BPCS_ENDPOINT"
 
@@ -560,10 +563,10 @@ int zserver_send_rx_packet(
 }
 
 
-int zserver_send_radio_stats(
-	zserver_t * zserver, const sx126x_stats_t * stats, uint16_t device_errors
-)
-{
+int zserver_send_stats(
+	zserver_t * zserver, const sx126x_stats_t * stats, uint16_t device_errors,
+	const server_stats_t * server_stats
+){
 	int rc;
 
 	timestamp_t now;
@@ -585,7 +588,10 @@ int zserver_send_radio_stats(
 			"\"error_img_calib\": %s, "
 			"\"error_xosc_start\": %s, "
 			"\"error_pll_lock\": %s, "
-			"\"error_pa_ramp\": %s "
+			"\"error_pa_ramp\": %s ",
+			"\"srv_rx_done\": %"PRIu32", "
+			"\"srv_rx_frames\": %"PRIu32", "
+			"\"srv_tx_frames\": %"PRIu32", "
 		"}",
 		now.seconds,
 		now.microseconds,
@@ -597,7 +603,8 @@ int zserver_send_radio_stats(
 		device_errors & SX126X_DEVICE_ERROR_IMG_CALIB	? "true": "false",
 		device_errors & SX126X_DEVICE_ERROR_XOSC_START	? "true": "false",
 		device_errors & SX126X_DEVICE_ERROR_PLL_LOCK	? "true": "false",
-		device_errors & SX126X_DEVICE_ERROR_PA_RAMP		? "true": "false"
+		device_errors & SX126X_DEVICE_ERROR_PA_RAMP		? "true": "false",
+		server_stats->rx_done_counter, server_stats->rx_frame_counter, server_stats->tx_frame_counter
 	);
 	if (rc < 0 || rc >= sizeof(json_buffer))
 	{
