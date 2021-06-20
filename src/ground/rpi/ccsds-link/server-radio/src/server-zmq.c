@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <zmq.h>
 #include <log.h>
@@ -19,6 +20,34 @@
 #define ITS_GBUS_TOPIC_RADIO_STATS "radio.stats"
 
 
+
+typedef struct timestamp_t
+{
+	uint64_t seconds;
+	uint32_t microseconds;
+} timestamp_t;
+
+
+#define TIMESTAMP_S_PRINT_FMT PRIu64
+#define TIMESTAMP_uS_PRINT_FMT PRIu32
+
+
+//! Текущее мировое время
+static struct timestamp_t _get_world_time(void)
+{
+	struct timespec tsc;
+	int rc = clock_gettime(CLOCK_REALTIME, &tsc);
+	assert(0 == rc);
+
+	struct timestamp_t retval = {
+			.seconds = tsc.tv_sec,
+			.microseconds = tsc.tv_nsec / 1000
+	};
+	return retval;
+}
+
+
+//! Разбор метаданных входящего TX фрейма
 static int _parse_tx_frame_metadata(
 		const char * json_buffer, size_t buffer_size, msg_cookie_t * msg_cookie
 )
@@ -355,22 +384,28 @@ int zserver_send_tx_buffers_state(
 		}
 	}
 
+	timestamp_t now;
+	now = _get_world_time();
+
 	// Теперь наконец-то sprintf самого json-а
-	char json_buffer[1024] = {0}; // Вот так круто берем килобайт
+	char json_buffer[1024] = {0};
 	rc = snprintf(
 			json_buffer, sizeof(json_buffer),
 			"{"
+				"\"time_s\": %"TIMESTAMP_S_PRINT_FMT", "
+				"\"time_us\": %"TIMESTAMP_uS_PRINT_FMT", "
 				"\"cookie_in_wait\": %s, "
 				"\"cookie_in_progress\": %s, "
 				"\"cookie_sent\": %s, "
 				"\"cookie_dropped\": %s"
 			"}",
+			now.seconds,
+			now.microseconds,
 			cookie_str_buffers[0],
 			cookie_str_buffers[1],
 			cookie_str_buffers[2],
 			cookie_str_buffers[3]
 	);
-
 	if (rc < 0 || rc >= sizeof(json_buffer))
 	{
 		log_error("sprintf for tx_state json failed: %d, %d: %s", rc, errno, strerror(errno));
@@ -407,16 +442,23 @@ int zserver_send_packet_rssi(
 {
 	int rc;
 
+	timestamp_t now;
+	now = _get_world_time();
+
 	// Готовим сообщение
 	char json_buffer[1024] = {0};
 	rc = snprintf(
 			json_buffer, sizeof(json_buffer),
 			"{"
+				"\"time_s\": %"TIMESTAMP_S_PRINT_FMT", "
+				"\"time_us\": %"TIMESTAMP_uS_PRINT_FMT", "
 				"\"cookie\": %"MSG_COOKIE_T_PLSHOLDER", "
 				"\"rssi_pkt\": %d, "
 				"\"snr_pkt\": %d, "
 				"\"rssi_signal\": %d"
 			"}",
+			now.seconds,
+			now.microseconds,
 			packet_cookie,
 			(int)rssi_pkt,
 			(int)snr_pkt,
@@ -458,17 +500,24 @@ int zserver_send_rx_packet(
 	int rc;
 	log_debug("sending rx data");
 
+	timestamp_t now;
+	now = _get_world_time();
+
 	// Готовим метаданные
 	char json_buffer[1024] = {0};
 	rc = snprintf(
 			json_buffer, sizeof(json_buffer),
 			"{"
+				"\"time_s\": %"TIMESTAMP_S_PRINT_FMT", "
+				"\"time_us\": %"TIMESTAMP_uS_PRINT_FMT", "
 				"\"checksum_valid\": %s, "
 				"\"cookie\": %"MSG_COOKIE_T_PLSHOLDER", "
 				"\"rssi_pkt\": %d, "
 				"\"snr_pkt\": %d, "
 				"\"rssi_signal\": %d"
 			"}",
+			now.seconds,
+			now.microseconds,
 			crc_valid ? "true" : "false",
 			packet_cookie,
 			rssi_pkt,
@@ -517,10 +566,15 @@ int zserver_send_radio_stats(
 {
 	int rc;
 
+	timestamp_t now;
+	now = _get_world_time();
+
 	char json_buffer[1024] = { 0 };
 	rc = snprintf(
 		json_buffer, sizeof(json_buffer),
 		"{"
+			"\"time_s\": %"TIMESTAMP_S_PRINT_FMT", "
+			"\"time_us\": %"TIMESTAMP_uS_PRINT_FMT", "
 			"\"pkt_received\": %"PRIu16", "
 			"\"crc_errors\": %"PRIu16", "
 			"\"hdr_errors\": %"PRIu16", "
@@ -533,6 +587,8 @@ int zserver_send_radio_stats(
 			"\"error_pll_lock\": %s, "
 			"\"error_pa_ramp\": %s "
 		"}",
+		now.seconds,
+		now.microseconds,
 		stats->pkt_received, stats->crc_errors, stats->hdr_errors,
 		device_errors & SX126X_DEVICE_ERROR_RC64K_CALIB	? "true": "false",
 		device_errors & SX126X_DEVICE_ERROR_RC13M_CALIB	? "true": "false",
@@ -575,15 +631,26 @@ int zserver_send_instant_rssi(zserver_t * zserver, int8_t rssi)
 	int rc;
 	log_debug("sending rssi %d", (int)rssi);
 
+	timestamp_t now;
+	now = _get_world_time();
+
 	// Готовим сообщение
 	char json_buffer[1024] = {0};
-	rc = snprintf(json_buffer, sizeof(json_buffer), "{\"rssi\": %d}", (int)rssi);
+	rc = snprintf(json_buffer, sizeof(json_buffer),
+			"{"
+				"\"time_s\": %"TIMESTAMP_S_PRINT_FMT", "
+				"\"time_us\": %"TIMESTAMP_uS_PRINT_FMT", "
+				"\"rssi\": %d"
+			"}",
+			now.seconds,
+			now.microseconds,
+			(int)rssi
+	);
 	if (rc < 0)
 	{
 		log_error("sprintf rssi failed: %d, %d: %s", rc, errno, strerror(errno));
 		return 1;
 	}
-
 
 	// Топик
 	const char topic[] = ITS_GBUS_TOPIC_RSSI_INSTANT;
