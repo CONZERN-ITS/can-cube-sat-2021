@@ -588,10 +588,10 @@ int zserver_send_stats(
 			"\"error_img_calib\": %s, "
 			"\"error_xosc_start\": %s, "
 			"\"error_pll_lock\": %s, "
-			"\"error_pa_ramp\": %s ",
+			"\"error_pa_ramp\": %s, "
 			"\"srv_rx_done\": %"PRIu32", "
 			"\"srv_rx_frames\": %"PRIu32", "
-			"\"srv_tx_frames\": %"PRIu32", "
+			"\"srv_tx_frames\": %"PRIu32" "
 		"}",
 		now.seconds,
 		now.microseconds,
