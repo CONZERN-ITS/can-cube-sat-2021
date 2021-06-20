@@ -212,19 +212,18 @@ static int _workaround_4_iq_polarity(sx126x_drv_t * drv, bool iq_inversion_used)
 	// работает всегда, когда вызывают (только при настройке лоры)
 
 	uint8_t reg_value = 0x00;
-
-	rc = sx126x_brd_reg_read(drv->api.board, SX126X_REGADDR_LR_INVIQ_WORKAROUND, &reg_value, sizeof(reg_value));
-	SX126X_RETURN_IF_NONZERO(rc);
-
 	if (iq_inversion_used)
-		reg_value |= 0x04;
-	else
-		reg_value &= ~0x04;
+	{
+		rc = sx126x_brd_reg_read(drv->api.board, SX126X_REGADDR_LR_INVIQ_WORKAROUND, &reg_value, sizeof(reg_value));
+		SX126X_RETURN_IF_NONZERO(rc);
 
-	rc = sx126x_brd_reg_write(drv->api.board, SX126X_REGADDR_LR_INVIQ_WORKAROUND, &reg_value, sizeof(reg_value));
-	SX126X_RETURN_IF_NONZERO(rc);
-	rc = _wait_busy(drv);
-	SX126X_RETURN_IF_NONZERO(rc);
+		reg_value |= 0x04;
+
+		rc = sx126x_brd_reg_write(drv->api.board, SX126X_REGADDR_LR_INVIQ_WORKAROUND, &reg_value, sizeof(reg_value));
+		SX126X_RETURN_IF_NONZERO(rc);
+		rc = _wait_busy(drv);
+		SX126X_RETURN_IF_NONZERO(rc);
+	}
 
 	return 0;
 }

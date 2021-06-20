@@ -33,6 +33,8 @@ int app_main(void)
 {
 	int rc;
 
+	HAL_Delay(1000);
+
 	const sx126x_drv_basic_cfg_t basic_cfg = {
 			.use_dio3_for_tcxo = true,
 			.tcxo_v = SX126X_TCXO_CTRL_1_8V,
