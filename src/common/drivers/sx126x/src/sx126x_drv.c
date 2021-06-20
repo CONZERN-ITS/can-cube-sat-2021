@@ -327,18 +327,6 @@ static int _set_rf_frequency(sx126x_drv_t * drv, uint32_t frequency)
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	rc = sx126x_api_calibrate(
-			&drv->api,
-			SX126X_CALIB_FLAG_RC64K
-			| SX126X_CALIB_FLAG_RC13M
-			| SX126X_CALIB_FLAG_PLL
-			| SX126X_CALIB_FLAG_ADCP
-			| SX126X_CALIB_FLAG_ADCBN
-			| SX126X_CALIB_FLAG_ADCBP
-			| SX126X_CALIB_FLAG_IMAGE
-	);
-	SX126X_RETURN_IF_NONZERO(rc);
-
 	rc = sx126x_api_set_rf_frequency(&drv->api, frequency);
 	SX126X_RETURN_IF_NONZERO(rc);
 	rc = _wait_busy(drv);
@@ -572,6 +560,8 @@ int sx126x_drv_configure_basic(sx126x_drv_t * drv, const sx126x_drv_basic_cfg_t 
 			return SX126X_ERROR_CHIP_FAILURE;
 
 		rc = sx126x_api_clear_device_errors(&drv->api);
+		SX126X_RETURN_IF_NONZERO(rc);
+		rc = _wait_busy(drv);
 		SX126X_RETURN_IF_NONZERO(rc);
 
 		// Теперь наконец-то включаем TCXO
@@ -1062,6 +1052,14 @@ static int _invoke_blocking(sx126x_drv_t * drv,
 
 	if (!_is_in_standby(drv))
 		return SX126X_ERROR_BAD_STATE;
+
+	// Чистим прерывания, которые могли остаться от чего-нибудь там
+	{
+		uint16_t irq_status;
+		rc = _fetch_clear_irq(drv, &irq_status);
+		if (0 != rc)
+			return rc;
+	}
 
 	// Уходим в режим приёма или перадачи
 	rc = modeswitch_call(drv, hw_timeout_ms);
