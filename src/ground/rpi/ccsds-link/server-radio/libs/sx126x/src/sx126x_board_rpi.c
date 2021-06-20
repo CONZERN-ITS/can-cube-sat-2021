@@ -247,13 +247,15 @@ int sx126x_brd_get_chip_type(sx126x_board_t * brd, sx126x_chip_type_t * chip_typ
 
 int sx126x_brd_reset(sx126x_board_t * brd)
 {
+	int rc;
+
 	// Опускаем ресет линию и чуточку ждем
-	int rc = gpiod_line_set_value(brd->line_nrst, 0);
+	rc = gpiod_line_set_value(brd->line_nrst, 0);
 	if (rc < 0)
 		return SX126X_ERROR_BOARD;
 
 	// Чуточку поспим
-	usleep(50*1000);
+	usleep(120); // 100 по даташиту
 
 	// Включаем линию сброса обратноs
 	rc = gpiod_line_set_value(brd->line_nrst, 1);
@@ -274,13 +276,14 @@ int sx126x_brd_wait_on_busy(sx126x_board_t * brd, uint32_t timeout)
 	if (0 != rc)
 		return SX126X_ERROR_BOARD;
 
+	usleep(700); // 600мкс по даташиту оно может залипать
 	do
 	{
 		gpio_value = gpiod_line_get_value(brd->line_busy);
 		if (gpio_value < 0)
 			return SX126X_ERROR_BOARD;
 
-		usleep(10); // Чуточку спим
+		usleep(500); // Чуточку спим
 
 		// Смотрим не прошел ли таймаут
 		uint32_t now;
@@ -363,7 +366,7 @@ int sx126x_brd_cmd_read(sx126x_board_t * brd, uint8_t cmd_code, uint8_t * status
 	// Загоняем код команды
 	tran[0].tx_buf = (size_t)&cmd_code;
 	tran[0].len = 1;
-	
+
 	// Читаем статус устройства
 	uint8_t dummy_status;
 	uint8_t * status = status_ ? status_ : &dummy_status;
