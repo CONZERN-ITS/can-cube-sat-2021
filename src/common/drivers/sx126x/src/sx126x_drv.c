@@ -219,7 +219,7 @@ static int _workaround_4_iq_polarity(sx126x_drv_t * drv, bool iq_inversion_used)
 	if (iq_inversion_used)
 		reg_value |= 0x04;
 	else
-		reg_value &= 0xF7;
+		reg_value &= ~0x04;
 
 	rc = sx126x_brd_reg_write(drv->api.board, SX126X_REGADDR_LR_INVIQ_WORKAROUND, &reg_value, sizeof(reg_value));
 	SX126X_RETURN_IF_NONZERO(rc);
