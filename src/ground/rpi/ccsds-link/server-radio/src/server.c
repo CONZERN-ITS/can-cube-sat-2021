@@ -220,12 +220,24 @@ static void _fetch_rx(server_t * server)
 		(int)packet_status.rssi_pkt, (int)packet_status.snr_pkt, (int)packet_status.signal_rssi_pkt
 	);
 
+	uint16_t frame_no;
+	const uint8_t * payload_ptr = payload;
+	const uint16_t * frame_no_ptr = NULL;
+	if (server->config.extract_frame_number)
+	{
+		payload_ptr = payload + 2;
+		payload_size -= 2;
+		frame_no = payload[0] | (payload[1] << 8);
+		frame_no_ptr = &frame_no;
+	}
+
 	// Отправляем полученное через zmq
 	msg_cookie_t cookie = server->rx_cookie++;
 	zserver_send_rx_packet(
 			&server->zserver,
-			payload, payload_size,
-			cookie, crc_valid,
+			payload_ptr, payload_size,
+			cookie, frame_no_ptr,
+			crc_valid,
 			packet_status.rssi_pkt, packet_status.snr_pkt, packet_status.signal_rssi_pkt
 	);
 

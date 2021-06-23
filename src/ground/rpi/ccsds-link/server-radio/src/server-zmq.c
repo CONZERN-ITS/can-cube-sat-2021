@@ -496,7 +496,7 @@ int zserver_send_packet_rssi(
 int zserver_send_rx_packet(
 	zserver_t * zserver,
 	const uint8_t * packet_data, size_t packet_data_size,
-	msg_cookie_t packet_cookie,
+	msg_cookie_t packet_cookie, const uint16_t * packet_no,
 	bool crc_valid,	int8_t rssi_pkt, int8_t snr_pkt, int8_t signal_rssi_pkt
 )
 {
@@ -505,6 +505,17 @@ int zserver_send_rx_packet(
 
 	timestamp_t now;
 	now = _get_world_time();
+
+	char frame_no_buffer[5+1] = { 0 }; // максимум это 65535, в 5 символов влезет + 1 на \0
+	const char * frame_no_ptr = "null"; // пока что считаем что оно null
+	if (packet_no != NULL)
+	{
+		rc = snprintf(frame_no_buffer, sizeof(frame_no_buffer), "%"PRIu16"", *packet_no);
+		if (rc < 0 || rc >= sizeof(frame_no_buffer))
+			log_error("unable to printf packet_number! %d, %d:%s", rc, errno, strerror(errno));
+		else
+			frame_no_ptr = frame_no_buffer;
+	}
 
 	// Готовим метаданные
 	char json_buffer[1024] = {0};
@@ -515,6 +526,7 @@ int zserver_send_rx_packet(
 				"\"time_us\": %"TIMESTAMP_uS_PRINT_FMT", "
 				"\"checksum_valid\": %s, "
 				"\"cookie\": %"MSG_COOKIE_T_PLSHOLDER", "
+				"\"frame_no\": %s, "
 				"\"rssi_pkt\": %d, "
 				"\"snr_pkt\": %d, "
 				"\"rssi_signal\": %d"
@@ -522,7 +534,7 @@ int zserver_send_rx_packet(
 			now.seconds,
 			now.microseconds,
 			crc_valid ? "true" : "false",
-			packet_cookie,
+			packet_cookie, frame_no_ptr,
 			rssi_pkt,
 			snr_pkt,
 			signal_rssi_pkt

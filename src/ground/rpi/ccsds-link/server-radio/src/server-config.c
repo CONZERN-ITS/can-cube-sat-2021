@@ -28,7 +28,7 @@ int server_config_load(server_config_t * config)
 			// Параметры усилителей и частот
 			.frequency = 438125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_3400_US,
-			.pa_power = 10,
+			.pa_power = 22,
 			.lna_boost = true,
 
 			// Параметры пакетирования
@@ -77,12 +77,13 @@ int server_config_load(server_config_t * config)
 	config->radio_stats_report_period_ms = 2000;
 	config->poll_timeout_ms = 50;
 
+	config->extract_frame_number = true;
+
 	return 0;
 }
 
 
 void server_config_destroy(server_config_t * config)
 {
-
+	(void)config;
 }
-

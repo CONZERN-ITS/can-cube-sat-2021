@@ -54,7 +54,7 @@ int zserver_send_packet_rssi(
 int zserver_send_rx_packet(
 	zserver_t * zserver,
 	const uint8_t * packet_data, size_t packet_data_size,
-	msg_cookie_t packet_cookie,
+	msg_cookie_t packet_cookie, const uint16_t * packet_no,
 	bool crc_valid,	int8_t rssi_pkt, int8_t snr_pkt, int8_t signal_rssi_pkt
 );
 
