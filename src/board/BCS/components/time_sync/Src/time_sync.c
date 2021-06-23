@@ -125,7 +125,9 @@ static void time_sync_task(void *arg) {
 				}
 			}
 			ESP_LOGV("TIME", "from sinc: %d.%06d", (int)there.tv_sec, (int)there.tv_usec);
-			ESP_LOGV("TIME", "here:      %d.%06d", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000));
+			ESP_LOGV("TIME", "here:      %d.%06d", (int)now.tv_sec, (int)now.tv_usec);
+			ESP_LOGV("TIME", "diff:      %d.%06d", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000));
+			ESP_LOGV("TIME", "Base: %d %d", ts->mutex_safe.base, mts.time_base);
 			xSemaphoreGive(ts->mutex);
 		}
 
@@ -225,6 +227,7 @@ uint8_t time_sync_get_base() {
 
 	volatile uint8_t t;
 	xSemaphoreTake(__ts.mutex, portMAX_DELAY);
+	ESP_LOGV("TIME", "Base2: %d", __ts.mutex_safe.base);
 	t = __ts.mutex_safe.base;
 	xSemaphoreGive(__ts.mutex);
 	return t;
