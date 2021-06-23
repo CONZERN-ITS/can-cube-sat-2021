@@ -4,6 +4,7 @@ os.environ['MAVLINK20'] = "its"
 from pymavlink.dialects.v20 import its as its_mav
 from pymavlink import mavutil
 import zmq
+import time
 
 def generate_log_file_name(log_type='tlm'):
     if log_type == 'tlm':

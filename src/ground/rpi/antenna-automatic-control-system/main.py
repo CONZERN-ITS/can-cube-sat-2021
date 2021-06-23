@@ -2,6 +2,7 @@ import datetime
 
 import source.lib.i2cdev as i2cdev
 
+import source.lib.DM422 as DM422
 from source.lib.strela_ms_rpi import Lis3mdl, Lsm6ds3, WMM2020
 from source.lib.gps_data import GPS_data
 from source import drive_control
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     wwm = WMM2020()
 
     # Drive motors initialization
-    vertical_motor = DM422_control_client(pul_pin=VSM_PUL_PIN,
+    vertical_motor = DM422.DM422_control_client(pul_pin=VSM_PUL_PIN,
                                           dir_pin=VSM_DIR_PIN,
                                           enable_pin=VSM_ENABLE_PIN,
                                           gearbox_num=VSM_GEARBOX_NUM,
@@ -39,7 +40,7 @@ if __name__ == '__main__':
                                           pos_dir_state=VSM_POS_DIR_STATE,
                                           stop_state=VSM_STOP_STATE)
 
-    horizontal_motor = DM422_control_client(pul_pin=HSM_PUL_PIN,
+    horizontal_motor = DM422.DM422_control_client(pul_pin=HSM_PUL_PIN,
                                             dir_pin=HSM_DIR_PIN,
                                             enable_pin=HSM_ENABLE_PIN,
                                             gearbox_num=HSM_GEARBOX_NUM,
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     # Auto guidance math initialization
     guidance_math = auto_guidance_math.AutoGuidanceMath(accel_sensor=lsm6ds3,
                                                         mag_sensor=lis3mdl,
-                                                        gps=gps,
+                                                        gps_sensor=gps,
                                                         sensors_accumulation_num=SENSORS_ACCUMULATION_NUM,
                                                         gps_accumulation_num=GPS_ACCUMULATION_NUM,
                                                         sensors_timeout=SENSORS_TIMEOUT,
