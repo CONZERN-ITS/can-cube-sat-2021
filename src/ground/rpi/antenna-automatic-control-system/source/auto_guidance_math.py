@@ -1,10 +1,11 @@
 import numpy as NumPy
 from math import sin, cos, radians, acos, asin
+import time
 
 class AutoGuidanceMath():
     def __init__ (self, accel_sensor,
                         mag_sensor,
-                        gps,
+                        gps_sensor,
                         decl=0,
                         sensors_accumulation_num=1,
                         gps_accumulation_num=1,
@@ -131,13 +132,16 @@ class AutoGuidanceMath():
         self.lat_lon = NumPy.array([0.0, 0.0])
         self.alt = 0.0
         self.x_y_z = NumPy.zeros((3, 1))
-        for i in range(self.gps_accumulation_num):
+        num = 0
+        while num <= self.gps_accumulation_num:
             if (time.time() - start_time) > self.gps_timeout:
                 raise TimeoutError('Gps data accumulation timeout')
-            data = gpsd.find_tpv_data()
-            self.lat_lon += NumPy.array(gps_sensor.get_lat_lon(data))
-            self.alt += gps_sensor.get_alt(data)
-            self.x_y_z += NumPy.array(gps_sensor.get_x_y_z(data)).reshape((3, 1))
+            data = self.gps_sensor.find_tpv_data()
+            if data is None:
+                continue
+            self.lat_lon += NumPy.array(self.gps_sensor.get_lat_lon(data))
+            self.alt += self.gps_sensor.get_alt(data)
+            self.x_y_z += NumPy.array(self.gps_sensor.get_x_y_z(data)).reshape((3, 1))
         self.lat_lon /= self.gps_accumulation_num
         self.alt /= self.gps_accumulation_num
         self.x_y_z /= self.gps_accumulation_num
