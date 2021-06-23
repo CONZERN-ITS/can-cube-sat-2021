@@ -25,10 +25,15 @@ static struct timeval * _last_sync_tmv_inner = &_last_sync_tmv_1;
 static struct timeval * _last_sync_tmv_outer = &_last_sync_tmv_2;
 // Откуда мы взяли время
 static uint8_t _my_timebase = TIME_BASE_TYPE_NONE;
+// Количество раз сколько мы пытались синхронизовать время
+static uint16_t _time_sync_attempts = 0;
 // Количество раз сколько мы синхронизовали время
 static uint16_t _time_syncs_count = 0;
+// Время последней коррекции (по шкале HAL_GetTick())
+static uint32_t _last_sync_ts = 0;
 // Величина последней коррекции
-static int64_t _last_sync_delta = 0;
+static int64_t _last_sync_delta_s = 0;
+static int64_t _last_sync_delta_us = 0;
 
 // Ожидается ли
 static bool _sync_pending = false;
@@ -50,6 +55,46 @@ static bool _check_swap_sync()
 }
 
 
+static struct timeval _tmv_diff(const struct timeval * left, const struct timeval * right)
+{
+	int64_t seconds = (int64_t)left->tv_sec - (int64_t)right->tv_sec;
+	int32_t useconds = (int32_t)left->tv_usec - (int32_t)right->tv_usec;
+
+	if (useconds < 0)
+	{
+		useconds += 1000*1000;
+		seconds -= 1;
+	}
+
+	struct timeval retval = {
+			.tv_sec = seconds,
+			.tv_usec = useconds
+	};
+
+	return retval;
+}
+
+
+static struct timeval _tmv_add(const struct timeval * left, const struct timeval * right)
+{
+	int64_t seconds = (int64_t)left->tv_sec + (int64_t)right->tv_sec;
+	int32_t useconds = (int32_t)left->tv_usec + (int32_t)right->tv_usec;
+
+	if (useconds > 1000*1000)
+	{
+		useconds -= 1000*1000;
+		seconds += 1;
+	}
+
+	struct timeval retval = {
+			.tv_sec = seconds,
+			.tv_usec = useconds
+	};
+
+	return retval;
+}
+
+
 void time_svc_init(void)
 {
 	// Просто включаем прерывания таймера и включаем его
@@ -58,13 +103,23 @@ void time_svc_init(void)
 
 	// Таймер настроен так, что тикает два раза в секунду
 	// и переполняется раз в секунду.
-	// (частота на входе таймера 2 кГц, период 2000 циклов)
+	// (частота на входе таймера 10 кГц, период 10*000 циклов)
 }
 
 
 uint8_t time_svc_get_time_base()
 {
 	return _my_timebase;
+}
+
+
+void time_svc_get_stats(time_svc_stats_t * stats)
+{
+	stats->syncs_attempted = _time_sync_attempts;
+	stats->syncs_performed = _time_syncs_count;
+	stats->last_sync_time_steady = _last_sync_ts;
+	stats->last_sync_delta_s = _last_sync_delta_s;
+	stats->last_sync_delta_us = _last_sync_delta_us;
 }
 
 
@@ -92,7 +147,7 @@ void time_svc_gettimeofday(struct timeval * tmv)
 	}
 
 	tmv->tv_sec = seconds;
-	tmv->tv_usec = 1000 * (subseconds / 2) + 500 * (subseconds % 2);
+	tmv->tv_usec = subseconds * 100; // Таймер тикает с периодом в 100мкс
 }
 
 
@@ -104,9 +159,8 @@ void time_svc_settimeofday(const struct timeval * tmv)
 	// Ставим количество секунд
 	_seconds = tmv->tv_sec;
 
-	// Ставим счетчик таймеру на количество половинок секунд
-	// (в миллисекунды из микросекунд и в половинки
-	const uint16_t cnt = (tmv->tv_usec / 1000) * 2;
+	// Ставим счетчик таймеру
+	const uint16_t cnt = tmv->tv_usec / 100;
 	__HAL_TIM_SET_COUNTER(TIMESVC_TIM_HANDLE, cnt);
 
 	// Запускаем таймер
@@ -137,6 +191,9 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	if (!_check_swap_sync())
 		return;
 
+	// Попытка началась
+	_time_sync_attempts++;
+
 	// Смотрим откуда хост взял это время вообще
 	uint8_t time_base = mavlink_msg_timestamp_get_time_base(msg);
 	if (time_base >= TIME_BASE_TYPE_ENUM_END)
@@ -156,17 +213,10 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 
 	// Считаем разницу между временем у нас и у хоста на момент метки
 	struct timeval diff;
-	diff.tv_sec = host_sync_stamp.tv_sec - local_sync_stamp->tv_sec;
-	diff.tv_usec = host_sync_stamp.tv_usec - local_sync_stamp->tv_usec;
-	// нормируем
-	if (diff.tv_usec < 0)
-	{
-		diff.tv_sec -= 1;
-		diff.tv_usec += 1000 * 1000;
-	}
+	diff = _tmv_diff(&host_sync_stamp, local_sync_stamp);
 
 	// Если разница меньше половины миллисекунды, то забиваем конечно
-	if (diff.tv_sec == 0 && abs(diff.tv_usec) < 500)
+	if (diff.tv_sec == 0 && labs(diff.tv_usec) < 500)
 		return;
 
 	// Берем наше текущее время
@@ -174,30 +224,19 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	time_svc_gettimeofday(&current_time);
 
 	// добавляем разницу
-	current_time.tv_sec += diff.tv_sec;
-	current_time.tv_usec += diff.tv_usec;
-
-	if (current_time.tv_usec > 1000 * 1000)
-	{
-		current_time.tv_sec += 1;
-		current_time.tv_usec -= 1000 * 1000;
-	}
-
+	current_time = _tmv_add(&current_time, &diff);
 
 	// Делаем это время текущим
 	// FIXME: нужно бы добавить сколько-то микросекунд на все эти операции
 	time_svc_settimeofday(&current_time);
+
 	// Запоминаем наш таймбейс
 	_my_timebase = time_base;
-	if (diff.tv_sec > 0)
-		_last_sync_delta = diff.tv_sec * 1000 + diff.tv_usec / 1000;
-	else
-		_last_sync_delta = diff.tv_sec * 1000 - diff.tv_usec / 1000;
+
+	// шалось удалась!
 	_time_syncs_count++;
+	_last_sync_delta_s = diff.tv_sec;
+	_last_sync_delta_us = diff.tv_usec;
+	_last_sync_ts = HAL_GetTick();
 }
 
-
-int64_t time_svc_last_correction_delta(void)
-{
-	return _last_sync_delta;
-}

@@ -18,6 +18,21 @@ extern TIM_HandleTypeDef htim4;
 // Халовский хендл таймера на котором мы работаем
 #define TIMESVC_TIM_HANDLE (&htim4)
 
+typedef struct time_svt_stats_t
+{
+	//! Количество попыток (или вернее сказать возможностей синхронизации)
+	uint16_t syncs_attempted;
+	//! Количество реально проведенных синхронизаций
+	uint16_t syncs_performed;
+	//! Метка времени последней проведенной коррекции
+	//! по монотонной шкале
+	uint32_t last_sync_time_steady;
+	//! Величина последней проведенной коррекции, целая часть
+	int64_t last_sync_delta_s;
+	//! Величина последней проведенной коррекции, дробная часть (мкс)
+	int64_t last_sync_delta_us;
+} time_svc_stats_t;
+
 
 //! Инициализация службы времени
 /*! таймер, указанный TIMESVC_TIM_HANDLE должен быть настроен так, чтобы частота
@@ -28,11 +43,8 @@ void time_svc_init(void);
 //! Получение базы времени
 uint8_t time_svc_get_time_base(void);
 
-//! Сколько раз мы синхронизовали своё время
-uint16_t time_svc_get_time_syncs_count(void);
-
-//! Количество миллисеунд исправленное последней коррекцией
-int64_t time_svc_last_correction_delta(void);
+//! получение статистики модуля
+void time_svc_get_stats(time_svc_stats_t * stats);
 
 //! Получение текущего времени
 void time_svc_gettimeofday(struct timeval * tmv);

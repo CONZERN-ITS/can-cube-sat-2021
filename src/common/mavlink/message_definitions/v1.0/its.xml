@@ -40,12 +40,15 @@
     <enum name="TIME_BASE_TYPE">
       <description>These values define the type of time base.</description>
       <entry value="0" name="TIME_BASE_TYPE_NONE">
+        <description>time based on initial zero</description>
+      </entry>
+      <entry value="1" name="TIME_BASE_TYPE_SINS">
+        <description>time based on SINS initial time</description>
+      </entry>
+      <entry value="2" name="TIME_BASE_TYPE_RTC">
         <description>time based on RTC</description>
       </entry>
-      <entry value="1" name="TIME_BASE_TYPE_RTC">
-        <description>time based on RTC</description>
-      </entry>
-      <entry value="2" name="TIME_BASE_TYPE_GPS">
+      <entry value="3" name="TIME_BASE_TYPE_GPS">
         <description>time based on GPS</description>
       </entry>
     </enum>
@@ -399,10 +402,13 @@
 
       <field type="uint16_t" name="resets_count">mcu reset counter</field>
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
-      <field type="uint8_t"  name="time_base">time base for on board time service</field>
       <field type="uint8_t"  name="active_oscillator">Active oscillator for this computer</field>
-      <field type="uint16_t" name="time_syncs_count">How many times a world time scale was corrected</field>
-      <field type="int64_t"  name="time_sync_delta" unit="ms">Correction delta during last time sync</field>
+      <field type="uint8_t"  name="time_base">time base for on board time service</field>
+      <field type="uint16_t" name="time_syncs_attempted">How many times a world time correction was attempted</field>
+      <field type="uint16_t" name="time_syncs_performed">How many times a world time correction was attempted</field>
+      <field type="uint32_t"  name="last_time_sync_time_steady" unit="ms">timestamp of last performed time correction</field>
+      <field type="int64_t"  name="last_time_sync_delta_s" unit="s">Correction delta in seconds during last time sync</field>
+      <field type="int32_t"  name="last_time_sync_delta_us" unit="us">Correction delta in useconds during last time sync</field>
     </message>
 
     <message id="50205" name="PLD_MS5611_DATA">

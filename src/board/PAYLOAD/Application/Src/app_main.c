@@ -318,13 +318,20 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg)
 	msg->time_us = tmv.tv_usec;
 	msg->time_steady = HAL_GetTick();
 
-	msg->time_steady = HAL_GetTick();
 	msg->resets_count = _status.resets_count;
 	msg->reset_cause = _status.reset_cause;
-	msg->time_base = time_svc_get_time_base();
+
 	msg->active_oscillator = ACTIVE_OSCILLATOR_HSE;
-	msg->time_syncs_count = time_svc_get_time_syncs_count();
-	msg->time_sync_delta = time_svc_last_correction_delta();
+
+	msg->time_base = time_svc_get_time_base();
+
+	time_svc_stats_t time_svc_stats;
+	time_svc_get_stats(&time_svc_stats);
+	msg->time_syncs_attempted = time_svc_stats.syncs_attempted;
+	msg->time_syncs_performed = time_svc_stats.syncs_performed;
+	msg->last_time_sync_time_steady = time_svc_stats.last_sync_time_steady;
+	msg->last_time_sync_delta_s = time_svc_stats.last_sync_delta_s;
+	msg->last_time_sync_delta_us = time_svc_stats.last_sync_delta_us;
 }
 
 
