@@ -121,6 +121,10 @@ class GraphWidget(PyQtGraph.GraphicsLayoutWidget):
             else:
                 self.max_data_length = length
 
+            for curve_group in self.curve_groups:
+                curve_group.set_max_data_len(self.max_data_length)
+
+
         def setup_axis(self, name_x, name_y):
             axis_x = PyQtGraph.AxisItem(orientation='bottom')
             axis_x.setLabel(name_x)
@@ -144,6 +148,7 @@ class GraphWidget(PyQtGraph.GraphicsLayoutWidget):
                         else:
                             self.legend.addItem(curve, field_id[i])
                 self.curve_groups[-1].set_autocomplete(False)
+            self.curve_groups[-1].set_max_data_len(self.max_data_length)
 
         def setup_plot_legend(self):
             self.legend = self.plot.addLegend()
