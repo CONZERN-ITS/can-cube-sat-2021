@@ -128,7 +128,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 except Exception as e:
                     print(e)
                 else:
-                    self.new_data.emit(data)
+                    self.new_msg.emit(data)
                 self.mutex.lock()
                 close = self.close_flag
                 self.mutex.unlock()

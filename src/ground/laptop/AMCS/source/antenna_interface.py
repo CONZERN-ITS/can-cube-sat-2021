@@ -198,7 +198,7 @@ class ZMQITSInterface(MAVITSInterface):
         if topic == 'antenna.telemetry_packet':
             super(ZMQitsInterface, self).msg_reaction(msg[2])
         elif topic == 'radio.rssi_instant':
-            self.rssi_changed(json.loads(msg[1]).get('rssi', None))
+            self.rssi_changed.emit(json.loads(msg[1]).get('rssi', None))
 
     def send_message(self, msg):
         print(msg)
