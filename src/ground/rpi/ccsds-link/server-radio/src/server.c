@@ -213,12 +213,26 @@ static void _fetch_rx(server_t * server)
 		return;
 	}
 
-	log_trace(
+	log_debug(
 		"fetched rx frame from radio. "
 		"crc_valid: %s, packet_rssi: %d, packet_snr: %d, signal_rssi: %d",
 		crc_valid ? "true" : "false",
 		(int)packet_status.rssi_pkt, (int)packet_status.snr_pkt, (int)packet_status.signal_rssi_pkt
 	);
+
+	log_debug("rx_frame");
+	{
+		char frame_data[512] = { 0 };
+		for (size_t i = 0; i < payload_size; i++)
+		{
+			char symbol[3] = { 0 }; // на FF и \0
+			rc = snprintf(symbol, sizeof(symbol), "%02X", (int)payload[i]);
+			if (rc < 0 || rc >= sizeof(symbol))
+				log_warn("unable to print frame data: %d, %d", rc, errno);
+			strcat(frame_data, symbol);
+		}
+		log_debug("frame_data: \"%s\"", frame_data);
+	}
 
 	uint16_t frame_no;
 	const uint8_t * payload_ptr = payload;
