@@ -89,10 +89,10 @@ if __name__ == '__main__':
                                                                   aiming_period=DEFAULT_ANTENNA_AIMING_PERIOD,
                                                                   min_rotation_angle=MIN_ROTATION_ANGLE)
     elif CONTROL_INTERFACE_TYPE == 'ZMQITS':
-        ctrl_interface = control_interface.ZMQITSInterface(drive_object=drive,
-                                                           auto_guidance_math=guidance_math,
-                                                           aiming_period=DEFAULT_ANTENNA_AIMING_PERIOD,
-                                                           min_rotation_angle=MIN_ROTATION_ANGLE)
+        ctrl_interface = control_interface.ZMQITSControlInterface(drive_object=drive,
+                                                                  auto_guidance_math=guidance_math,
+                                                                  aiming_period=DEFAULT_ANTENNA_AIMING_PERIOD,
+                                                                  min_rotation_angle=MIN_ROTATION_ANGLE)
 
     # Preparation block
     try:
@@ -119,6 +119,6 @@ if __name__ == '__main__':
             print(e)
             continue
 
-        ctrl_interface.msg_reaction(msgs)
+        ctrl_interface.msg_reaction([msgs])
 
     i2c.close()

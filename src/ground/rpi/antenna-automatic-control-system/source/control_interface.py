@@ -185,7 +185,8 @@ class ZMQITSControlInterface(MAVITSControlInterface):
     def msg_reaction(self, msgs):
         for msg in msgs:
             topic = msg[0].decode('utf-8')
-            if topic == 'antenna.command_packet':
+            if topic == b'antenna.command_packet':
+                print(msg[2])
                 super(ZMQITSControlInterface, self).msg_reaction(msg[2])
 
     def generate_state_message(self):
