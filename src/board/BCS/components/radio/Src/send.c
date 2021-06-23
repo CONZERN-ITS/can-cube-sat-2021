@@ -231,11 +231,15 @@ static int is_sleeping(safe_send_t *sst) {
 }
 */
 int fill_one_packet(radio_t * server) {
-/*	static int nat = 0;
-	log_info("fill packet");
-	for (; server->radio_buf.index < server->radio_buf.size; server->radio_buf.index++) {
-		server->radio_buf.buf[server->radio_buf.index] = nat++;
-	}*/
+	log_info("fill_one_packet %d" ,server->packet_count);
+	if (server->radio_buf.index == 0) {
+		uint16_t count = server->packet_count;
+
+		memcpy(server->radio_buf.buf, (uint8_t *)&count, sizeof(count));
+
+		server->packet_count++;
+		server->radio_buf.index += sizeof(count);
+	}
 	if (server->radio_buf.index < server->radio_buf.size) {
 		log_info("gen %d %d", server->radio_buf.index, server->radio_buf.size);
 		if (server->mav_buf.size - server->mav_buf.index <= 0) {
@@ -269,11 +273,16 @@ end:
 
 
 int fill_packet(radio_t * server) {
-/*	static int nat = 0;
-	log_info("fill packet");
-	for (; server->radio_buf.index < server->radio_buf.size; server->radio_buf.index++) {
-		server->radio_buf.buf[server->radio_buf.index] = nat++;
-	}*/
+	log_info("fill_packet %d" ,server->packet_count);
+	if (server->radio_buf.index == 0) {
+		uint16_t count = server->packet_count;
+
+		memcpy(server->radio_buf.buf, (uint8_t *)&count, sizeof(count));
+
+		server->packet_count++;
+
+		server->radio_buf.index += sizeof(count);
+	}
 	while (server->radio_buf.index < server->radio_buf.size) {
 		log_info("gen %d %d", server->radio_buf.index, server->radio_buf.size);
 		if (server->mav_buf.size - server->mav_buf.index > 0) {
@@ -430,6 +439,10 @@ static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx1
 			}
 			radio_server->stats.last_packet_time = esp_timer_get_time() / 1000;
 
+			for (int i = 0; i < sizeof(buf); i++) {
+				printf("0x%02X ", buf[i]);
+			}
+			printf("\n");
 			mavlink_message_t msg = {0};
 			mavlink_status_t st = {0};
 			for (int i = 0; i < sizeof(buf); i++) {
@@ -515,7 +528,7 @@ static void task_send(void *arg) {
 		}
 		ESP_LOGV("radio", "filled");
 		if ((is_filled && radio_server->is_ready_to_send) || esp_timer_get_time() - last_changed > 1000000 * 10) {
-			/*log_info("out buf: ");
+/*			log_info("out buf: ");
 			for (int i = 0; i < radio_server->radio_buf.size; i++) {
 				printf("0x%02X ", radio_server->radio_buf.buf[i]);
 			}

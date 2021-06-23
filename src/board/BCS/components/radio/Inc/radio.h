@@ -64,6 +64,7 @@ typedef struct radio_t {
 
 	uint8_t mavlink_chan;
 	uint32_t msg_count;
+	uint16_t packet_count;
 	int is_ready_to_send;
 
 	radio_stats_t stats;
