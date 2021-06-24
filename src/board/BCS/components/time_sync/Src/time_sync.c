@@ -16,6 +16,8 @@
 #include "router.h"
 #include "pinout_cfg.h"
 #include "mavlink/its/mavlink.h"
+#include <stdint.h>
+#include <inttypes.h>
 
 #include <sys/time.h>
 #include "freertos/FreeRTOS.h"
@@ -110,13 +112,16 @@ static void time_sync_task(void *arg) {
 			int64_t diff_usec = now1 - ts->mutex_safe.isr_time + (there.tv_sec - now.tv_sec) * 1000000ll + (0 - now.tv_usec);
 
 			if (mts.time_base >= ts->mutex_safe.base) {
-				if (llabs(diff_usec) > 3600 * 1000000ll) {
+				//Разница больше 5 секунд? Меняем!
+				if (llabs(diff_usec) > 5 * 1000000ll) {
 					settimeofday(&there, 0);
+					ts->last_changed = now.tv_sec * 1000000ull + now.tv_usec;
 					ts->cnt = 0;
 					ts->diff_total = 0;
 					ts->mutex_safe.base = mts.time_base;
 					ts->min_collected_base = TIME_BASE_TYPE_GPS;
 				} else {
+					//Будем накапливать разницу
 					ts->diff_total += diff_usec;
 					ts->cnt++;
 					if (ts->min_collected_base > mts.time_base) {
@@ -126,8 +131,8 @@ static void time_sync_task(void *arg) {
 			}
 			ESP_LOGV("TIME", "from sinc: %d.%06d", (int)there.tv_sec, (int)there.tv_usec);
 			ESP_LOGV("TIME", "here:      %d.%06d", (int)now.tv_sec, (int)now.tv_usec);
-			ESP_LOGV("TIME", "diff:      %d.%06d", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000));
-			ESP_LOGV("TIME", "Base: %d %d", ts->mutex_safe.base, mts.time_base);
+			ESP_LOGV("TIME", "diff:      %d.%06d %lld", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000), now1 - ts->mutex_safe.isr_time	);
+			ESP_LOGV("TIME", "Base: %d %d %d", ts->mutex_safe.base, mts.time_base, ts->cnt);
 			xSemaphoreGive(ts->mutex);
 		}
 
@@ -140,10 +145,13 @@ static void time_sync_task(void *arg) {
 		 */
 		struct timeval t;
 		gettimeofday(&t, 0);
-		int64_t now = t.tv_sec * 1000000 + t.tv_usec;
-		if (ts->cnt >= 1 &&
-				now - ts->last_changed > ts->cfg.period / 2 &&
-				now < ((int)(now / ts->cfg.period)) * ts->cfg.period + 0.03 * ts->cfg.period) {
+		uint64_t now = t.tv_sec * 1000000ull + t.tv_usec;
+		ESP_LOGV("TIME_SYNC", "now %d.%06d %"PRIu64, (int)t.tv_sec, (int)t.tv_usec, now);
+		uint64_t now_low = (uint64_t)(now / ts->cfg.period) * ts->cfg.period;
+		uint64_t up_border = now_low + 0.03 * ts->cfg.period;
+		uint64_t low_border = now_low + 0.97 * ts->cfg.period;
+		if (ts->cnt >= 1 && (now < up_border || now > low_border) && now - ts->last_changed > ts->cfg.period) {
+			ESP_LOGV("TIME_SYNC", "now %"PRIu64" up_border %"PRIu64" low_border %"PRIu64" now_low %"PRIu64, now, up_border, low_border, now_low);
 
 			if (xSemaphoreTake(ts->mutex, portMAX_DELAY) == pdTRUE) {
 				int64_t estimated = now + ts->diff_total / ts->cnt;
@@ -152,8 +160,10 @@ static void time_sync_task(void *arg) {
 				settimeofday(&t, 0);
 				ts->last_changed = now;
 				ts->cnt = 0;
+				ts->diff_total = 0;
 				ts->mutex_safe.base = ts->min_collected_base;
 				ts->min_collected_base = TIME_BASE_TYPE_GPS;
+				ESP_LOGV("TIME_SYNC", "smooth changing time %"PRIu64" %"PRIu64" %d", ts->diff_total, estimated, ts->cnt);
 				xSemaphoreGive(ts->mutex);
 			}
 		}
