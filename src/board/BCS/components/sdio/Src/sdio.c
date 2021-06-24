@@ -34,7 +34,7 @@
 
 #define SD_GLOBAL_MAX_RETRY_COUNT 4
 #define SD_GLOBAL_RETRY_DELAY 50
-#define SD_MOUNT_MAX_RETRY_COUNT 150
+#define SD_MOUNT_MAX_RETRY_COUNT 10
 #define SD_MOUNT_DELAY 2000
 
 #define SD_SAVE_RETRY_DELAY 1000 //ms
@@ -236,7 +236,7 @@ static void sd_task(void *arg) {
 	};
 	while (1) {
 		//Регистрируем на сообщения всех типов
-		if (!(tid.queue = xQueueCreate(10, MAVLINK_MAX_PACKET_LEN)) || its_rt_register_for_all(tid)) {
+		if (!(tid.queue = xQueueCreate(30, MAVLINK_MAX_PACKET_LEN)) || its_rt_register_for_all(tid)) {
 			ESP_LOGE("SD", "Not enough memory");
 			sd_error = SD_ERR0R_LOW_MEMORY;
 			vTaskDelay(SD_MOUNT_DELAY / portTICK_PERIOD_MS);
