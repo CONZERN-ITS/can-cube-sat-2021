@@ -148,8 +148,9 @@ static esp_err_t _read_reg(ina219_t * device, uint8_t reg_addr, uint16_t * reg_v
 		i2c_master_read_byte(cmd, &raw[1], I2C_MASTER_NACK);
 		i2c_master_stop(cmd);
 		err = i2c_master_cmd_begin(device->i2c_port, cmd, 300);
-		i2c_master_postend(device->i2c_port);
+		i2c_cmd_link_delete(cmd);
 	}
+	i2c_master_postend(device->i2c_port);
 
 	*reg_value = raw[1] | (raw[0] << 8ull);
 	ESP_LOGV(TAG, "read_reg_16 val = %d", *reg_value);
