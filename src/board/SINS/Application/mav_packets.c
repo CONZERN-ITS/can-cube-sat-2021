@@ -106,6 +106,10 @@ int mavlink_timestamp(void)
 	struct timeval tv;
 
 	time_svc_world_get_time(&tv);
+	// Отправляем только если мы находимся ближе к середине секунды
+	if (tv.tv_usec <= 100*1000 || tv.tv_usec >= 900*1000)
+		return 0;
+
 	msg_timestamp.time_s = tv.tv_sec;
 	msg_timestamp.time_us = tv.tv_usec;
 	msg_timestamp.time_steady = HAL_GetTick();

@@ -16,8 +16,9 @@
 typedef enum time_svc_timebase_t
 {
 	TIME_SVC_TIMEBASE__NONE = 0,
-	TIME_SVC_TIMEBASE__RTC = 1,
-	TIME_SVC_TIMEBASE__GPS = 2
+	TIME_SVC_TIMEBASE__SINS = 1,
+	TIME_SVC_TIMEBASE__RTC  = 2,
+	TIME_SVC_TIMEBASE__GPS  = 3
 } time_svc_timebase_t;
 
 //! Запуск мирового времени с rtc
