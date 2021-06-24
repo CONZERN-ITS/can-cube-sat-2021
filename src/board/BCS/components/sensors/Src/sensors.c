@@ -74,7 +74,7 @@ static void sensors_task(void *arg) {
 	const OneWireBus_ROMCode device_rom_codes[ITS_OWB_MAX_DEVICES] = {
 
 			{ .bytes = { 0x28, 0xC3, 0xA1, 0xE6, 0x0B, 0x00, 0x00, 0xA7 } }, // БКУ   +
-			{ .bytes = { 0x28, 0x6E, 0x55, 0xE6, 0x0B, 0x00, 0x00, 0x08 } }, // БСК 1
+			{ .bytes = { 0x28, 0x24, 0xDF, 0xAB, 0x0A, 0x00, 0x00, 0x12 } }, // БСК 1 +
 			{ .bytes = { 0x28, 0x88, 0x50, 0xAC, 0x0A, 0x00, 0x00, 0x11 } }, // БСК 2 +
 			{ .bytes = { 0x28, 0x13, 0x4D, 0xAC, 0x0A, 0x00, 0x00, 0xC8 } }, // БСК 3 +
 			{ .bytes = { 0x28, 0x2F, 0x68, 0xAC, 0x0A, 0x00, 0x00, 0x72 } }, // БСК 4 +
@@ -237,10 +237,10 @@ static void sensors_ina_task(void *arg) {
 	ina219_t ina[INA_MAX];
 	int timeout = 50 / portTICK_PERIOD_MS;
 
-	ina219_init(&ina[0], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_VSP, timeout);
-	ina219_init(&ina[1], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_SDA, timeout);
-	ina219_init(&ina[2], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_SCL, timeout);
-	ina219_init(&ina[3], ITS_I2CTM_PORT, INA219_I2CADDR_A1_VSP_A0_GND, timeout);
+	ina219_init(&ina[0], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_VSP, timeout); //BSK1
+	ina219_init(&ina[1], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_SDA, timeout); //BSK2
+	ina219_init(&ina[2], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_SCL, timeout); //BSK3
+	ina219_init(&ina[3], ITS_I2CTM_PORT, INA219_I2CADDR_A1_VSP_A0_GND, timeout); //BSK4
 
 	for (int i = 0; i < INA_MAX; i++) {
 		ina219_sw_reset(&ina[i]);
