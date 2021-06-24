@@ -36,7 +36,7 @@ class AbstractControlInterface():
     def setup_elevation_zero(self):
         pass
 
-    def msg_reaction(self, msgs):
+    def messages_reaction(self, msgs):
         pass
 
     def generate_state_message(self):
@@ -70,49 +70,54 @@ class MAVITSControlInterface(AbstractControlInterface):
         self.target_phi = 0
         self.target_last_time = (0, 0)
 
-    def msg_reaction(self, msgs):
-        for msg in msgs:
-            if msg.get_type() == "AS_AUTOMATIC_CONTROL":
-                self.auto_control_mode = bool(msg.mode)
-            elif msg.get_type() == "AS_HARD_MANUAL_CONTROL":
-                self.update_target_position(msg.azimuth, )
-                self.elevation_delta -= msg.elevation
-                self.azimuth_delta -= msg.azimuth
-            elif msg.get_type() == "AS_SOFT_MANUAL_CONTROL":
-                self.update_target_position(msg.azimuth, msg.elevation)
-            elif msg.get_type() == "AS_MOTORS_ENABLE_MODE":
-                self.drive_object.set_vertical_motor_enabled(bool(msg.mode))
-                self.drive_object.set_horizontal_motor_enabled(bool(msg.mode))
-            elif msg.get_type() == "AS_AIMING_PERIOD":
-                if msg.period <= 0:
-                    self.aiming_period = DEFAULT_ANTENNA_AIMING_PERIOD
-                else:
-                    self.aiming_period = msg.period
-            elif msg.get_type() == "AS_SET_MOTORS_TIMEOUT":
-                if msg.timeout <= 0:
-                    self.drive_object.setup_drive_timeout(MOTORS_TIMEOUT)
-                else:
-                    self.drive_object.setup_drive_timeout(msg.timeout)
-                pass
-            elif msg.get_type() == "AS_MOTORS_AUTO_DISABLE":
-                self.drive_object.set_drive_auto_disable_mode(msg.mode)
-                pass
-            elif msg.get_type() == "AS_SEND_COMMAND":
-                enum = mavutil.mavlink.enums['AS_COMMANDS']
-                if enum[msg.command_id].name == 'AS_SETUP_ELEVATION_ZERO':
-                    self.setup_elevation_zero()
-                elif enum[msg.command_id].name == 'AS_TARGET_TO_NORTH':
-                    self.target_to_north()
+    def messages_reaction(self, msgs):
+        if msgs is not None:
+            for msg in msgs:
+                if msg.get_type() == "AS_AUTOMATIC_CONTROL":
+                    self.auto_control_mode = bool(msg.mode)
+                elif msg.get_type() == "AS_HARD_MANUAL_CONTROL":
+                    self.update_target_position(msg.azimuth, msg.elevation)
+                    self.elevation_delta -= msg.elevation
+                    self.azimuth_delta -= msg.azimuth
+                elif msg.get_type() == "AS_SOFT_MANUAL_CONTROL":
+                    self.update_target_position(msg.azimuth, msg.elevation)
+                elif msg.get_type() == "AS_MOTORS_ENABLE_MODE":
+                    self.drive_object.set_vertical_motor_enabled(bool(msg.mode))
+                    self.drive_object.set_horizontal_motor_enabled(bool(msg.mode))
+                elif msg.get_type() == "AS_AIMING_PERIOD":
+                    if msg.period <= 0:
+                        self.aiming_period = DEFAULT_ANTENNA_AIMING_PERIOD
+                    else:
+                        self.aiming_period = msg.period
+                elif msg.get_type() == "AS_SET_MOTORS_TIMEOUT":
+                    if msg.timeout <= 0:
+                        self.drive_object.setup_drive_timeout(MOTORS_TIMEOUT)
+                    else:
+                        self.drive_object.setup_drive_timeout(msg.timeout)
                     pass
-                elif enum[msg.command_id].name == 'SETUP_COORD_SYSTEM':
-                    self.auto_guidance_math.setup_coord_system()
+                elif msg.get_type() == "AS_MOTORS_AUTO_DISABLE":
+                    self.drive_object.set_drive_auto_disable_mode(msg.mode)
                     pass
-            elif msg.get_type() == "GPS_UBX_NAV_SOL":
-                if (msg.gpsFix > 0) and (msg.gpsFix < 4):
-                    self.target_last_time = convert_time_from_s_to_s_us(time.time())
-                    position = [msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100]
-                    self.update_target_position_WGS84_DEC(position)
-                pass
+                elif msg.get_type() == "AS_SEND_COMMAND":
+                    enum = mavutil.mavlink.enums['AS_COMMANDS']
+                    if enum[msg.command_id].name == 'AS_SETUP_ELEVATION_ZERO':
+                        self.setup_elevation_zero()
+                    elif enum[msg.command_id].name == 'AS_TARGET_TO_NORTH':
+                        self.target_to_north()
+                        pass
+                    elif enum[msg.command_id].name == 'SETUP_COORD_SYSTEM':
+                        try:
+                            self.auto_guidance_math.setup_coord_system()
+                        except Exception as e:
+                            print(e)
+                            pass
+                        pass
+                elif msg.get_type() == "GPS_UBX_NAV_SOL":
+                    if (msg.gpsFix > 0) and (msg.gpsFix < 4):
+                        self.target_last_time = convert_time_from_s_to_s_us(time.time())
+                        position = [msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100]
+                        self.update_target_position_WGS84_DEC(position)
+                    pass
 
     def convert_time_from_s_to_s_us(self, current_time):
         current_time = math.modf(current_time)
@@ -122,25 +127,25 @@ class MAVITSControlInterface(AbstractControlInterface):
         return time_s + time_us/1000000
 
     def generate_state_message(self):
-        current_time = convert_time_from_s_to_s_us(time.time())
+        current_time = self.convert_time_from_s_to_s_us(time.time())
         enable = [self.drive_object.get_vertical_enable_state(), self.drive_object.get_horizontal_enable_state()]
         enable = [False if state is None else state for state in enable]
         msg = its_mav.MAVLink_as_state_message(time_s=current_time[0],
                                                time_us=current_time[1],
                                                azimuth=self.azimuth,
                                                elevation=self.elevation,
-                                               ecef=self.auto_guidance_math.get_x_y_z(),
-                                               lat_lon=self.auto_guidance_math.get_lat_lon(),
+                                               ecef=list(self.auto_guidance_math.get_x_y_z()),
+                                               lat_lon=list(self.auto_guidance_math.get_lat_lon()),
                                                alt=self.auto_guidance_math.get_alt(),
-                                               top_to_ascs=self.auto_guidance_math.get_top_to_gcs(),
-                                               dec_to_top=self.auto_guidance_math.get_dec_to_top(),
+                                               top_to_ascs=list(self.auto_guidance_math.get_top_to_gcs().reshape(9)),
+                                               dec_to_top=list(self.auto_guidance_math.get_dec_to_top().reshape(9)),
                                                target_time_s=self.target_last_time[0],
                                                target_time_us=self.target_last_time[1],
                                                target_azimuth=self.target_alpha,
                                                target_elevation=self.target_phi,
-                                               mode=self.auto_control_mode,
+                                               mode=int(self.auto_control_mode),
                                                period=self.aiming_period,
-                                               enable=enable,
+                                               enable=[int(mode) for mode in enable],
                                                motor_auto_disable=self.drive_object.get_drive_auto_disable_mode(),
                                                motors_timeout=self.drive_object.get_drive_timeout())
         msg.get_header().srcSystem = 0
@@ -182,16 +187,19 @@ class MAVITSControlInterface(AbstractControlInterface):
                 self.last_rotation_time = time.time()
 
 class ZMQITSControlInterface(MAVITSControlInterface):
-    def msg_reaction(self, msgs):
+    def __init__(self, *args, **kwargs):
+        super(ZMQITSControlInterface, self).__init__(*args, **kwargs)
+        self.mav = its_mav.MAVLink(file=None)
+
+    def messages_reaction(self, msgs):
         for msg in msgs:
             topic = msg[0].decode('utf-8')
-            if topic == b'antenna.command_packet':
-                print(msg[2])
-                super(ZMQITSControlInterface, self).msg_reaction(msg[2])
+            if topic == 'antenna.command_packet':
+                super(ZMQITSControlInterface, self).messages_reaction(self.mav.parse_buffer(msg[2]))
 
     def generate_state_message(self):
         msg = super(ZMQITSControlInterface, self).generate_state_message()
         multipart = ["antenna.telemetry_packet".encode("utf-8"),
                      bytes(),
-                     msg.get_msgbuf()]
+                     msg.pack(self.mav)]
         return multipart

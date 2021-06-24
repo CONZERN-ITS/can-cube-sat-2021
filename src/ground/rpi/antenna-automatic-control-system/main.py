@@ -1,4 +1,5 @@
 import datetime
+import time
 
 import source.lib.i2cdev as i2cdev
 
@@ -33,20 +34,22 @@ if __name__ == '__main__':
 
     # Drive motors initialization
     vertical_motor = DM422.DM422_control_client(pul_pin=VSM_PUL_PIN,
-                                          dir_pin=VSM_DIR_PIN,
-                                          enable_pin=VSM_ENABLE_PIN,
-                                          gearbox_num=VSM_GEARBOX_NUM,
-                                          deg_per_step=VSM_DEG_PER_STEP,
-                                          pos_dir_state=VSM_POS_DIR_STATE,
-                                          stop_state=VSM_STOP_STATE)
+                                                dir_pin=VSM_DIR_PIN,
+                                                enable_pin=VSM_ENABLE_PIN,
+                                                gearbox_num=VSM_GEARBOX_NUM,
+                                                deg_per_step=VSM_DEG_PER_STEP,
+                                                pos_dir_state=VSM_POS_DIR_STATE,
+                                                stop_state=VSM_STOP_STATE)
+    vertical_motor.setup()
 
     horizontal_motor = DM422.DM422_control_client(pul_pin=HSM_PUL_PIN,
-                                            dir_pin=HSM_DIR_PIN,
-                                            enable_pin=HSM_ENABLE_PIN,
-                                            gearbox_num=HSM_GEARBOX_NUM,
-                                            deg_per_step=HSM_DEG_PER_STEP,
-                                            pos_dir_state=HSM_POS_DIR_STATE,
-                                            stop_state=HSM_STOP_STATE)
+                                                  dir_pin=HSM_DIR_PIN,
+                                                  enable_pin=HSM_ENABLE_PIN,
+                                                  gearbox_num=HSM_GEARBOX_NUM,
+                                                  deg_per_step=HSM_DEG_PER_STEP,
+                                                  pos_dir_state=HSM_POS_DIR_STATE,
+                                                  stop_state=HSM_STOP_STATE)
+    horizontal_motor.setup()
 
     # Drive control interface initialization
     drive = drive_control.BowElectromechanicalDrive(vertical_motor=vertical_motor,
@@ -110,15 +113,20 @@ if __name__ == '__main__':
         print(e)
         pass
 
+    start_time = time.time()
+
     while True:
         try:
             msgs = data_object.read_data()
         except RuntimeError as e:
-            continue
+            pass
         except Exception as e:
             print(e)
-            continue
-
-        ctrl_interface.msg_reaction([msgs])
+        else:
+            ctrl_interface.messages_reaction([msgs])
+        print((time.time() - start_time))
+        if (time.time() - start_time) > STATE_SETTINGS_PERIOD:
+            start_time = time.time()
+            data_object.write_data(ctrl_interface.generate_state_message())
 
     i2c.close()
