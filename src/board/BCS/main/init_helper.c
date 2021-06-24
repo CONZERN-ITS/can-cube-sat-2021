@@ -18,6 +18,8 @@
 
 
 #include "nvs_flash.h"
+
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_intr_alloc.h"
@@ -124,31 +126,7 @@ static void task_led(void *arg) {
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 }
-static void task_test(void *arg) {
-	shift_reg_handler_t *hsr = arg;
-	uint16_t arr[2] = {(uint8_t)-1, ((uint8_t)-1) << (int)8};
 
-	printf("@ %d\n", (int) hsr);
-	fflush(stdout);
-	while (1) {
-		for (int i = 0; i < 8; i++) {
-			vTaskDelay(500 / portTICK_PERIOD_MS);
-			arr[0] <<= 1;
-			arr[1] >>= 1;
-			hsr->byte_arr[0] = arr[0];
-			hsr->byte_arr[1] = arr[1] >> 8;
-			shift_reg_load(hsr);
-		}
-		for (int i = 0; i < 8; i++) {
-			vTaskDelay(500 / portTICK_PERIOD_MS);
-			arr[0] >>= 1;
-			arr[1] <<= 1;
-			hsr->byte_arr[0] = arr[0];
-			hsr->byte_arr[1] = arr[1] >> 8;
-			shift_reg_load(hsr);
-		}
-	}
-}
 
 void init_basic(void) {
 	xTaskCreatePinnedToCore(task_led, "Led", configMINIMAL_STACK_SIZE + 1500, 0, 1, 0, tskNO_AFFINITY);
@@ -167,7 +145,6 @@ void init_basic(void) {
 	//esp - radio
 	uart_param_config(ITS_UARTR_PORT, &init_pin_uart0);
 	uart_driver_install(ITS_UARTR_PORT, ITS_UARTR_RX_BUF_SIZE, ITS_UARTR_TX_BUF_SIZE, 0, 0, 0);
-	//uart_set_pin(ITS_UARTR_PORT, ITS_PIN_UARTR_TX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
 #ifndef ITS_ESP_DEBUG
 	//shift reg
@@ -181,7 +158,7 @@ void init_basic(void) {
 	vTaskDelay(20);
 	//time sync
 	gpio_config(&init_pin_time);
-	//gpio_config(&init_pin_pl_kvcc);
+
 	gpio_install_isr_service(0);
 
 	{
@@ -235,19 +212,11 @@ void init_basic(void) {
 }
 
 void init_helper(void) {
+	ESP_LOGD("SYSTEM", "init_helper");
 	log_collector_init(0);
 	init_basic();
-	printf("HEELLLO3.5!!!!\n");
-	fflush(stdout);
-	vTaskDelay(20);
-	printf("HEELLLO4!!!!\n");
-	fflush(stdout);
-	vTaskDelay(20);
-	printf("HEELLLO5!!!!\n");
-	fflush(stdout);
-	vTaskDelay(20);
-	//imi_init();
 
+	ESP_LOGD("SYSTEM", "basic inited");
 	//Связь со всеми уст-ми на imi
 	i2c_chan = mavlink_claim_channel();
 	imi_install(&imi_config, ITS_IMI_PORT);
@@ -256,9 +225,8 @@ void init_helper(void) {
 	imi_add_address(ITS_IMI_PORT, ITS_SINS_ADDRESS);
 	imi_start(ITS_IMI_PORT);
 
-	printf("HEELLLO6!!!!\n");
+	ESP_LOGD("SYSTEM", "imi inited");
 
-#ifndef ITS_ESP_DEBUG
 	shift_reg_init_spi(&hsr, ITS_SPISR_PORT, 27, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_CS_SR);
 	ESP_LOGD("SYSTEM", "Shift reg inited");
 
@@ -300,27 +268,23 @@ void init_helper(void) {
 //	hsr.byte_arr[1] = 0xBB;
 //	hsr.byte_arr[2] = 0xBB;
 
-	printf("@ %d\n", (int) &hsr);
-	fflush(stdout);
-	//xTaskCreate(task_test, "test task", configMINIMAL_STACK_SIZE + 2000, &hsr, 3, 0);
 	sensors_init();
-#endif
+	ESP_LOGD("SYSTEM", "sensors inited");
 
-	ESP_LOGD("SYSTEM", "Start wifi init");
+
 	static ts_cfg ts = {0};
 	ts.pin = ITS_PIN_PPS;
-	ts.period = 10 * 1000000;
+	ts.period = 100 * 1000000;
 	time_sync_from_sins_install(&ts);
 	xTaskCreatePinnedToCore(ark_tsync_task, "ARK time sync", configMINIMAL_STACK_SIZE + 4000, "ARK time sync", 1, 0, tskNO_AFFINITY);
 	radio_send_init();
-	/*
-	vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+	ESP_LOGD("SYSTEM", "radio inited");
+
 	while (sd_init()) {
 		ESP_LOGD("SYSTEM","Trying launch SD");
-	}*/
+	}
 
-
-	ESP_LOGD("SYSTEM", "Wifi inited");
 	//op_config_ip(&hop, 53597);
 	//op_init((op_handler_t *)&hop);
 	//input_init((op_handler_t *)&hop);
