@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from source import settings_control
+import time
 
 
 class DataWidget(QtWidgets.QTreeWidget):
@@ -46,12 +47,21 @@ class DataWidget(QtWidgets.QTreeWidget):
 
     class TimeTreeItem(AbstractTreeItem):
         sourse_id_list = []
+        add_date_mode = False
 
         def get_sourse_id_list(self):
             return self.sourse_id_list
 
         def set_sourse_id_list(self, sourse_id_list=[]):
             self.sourse_id_list = sourse_id_list
+
+        def set_add_date_mode(self, mode=False):
+            self.add_date_mode = mode
+
+        def set_value(self, value):
+            if self.add_date_mode == True:
+                value = str(value) + '\n' + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(value))
+            super(DataWidget.TimeTreeItem, self).set_value(value)
 
 
     class PacketCountTreeItem(AbstractTreeItem):
@@ -162,6 +172,7 @@ class DataWidget(QtWidgets.QTreeWidget):
                     item.set_background_color(self.background_color)
                     item.setup_fields(self.settings.value("system_name"))
                     item.set_sourse_id_list(self.settings.value("sourse_id"))
+                    item.set_add_date_mode(self.settings.value("add_date_mode"))
                     if self.settings.value("time_limit") is not None:
                         item.setup_timeout(self.colors[2], self.settings.value("time_limit"))
                     else: 

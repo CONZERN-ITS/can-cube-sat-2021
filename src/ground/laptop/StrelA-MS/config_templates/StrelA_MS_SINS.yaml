@@ -171,6 +171,7 @@ CentralWidget:
         - '10_2'
         - '10_3'
         - '10_4'
+        add_date_mode: true
       CUBE_1_PCU:
         is_on: true
         system_name: PCU time
@@ -179,21 +180,25 @@ CentralWidget:
         - '12_1'
         - '12_2'
         - '12_3'
+        add_date_mode: true
       CUBE_1_PL:
         is_on: true
         system_name: PL time
         sourse_id:
         - '13_0'
+        add_date_mode: true
       CUBE_1_SINS:
         is_on: true
         system_name: SINS time
         sourse_id:
         - '11_0'
+        add_date_mode: true
       GCS_RADIO:
         is_on: true
         system_name: GCS RADIO time
         sourse_id:
         - '1_0'
+        add_date_mode: true
       is_on: true
       def_time_limit: 20
     background_color: '#888888'
