@@ -86,6 +86,7 @@ void eupdate() {
             mavlink_electrical_state_t mest = {0};
             mest.time_s = tim.sec;
             mest.time_us = tim.usec * 1000;
+            mest.time_steady = HAL_GetTick();
 
             mest.current = current[ina_index];
             mest.voltage = voltage[ina_index];
@@ -142,6 +143,7 @@ void tupdate() {
             mavlink_thermal_state_t mtst = {0};
             mtst.time_s = tim.sec;
             mtst.time_us = tim.usec * 1000;
+            mtst.time_steady = HAL_GetTick();
             mtst.temperature = temp[ds_index];
 
             mavlink_msg_thermal_state_encode(mavlink_system, ds_index, &msg, &mtst);
