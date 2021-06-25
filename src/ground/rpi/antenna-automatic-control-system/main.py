@@ -102,7 +102,7 @@ if __name__ == '__main__':
         guidance_math.setup_coord_system()
         date = datetime.date.today()
         wwm.setup_location(*(list(guidance_math.get_lat_lon()) +
-                             list(guidance_math.get_alt()) +
+                             [guidance_math.get_alt()] +
                              [date.day, date.month, date.year]))
         guidance_math.set_decl(wwm.get_declination())
         guidance_math.setup_coord_system_math(guidance_math.get_accel(),
@@ -124,7 +124,6 @@ if __name__ == '__main__':
             print(e)
         else:
             ctrl_interface.messages_reaction([msgs])
-        print((time.time() - start_time))
         if (time.time() - start_time) > STATE_SETTINGS_PERIOD:
             start_time = time.time()
             data_object.write_data(ctrl_interface.generate_state_message())
