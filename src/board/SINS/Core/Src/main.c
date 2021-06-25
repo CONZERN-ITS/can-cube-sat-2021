@@ -492,9 +492,9 @@ void __SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-  RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
+//  RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 12;
@@ -518,8 +518,8 @@ void __SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+//  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+//  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -546,7 +546,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-#if 1
+#ifdef WITHOUT_RTC
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -555,12 +555,8 @@ int main(void)
   /* USER CODE BEGIN SysInit */
 #endif
 
-//  while (1)
-//  {
-//	  volatile int x = 0;
-//  }
-
-//  __SystemClock_Config();
+  //Запускаемся с RTC
+  __SystemClock_Config();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
