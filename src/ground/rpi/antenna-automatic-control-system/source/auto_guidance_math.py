@@ -1,5 +1,5 @@
 import numpy as NumPy
-from math import sin, cos, radians, acos, asin
+from math import sin, cos, radians, acos, asin, degrees
 import time
 
 class AutoGuidanceMath():
@@ -72,7 +72,7 @@ class AutoGuidanceMath():
         b = NumPy.cross(accel.T, mag.T).T
         b = b / NumPy.linalg.norm(b)
 
-        return NumPy.column_stack([mag, b, accel])
+        return NumPy.linalg.inv(NumPy.column_stack([mag, b, accel]))
 
     def recount_mag(self, mag):
         if self.mag_calibration_vector is not None:
@@ -181,7 +181,7 @@ class AutoGuidanceMath():
     def count_target_angles(self, vector):
         vector = vector / NumPy.linalg.norm(vector)
         vector_phi = degrees(asin(vector[2]))
-        vector_alpha = degrees(acos(vector[0]/((vector[0]^2 + vector[1]^2)^(1/2))))
+        vector_alpha = degrees(acos(vector[0]/((vector[0]**2 + vector[1]**2)**(1/2))))
         if vector[1] < 0:
             vector_alpha = 360 - vector_alpha
 

@@ -161,7 +161,7 @@ class MAVITSControlInterface(AbstractControlInterface):
         self.update_target_position(0, -360)
         trigger = self.drive_object.get_last_vertical_limit()
         if trigger is not None:
-            self.update_target_position(0, self.drive_object.get_vertical_limits().get(trigger, 0))
+            self.update_target_position(0, -self.drive_object.get_vertical_limits().get(trigger, 0))
 
     def update_target_position_WGS84_DEC(self, position):
         vector = NumPy.array(position).reshape((3, 1))
@@ -177,13 +177,13 @@ class MAVITSControlInterface(AbstractControlInterface):
                                         elevation=(self.target_phi - self.elevation_delta - self.elevation))
 
     def update_target_position(self, azimuth, elevation):
-            if azimuth >= self.min_rotation_angle:
+            if (azimuth)**2 >= (self.min_rotation_angle)**2:
                 self.drive_object.horizontal_rotation(azimuth)
                 self.azimuth = self.drive_object.get_horizontal_position() + self.azimuth_delta
-            if elevation >= self.min_rotation_angle:
+            if (elevation)**2 >= (self.min_rotation_angle)**2:
                 self.drive_object.vertical_rotation(elevation)
                 self.elevation = self.drive_object.get_vertical_position() + self.elevation_delta
-            if ((azimuth >= self.min_rotation_angle) or (elevation >= self.min_rotation_angle)):
+            if (((azimuth)**2 >= (self.min_rotation_angle)**2) or ((elevation)**2 >= (self.min_rotation_angle)**2)):
                 self.last_rotation_time = time.time()
 
 class ZMQITSControlInterface(MAVITSControlInterface):
