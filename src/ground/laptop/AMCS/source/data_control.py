@@ -41,7 +41,7 @@ class MAVDataSource():
         self.telemetry_log.write(struct.pack("<Q", time.time()))
         self.telemetry_log.write(msg.get_msgbuf())
 
-        return msg
+        return [msg]
 
     def write_data(self, msg):
         self.connection_out.mav.send(msg, False)
@@ -78,7 +78,7 @@ class ZMQDataSource():
     def read_data(self):
         events = dict(self.poller.poll(1000))
         if self.sub_socket in events:
-            return self.sub_socket.recv_multipart()
+            return [self.sub_socket.recv_multipart()]
         else:
             raise RuntimeError("No Message")
 

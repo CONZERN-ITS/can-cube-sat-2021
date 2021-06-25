@@ -190,9 +190,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setup_coord_system_btn = self.toolbar.addAction('Setup coord\nsystem')
         self.setup_coord_system_btn.triggered.connect(self.antenna.setup_coord_system)
 
-        self.state_request_btn = self.toolbar.addAction('State\nrequest')
-        self.state_request_btn.triggered.connect(self.antenna.state_request)
-
         self.menu_bar = self.menuBar()
         self.menu_file = self.menu_bar.addMenu("&File")
         self.action_exit = self.menu_file.addAction("&Exit")
@@ -201,6 +198,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.central_widget = CentralWidget(self.antenna)
         self.setCentralWidget(self.central_widget)
+        self.central_widget.position_widget.state_request_btn.clicked.connect(self.antenna.state_request)
 
         self.data_obj = self.get_data_object()
 
@@ -209,7 +207,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data_thread = QtCore.QThread(self)
         self.data_manager.moveToThread(self.data_thread)
         self.data_thread.started.connect(self.data_manager.start)
-        self.data_manager.new_msg.connect(self.antenna.msg_reaction)
+        self.data_manager.new_msg.connect(self.antenna.messages_reaction)
         self.data_thread.start()
 
     def setup_ui_design(self):

@@ -291,6 +291,9 @@ class PositionWidget(QtWidgets.QWidget):
         self.setup_label(frame_layout, 'RSSI:')
         self.rssi_lbl = self.setup_label(frame_layout, 'None')
 
+        self.state_request_btn = QtWidgets.QPushButton('State\nrequest')
+        visualization_layout.addWidget(self.state_request_btn)
+
     def setup_ui_design(self):
         pass
 

@@ -45,7 +45,7 @@ class AbstractAntennaInterface(QtCore.QObject):
             angle = 50
         return angle
 
-    def msg_reaction(self, msg):
+    def messages_reaction(self, msgs):
         pass
 
     def put_up(self, num):
@@ -95,22 +95,24 @@ class MAVITSInterface(AbstractAntennaInterface):
         self.mav = its_mav.MAVLink(file=None)
         self.set_angle_control_mode()
 
-    def msg_reaction(self, msg):
-        if msg.get_type() == 'AS_STATE':
-            self.antenna_pos_changed((msg.azimuth, msg.elevation, self.convert_time_from_s_us_to_s(msg.time_s, msg.time_us)))
-            self.lat_lon_alt_changed(tuple(msg.lat_lon + [msg.alt]))
-            self.ecef_changed(tuple(msg.ecef))
-            self.top_to_ascs_matrix_changed(tuple(msg.top_to_ascs))
-            self.dec_to_top_matrix_changed(tuple(msg.dec_to_top))
-            self.target_pos_changed((msg.target_azimuth, msg.target_elevation, self.convert_time_from_s_us_to_s(msg.target_time_s, msg.target_time_us)))
-            self.control_mode_changed(msg.mode)
-            self.aiming_period_changed(msg.period)
-            self.motors_enable_changed(tuple(msg.enable))
-            self.motors_auto_disable_mode_changed(msg.motor_auto_disable)
-            self.motors_timeout_changed(msg.motors_timeout)
+    def messages_reaction(self, msgs):
+        if msgs is not None:
+            for msg in msgs:
+                if msg.get_type() == 'AS_STATE':
+                    self.antenna_pos_changed.emit((msg.azimuth, msg.elevation, self.convert_time_from_s_us_to_s(msg.time_s, msg.time_us)))
+                    self.lat_lon_alt_changed.emit(tuple(msg.lat_lon + [msg.alt]))
+                    self.ecef_changed.emit(tuple(msg.ecef))
+                    self.top_to_ascs_matrix_changed.emit(tuple(msg.top_to_ascs))
+                    self.dec_to_top_matrix_changed.emit(tuple(msg.dec_to_top))
+                    self.target_pos_changed.emit((msg.target_azimuth, msg.target_elevation, self.convert_time_from_s_us_to_s(msg.target_time_s, msg.target_time_us)))
+                    self.control_mode_changed.emit(msg.mode)
+                    self.aiming_period_changed.emit(msg.period)
+                    self.motors_enable_changed.emit(tuple(msg.enable))
+                    self.motors_auto_disable_mode_changed.emit(msg.motor_auto_disable)
+                    self.motors_timeout_changed.emit(msg.motors_timeout)
 
-        elif msg.get_type() == 'RSSI':
-            self.rssi_changed(msg.rssi)
+                elif msg.get_type() == 'RSSI':
+                    self.rssi_changed(msg.rssi)
 
     def convert_time_from_s_to_s_us(self, current_time):
         current_time = math.modf(current_time)
@@ -122,18 +124,18 @@ class MAVITSInterface(AbstractAntennaInterface):
     def send_message(self, msg):
         msg.get_header().srcSystem = 0
         msg.get_header().srcComponent = 3
-        self.send_msg(msg)
-        self.command_sent(str(msg))
+        self.send_msg.emit(msg)
+        self.command_sent.emit(str(msg))
 
-    def set_angle_control_mode(self, mode=False):
+    def set_angle_control_mode(self, mode=True):
         self.angle_control_mode = mode
 
     def set_antenna_angle(self, azimuth, elevation):
         args = self.convert_time_from_s_to_s_us(time.time()) + [azimuth, elevation]
         if self.angle_control_mode:
-            self.send_message(its_mav.MAVLink_as_hard_manual_control_message(*args))
-        else:
             self.send_message(its_mav.MAVLink_as_soft_manual_control_message(*args))
+        else:
+            self.send_message(its_mav.MAVLink_as_hard_manual_control_message(*args))
 
     def put_up(self, num):
         angle = self.count_angle(num)
@@ -161,13 +163,13 @@ class MAVITSInterface(AbstractAntennaInterface):
         self.send_message(its_mav.MAVLink_as_motors_enable_mode_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
 
     def turn_motors_off(self):
-        self.send_message(its_mav.MAVLink_as_motors_enable_mode_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
+        self.send_message(its_mav.MAVLink_as_motors_enable_mode_message(*(self.convert_time_from_s_to_s_us(time.time()) + [False])))
 
     def motors_auto_disable_on(self):
         self.send_message(its_mav.MAVLink_as_motors_auto_disable_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
 
     def motors_auto_disable_off(self):
-        self.send_message(its_mav.MAVLink_as_motors_auto_disable_message(*(self.convert_time_from_s_to_s_us(time.time()) + [True])))
+        self.send_message(its_mav.MAVLink_as_motors_auto_disable_message(*(self.convert_time_from_s_to_s_us(time.time()) + [False])))
 
     def set_motors_timeout(self, timeout):
         self.send_message(its_mav.MAVLink_as_set_motors_timeout_message(*(self.convert_time_from_s_to_s_us(time.time()) + [timeout])))
@@ -193,15 +195,15 @@ class MAVITSInterface(AbstractAntennaInterface):
 
 
 class ZMQITSInterface(MAVITSInterface):
-    def msg_reaction(self, msg):
-        topic = msg[0].decode('utf-8')
-        if topic == 'antenna.telemetry_packet':
-            super(ZMQitsInterface, self).msg_reaction(msg[2])
-        elif topic == 'radio.rssi_instant':
-            self.rssi_changed.emit(json.loads(msg[1]).get('rssi', None))
+    def messages_reaction(self, msgs):
+        for msg in msgs:
+            topic = msg[0].decode('utf-8')
+            if topic == 'antenna.telemetry_packet':
+                super(ZMQITSInterface, self).messages_reaction(self.mav.parse_buffer(msg[2]))
+            elif topic == 'radio.rssi_instant':
+                self.rssi_changed.emit(json.loads(msg[1]).get('rssi', None))
 
     def send_message(self, msg):
-        print(msg)
         msg.get_header().srcSystem = 0
         msg.get_header().srcComponent = 3
         multipart = ["antenna.command_packet".encode("utf-8"),
