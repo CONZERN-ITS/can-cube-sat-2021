@@ -112,11 +112,16 @@ int tmain(void) {
 
 
 void time_recv_callback(const mavlink_message_t *msg) {
+
+    static int time_base = 0;
     if (msg->msgid != MAVLINK_MSG_ID_TIMESTAMP) {
         return;
     }
     mavlink_timestamp_t mts;
     mavlink_msg_timestamp_decode(msg, &mts);
+    if (time_base > mts.time_base) {
+        return;
+    }
 
     its_time_t t;
     t.sec = mts.time_s;

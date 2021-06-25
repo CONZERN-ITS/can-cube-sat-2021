@@ -1,6 +1,7 @@
 #include "main.h"
 #include "its-time.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 
 static its_time_t last_exti;
@@ -27,8 +28,39 @@ void its_sync_time(its_time_t *from_bcs) {
 
     its_time_t now;
     its_gettimeofday(&now);
-    uint64_t new = (now.sec * 1ll - last_exti.sec + from_bcs->sec) * 1000 + now.usec - last_exti.usec + from_bcs->usec;
-    now.sec = new / 1000;
-    now.usec = new % 1000;
-    its_settimeofday(&now);
+
+
+    static int bad_time = 0;
+    static int64_t big_diff = 0;
+    int64_t diff = -(last_exti.sec * 1000 + last_exti.usec) + (from_bcs->sec * 1000 + from_bcs->usec);
+
+    if (diff > 5000) {
+        uint64_t new = now.sec * 1000 + now.usec + diff;
+
+        now.sec = new / 1000;
+        now.usec = new % 1000;
+        its_settimeofday(&now);
+
+        bad_time = 0;
+        big_diff = 0;
+    }
+    if (llabs(diff) > 200) {
+        bad_time++;
+        big_diff += diff;
+    } else {
+        diff = 0;
+        bad_time = 0;
+    }
+    if (bad_time >= 5) {
+        uint64_t new = now.sec * 1000 + now.usec + big_diff / bad_time;
+
+        now.sec = new / 1000;
+        now.usec = new % 1000;
+        its_settimeofday(&now);
+
+
+        bad_time = 0;
+        big_diff = 0;
+    }
+
 }
