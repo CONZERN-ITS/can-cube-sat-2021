@@ -33,6 +33,7 @@ typedef struct {
 	uint16_t count_recieved_cmds;
 	uint16_t count_executed_cmds;
 	uint16_t count_errors;
+	uint8_t last_executed_cmd_seq;
 } op_stats_t;
 
 typedef struct {
@@ -40,6 +41,7 @@ typedef struct {
 	int64_t end;
 	int64_t duration;
 	uint32_t state;
+	uint8_t seq;
 } state_t;
 typedef struct {
 	state_t roze[ROZE_COUNT];
@@ -87,6 +89,7 @@ static void op_task(void *arg) {
 				mavlink_msg_roze_activate_command_decode(&msg, &mrac);
 				op_state.roze[mrac.area_id - 1].duration = mrac.active_time * 1000000;
 				op_state.roze[mrac.area_id - 1].state = CS_GOT_MSG;
+				op_state.roze[mrac.area_id - 1].seq = msg.seq;
 
 				ESP_LOGV(TAG, "%d:%06d: roze for BSK%d for %d ms", (int)mrac.time_s, mrac.time_us, mrac.area_id, mrac.active_time);
 				stats.count_recieved_cmds++;
@@ -96,6 +99,7 @@ static void op_task(void *arg) {
 				mavlink_msg_cmd_activate_command_decode(&msg, &mcac);
 				op_state.cmd[mcac.area_id - 1].duration = mcac.active_time * 1000000;
 				op_state.cmd[mcac.area_id - 1].state = CS_GOT_MSG;
+				op_state.cmd[mcac.area_id - 1].seq = msg.seq;
 
 				ESP_LOGV(TAG, "%d:%06d: cmd for BSK%d for %d ms", (int)mcac.time_s, mcac.time_us, mcac.area_id, mcac.active_time);
 				stats.count_recieved_cmds++;
@@ -107,6 +111,7 @@ static void op_task(void *arg) {
 				ESP_LOGV(TAG, "%d:%06d: idle", (int)mic.time_s, mic.time_us);
 				stats.count_recieved_cmds++;
 				stats.count_executed_cmds++;
+				stats.last_executed_cmd_seq = msg.seq;
 			}
 		}
 
@@ -127,6 +132,7 @@ static void op_task(void *arg) {
 					shift_reg_set_level_pin(&hsr, pin_roze[i], 0);
 					op_state.roze[i].state = CS_OFF;
 					stats.count_executed_cmds++;
+					stats.last_executed_cmd_seq = op_state.roze[i].seq;
 				}
 			}
 		}
@@ -142,6 +148,7 @@ static void op_task(void *arg) {
 					shift_reg_set_level_pin(&hsr, pin_cmd[i], 0);
 					op_state.cmd[i].state = CS_OFF;
 					stats.count_executed_cmds++;
+					stats.last_executed_cmd_seq = op_state.cmd[i].seq;
 				}
 			}
 		}
@@ -159,6 +166,7 @@ static void op_task(void *arg) {
 			conn_stats->count_operator_cmds_executed = stats.count_executed_cmds;
 			conn_stats->count_operator_cmds_recieved = stats.count_recieved_cmds;
 			conn_stats->count_operator_errors = stats.count_errors;
+			conn_stats->last_executed_cmd_seq = stats.last_executed_cmd_seq;
 			conn_stats->update_time_operator = esp_timer_get_time() / 1000;
 			log_collector_give();
 		}
