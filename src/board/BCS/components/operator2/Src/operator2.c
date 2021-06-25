@@ -56,6 +56,13 @@ const static int pin_roze[] = {
 		ITS_PIN_SR_BSK4_ROZE,
 };
 
+const static int pin_cmd[] = {
+		ITS_PIN_SR_BSK1_CMD,
+		ITS_PIN_SR_BSK2_CMD,
+		ITS_PIN_SR_BSK3_CMD,
+		ITS_PIN_SR_BSK4_CMD,
+};
+
 static void op_task(void *arg) {
 	op_state_t op_state = {0};
 	op_stats_t stats = {0};
@@ -66,6 +73,8 @@ static void op_task(void *arg) {
 	};
 	tid.queue = xQueueCreate(10, MAVLINK_MAX_PACKET_LEN);
 	its_rt_register(MAVLINK_MSG_ID_ROZE_ACTIVATE_COMMAND, tid);
+	its_rt_register(MAVLINK_MSG_ID_CMD_ACTIVATE_COMMAND, tid);
+	its_rt_register(MAVLINK_MSG_ID_IDLE_COMMAND, tid);
 	while (1) {
 		vTaskDelay(1);
 
@@ -81,6 +90,23 @@ static void op_task(void *arg) {
 
 				ESP_LOGV(TAG, "%d:%06d: roze for BSK%d for %d ms", (int)mrac.time_s, mrac.time_us, mrac.area_id, mrac.active_time);
 				stats.count_recieved_cmds++;
+			}
+			if (msg.msgid == MAVLINK_MSG_ID_CMD_ACTIVATE_COMMAND) {
+				mavlink_cmd_activate_command_t mcac = {0};
+				mavlink_msg_cmd_activate_command_decode(&msg, &mcac);
+				op_state.cmd[mcac.area_id - 1].duration = mcac.active_time * 1000000;
+				op_state.cmd[mcac.area_id - 1].state = CS_GOT_MSG;
+
+				ESP_LOGV(TAG, "%d:%06d: cmd for BSK%d for %d ms", (int)mcac.time_s, mcac.time_us, mcac.area_id, mcac.active_time);
+				stats.count_recieved_cmds++;
+			}
+			if (msg.msgid == MAVLINK_MSG_ID_IDLE_COMMAND) {
+
+				mavlink_idle_command_t mic = {0};
+				mavlink_msg_idle_command_decode(&msg, &mic);
+				ESP_LOGV(TAG, "%d:%06d: idle", (int)mic.time_s, mic.time_us);
+				stats.count_recieved_cmds++;
+				stats.count_executed_cmds++;
 			}
 		}
 
@@ -100,6 +126,21 @@ static void op_task(void *arg) {
 				if (op_state.roze[i].end <= now) {
 					shift_reg_set_level_pin(&hsr, pin_roze[i], 0);
 					op_state.roze[i].state = CS_OFF;
+					stats.count_executed_cmds++;
+				}
+			}
+		}
+		for (int i = 0; i < CMD_COUNT; i++) {
+			if (op_state.cmd[i].state == CS_GOT_MSG) {
+				op_state.cmd[i].start = now;
+				op_state.cmd[i].end = now + op_state.cmd[i].duration;
+				op_state.cmd[i].state = CS_ON;
+				shift_reg_set_level_pin(&hsr, pin_cmd[i], 1);
+			}
+			if (op_state.cmd[i].state == CS_ON) {
+				if (op_state.cmd[i].end <= now) {
+					shift_reg_set_level_pin(&hsr, pin_cmd[i], 0);
+					op_state.cmd[i].state = CS_OFF;
 					stats.count_executed_cmds++;
 				}
 			}
