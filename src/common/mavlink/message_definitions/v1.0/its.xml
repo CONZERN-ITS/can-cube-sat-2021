@@ -651,5 +651,11 @@
       <field type="uint8_t" name="area_id">Roze mechanism area id</field>
       <field type="uint8_t" name="active_time" units="s">Roze mechanism active phase time</field>
     </message>
+
+    <message id="51012" name="IDLE_COMMAND">
+      <description>Command that does nothing</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+    </message>
   </messages>
 </mavlink>
