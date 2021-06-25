@@ -9,12 +9,12 @@
 #include "lsm6ds3_STdC/driver/lsm6ds3_reg.h"
 #include "WMM2020_Linux/src/GeomagnetismHeader.h"
 
-#define CONFIG_FILE_NAME "./WMM.COF"
+#define CONFIG_FILE_NAME "./source/lib/WMM.COF"
 
 typedef enum {
 	ERROR_NO_ERROR = 0,
 	ERROR_UNKNOWN_ID = -1,
-	ERROR_COF_NOT_FOUND = -2,
+	ERROR_CONF_NOT_FOUND = -2,
 	ERROR_NO_MEMORY = -3,
 	ERROR_INCORRECT_VALUE = -4,
 
@@ -145,7 +145,7 @@ int32_t find_true_north(location_data_t location, double * decl){
     int num_terms, n_max = 0;
 
     if(!MAG_robustReadMagModels(CONFIG_FILE_NAME, &magnetic_models, 1))
-        return ERROR_COF_NOT_FOUND;
+        return ERROR_CONF_NOT_FOUND;
     if(n_max < magnetic_models[0]->nMax) n_max = magnetic_models[0]->nMax;
     num_terms = ((n_max + 1) * (n_max + 2) / 2);
     timed_magnetic_model = MAG_AllocateModelMemory(num_terms); // For storing the time modified WMM Model parameters
