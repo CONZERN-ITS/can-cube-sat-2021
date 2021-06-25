@@ -116,7 +116,8 @@ class MAVITSControlInterface(AbstractControlInterface):
                     if (msg.gpsFix > 0) and (msg.gpsFix < 4):
                         self.target_last_time = convert_time_from_s_to_s_us(time.time())
                         position = [msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100]
-                        self.update_target_position_WGS84_DEC(position)
+                        if ((self.auto_control_mode) and ((time.time() + self.aiming_period) > self.last_rotation_time)):
+                            self.update_target_position_WGS84_DEC(position)
                     pass
 
     def convert_time_from_s_to_s_us(self, current_time):
@@ -176,7 +177,6 @@ class MAVITSControlInterface(AbstractControlInterface):
                                         elevation=(self.target_phi - self.elevation_delta - self.elevation))
 
     def update_target_position(self, azimuth, elevation):
-        if ((self.auto_control_mode) and ((time.time() + self.aiming_period) > self.last_rotation_time)):
             if azimuth >= self.min_rotation_angle:
                 self.drive_object.horizontal_rotation(azimuth)
                 self.azimuth = self.drive_object.get_horizontal_position() + self.azimuth_delta
