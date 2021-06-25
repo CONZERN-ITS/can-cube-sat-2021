@@ -377,8 +377,6 @@
                                     									
                                     <listOptionValue builtIn="false" value="HAL_TIM_MODULE_ENABLED=1"/>
                                     									
-                                    <listOptionValue builtIn="false" value="HAL_ADC_MODULE_ENABLED=1"/>
-                                    									
                                     <listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
                                     								
                                 </option>
