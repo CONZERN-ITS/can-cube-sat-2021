@@ -53,14 +53,14 @@ class AutoGuidanceMath():
     def set_decl(self, decl):
         self.decl = decl
 
-    def dec_to_top_matix(lat, lon):
+    def dec_to_top_matix(self, lat, lon):
         lat = radians(lat)
         lon = radians(lon)
         return  NumPy.array([[-sin(lat)*cos(lon),  -sin(lat)*sin(lon), cos(lat)],
                              [ sin(lon),           -cos(lon),          0       ],
                              [ cos(lat)*cos(lon),   cos(lat)*sin(lon), sin(lat)]])
 
-    def top_to_gcscs_matix(mag, accel, decl):
+    def top_to_gcscs_matix(self, mag, accel, decl):
         accel = accel / NumPy.linalg.norm(accel)
         mag = mag / NumPy.linalg.norm(mag)
         decl = radians(decl)
@@ -81,7 +81,7 @@ class AutoGuidanceMath():
             mag = NumPy.dot(self.mag_calibration_matrix, mag)
         if self.mag_recount_matrix is not None:
             mag = NumPy.dot(self.mag_recount_matrix, mag)
-        return new_mag
+        return mag
 
     def recount_accel(self, accel):
         if self.accel_calibration_vector is not None:
@@ -90,7 +90,7 @@ class AutoGuidanceMath():
             accel = NumPy.dot(self.accel_calibration_matrix, accel)
         if self.accel_recount_matrix is not None:
             accel = NumPy.dot(self.accel_recount_matrix, accel)
-        return new_mag
+        return accel
 
     def recount_vector(self, vector):
         vector = NumPy.dot(self.dec_to_top, vector)
@@ -103,8 +103,8 @@ class AutoGuidanceMath():
         mag = self.recount_mag(mag)
         self.coord_sys_center = coord_sys_center
 
-        self.dec_to_top = dec_to_top_matix(lat_lon)
-        self.top_to_gcs = top_to_gcscs_matix(mag, accel, self.decl)
+        self.dec_to_top = self.dec_to_top_matix(*list(lat_lon))
+        self.top_to_gcs = self.top_to_gcscs_matix(mag, accel, self.decl)
         self.coord_system_sucsess_flag = True
 
     def setup_coord_system(self):
