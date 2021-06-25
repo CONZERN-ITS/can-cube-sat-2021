@@ -189,8 +189,6 @@
                         						
                         <entry excluding="Startup|Src/process_ad527x.c|Src/main.c|Src/data_ina219.c|Src/data_ds18b20.c|Src/battery.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Application"/>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Application/Startup"/>
-                        						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
@@ -368,8 +366,6 @@
                     <sourceEntries>
                         						
                         <entry excluding="Startup|Src/process_ad527x.c|Src/main.c|Src/data_ina219.c|Src/data_ds18b20.c|Src/battery.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Application"/>
-                        						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Application/Startup"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
                         						
