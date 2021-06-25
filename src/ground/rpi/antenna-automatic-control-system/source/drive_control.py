@@ -116,14 +116,14 @@ class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
 
     def horizontal_rotation(self, angle):
         if self.horizontal_motor is not None:
-            self.last_horizontal_limit = self.horizontal_motor.rotate_using_angle(ang)
-            phi = self.horizontal_motor.steps_to_angle(self.horizontal_motor.get_last_steps_num(),
+            self.last_horizontal_limit = self.horizontal_motor.rotate_using_angle(angle)
+            alpha = self.horizontal_motor.steps_to_angle(self.horizontal_motor.get_last_steps_num(),
                                                        self.horizontal_motor.get_last_steps_direction())
             if self.last_horizontal_limit is not None:
                 self.horizontal_position = self.horizontal_limits.get(self.last_horizontal_limit)
             else:
-                self.horizontal_position += phi
-            return phi
+                self.horizontal_position += alpha
+            return alpha
         return None
 
     def get_vertical_enable_state(self):
