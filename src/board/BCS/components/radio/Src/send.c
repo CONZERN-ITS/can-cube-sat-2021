@@ -19,6 +19,7 @@
 #define RADIO_SLEEP_AWAKE_LEGNTH 300 //ms
 #define RADIO_SLEEP_SLEEP_LENGTH 4000 //ms
 
+static radio_t radio_server;
 
 
 #define log_error(fmt, ...) ESP_LOGE("radio", fmt, ##__VA_ARGS__)
@@ -598,6 +599,7 @@ typedef enum {
 #define RADIO_START_ANYWAY 10000
 #define PERIOD_SEND 600
 #define PERIOD_MSG (600 / (ITS_RADIO_PACKET_SIZE / 40) * 1000)
+#define MAX_ERRORS 5
 static void send_task2(void *arg) {
 	radio_t * server = arg;
 	// Конфигурация отправки пакетов с контроллируемой скоростью
@@ -615,6 +617,8 @@ static void send_task2(void *arg) {
 	int64_t last_sent = now;
 	int i_really_want_to_start_now = 1;
 	radio_state_t rs = 0;
+	int error_count_tx = 0;
+	int error_count_rx = 0;
 	while (1) {
 		now = esp_timer_get_time();
 		mavlink_message_t incoming_msg = {0};
@@ -675,8 +679,10 @@ static void send_task2(void *arg) {
 
 			case SX126X_DRV_EVTKIND_TX_DONE:
 				if (event.arg.tx_done.timed_out) {
+					error_count_tx++;
 					log_error("TX TIMED OUT!");
 				} else {
+					error_count_tx = 0;
 					log_info("tx done");
 					server->radio_buf.index = 0;
 				}
@@ -685,6 +691,9 @@ static void send_task2(void *arg) {
 				packet_done = 0;
 				break;
 			}
+		}
+		if (error_count_tx > MAX_ERRORS && error_count_rx > MAX_ERRORS) {
+			return;
 		}
 
 		if (rs == RS_RX && RADIO_RX_PERIOD < now - period_start) {
@@ -717,6 +726,7 @@ static void send_task2(void *arg) {
 				}
 				rc = sx126x_drv_mode_tx(&server->dev, 0);
 				if (0 != rc) {
+					error_count_tx++;
 					log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
 					i_really_want_to_start_now = 1;
 				}
@@ -724,6 +734,7 @@ static void send_task2(void *arg) {
 			if (rs == RS_RX) {
 				rc = sx126x_drv_mode_rx(&server->dev, 0);
 				if (0 != rc) {
+					error_count_rx++;
 					log_error("unable to switch radio to rx mode: %d. Dropping frame", rc);
 					i_really_want_to_start_now = 1;
 				}
@@ -762,16 +773,22 @@ static void send_task2(void *arg) {
 			log_collector_give();
 		}
 
-
-
-
-
-
 		vTaskDelay(20 / portTICK_PERIOD_MS);
 	}
 
 }
+static void send_task3(void *arg) {
+	int rc = 0;
+	while (1) {
+		rc = _radio_init(&radio_server);
+		if (rc) {
+			vTaskDelay(5000 / portTICK_PERIOD_MS);
+			continue;
+		}
 
+		send_task2(arg);
+	}
+}
 
 static TaskHandle_t task_s = NULL;
 
@@ -796,7 +813,6 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 	xTaskNotify(*handler, 0, eNoAction);
 }
 
-static radio_t radio_server;
 void radio_send_init(void) {
 	radio_server.mavlink_chan = mavlink_claim_channel();
 	radio_server.mav_buf.capacity = MAVLINK_MAX_PACKET_LEN;
