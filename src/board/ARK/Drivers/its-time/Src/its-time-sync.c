@@ -34,7 +34,7 @@ void its_sync_time(its_time_t *from_bcs) {
     static int64_t big_diff = 0;
     int64_t diff = -(last_exti.sec * 1000 + last_exti.usec) + (from_bcs->sec * 1000 + from_bcs->usec);
 
-    if (diff > 5000) {
+    if (llabs(diff) > 5000) {
         uint64_t new = now.sec * 1000 + now.usec + diff;
 
         now.sec = new / 1000;
@@ -43,8 +43,7 @@ void its_sync_time(its_time_t *from_bcs) {
 
         bad_time = 0;
         big_diff = 0;
-    }
-    if (llabs(diff) > 200) {
+    } else if (llabs(diff) > 200) {
         bad_time++;
         big_diff += diff;
     } else {

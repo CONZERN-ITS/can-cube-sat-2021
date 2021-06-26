@@ -31,23 +31,6 @@
 
 #define ITS_SR_PACK_SIZE 4 //Размер пачек на сдвиговых регистрах
 
-#if ITS_WIFI_SERVER
-#define ITS_BSK_COUNT 6 //Количество пачек на сдвиговых регистрах
-#define ITS_BSK_1					0
-#define ITS_BSK_2					3
-#define ITS_BSK_2A					2
-#define ITS_BSK_3					5
-#define ITS_BSK_4					1
-#define ITS_BSK_5					4
-#else
-#define ITS_BSK_COUNT 6 //Количество пачек на сдвиговых регистрах
-#define ITS_BSK_1					0
-#define ITS_BSK_2					5
-#define ITS_BSK_2A					4
-#define ITS_BSK_3					3
-#define ITS_BSK_4					1
-#define ITS_BSK_5					2
-#endif
 
 
 #define ITS_I2CTM_DEV_COUNT			3

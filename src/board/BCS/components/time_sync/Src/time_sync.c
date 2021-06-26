@@ -26,7 +26,7 @@
 #include "freertos/queue.h"
 
 #include "esp_system.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
 #include "esp_sntp.h"
 
@@ -129,8 +129,8 @@ static void time_sync_task(void *arg) {
 					}
 				}
 			}
-			ESP_LOGV("TIME", "from sinc: %d.%06d", (int)there.tv_sec, (int)there.tv_usec);
-			ESP_LOGV("TIME", "here:      %d.%06d", (int)now.tv_sec, (int)now.tv_usec);
+			ESP_LOGV("TIME", "from sinc: %llu.%06d", (uint64_t)there.tv_sec, (int)there.tv_usec);
+			ESP_LOGV("TIME", "here:      %llu.%06d", (uint64_t)now.tv_sec, (int)now.tv_usec);
 			ESP_LOGV("TIME", "diff:      %d.%06d %lld", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000), now1 - ts->mutex_safe.isr_time	);
 			ESP_LOGV("TIME", "Base: %d %d %d", ts->mutex_safe.base, mts.time_base, ts->cnt);
 			xSemaphoreGive(ts->mutex);
