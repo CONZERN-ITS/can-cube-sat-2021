@@ -462,6 +462,18 @@ CentralWidget:
             - '#FF4646'
             - '#0096FF'
             - '#FFFFFF'
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        name: "RSSI"
+        position:
+        - 2
+        - 0
+        - 1
+        - 1
+        units: dB
+      _INSTANT:
+        Packets:
           GCS_RADIO_RSSI_INSTANT:
             sourse_id: '1_0'
             message_id: 'radio.rssi_instant'
@@ -471,15 +483,15 @@ CentralWidget:
             - instant rssi
             color:
             - g
-        legend_is_on: true
+        legend_is_on: false
         is_on: true
         max_data_length: 100
-        name: "RSSI"
+        name: "RSSI Instant"
         position:
         - 2
-        - 0
         - 1
-        - 2
+        - 1
+        - 1
         units: dB
     is_on: true
     position:
