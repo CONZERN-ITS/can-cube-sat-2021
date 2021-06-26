@@ -71,8 +71,8 @@ int tmain(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED_Pin GPIO_PIN_13
-#define LED_GPIO_Port GPIOC
+#define LED_Pin GPIO_PIN_5
+#define LED_GPIO_Port GPIOB
 #define BMS5_Pin GPIO_PIN_1
 #define BMS5_GPIO_Port GPIOA
 #define BMS6_Pin GPIO_PIN_2
