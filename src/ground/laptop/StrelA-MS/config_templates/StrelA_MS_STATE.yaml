@@ -279,7 +279,7 @@ CentralWidget:
             field_id:
             - temperature
             field_name:
-            - component 0
+            - BCU C0
             color:
             - '#FF4646'
           CUBE_1_BCU_TEMP_COMP_1:
@@ -288,7 +288,7 @@ CentralWidget:
             field_id:
             - temperature
             field_name:
-            - component 1
+            - BCU C1
             color:
             - g
           CUBE_1_BCU_TEMP_COMP_2:
@@ -297,7 +297,7 @@ CentralWidget:
             field_id:
             - temperature
             field_name:
-            - component 2
+            - BCU C2
             color:
             - '#0096FF'
           CUBE_1_BCU_TEMP_COMP_3:
@@ -306,7 +306,7 @@ CentralWidget:
             field_id:
             - temperature
             field_name:
-            - component 3
+            - BCU C3
             color:
             - '#FFFF00'
           CUBE_1_BCU_TEMP_COMP_4:
@@ -315,7 +315,7 @@ CentralWidget:
             field_id:
             - temperature
             field_name:
-            - component 4
+            - BCU C4
             color:
             - '#FF00FF'
           CUBE_1_BCU_TEMP_COMP_5:
@@ -324,9 +324,45 @@ CentralWidget:
             field_id:
             - temperature
             field_name:
-            - component 5
+            - BCU C5
             color:
             - '#00FFFF'
+          CUBE_1_PCU_TEMP_COMP_0:
+            sourse_id: '12_0'
+            message_id: 'THERMAL_STATE'
+            field_id:
+            - temperature
+            field_name:
+            - PCU C0
+            color:
+            - '#33AAAA'
+          CUBE_1_PCU_TEMP_COMP_1:
+            sourse_id: '12_1'
+            message_id: 'THERMAL_STATE'
+            field_id:
+            - temperature
+            field_name:
+            - PCU C1
+            color:
+            - '#33AA33'
+          CUBE_1_PCU_TEMP_COMP_2:
+            sourse_id: '12_2'
+            message_id: 'THERMAL_STATE'
+            field_id:
+            - temperature
+            field_name:
+            - PCU C2
+            color:
+            - '#3333AA'
+          CUBE_1_PCU_TEMP_COMP_3:
+            sourse_id: '12_3'
+            message_id: 'THERMAL_STATE'
+            field_id:
+            - temperature
+            field_name:
+            - PCU C3
+            color:
+            - '#AA33AA'
         legend_is_on: true
         is_on: true
         max_data_length: 100
@@ -345,7 +381,7 @@ CentralWidget:
             field_id:
             - voltage
             field_name:
-            - component 0
+            - BCU C0
             color:
             - '#FF4646'
           CUBE_1_BCU_EL_STATE_COMP_1:
@@ -354,7 +390,7 @@ CentralWidget:
             field_id:
             - voltage
             field_name:
-            - component 1
+            - BCU C1
             color:
             - '#0096FF'
           CUBE_1_BCU_EL_STATE_COMP_2:
@@ -363,7 +399,7 @@ CentralWidget:
             field_id:
             - voltage
             field_name:
-            - component 2
+            - BCU C2
             color:
             - '#00FF00'
           CUBE_1_BCU_EL_STATE_COMP_3:
@@ -372,9 +408,27 @@ CentralWidget:
             field_id:
             - voltage
             field_name:
-            - component 3
+            - BCU C3
             color:
             - '#00FFFF'
+          CUBE_1_PCU_EL_STATE_COMP_0:
+            sourse_id: '12_0'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - voltage
+            field_name:
+            - PCU C0
+            color:
+            - '#FFFF00'
+          CUBE_1_PCU_EL_STATE_COMP_1:
+            sourse_id: '12_1'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - voltage
+            field_name:
+            - PCU C1
+            color:
+            - '#FF00FF'
         legend_is_on: true
         is_on: true
         max_data_length: 100
@@ -393,7 +447,7 @@ CentralWidget:
             field_id:
             - current
             field_name:
-            - component 0
+            - BCU C0
             color:
             - '#FF4646'
           CUBE_1_BCU_EL_STATE_COMP_1:
@@ -402,7 +456,7 @@ CentralWidget:
             field_id:
             - current
             field_name:
-            - component 1
+            - BCU C1
             color:
             - '#0096FF'
           CUBE_1_BCU_EL_STATE_COMP_2:
@@ -411,7 +465,7 @@ CentralWidget:
             field_id:
             - current
             field_name:
-            - component 2
+            - BCU C2
             color:
             - '#00FF00'
           CUBE_1_BCU_EL_STATE_COMP_3:
@@ -420,9 +474,27 @@ CentralWidget:
             field_id:
             - current
             field_name:
-            - component 3
+            - BCU C3
             color:
             - '#00FFFF'
+          CUBE_1_PCU_EL_STATE_COMP_0:
+            sourse_id: '12_0'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - current
+            field_name:
+            - PCU C0
+            color:
+            - '#FFFF00'
+          CUBE_1_PCU_EL_STATE_COMP_1:
+            sourse_id: '12_1'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - current
+            field_name:
+            - PCU C1
+            color:
+            - '#FF00FF'
         legend_is_on: true
         is_on: true
         max_data_length: 100
