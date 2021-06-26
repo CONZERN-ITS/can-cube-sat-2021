@@ -252,6 +252,9 @@ static int _bus_gpio_enable(i2c_link_ctx_t * ctx)
 #endif
 	init.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
 
+	// ГРЯЗНЫЙ ХАК
+	LL_GPIO_AF_EnableRemap_I2C1();
+
 	init.Pin = ctx->sda_pin;
 	LL_GPIO_Init(ctx->sda_port, &init);
 

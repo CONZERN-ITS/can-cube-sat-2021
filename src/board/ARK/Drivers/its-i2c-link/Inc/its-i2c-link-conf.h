@@ -6,7 +6,7 @@
 #include <stm32f1xx_hal.h>
 
 //! Адрес ведомого в 7мибитном формате, с выравниванием по правому краю
-#define I2C_LINK_ADDR (0x69)
+#define I2C_LINK_ADDR (0x68)
 
 // Проритеты I2C прерываний
 #define I2C_LINK_EV_IRQ_PREEM_PRIORITY 1
@@ -24,16 +24,16 @@
 #define I2C_LINK_TXBUF_COUNT (5)
 
 //! LL i2c-handle (I2C_Typedef)
-#define I2C_LINK_BUS_HANDLE (I2C2)
+#define I2C_LINK_BUS_HANDLE (I2C1)
 #define I2C_LINK_DMA_HANDLE (DMA1)
 #define I2C_LINK_DMA_STREAM_TX (LL_DMA_CHANNEL_6)
 #define I2C_LINK_DMA_STREAM_RX (LL_DMA_CHANNEL_7)
 
 #define I2C_LINK_SDA_PORT GPIOB
-#define I2C_LINK_SDA_PIN LL_GPIO_PIN_11
+#define I2C_LINK_SDA_PIN LL_GPIO_PIN_9
 
 #define I2C_LINK_SCL_PORT GPIOB
-#define I2C_LINK_SCL_PIN LL_GPIO_PIN_10
+#define I2C_LINK_SCL_PIN LL_GPIO_PIN_8
 
 #define I2C_LINK_VARIANT_F1
 
