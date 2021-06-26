@@ -251,7 +251,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
   /* USER CODE BEGIN I2C3_MspInit 0 */
 	  //Для двух MS5611
 	  __HAL_RCC_I2C3_CLK_ENABLE();
-	   // Иначе попадаем в проблему вечного busy
+	   // �?наче попадаем в проблему вечного busy
   /* USER CODE END I2C3_MspInit 0 */
 
     __HAL_RCC_GPIOC_CLK_ENABLE();

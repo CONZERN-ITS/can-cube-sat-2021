@@ -80,6 +80,8 @@ extern UART_HandleTypeDef huart6;
 void NMI_Handler(void)
 {
   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
+  HAL_RCC_NMI_IRQHandler();
+
 #ifndef DEBUG
   HAL_NVIC_SystemReset();
 #endif

@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_main.h"
+#include "osc_config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,13 +102,23 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+    int error = HSE_SystemClock_Config();
+    if (1 == error)
+    {
+  	  error = 0;
+  	  error = HSI_SystemClock_Config();
+  	  if (1 == error)
+  		  HAL_NVIC_SystemReset();
+    }
+
+#ifdef CUBE_CLOCK_CONFIG
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+#endif
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */

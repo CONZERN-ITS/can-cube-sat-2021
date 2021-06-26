@@ -112,6 +112,15 @@ int app_main()
 	// Смотрим причину последнего резета
 	_status.reset_cause = _fetch_reset_cause();
 
+	int HSE_start_time = 0;
+	//Если едем на HSE перезапускаться не будем
+	if (RCC_PLLSOURCE_HSI == __HAL_RCC_GET_PLL_OSCSOURCE())
+	{
+		//Будем пытаться запускаться на HSE каждые 10 минут
+		HSE_start_time = HAL_GetTick();
+
+	}
+
 	// Включаем все
 	led_init();
 	time_svc_init();
@@ -289,6 +298,14 @@ int app_main()
 		// В конце такта работает комиссар
 		commissar_work();
 
+		if (RCC_PLLSOURCE_HSI == __HAL_RCC_GET_PLL_OSCSOURCE())
+		{
+			int HSE_stop_time = HAL_GetTick();
+
+			if ((HSE_stop_time - HSE_start_time) > 10 * 60 * 1000)
+				HAL_NVIC_SystemReset();
+		}
+
 		// Ждем начала следующего такта
 		uint32_t now;
 		bool led_done  = false;
@@ -321,7 +338,11 @@ static void _collect_own_stats(mavlink_pld_stats_t * msg)
 	msg->resets_count = _status.resets_count;
 	msg->reset_cause = _status.reset_cause;
 
-	msg->active_oscillator = ACTIVE_OSCILLATOR_HSE;
+	if (RCC_PLLSOURCE_HSI == __HAL_RCC_GET_PLL_OSCSOURCE())
+		msg->active_oscillator = ACTIVE_OSCILLATOR_HSI;
+	else
+		msg->active_oscillator = ACTIVE_OSCILLATOR_HSE;
+
 
 	msg->time_base = time_svc_get_time_base();
 
