@@ -478,8 +478,61 @@ static void RTC_BAK_SetRegister(RTC_TypeDef *RTCx, uint32_t BackupRegister, uint
 }
 
 
+int HSI_SystemClock_Config(void)
+{
+	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+	/** Configure the main internal regulator output voltage
+	*/
+	__HAL_RCC_PWR_CLK_ENABLE();
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+	/** Initializes the RCC Oscillators according to the specified parameters
+	* in the RCC_OscInitTypeDef structure.
+	*/
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI
+							  |RCC_OSCILLATORTYPE_LSE;
+	RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+	RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+	RCC_OscInitStruct.PLL.PLLM = 8;
+	RCC_OscInitStruct.PLL.PLLN = 168;
+	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+	RCC_OscInitStruct.PLL.PLLQ = 4;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+	{
+	return 1;
+	}
+	/** Initializes the CPU, AHB and APB buses clocks
+	*/
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+							  |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+	{
+	return 1;
+	}
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+	PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+	{
+	return 1;
+	}
+
+	return 0;
+}
+
+
 //Настройки генераторов на плате
-void __SystemClock_Config(void)
+int HSE_SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -503,7 +556,7 @@ void __SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    Error_Handler();
+    return 1;
   }
   /** Initializes the CPU, AHB and APB buses clocks
   */
@@ -516,17 +569,19 @@ void __SystemClock_Config(void)
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
-    Error_Handler();
+    return 1;
   }
 //  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
 //  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
-    Error_Handler();
+    return 1;
   }
   /** Enables the Clock Security System
   */
   HAL_RCC_EnableCSS();
+
+  return 0;
 }
 /* USER CODE END 0 */
 
@@ -555,8 +610,19 @@ int main(void)
   /* USER CODE BEGIN SysInit */
 #endif
 
+
   //Запускаемся с RTC
-  __SystemClock_Config();
+  int error = HSE_SystemClock_Config();
+  if (1 == error)
+  {
+	  error = 0;
+	  error = HSI_SystemClock_Config();
+	  if (1 == error)
+		  HAL_NVIC_SystemReset();
+  }
+
+
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -583,6 +649,12 @@ int main(void)
 
   	dwt_init();
   	commissar_init();
+
+
+  	if (RCC_PLLSOURCE_HSI == __HAL_RCC_GET_PLL_OSCSOURCE())
+  		error_system.osc_source = ACTIVE_OSCILLATOR_HSI;
+	else
+		error_system.osc_source = ACTIVE_OSCILLATOR_HSE;
 
   	/*if (CALIBRATION_LSM)
   		calibration_accel();
@@ -700,6 +772,15 @@ int main(void)
 
   		commissar_init();
 
+  		int HSE_start_time = 0;
+  		//Если едем на HSE перезапускаться не будем
+  		if (RCC_PLLSOURCE_HSI == __HAL_RCC_GET_PLL_OSCSOURCE())
+  		{
+  			//Будем пытаться запускаться на HSE каждые 10 минут
+			HSE_start_time = HAL_GetTick();
+
+  		}
+
   		// Пашем, работяги
   		for (; ; )
   		{
@@ -776,6 +857,14 @@ int main(void)
   			mavlink_errors_packet();
   			mavlink_its_link_stats();
   			commissar_work();
+
+  			if (RCC_PLLSOURCE_HSI == __HAL_RCC_GET_PLL_OSCSOURCE())
+  			{
+  				int HSE_stop_time = HAL_GetTick();
+
+  				if ((HSE_stop_time - HSE_start_time) > 10 * 60 * 1000)
+  					HAL_NVIC_SystemReset();
+  			}
   		}
   	}
 
@@ -811,14 +900,15 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
-                              /*|RCC_OSCILLATORTYPE_LSE;*/
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-//  RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI
+                              |RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
@@ -845,9 +935,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Enables the Clock Security System
-  */
-  HAL_RCC_EnableCSS();
 }
 
 /**
@@ -1047,7 +1134,7 @@ static void MX_IWDG_Init(void)
   /* USER CODE END IWDG_Init 0 */
 
   /* USER CODE BEGIN IWDG_Init 1 */
-#ifdef _IWDG
+#ifndef DEBUG
   /* USER CODE END IWDG_Init 1 */
   hiwdg.Instance = IWDG;
   hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
@@ -1059,7 +1146,7 @@ static void MX_IWDG_Init(void)
   /* USER CODE BEGIN IWDG_Init 2 */
 #endif
 
-#ifndef _IWDG
+#ifdef DEBUG
   return;
 #endif
   /* USER CODE END IWDG_Init 2 */
@@ -1283,7 +1370,17 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+#ifdef DEGUB
+  while (1)
+  {
+  }
+#endif
+  HAL_NVIC_SystemReset();
+
+
   __disable_irq();
+
+
   while (1)
   {
   }

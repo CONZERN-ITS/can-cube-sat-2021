@@ -348,6 +348,8 @@
       <field type="int32_t" name="lis3mdl_error_counter"> counter lis errors</field>
       <field type="int32_t" name="gps_reconfig_counter"> gps reconfiguration counter</field>
 
+	  <field type="uint8_t" name="osc_source"> now oscillator type. see enum ACTIVE_OSCILLATOR</field>      
+
       <field type="uint16_t" name="reset_counter"> reset counter</field>
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
     </message>
@@ -402,7 +404,7 @@
 
       <field type="uint16_t" name="resets_count">mcu reset counter</field>
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
-      <field type="uint8_t"  name="active_oscillator">Active oscillator for this computer</field>
+      <field type="uint8_t"  name="active_oscillator">Active oscillator for this computer. see enum ACTIVE_OSCILLATOR</field>
       <field type="uint8_t"  name="time_base">time base for on board time service</field>
       <field type="uint16_t" name="time_syncs_attempted">How many times a world time correction was attempted</field>
       <field type="uint16_t" name="time_syncs_performed">How many times a world time correction was attempted</field>

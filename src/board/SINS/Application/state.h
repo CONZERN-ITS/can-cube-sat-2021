@@ -53,6 +53,8 @@ typedef struct {
 
 	int gps_reconfig_counter;
 
+	uint8_t osc_source;
+
 	uint16_t reset_counter;
 	uint16_t reset_cause;
 
