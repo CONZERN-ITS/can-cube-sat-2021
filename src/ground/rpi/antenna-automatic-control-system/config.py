@@ -28,11 +28,11 @@ MAG_RECOUNT_MATRIX = NumPy.array([[-1, 0, 0],
                                   [ 0, 0, 1],
                                   [ 0, 1, 0]])
 
-MAG_CALIBRATION_MATRIX = NumPy.array([[ 0.948874, -0.010167, 0.266488],
-                                      [-0.010167,  1.230079, 0.015828],
-                                      [ 0.266488,  0.015828, 1.178367]])
+MAG_CALIBRATION_MATRIX = NumPy.array([[ 1, 0, 0],
+                                      [ 0, 1, 0],
+                                      [ 0, 0, 1]])
 
-MAG_CALIBRATION_VECTOR = NumPy.array([[-0.784921], [-0.038389], [-0.837087]])
+MAG_CALIBRATION_VECTOR = NumPy.array([[0], [0], [0]])
 
 # Accel sensor
 LSM6DS3_ADRESS = 0x6B
@@ -47,7 +47,7 @@ ACCEL_CALIBRATION_VECTOR = None
 
 # GPS
 GPS_ACCUMULATION_NUM = 1
-GPS_TIMEOUT = 2
+GPS_TIMEOUT = 5
 
 # Vertical stepper motor
 VSM_PUL_PIN = 36
@@ -55,10 +55,10 @@ VSM_DIR_PIN = 37
 VSM_ENABLE_PIN = 32
 VSM_GEARBOX_NUM = 102
 VSM_DEG_PER_STEP = 1.8 / 8
-VSM_POS_DIR_STATE = False
+VSM_POS_DIR_STATE = True
 VSM_STOP_STATE = 0
-VSM_POS_LIMIT_PINS_MAP = {7:90}
-VSM_NEG_LIMIT_PINS_MAP = {11:-10.5}
+VSM_POS_LIMIT_PINS_MAP = {11:90}
+VSM_NEG_LIMIT_PINS_MAP = {7:-10.5}
 
 # Horizontal stepper motor
 HSM_PUL_PIN = 29
