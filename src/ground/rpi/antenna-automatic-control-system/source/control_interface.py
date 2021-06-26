@@ -6,6 +6,7 @@ from pymavlink import mavutil
 
 import math
 import time
+import numpy as NumPy
 
 
 class AbstractControlInterface():
@@ -37,7 +38,7 @@ class AbstractControlInterface():
         pass
 
     def messages_reaction(self, msgs):
-        pass
+        return []
 
     def generate_state_message(self):
         pass
@@ -71,14 +72,13 @@ class MAVITSControlInterface(AbstractControlInterface):
         self.target_last_time = (0, 0)
 
     def messages_reaction(self, msgs):
+        response = []
         if msgs is not None:
             for msg in msgs:
                 if msg.get_type() == "AS_AUTOMATIC_CONTROL":
                     self.auto_control_mode = bool(msg.mode)
                 elif msg.get_type() == "AS_HARD_MANUAL_CONTROL":
-                    self.update_target_position(msg.azimuth, msg.elevation)
-                    self.elevation_delta -= msg.elevation
-                    self.azimuth_delta -= msg.azimuth
+                    self.update_target_position_hard(msg.azimuth, msg.elevation)
                 elif msg.get_type() == "AS_SOFT_MANUAL_CONTROL":
                     self.update_target_position(msg.azimuth, msg.elevation)
                 elif msg.get_type() == "AS_MOTORS_ENABLE_MODE":
@@ -110,8 +110,8 @@ class MAVITSControlInterface(AbstractControlInterface):
                             self.auto_guidance_math.setup_coord_system()
                         except Exception as e:
                             print(e)
-                            pass
-                        pass
+                    elif enum[msg.command_id].name == "STATE_REQUEST":
+                        response.append(self._generate_as_state_message())
                 elif msg.get_type() == "GPS_UBX_NAV_SOL":
                     if (msg.gpsFix > 0) and (msg.gpsFix < 4):
                         self.target_last_time = convert_time_from_s_to_s_us(time.time())
@@ -119,6 +119,7 @@ class MAVITSControlInterface(AbstractControlInterface):
                         if ((self.auto_control_mode) and ((time.time() + self.aiming_period) > self.last_rotation_time)):
                             self.update_target_position_WGS84_DEC(position)
                     pass
+        return response
 
     def convert_time_from_s_to_s_us(self, current_time):
         current_time = math.modf(current_time)
@@ -128,6 +129,9 @@ class MAVITSControlInterface(AbstractControlInterface):
         return time_s + time_us/1000000
 
     def generate_state_message(self):
+        return self._generate_as_state_message()
+
+    def _generate_as_state_message(self):
         current_time = self.convert_time_from_s_to_s_us(time.time())
         enable = [self.drive_object.get_vertical_enable_state(), self.drive_object.get_horizontal_enable_state()]
         enable = [False if state is None else state for state in enable]
@@ -173,18 +177,39 @@ class MAVITSControlInterface(AbstractControlInterface):
     def update_target_position_GCSCS_VEC(self, vector):
         if self.auto_guidance_math.get_coord_system_sucsess_flag():
             (self.target_alpha, self.target_phi) = self.auto_guidance_math.count_target_angles(vector)
-            self.update_target_position(azimuth=(self.target_alpha - self.azimuth_delta - self.azimuth),
-                                        elevation=(self.target_phi - self.elevation_delta - self.elevation))
+
+            if (self.target_alpha - self.azimuth) > 180:
+                self.update_target_position(azimuth=(self.target_alpha - self.azimuth - 360),
+                                            elevation=(self.target_phi - self.elevation))
+            elif (self.target_alpha - self.azimuth) < -180:
+                self.update_target_position(azimuth=(self.target_alpha - self.azimuth + 360),
+                                            elevation=(self.target_phi - self.elevation))
+            else:
+                self.update_target_position(azimuth=(self.target_alpha - self.azimuth),
+                                            elevation=(self.target_phi - self.elevation))
+
+    def recount_angle(self, angle):
+        if angle < -180:
+            angle += 360 * int(-(angle - 180) / 360)
+        elif angle > 180:
+            angle -= 360 * int((angle + 180) / 360)
+        return angle
 
     def update_target_position(self, azimuth, elevation):
             if (azimuth)**2 >= (self.min_rotation_angle)**2:
                 self.drive_object.horizontal_rotation(azimuth)
-                self.azimuth = self.drive_object.get_horizontal_position() + self.azimuth_delta
+                self.azimuth = self.recount_angle(self.drive_object.get_horizontal_position() + self.azimuth_delta)
             if (elevation)**2 >= (self.min_rotation_angle)**2:
                 self.drive_object.vertical_rotation(elevation)
-                self.elevation = self.drive_object.get_vertical_position() + self.elevation_delta
+                self.elevation = self.recount_angle(self.drive_object.get_vertical_position() + self.elevation_delta)
             if (((azimuth)**2 >= (self.min_rotation_angle)**2) or ((elevation)**2 >= (self.min_rotation_angle)**2)):
                 self.last_rotation_time = time.time()
+
+    def update_target_position_hard(self, azimuth, elevation):
+            if (azimuth)**2 >= (self.min_rotation_angle)**2:
+                self.azimuth_delta -= self.drive_object.horizontal_rotation(azimuth)
+            if (elevation)**2 >= (self.min_rotation_angle)**2:
+                self.elevation -= self.drive_object.vertical_rotation(elevation)
 
 class ZMQITSControlInterface(MAVITSControlInterface):
     def __init__(self, *args, **kwargs):
@@ -192,14 +217,18 @@ class ZMQITSControlInterface(MAVITSControlInterface):
         self.mav = its_mav.MAVLink(file=None)
 
     def messages_reaction(self, msgs):
+        response = []
         for msg in msgs:
             topic = msg[0].decode('utf-8')
             if topic == 'antenna.command_packet':
-                super(ZMQITSControlInterface, self).messages_reaction(self.mav.parse_buffer(msg[2]))
+                for mav_msg in super(ZMQITSControlInterface, self).messages_reaction(self.mav.parse_buffer(msg[2])):
+                    response.append(self._wrap_in_antenna_telemetry_packet(mav_msg))
+        return response
 
     def generate_state_message(self):
-        msg = super(ZMQITSControlInterface, self).generate_state_message()
-        multipart = ["antenna.telemetry_packet".encode("utf-8"),
-                     bytes(),
-                     msg.pack(self.mav)]
-        return multipart
+        return self._wrap_in_antenna_telemetry_packet(super(ZMQITSControlInterface, self).generate_state_message())
+
+    def _wrap_in_antenna_telemetry_packet(self, mav_msg):
+        return ["antenna.telemetry_packet".encode("utf-8"),
+                bytes(),
+                mav_msg.pack(self.mav)]

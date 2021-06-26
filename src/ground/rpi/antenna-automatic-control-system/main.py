@@ -123,7 +123,9 @@ if __name__ == '__main__':
         except Exception as e:
             print(e)
         else:
-            ctrl_interface.messages_reaction([msgs])
+            response = ctrl_interface.messages_reaction([msgs])
+            for msg in response:
+                data_object.write_data(msg)
         if (time.time() - start_time) > STATE_SETTINGS_PERIOD:
             start_time = time.time()
             data_object.write_data(ctrl_interface.generate_state_message())

@@ -183,7 +183,7 @@ class AutoGuidanceMath():
         vector_phi = degrees(asin(vector[2]))
         vector_alpha = degrees(acos(vector[0]/((vector[0]**2 + vector[1]**2)**(1/2))))
         if vector[1] < 0:
-            vector_alpha = 360 - vector_alpha
+            vector_alpha = - vector_alpha
 
         return (vector_alpha, vector_phi)
 
