@@ -74,7 +74,10 @@ class MAVDataSource():
         msg_list = []
         for msg in msgs:
             if msg.get_type() == "BAD_DATA":
-                #print(msg)
+                msg_list.append(Message(message_id=msg.get_type(),
+                                        source_id='0_0',
+                                        msg_time=0,
+                                        msg_data={}))
                 continue
             data = msg.to_dict()
             data.pop('mavpackettype', None)
@@ -224,6 +227,7 @@ class ZMQDataSource():
             self.log.write(msg_buf)
 
             msg = self.mav.parse_buffer(msg_buf)
+
             if msg is None:
                 raise RuntimeError("No Message")
             data = MAVDataSource.get_data(MAVDataSource, msg)

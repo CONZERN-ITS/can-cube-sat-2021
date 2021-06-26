@@ -48,6 +48,10 @@ CentralWidget:
       is_on: true
       def_time_limit: 20
     Packet_table:
+      BAD_DATA:
+        name: 'BAD DATA'
+        sourse_id: '0_0'
+        message_id: 'BAD_DATA'
       CUBE_1_BCU_STATS:
         name: 'BCU C0 BCU_STATS'
         sourse_id: '10_0'
