@@ -255,6 +255,24 @@ CentralWidget:
     Graph:
       Thermal_state:
         Packets:
+          PLD_TEMP:
+            sourse_id: '13_0'
+            message_id: 'OWN_TEMP'
+            field_id:
+            - deg
+            field_name:
+            - PLD
+            color:
+            - '#666666'
+          SINS_OWN_TEMP:
+            sourse_id: '11_0'
+            message_id: 'OWN_TEMP'
+            field_id:
+            - deg
+            field_name:
+            - SINS
+            color:
+            - '#FFFFFF'
           CUBE_1_BCU_TEMP_COMP_0:
             sourse_id: '10_0'
             message_id: 'THERMAL_STATE'
@@ -415,26 +433,32 @@ CentralWidget:
         - 1
         - 1
         units: A
-      Own_temperature:
+      Own_voltage:
         Packets:
-          PLD_TEMP:
+          PLD_VOLTAGE:
             sourse_id: '13_0'
             message_id: 'OWN_TEMP'
             field_id:
-            - deg
+            - vdda
+            - vbat
             field_name:
-            - PLD
+            - PLD vdda
+            - PLD vbat
             color:
-            - '#FF4646'
-          SINS_OWN_TEMP:
+            - '#0096FF'
+            - '#FF00FF'
+          SINS_VOLTAGE:
             sourse_id: '11_0'
             message_id: 'OWN_TEMP'
             field_id:
-            - deg
+            - vdda
+            - vbat
             field_name:
-            - SINS
+            - SINS vdda
+            - SINS vdda
             color:
             - g
+            - '#FF4646'
         legend_is_on: true
         is_on: true
         max_data_length: 100
@@ -472,7 +496,7 @@ CentralWidget:
         - 1
         - 1
         units: dB
-      _INSTANT:
+      RSSI_INSTANT:
         Packets:
           GCS_RADIO_RSSI_INSTANT:
             sourse_id: '1_0'
