@@ -71,8 +71,6 @@ int tmain(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED_Pin GPIO_PIN_5
-#define LED_GPIO_Port GPIOB
 #define BMS5_Pin GPIO_PIN_1
 #define BMS5_GPIO_Port GPIOA
 #define BMS6_Pin GPIO_PIN_2
@@ -95,8 +93,8 @@ int tmain(void);
 #define DPC_RST_GPIO_Port GPIOB
 #define DPD_RST_Pin GPIO_PIN_15
 #define DPD_RST_GPIO_Port GPIOB
-#define LEDB5_Pin GPIO_PIN_5
-#define LEDB5_GPIO_Port GPIOB
+#define LED_Pin GPIO_PIN_5
+#define LED_GPIO_Port GPIOB
 #define TIME_Pin GPIO_PIN_6
 #define TIME_GPIO_Port GPIOB
 #define TIME_EXTI_IRQn EXTI9_5_IRQn
