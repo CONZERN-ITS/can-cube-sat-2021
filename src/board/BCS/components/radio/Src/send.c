@@ -594,9 +594,9 @@ typedef enum {
 	RS_TX,
 	RS_RX,
 } radio_state_t;
-#define RADIO_TX_PERIOD 2000
-#define RADIO_RX_PERIOD 2000
-#define RADIO_START_ANYWAY 10000
+#define RADIO_TX_PERIOD 4000 * 1000
+#define RADIO_RX_PERIOD 4000 * 1000
+#define RADIO_START_ANYWAY 10000 * 1000
 #define PERIOD_SEND 600
 #define PERIOD_MSG (600 / (ITS_RADIO_PACKET_SIZE / 40) * 1000)
 #define MAX_ERRORS 5
@@ -619,6 +619,7 @@ static void send_task2(void *arg) {
 	radio_state_t rs = 0;
 	int error_count_tx = 0;
 	int error_count_rx = 0;
+	int packet_done = 0;
 	while (1) {
 		now = esp_timer_get_time();
 		mavlink_message_t incoming_msg = {0};
@@ -633,14 +634,12 @@ static void send_task2(void *arg) {
 		}
 
 		sx126x_drv_evt_t event;
-		int rc = sx126x_drv_poll_event(&server->dev, &event);
 		ESP_LOGV("radio", "poll");
+		int rc = sx126x_drv_poll_event(&server->dev, &event);
 		if (rc) {
 			ESP_LOGE("radio", "poll %d", rc);
 		}
-		int packet_done = 0;
 		if (0 == rc) {
-			packet_done = 1;
 			switch (event.kind)
 			{
 			case SX126X_DRV_EVTKIND_RX_DONE:
@@ -675,6 +674,7 @@ static void send_task2(void *arg) {
 				} else {
 					log_trace("rx timeout");
 				}
+				packet_done = 1;
 				break;
 
 			case SX126X_DRV_EVTKIND_TX_DONE:
@@ -686,9 +686,11 @@ static void send_task2(void *arg) {
 					log_info("tx done");
 					server->radio_buf.index = 0;
 				}
+				packet_done = 1;
+				last_sent = now;
 				break;
 			default:
-				packet_done = 0;
+				log_info("no event");
 				break;
 			}
 		}
@@ -697,33 +699,51 @@ static void send_task2(void *arg) {
 		}
 
 		if (rs == RS_RX && RADIO_RX_PERIOD < now - period_start) {
+			log_info("START TX0");
 			rs = RS_TX;
 			period_start = now;
 		}
 		if (rs == RS_TX && RADIO_TX_PERIOD < now - period_start) {
+			log_info("START RX");
 			rs = RS_RX;
 			period_start = now;
 		}
 		if (rs == RS_NONE) {
+			log_info("START TX2");
 			rs = RS_TX;
 			period_start = now;
 		}
 		if (RADIO_START_ANYWAY < now - last_sent) {
+			log_warn("waited too long. Start anyway");
+			log_info("START TX3");
 			rs = RS_TX;
 			period_start = now;
 			i_really_want_to_start_now = 1;
+			last_sent = now;
 		}
 
 
-		if (packet_done || i_really_want_to_start_now) {
+		ESP_LOGV("radio", "TEST: %d %d %d %d", (int)last_sent, (int)now, packet_done, rs);
+		if ((packet_done && now - last_sent >= 000 * 1000) || i_really_want_to_start_now) {
+			packet_done = 0;
 			i_really_want_to_start_now = 0;
 
 			if (rs == RS_TX) {
+				ESP_LOGV("radio", "new tx");
 				fill_packet(server);
 				if (server->radio_buf.index < server->radio_buf.size) {
-					memset(server->radio_buf.buf, 0, server->radio_buf.size - server->radio_buf.index);
+					memset(&server->radio_buf.buf[server->radio_buf.index], 0, server->radio_buf.size - server->radio_buf.index);
+
 					server->radio_buf.index = server->radio_buf.size;
 				}
+				if (LOG_LOCAL_LEVEL >= ESP_LOG_VERBOSE) {
+					for (int i = 0; i < server->radio_buf.size; i++) {
+						printf("0x%02X ", server->radio_buf.buf[i]);
+					}
+					printf("\n");
+					fflush(stdout);
+				}
+				sx126x_drv_payload_write(&server->dev, server->radio_buf.buf, server->radio_buf.size);
 				rc = sx126x_drv_mode_tx(&server->dev, 0);
 				if (0 != rc) {
 					error_count_tx++;
@@ -732,6 +752,7 @@ static void send_task2(void *arg) {
 				}
 			}
 			if (rs == RS_RX) {
+				ESP_LOGV("radio", "new rx");
 				rc = sx126x_drv_mode_rx(&server->dev, 0);
 				if (0 != rc) {
 					error_count_rx++;
@@ -745,6 +766,7 @@ static void send_task2(void *arg) {
 
 
 		if (log_collector_take(0) == pdTRUE) {
+			ESP_LOGV("radio", "logs");
 			mavlink_bcu_radio_conn_stats_t *conn_stats = log_collector_get_conn_stats();
 
 			sx126x_drv_state_t drv_state = 0;
@@ -819,9 +841,15 @@ void radio_send_init(void) {
 	radio_server.radio_buf.capacity = ITS_RADIO_PACKET_SIZE;
 	radio_server.radio_buf.size = ITS_RADIO_PACKET_SIZE;
 
+	xTaskCreatePinnedToCore(send_task3, "Radio send", configMINIMAL_STACK_SIZE + 4000, &radio_server, 4, &task_s, tskNO_AFFINITY);
+
+/*
+
 	int rc = _radio_init(&radio_server);
 	assert(rc == 0);
 
 	xTaskCreatePinnedToCore(task_send, "Radio send", configMINIMAL_STACK_SIZE + 4000, &radio_server, 4, &task_s, tskNO_AFFINITY);
+*/
+
 	gpio_isr_handler_add(ITS_PIN_RADIO_DIO1, gpio_isr_handler, (void*) &task_s);
 }
