@@ -115,6 +115,15 @@
       <entry value="3" name="STATE_REQUEST">
         <description>In response to this command antenna system have to send state message</description>
       </entry>
+    </enum>AS_GPS_FILTER
+    <enum name="AS_GPS_FILTER">
+      <description>Antenna system commands list</description>
+      <entry value="0" name="NO_FILTER">
+        <description>No filtration</description>
+      </entry>
+      <entry value="1" name="VELOCITY_FILTER">
+        <description>Setup velocity filter</description>
+      </entry>
     </enum>
     <enum name="PLD_LOCATION">
       <description>Location of PLD sensors </description>
@@ -636,9 +645,20 @@
       <field type="uint8_t[2]" name="enable">Boolean indicating hight (1) or low (0) motors enable pin state</field>
       <field type="uint8_t" name="motor_auto_disable">Boolean indicating motors auto disable mode is enable (1) or disable (0)</field>
       <field type="float" name="motors_timeout" units="s">Motors auto disable timeout</field>
+
+      <field type="uint8_t" name="filter_id" enum="AS_GPS_FILTER">Filter type</field>
     </message>
 
-    <message id="51010" name="ROZE_ACTIVATE_COMMAND">
+    <message id="51009" name="AS_SETUP_GPS_FILTER">
+      <description>Setup filter for board gps data</description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+
+      <field type="uint8_t" name="filter_id" enum="AS_GPS_FILTER">Filter type</field>
+    </message>
+
+    <!--  Commands for all systems. Id range: 51100 - 51199  -->
+    <message id="51101" name="ROZE_ACTIVATE_COMMAND">
       <description>Roze mechanism activate command</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
@@ -647,8 +667,8 @@
       <field type="uint8_t" name="active_time" units="s">Roze mechanism active phase time</field>
     </message>
 
-    <message id="51011" name="CMD_ACTIVATE_COMMAND">
-      <description>Roze mechanism activate command</description>
+    <message id="51102" name="CMD_ACTIVATE_COMMAND">
+      <description>Roze mechanism activate command (CMD)</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
 
@@ -656,7 +676,7 @@
       <field type="uint8_t" name="active_time" units="s">Roze mechanism active phase time</field>
     </message>
 
-    <message id="51012" name="IDLE_COMMAND">
+    <message id="51103" name="IDLE_COMMAND">
       <description>Command that does nothing</description>
       <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
