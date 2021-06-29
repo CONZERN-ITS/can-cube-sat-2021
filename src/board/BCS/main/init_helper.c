@@ -44,6 +44,7 @@
 #include "input_op.h"
 #include "operator_ip.h"
 #include <operator2.h>
+#include <task_time_stats.h>
 
 
 static i2c_config_t init_pin_i2c_tm  = {
@@ -291,6 +292,7 @@ void init_helper(void) {
 
 
 	op2_init();
+	//task_time_stats_init();
 }
 
 uint8_t mv_packet[MAVLINK_MAX_PACKET_LEN];
