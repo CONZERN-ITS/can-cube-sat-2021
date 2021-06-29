@@ -11,7 +11,7 @@
 */
 
 
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include <esp_log.h>
 #include <math.h>
 #include <esp_err.h>
@@ -110,7 +110,7 @@ static int _write_reg(ina219_t * device, uint8_t reg_addr, uint16_t reg_value) {
 	i2c_master_write_byte(cmd, reg_addr, 1);
 	i2c_master_write(cmd, (uint8_t*) &v, sizeof(v), 1);
 	i2c_master_stop(cmd);
-	esp_err_t err = i2c_master_cmd_begin(device->i2c_port, cmd, device->tick_timeout);
+	esp_err_t err = i2c_master_cmd_begin(device->i2c_port, cmd, 0);
 	i2c_cmd_link_delete(cmd);
 	i2c_master_postend(device->i2c_port);
 
@@ -136,18 +136,18 @@ static esp_err_t _read_reg(ina219_t * device, uint8_t reg_addr, uint16_t * reg_v
 		i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_WRITE, 1);
 		i2c_master_write_byte(cmd, reg_addr, 1);
 		i2c_master_stop(cmd);
-		err = i2c_master_cmd_begin(device->i2c_port, cmd, 300);
+		err = i2c_master_cmd_begin(device->i2c_port, cmd, 0);
 		i2c_cmd_link_delete(cmd);
 	}
 	uint8_t raw[2] = {0};
-	{
+	if (!err) {
 		i2c_cmd_handle_t cmd =  i2c_cmd_link_create();
 		i2c_master_start(cmd);
 		i2c_master_write_byte(cmd, (device->i2c_address << 1) | I2C_MASTER_READ, 1);
 		i2c_master_read_byte(cmd, &raw[0], I2C_MASTER_ACK);
 		i2c_master_read_byte(cmd, &raw[1], I2C_MASTER_NACK);
 		i2c_master_stop(cmd);
-		err = i2c_master_cmd_begin(device->i2c_port, cmd, 300);
+		err = i2c_master_cmd_begin(device->i2c_port, cmd, 0);
 		i2c_cmd_link_delete(cmd);
 	}
 	i2c_master_postend(device->i2c_port);

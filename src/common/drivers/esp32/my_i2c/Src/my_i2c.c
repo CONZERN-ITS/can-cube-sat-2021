@@ -12,6 +12,11 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 
+
+#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
+#include "esp_log.h"
+
+const char *TAG = "my_i2c";
 typedef struct i2c_dev_t {
 	SemaphoreHandle_t mutex;
 	StaticSemaphore_t xMutexBuffer;
@@ -27,9 +32,11 @@ void i2c_master_mutex_init(i2c_port_t i2c_port) {
 }
 
 BaseType_t i2c_master_prestart(i2c_port_t i2c_port, int timeout) {
+	ESP_LOGV(TAG, "prestart");
 	return xSemaphoreTake(i2c_dev_arr[i2c_port].mutex, timeout);
 }
 BaseType_t i2c_master_postend(i2c_port_t i2c_port) {
+	ESP_LOGV(TAG, "postend");
 	return xSemaphoreGive(i2c_dev_arr[i2c_port].mutex);
 }
 

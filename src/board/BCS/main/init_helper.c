@@ -91,7 +91,7 @@ static imi_config_t imi_config = {
 	.i2c_port = ITS_I2CTM_PORT,
 	.i2c_int = -1,
 	.address_count = ITS_I2CTM_DEV_COUNT,
-	.ticksToWaitForOne = 100 / portTICK_RATE_MS,
+	.ticksToWaitForOne = 0 / portTICK_RATE_MS,
 	.save = common_packet_to_route,
 	.alloc = common_imi_alloc
 };
@@ -309,7 +309,7 @@ void common_packet_to_route(uint8_t *data, uint16_t size) {
 	if (mavlink_parse_char(i2c_chan, data[size - 1], &msg, &mst)) {
 		its_rt_sender_ctx_t ctx;
 		ctx.from_isr = 0;
-		its_rt_route(&ctx, &msg, 100 / portTICK_RATE_MS);
+		its_rt_route(&ctx, &msg, 0);
 	}
 }
 

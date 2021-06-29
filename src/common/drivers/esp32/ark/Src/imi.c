@@ -30,7 +30,7 @@
 #include "imi.h"
 #include "pinout_cfg.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_NONE
+#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include "esp_log.h"
 
 static const char *TAG = "imi";
@@ -238,14 +238,16 @@ static void _imi_task_recv(void *arg) {
 		while (h->cfg.i2c_int >= 0 && gpio_get_level(h->cfg.i2c_int)) {
 			ulTaskNotifyTake(pdFALSE, IMI_WAIT_DELAY / portTICK_RATE_MS);
 		}
-		//ESP_LOGI(TAG, "Trying to read");
-		if (i2c_master_prestart(h->cfg.i2c_port, h->cfg.ticksToWaitForOne) != pdTRUE) {
-			continue;
+		ESP_LOGI(TAG, "Trying to read");
+		if (i2c_master_prestart(h->cfg.i2c_port, portMAX_DELAY) != pdTRUE) {
+			goto wait;
 		}
+		ESP_LOGI(TAG, "Reading");
 		//Receiving packets if there are any
 		_imi_recv_all(h);
 		i2c_master_postend(h->cfg.i2c_port);
 
+	wait:
 		vTaskDelay(IMI_CYCLE_DELAY / portTICK_RATE_MS);
 	}
 }
@@ -287,7 +289,7 @@ void imi_start(imi_port_t port) {
 	assert(h->state == IMI_STATE_INSTALLED);
 	char str[100];
 	snprintf(str, sizeof(str), "IMI %d recv task", port);
-	xTaskCreate(_imi_task_recv, str, 4048, h, 1, &h->taskRecv);
+	xTaskCreate(_imi_task_recv, str, 4048, h,10, &h->taskRecv);
 
 	if (h->cfg.i2c_int >= 0) {
 		gpio_config_t init_pin_i2c_int = {
@@ -341,9 +343,6 @@ int imi_send_all(imi_port_t port, uint8_t *data, uint16_t size, TickType_t ticks
 	h = &imi_device[port];
 	assert(h->state == IMI_STATE_STARTED);
 
-	if (i2c_master_prestart(h->cfg.i2c_port, ticksToWaitForOne) == pdFALSE) {
-		return 1;
-	}
 	for (int i = 0; i < h->add_count; i++) {
 
 		imi_t himi = {
@@ -351,10 +350,13 @@ int imi_send_all(imi_port_t port, uint8_t *data, uint16_t size, TickType_t ticks
 			.address = h->adds[i],
 			.timeout = ticksToWaitForOne
 		};
+		if (i2c_master_prestart(h->cfg.i2c_port, ticksToWaitForOne) == pdFALSE) {
+			return 1;
+		}
 		rc = imi_msg_send(&himi, data, size);
+		i2c_master_postend(h->cfg.i2c_port);
 	}
 
-	i2c_master_postend(h->cfg.i2c_port);
 	return rc;
 }
 /*

@@ -26,7 +26,7 @@
 #include "freertos/queue.h"
 
 #include "esp_system.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "esp_sntp.h"
 
@@ -111,10 +111,18 @@ static void time_sync_task(void *arg) {
 			there.tv_usec = mts.time_us;
 			int64_t diff_usec = now1 - ts->mutex_safe.isr_time + (there.tv_sec - now.tv_sec) * 1000000ll + (0 - now.tv_usec);
 
+			ESP_LOGV("TIME", "from sinc: %llu.%06d", (uint64_t)there.tv_sec, (int)there.tv_usec);
+			ESP_LOGV("TIME", "here:      %llu.%06d", (uint64_t)now.tv_sec, (int)now.tv_usec);
+			ESP_LOGV("TIME", "diff:      %d.%06d %lld", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000), now1 - ts->mutex_safe.isr_time	);
+			ESP_LOGV("TIME", "Base: %d %d %d", ts->mutex_safe.base, mts.time_base, ts->cnt);
 			if (mts.time_base >= ts->mutex_safe.base) {
 				//Разница больше 5 секунд? Меняем!
 				if (llabs(diff_usec) > 5 * 1000000ll) {
-					settimeofday(&there, 0);
+					ESP_LOGV("TIME", "CHANGE TIME %d", (int)diff_usec);
+					int64_t now1 = now.tv_sec * 1000000ll + now.tv_usec + diff_usec;
+					now.tv_sec = now1 / 1000000;
+					now.tv_usec = now1 % 1000000;
+					settimeofday(&now, 0);
 					ts->last_changed = now.tv_sec * 1000000ull + now.tv_usec;
 					ts->cnt = 0;
 					ts->diff_total = 0;
@@ -129,10 +137,6 @@ static void time_sync_task(void *arg) {
 					}
 				}
 			}
-			ESP_LOGV("TIME", "from sinc: %llu.%06d", (uint64_t)there.tv_sec, (int)there.tv_usec);
-			ESP_LOGV("TIME", "here:      %llu.%06d", (uint64_t)now.tv_sec, (int)now.tv_usec);
-			ESP_LOGV("TIME", "diff:      %d.%06d %lld", (int)(diff_usec / 1000000), (int)(diff_usec % 1000000), now1 - ts->mutex_safe.isr_time	);
-			ESP_LOGV("TIME", "Base: %d %d %d", ts->mutex_safe.base, mts.time_base, ts->cnt);
 			xSemaphoreGive(ts->mutex);
 		}
 

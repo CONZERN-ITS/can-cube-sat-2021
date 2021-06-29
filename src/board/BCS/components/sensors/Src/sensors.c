@@ -28,7 +28,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include "esp_log.h"
 
 #include "pinout_cfg.h"
@@ -50,7 +50,7 @@ static char *TAG = "SENSORS";
 
 esp_err_t sensors_init(void) {
 	xTaskCreatePinnedToCore(sensors_task, "Sensors task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
-	xTaskCreatePinnedToCore(sensors_ina_task, "Sensors ina task", configMINIMAL_STACK_SIZE + 3000, 0, 1, 0, tskNO_AFFINITY);
+	xTaskCreatePinnedToCore(sensors_ina_task, "Sensors ina task", configMINIMAL_STACK_SIZE + 3000, 0, 2, 0, tskNO_AFFINITY);
 	return 0;
 }
 
@@ -179,10 +179,12 @@ static void sensors_task(void *arg) {
 			last_wake_time = xTaskGetTickCount();
 
 			ds18b20_convert_all(owb);
+			ESP_LOGV(TAG, "converted");
 
 			// In this application all devices use the same resolution,
 			// so use the first device to determine the delay
 			ds18b20_wait_for_conversion(devices[0]);
+			ESP_LOGV(TAG, "waited");
 			struct timeval tv = {0};
 			gettimeofday(&tv, 0);
 
@@ -194,7 +196,9 @@ static void sensors_task(void *arg) {
 			for (int i = 0; i < num_devices; ++i)
 			{
 				errors[i] = ds18b20_read_temp(devices[i], &readings[i]);
+				taskYIELD();
 			}
+			ESP_LOGV(TAG, "read");
 			for (int i = 0; i < num_devices; i++) {
 				ESP_LOGV(TAG, "@ds  [%d] temp: %0.2f", i, readings[i]);
 			}
@@ -235,7 +239,7 @@ static void sensors_ina_task(void *arg) {
 #define INA_MAX 4
 #define INA_VOLTAGE_BUS_LSB     0.004
 	ina219_t ina[INA_MAX];
-	int timeout = 50 / portTICK_PERIOD_MS;
+	int timeout = 10 / portTICK_PERIOD_MS;
 
 	ina219_init(&ina[0], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_VSP, timeout); //BSK1
 	ina219_init(&ina[1], ITS_I2CTM_PORT, INA219_I2CADDR_A1_GND_A0_SDA, timeout); //BSK2
@@ -268,6 +272,7 @@ static void sensors_ina_task(void *arg) {
 		mavlink_electrical_state_t mes[INA_MAX];
 		int64_t now = esp_timer_get_time();
 		for (int i = 0; i < INA_MAX; i++) {
+			ESP_LOGI(TAG, "@ina reading %d", i);
 			ina219_data_t data = {0};
 			if (ina219_read_all_data(&ina[i], &data)) {
 				mes[i].current = NAN;
@@ -276,10 +281,12 @@ static void sensors_ina_task(void *arg) {
 				mes[i].current = data.current;
 				mes[i].voltage = data.busv;
 			}
+			ESP_LOGI(TAG, "@ina fin reading %d", i);
 
 			mes[i].time_s = tp.tv_sec;
 			mes[i].time_us = tp.tv_usec;
 			mes[i].time_steady = (uint32_t) now;
+			vTaskDelay(500 / portTICK_PERIOD_MS);
 		}
 		for (int i = 0; i < INA_MAX; i++) {
 			ESP_LOGD("SENSORS", "@ina [%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
@@ -293,6 +300,6 @@ static void sensors_ina_task(void *arg) {
 			ctx.from_isr = 0;
 			its_rt_route(&ctx, &msg, 0);
 		}
-		vTaskDelay(4000 / portTICK_PERIOD_MS);
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
 }
