@@ -70,12 +70,12 @@
 
 //FIXME: поменять пины
 // Второй порт/пин для управления балансирующими резисторами
-#define MICS6814_CO_CTRL_2_PORT		GPIOB
-#define MICS6814_CO_CTRL_2_PIN		GPIO_PIN_2
+#define MICS6814_CO_CTRL_2_PORT		GPIOA
+#define MICS6814_CO_CTRL_2_PIN		GPIO_PIN_9
 
 // Первый порт/пин для управления балансирующими резисторами
 #define MICS6814_CO_CTRL_1_PORT		GPIOB
-#define MICS6814_CO_CTRL_1_PIN		GPIO_PIN_1
+#define MICS6814_CO_CTRL_1_PIN		GPIO_PIN_14
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // Сенсор NO2 (OX)
@@ -97,11 +97,11 @@
 
 // Второй порт/пин для управления балансирующими резисторами
 #define MICS6814_NO2_CTRL_2_PORT	GPIOA
-#define MICS6814_NO2_CTRL_2_PIN		GPIO_PIN_4
+#define MICS6814_NO2_CTRL_2_PIN		GPIO_PIN_6
 
 // Первый порт/пин для управления балансирующими резисторами
 #define MICS6814_NO2_CTRL_1_PORT	GPIOA
-#define MICS6814_NO2_CTRL_1_PIN		GPIO_PIN_5
+#define MICS6814_NO2_CTRL_1_PIN		GPIO_PIN_7
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // Сенсор NH3
@@ -122,12 +122,12 @@
 #define MICS6814_NH3_RB_3	(18.78*1000)
 
 // Второй порт/пин для управления балансирующими резисторами
-#define MICS6814_NH3_CTRL_2_PORT	GPIOA
-#define MICS6814_NH3_CTRL_2_PIN		GPIO_PIN_6
+#define MICS6814_NH3_CTRL_2_PORT	GPIOB
+#define MICS6814_NH3_CTRL_2_PIN		GPIO_PIN_13
 
 // Первый порт/пин для управления балансирующими резисторами
-#define MICS6814_NH3_CTRL_1_PORT	GPIOA
-#define MICS6814_NH3_CTRL_1_PIN		GPIO_PIN_7
+#define MICS6814_NH3_CTRL_1_PORT	GPIOB
+#define MICS6814_NH3_CTRL_1_PIN		GPIO_PIN_12
 
 
 //! С каким именно сенсором мы работаем
