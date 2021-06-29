@@ -24,6 +24,11 @@ TIM_HandleTypeDef htim4;
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 
+//! Настройка TIM2
+/*! TIM2 питается от TIM4 через внутренний триггер ITR3 от TIM4 TRGO
+ *  TIM4 TRGO в свою очередь настроено на переполнение TIM4 и сам TIM4 работает тут как делитель
+ *  своими переполнениями выдавая частоту в 1КГц.
+ *  Таким образом TIM2 считает миллисекунды недели, все как у GPS */
 static int MX_TIM2_Init(void)
 {
 	HAL_StatusTypeDef hal_error;
@@ -60,6 +65,14 @@ static int MX_TIM2_Init(void)
 }
 
 
+//! Настройка TIM3
+/*! TIM3 использует свой внутренний триггер как сигнал для сбрсоса таймера
+ *  и подключен этот внутренний триггер к внешнему пину на который подключен PPS GPS-а
+ *  для синхронизации начала секунды.
+ *  Поскольку внутренний триггер уже занят - для питания частотой таймер использует
+ *  еще один внешний пин - в режиме ETR2
+ *
+ *  TIM3 генерит PPS на третьем внешнем пине для прочих вычислителей */
 static int MX_TIM3_Init(void)
 {
 	HAL_StatusTypeDef hal_error;
@@ -116,6 +129,10 @@ static int MX_TIM3_Init(void)
 }
 
 
+//! TIM4 тут самый главный
+/*! От этого таймера питаются TIM2 и TIM3.
+ *  Таймер решает очень простую задачу. Он работает делителем частоты
+ *  и предоставляет на своём TRGO и внешнем пине частоту 1Кгц */
 static int MX_TIM4_Init(void)
 {
 	HAL_StatusTypeDef hal_error;
@@ -126,8 +143,11 @@ static int MX_TIM4_Init(void)
 	TIM_OC_InitTypeDef sConfigOC = {0};
 
 	htim4.Instance = TIM4;
+	// TIM4 это APB1 таймер и в нашем сетапе шина его кормит 84мя МГЦ
+	// Предделитель 21000 дает частоту тиков - 4 КГц
 	htim4.Init.Prescaler = 20999;
 	htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+	// Период переполнения таймера в 4 тика дает частоту переполнения таймера в 1Кгц
 	htim4.Init.Period = 3;
 	htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	hal_error = HAL_TIM_Base_Init(&htim4);
@@ -151,12 +171,15 @@ static int MX_TIM4_Init(void)
 	if (HAL_OK != hal_error)
 		return sins_hal_status_to_errno(hal_error);
 
+	// Выводим сигнал переполнения таймера на TRGO, откуда его заберет
+	// как опорную частоту TIM2
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	hal_error = HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 	if (HAL_OK != hal_error)
 		return sins_hal_status_to_errno(hal_error);
 
+	// Так же выводим этот же сигнал на первый PWM канал откуда его заберет TIM3
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
 	sConfigOC.Pulse = 2;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -209,7 +232,7 @@ int time_svc_world_timers_prepare()
 
 	// Подождем чуть чуть, чтобы все PWM линии надежно опустились вниз
 	// и все таймеры одновременно стартанули красивым передним фронтом на своих PWM линиях
-	HAL_Delay(10);
+	HAL_Delay(1);
 	return 0;
 }
 
