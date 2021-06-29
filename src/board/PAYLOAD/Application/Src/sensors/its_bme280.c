@@ -44,7 +44,7 @@ static its_bme280_t _devices[2] = {
 	{
 		// Внешний BME280
 		.addr = BME280_I2C_ADDR_PRIM,
-		.bus = &hi2c1,
+		.bus = &hi2c3,
 		.power_ctl_port = BME_EXT_PWR_GPIO_Port, //GPIOB,
 		.power_ctl_pin = BME_EXT_PWR_Pin, //GPIO_PIN_1,
 		.driver = {
@@ -65,7 +65,7 @@ static its_bme280_t _devices[2] = {
 	{
 		// Внутренний BME280
 		.addr = BME280_I2C_ADDR_PRIM,
-		.bus = &hi2c3,
+		.bus = &hi2c1,
 		.power_ctl_port = BME_INT_PWR_GPIO_Port, //GPIOC,
 		.power_ctl_pin = BME_EXT_PWR_Pin, //GPIO_PIN_0,
 		.driver = {

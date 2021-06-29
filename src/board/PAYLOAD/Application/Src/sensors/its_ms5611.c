@@ -104,7 +104,7 @@ static void _power(its_ms5611_t * dev, bool enabled)
 static its_ms5611_t _devices[2] = {
 		// Внешний
 		{
-			.bus = &hi2c1,
+			.bus = &hi2c3,
 			.addr = MS5611_I2C_ADDR_HIGH,
 			.power_ctl_port = MS_EXT_PWR_GPIO_Port, //GPIOC,
 			.power_ctl_pin = MS_EXT_PWR_Pin, //GPIO_PIN_1,
@@ -120,7 +120,7 @@ static its_ms5611_t _devices[2] = {
 		},
 		// Внутренний
 		{
-			.bus = &hi2c3,
+			.bus = &hi2c1,
 			.addr = MS5611_I2C_ADDR_HIGH,
 			.power_ctl_port = MS_INT_PWR_GPIO_Port, //GPIOB,
 			.power_ctl_pin = MS_INT_PWR_Pin, //GPIO_PIN_0,

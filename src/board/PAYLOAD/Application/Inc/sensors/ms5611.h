@@ -18,9 +18,9 @@
 //! I2C адрес устройства в зависимости от ножки CSB
 typedef enum ms5611_i2c_addr_t
 {
-	// CSB пин вверху
+	// CSB пин ВНИЗУ
 	MS5611_I2C_ADDR_HIGH = 0x77,
-	// CSB пин внизу
+	// CSB пин ВВЕРХУ
 	MS5611_I2C_ADDR_LOW  = 0x76
 } ms5611_i2c_addr_t;
 
