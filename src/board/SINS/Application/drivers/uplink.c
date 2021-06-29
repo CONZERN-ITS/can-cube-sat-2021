@@ -102,7 +102,7 @@ int uplink_write_mav(const mavlink_message_t * msg)
 
 
 	// Сперва флашим инжектируемые
-//	error = uplink_flush_injected();
+	error = uplink_flush_injected();
 //	printf("error %d\n", error);
 	if (error == -EAGAIN)
 	{
