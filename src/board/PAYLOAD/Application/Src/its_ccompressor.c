@@ -65,6 +65,12 @@ void its_ccontrol_init()
 	ccontrol_init(&control.base);
 	control.pump_running = false;
 	control.valve_open = false;
+
+	control.base.pump_control(&control.base, true);
+	control.base.valve_control(&control.base, true);
+	HAL_Delay(1000);
+	control.base.pump_control(&control.base, false);
+	control.base.valve_control(&control.base, false);
 }
 
 

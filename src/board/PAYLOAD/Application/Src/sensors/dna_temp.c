@@ -20,7 +20,7 @@
 #define SENSOR_COEFF_B (3950)
 
 //! Температура, ниже которой необходимо включать нагреватель
-#define MIN_DNA_TEMP_WITHOUT_HEATER (30.0)
+#define MIN_DNA_TEMP_WITHOUT_HEATER (35.0)
 //! Температура, выше которой необходимо выключать нагреватель
 #define MAX_DNA_TEMP_WITH_HEATER (40.0)
 
@@ -107,9 +107,9 @@ int dna_control_work()
 
 	dna_calculate_temp(raw_temp, &data.dna_temp);
 
-	if (MIN_DNA_TEMP_WITHOUT_HEATER > data.dna_temp)
+	if (data.dna_temp < MIN_DNA_TEMP_WITHOUT_HEATER)
 		dna_on_heater();
-	else if (MAX_DNA_TEMP_WITH_HEATER < data.dna_temp)
+	else if (data.dna_temp > MAX_DNA_TEMP_WITH_HEATER)
 		dna_off_heater();
 
 	return 0;

@@ -12,6 +12,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include <inttypes.h>
+#include <stdio.h>
+
+
 // Целые части секунд
 static time_t _seconds;
 
@@ -214,6 +218,11 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	// Считаем разницу между временем у нас и у хоста на момент метки
 	struct timeval diff;
 	diff = _tmv_diff(&host_sync_stamp, local_sync_stamp);
+
+	printf("host_time: %"PRId32", %"PRId32"\n", (int32_t)host_sync_stamp.tv_sec, host_sync_stamp.tv_usec);
+	printf("local_time: %"PRId32", %"PRId32"\n", (int32_t)local_sync_stamp->tv_sec, local_sync_stamp->tv_usec);
+	printf("time_sync_diff: %"PRId32", %"PRId32"\n", (int32_t)diff.tv_sec, diff.tv_usec);
+	printf("=-=-=-=-\n");
 
 	// Если разница меньше половины миллисекунды, то забиваем конечно
 	if (diff.tv_sec == 0 && labs(diff.tv_usec) < 500)
