@@ -7,13 +7,14 @@ from pymavlink import mavutil
 import math
 import time
 import numpy as NumPy
+from source import auto_guidance_math
 
 
 class AbstractControlInterface():
-    def __init__(self, drive_object, auto_guidance_math, aiming_period=1, min_rotation_angle=1):
+    def __init__(self, drive_object, guidance_math, aiming_period=1, min_rotation_angle=1):
         # Subsystems
         self.drive_object = drive_object
-        self.auto_guidance_math = auto_guidance_math
+        self.guidance_math = guidance_math
 
         # Autoguidance parameters
         self.aiming_period = aiming_period
@@ -70,6 +71,7 @@ class MAVITSControlInterface(AbstractControlInterface):
         self.target_alpha = 0
         self.target_phi = 0
         self.target_last_time = (0, 0)
+        self.setup_gps_filter()
 
     def messages_reaction(self, msgs):
         response = []
@@ -94,32 +96,39 @@ class MAVITSControlInterface(AbstractControlInterface):
                         self.drive_object.setup_drive_timeout(MOTORS_TIMEOUT)
                     else:
                         self.drive_object.setup_drive_timeout(msg.timeout)
-                    pass
                 elif msg.get_type() == "AS_MOTORS_AUTO_DISABLE":
                     self.drive_object.set_drive_auto_disable_mode(msg.mode)
-                    pass
                 elif msg.get_type() == "AS_SEND_COMMAND":
                     enum = mavutil.mavlink.enums['AS_COMMANDS']
                     if enum[msg.command_id].name == 'AS_SETUP_ELEVATION_ZERO':
                         self.setup_elevation_zero()
                     elif enum[msg.command_id].name == 'AS_TARGET_TO_NORTH':
                         self.target_to_north()
-                        pass
                     elif enum[msg.command_id].name == 'SETUP_COORD_SYSTEM':
                         try:
-                            self.auto_guidance_math.setup_coord_system()
+                            self.guidance_math.setup_coord_system()
                         except Exception as e:
                             print(e)
                     elif enum[msg.command_id].name == "STATE_REQUEST":
                         response.append(self._generate_as_state_message())
+                elif msg.get_type() == "AS_SETUP_GPS_FILTER":
+                    self.setup_gps_filter(enum[msg.filter_id].name)
                 elif msg.get_type() == "GPS_UBX_NAV_SOL":
                     if (msg.gpsFix > 0) and (msg.gpsFix < 4):
-                        self.target_last_time = convert_time_from_s_to_s_us(time.time())
+                        self.target_last_time = convert_time_from_s_us_to_s(msg.time_s, msg.time_us)
                         position = [msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100]
-                        if ((self.auto_control_mode) and ((time.time() + self.aiming_period) > self.last_rotation_time)):
+                        position = self.gps_filter.filter_out(coords=NumPy.array(position).reshape((3, 1)),
+                                                              coords_time=self.target_last_time)
+                        
+                        if ((self.auto_control_mode) and (position is not None) and ((time.time() + self.aiming_period) > self.last_rotation_time)):
                             self.update_target_position_WGS84_DEC(position)
-                    pass
         return response
+
+    def setup_gps_filter(self, gps_filter='NO_FILTER'):
+        if gps_filter == 'VELOCITY_FILTER':
+            self.gps_filter = auto_guidance_math.VelocityGPSFilter(GPS_FILTER_MAX_VELOCITY)
+        else:
+            self.gps_filter = auto_guidance_math.AbstractGPSFilter()
 
     def convert_time_from_s_to_s_us(self, current_time):
         current_time = math.modf(current_time)
@@ -139,11 +148,11 @@ class MAVITSControlInterface(AbstractControlInterface):
                                                time_us=current_time[1],
                                                azimuth=self.azimuth,
                                                elevation=self.elevation,
-                                               ecef=list(self.auto_guidance_math.get_x_y_z()),
-                                               lat_lon=list(self.auto_guidance_math.get_lat_lon()),
-                                               alt=self.auto_guidance_math.get_alt(),
-                                               top_to_ascs=list(self.auto_guidance_math.get_top_to_gcs().reshape(9)),
-                                               dec_to_top=list(self.auto_guidance_math.get_dec_to_top().reshape(9)),
+                                               ecef=list(self.guidance_math.get_x_y_z()),
+                                               lat_lon=list(self.guidance_math.get_lat_lon()),
+                                               alt=self.guidance_math.get_alt(),
+                                               top_to_ascs=list(self.guidance_math.get_top_to_gcs().reshape(9)),
+                                               dec_to_top=list(self.guidance_math.get_dec_to_top().reshape(9)),
                                                target_time_s=self.target_last_time[0],
                                                target_time_us=self.target_last_time[1],
                                                target_azimuth=self.target_alpha,
@@ -158,7 +167,7 @@ class MAVITSControlInterface(AbstractControlInterface):
         return msg
 
     def target_to_north(self):
-        vector = self.auto_guidance_math.get_top_to_gcs()[:,0]
+        vector = self.guidance_math.get_top_to_gcs()[:,0]
         self.update_target_position_GCSCS_VEC(vector)
 
     def setup_elevation_zero(self):
@@ -172,11 +181,11 @@ class MAVITSControlInterface(AbstractControlInterface):
         self.update_target_position_WGS84_VEC(vector)
 
     def update_target_position_WGS84_VEC(self, vector):
-        self.update_target_position_GCSCS_VEC(self.auto_guidance_math.count_vector(vector))
+        self.update_target_position_GCSCS_VEC(self.guidance_math.count_vector(vector))
 
     def update_target_position_GCSCS_VEC(self, vector):
-        if self.auto_guidance_math.get_coord_system_sucsess_flag():
-            (self.target_alpha, self.target_phi) = self.auto_guidance_math.count_target_angles(vector)
+        if self.guidance_math.get_coord_system_sucsess_flag():
+            (self.target_alpha, self.target_phi) = self.guidance_math.count_target_angles(vector)
 
             if (self.target_alpha - self.azimuth) > 180:
                 self.update_target_position(azimuth=(self.target_alpha - self.azimuth - 360),

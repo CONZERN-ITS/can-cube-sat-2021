@@ -80,3 +80,9 @@ MOTORS_TIMEOUT = 20
 
 # Auto guidance settings
 MIN_ROTATION_ANGLE = 0.2
+
+# GPS filters
+DEFAULT_GPS_FILTER = "NO_FILTER"
+
+# Velocity filter
+GPS_FILTER_MAX_VELOCITY = 1000
