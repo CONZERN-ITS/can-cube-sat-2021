@@ -132,19 +132,24 @@ class AutoGuidanceMath():
         self.lat_lon = NumPy.array([0.0, 0.0])
         self.alt = 0.0
         self.x_y_z = NumPy.zeros((3, 1))
-        num = 0
+        num = 1
         while num <= self.gps_accumulation_num:
             if (time.time() - start_time) > self.gps_timeout:
                 raise TimeoutError('Gps data accumulation timeout')
             data = self.gps_sensor.find_tpv_data()
             if data is None:
                 continue
-            self.lat_lon += NumPy.array(self.gps_sensor.get_lat_lon(data))
-            self.alt += self.gps_sensor.get_alt(data)
-            self.x_y_z += NumPy.array(self.gps_sensor.get_x_y_z(data)).reshape((3, 1))
-        self.lat_lon /= self.gps_accumulation_num
-        self.alt /= self.gps_accumulation_num
-        self.x_y_z /= self.gps_accumulation_num
+            try:
+                self.lat_lon += NumPy.array(self.gps_sensor.get_lat_lon(data))
+                self.alt += self.gps_sensor.get_alt(data)
+                self.x_y_z += NumPy.array(self.gps_sensor.get_x_y_z(data)).reshape((3, 1))
+            except Exception as e:
+                print(e)
+                continue
+            num += 1
+        self.lat_lon /= self.gps_accumulation_num#NumPy.array([55.908884, 37.804756])#
+        self.alt /= self.gps_accumulation_num#200 #
+        self.x_y_z /= self.gps_accumulation_num#NumPy.array([2831228, 2196502, 5258928]).reshape((3, 1))#/= self.gps_accumulation_num
 
         # Count coord system variables
         self.setup_coord_system_math(self.accel, self.mag, self.x_y_z, self.lat_lon)
@@ -189,3 +194,27 @@ class AutoGuidanceMath():
 
     def north(self):
         return self.top_to_gcs[:,0]
+
+
+class AbstractGPSFilter():
+    def filter_out(self, coords, coords_time=time.time()):
+        return coords
+
+class VelocityGPSFilter(AbstractGPSFilter):
+    last_coords = None
+    last_coords_time = None
+
+    def __init__(self, max_velocity):
+        self.max_velocity = max_velocity
+
+    def filter_out(self, coords, coords_time=time.time()):
+        if self.last_coords is not None:
+            velocity = NumPy.linalg.norm(coords - self.last_coords) / (coords_time - self.last_coords_time)
+            if velocity <= self.max_velocity:
+                self.last_coords = coords
+                self.last_coords_time = coords_time
+                return coords
+        else:
+            self.last_coords = coords
+            self.last_coords_time = coords_time
+        return None
