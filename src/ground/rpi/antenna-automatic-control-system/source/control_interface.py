@@ -112,7 +112,7 @@ class MAVITSControlInterface(AbstractControlInterface):
                     elif enum[msg.command_id].name == "STATE_REQUEST":
                         response.append(self._generate_as_state_message())
                 elif msg.get_type() == "AS_SETUP_GPS_FILTER":
-                    self.setup_gps_filter(enum[msg.filter_id].name)
+                    self.setup_gps_filter(mavutil.mavlink.enums['AS_GPS_FILTER'][msg.filter_id].name)
                 elif msg.get_type() == "GPS_UBX_NAV_SOL":
                     if (msg.gpsFix > 0) and (msg.gpsFix < 4):
                         self.target_last_time = convert_time_from_s_us_to_s(msg.time_s, msg.time_us)
@@ -127,8 +127,10 @@ class MAVITSControlInterface(AbstractControlInterface):
     def setup_gps_filter(self, gps_filter='NO_FILTER'):
         if gps_filter == 'VELOCITY_FILTER':
             self.gps_filter = auto_guidance_math.VelocityGPSFilter(GPS_FILTER_MAX_VELOCITY)
+            self.gps_filter_id = mavutil.mavlink.enums['AS_GPS_FILTER'][gps_filter]
         else:
             self.gps_filter = auto_guidance_math.AbstractGPSFilter()
+            self.gps_filter_id = 0
 
     def convert_time_from_s_to_s_us(self, current_time):
         current_time = math.modf(current_time)
@@ -161,7 +163,8 @@ class MAVITSControlInterface(AbstractControlInterface):
                                                period=self.aiming_period,
                                                enable=[int(mode) for mode in enable],
                                                motor_auto_disable=self.drive_object.get_drive_auto_disable_mode(),
-                                               motors_timeout=self.drive_object.get_drive_timeout())
+                                               motors_timeout=self.drive_object.get_drive_timeout(),
+                                               filter_id=int(self.gps_filter_id))
         msg.get_header().srcSystem = 0
         msg.get_header().srcComponent = 3
         return msg
@@ -219,6 +222,7 @@ class MAVITSControlInterface(AbstractControlInterface):
                 self.azimuth_delta -= self.drive_object.horizontal_rotation(azimuth)
             if (elevation)**2 >= (self.min_rotation_angle)**2:
                 self.elevation -= self.drive_object.vertical_rotation(elevation)
+
 
 class ZMQITSControlInterface(MAVITSControlInterface):
     def __init__(self, *args, **kwargs):
