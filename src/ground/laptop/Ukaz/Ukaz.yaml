@@ -1,6 +1,6 @@
 CentralWidget:
   CommandWidget:
-    FIRE:
+    ROZE_ACTIVATE_COMMAND:
       name: 'ROZE_ACTIVATE_COMMAND'
       msg_name: 'ROZE_ACTIVATE_COMMAND'
       time_s:
@@ -16,7 +16,34 @@ CentralWidget:
         - 0
         - 1
         - 1
-      is_on: true
+    CMD_ACTIVATE_COMMAND:
+      name: 'CMD_ACTIVATE_COMMAND'
+      msg_name: 'CMD_ACTIVATE_COMMAND'
+      time_s:
+        type: 'time_s'
+      time_us:
+        type: 'time_us'
+      area_id:
+        type: 'int'
+      active_time:
+        type: 'int'
+      position:
+        - 1
+        - 0
+        - 1
+        - 1
+    IDLE_COMMAND:
+      name: 'IDLE_COMMAND'
+      msg_name: 'IDLE_COMMAND'
+      time_s:
+        type: 'time_s'
+      time_us:
+        type: 'time_us'
+      position:
+        - 2
+        - 0
+        - 1
+        - 1
   StatusWidget:
     background_color: '#888888'
     succsess_color: '#00FF00'
@@ -30,10 +57,11 @@ MainWindow:
       connection_in: udpin:0.0.0.0:14540
       connection_out: udpout:127.0.0.1:13134
     ZMQ:
-      bus_bpcs: "tcp://192.168.1.223:7778"
-      bus_bscp: "tcp://192.168.1.223:7777"
+      bus_bpcs: "tcp://192.168.1.210:7778"
+      bus_bscp: "tcp://192.168.1.210:7777"
       topics:
         - radio.uplink_state
+        - radio.downlink_frame
     type: ZMQ
   size:
   - 1000

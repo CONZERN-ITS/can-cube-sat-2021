@@ -4,8 +4,8 @@ MainWindow:
       connection_in: udpin:0.0.0.0:14540
       connection_out: udpout:127.0.0.1:13134
     ZMQ:
-      bus_bpcs: "tcp://10.10.10.228:7778"
-      bus_bscp: "tcp://10.10.10.228:7777"
+      bus_bpcs: "tcp://192.168.1.210:7778"
+      bus_bscp: "tcp://192.168.1.210:7777"
       topics:
       - "radio.rssi_instant"
       - "radio.rssi_packet"

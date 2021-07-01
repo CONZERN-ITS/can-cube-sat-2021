@@ -36,7 +36,7 @@ class DM422_control_client ():
         for pin in self.neg_dir_stop_triggers:
             GPIO.setup(pin, GPIO.IN)
 
-    def setup (self):
+    def setup(self):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setmode(GPIO.BOARD)
 
@@ -71,6 +71,7 @@ class DM422_control_client ():
             return self.rotate_using_steps(steps, not self.pos_dir_state)
 
     def rotate_using_steps (self, steps, direction=True):
+        print('rotation %i' % steps)
         GPIO.setmode(GPIO.BOARD)
         self.last_steps_num = steps
         self.last_steps_direction = direction

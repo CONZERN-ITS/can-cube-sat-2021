@@ -31,7 +31,7 @@ class AbstractDataSource():
 
 
 class MAVDataSource(AbstractDataSource):
-    def __init__(self, connection_str_in, connection_str_out, log_path="./"):
+    def __init__(self, connection_str_in, connection_str_out, log_path="./log/"):
         self.connection_str_in = connection_str_in
         self.connection_str_out = connection_str_out
         self.log_path = log_path

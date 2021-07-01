@@ -164,6 +164,48 @@ class PositionWidget(QtWidgets.QWidget):
         layout.addWidget(label)
         return label
 
+    def setup_data_field(self, source_layout, fields, name=None):
+        frame = self.setup_frame(source_layout)
+        frame_layout = QtWidgets.QVBoxLayout(frame)
+        lbl_list = []
+        for i in range(len(fields)):
+            layout = QtWidgets.QHBoxLayout()
+            frame_layout.addLayout(layout)
+            self.setup_label(layout, fields[i])
+            lbl_list.append(self.setup_label(layout, 'None'))
+        return lbl_list
+
+    def setup_3x3_matrix_data_field(self, source_layout, name):
+        frame = self.setup_frame(source_layout)
+        frame_layout = QtWidgets.QVBoxLayout(frame)
+        self.setup_label(frame_layout, name, QtCore.Qt.AlignHCenter)
+        lbl_list = []
+        for i in range(3):
+            layout = QtWidgets.QHBoxLayout()
+            frame_layout.addLayout(layout)
+            sub_lbl_list = []
+            for j in range(3):
+                sub_lbl_list.append(self.setup_label(layout,'None'))
+            lbl_list.append(sub_lbl_list)
+        return lbl_list
+
+    def setup_pos_field(self, source_layout, name):
+        frame = self.setup_frame(source_layout)
+        frame_layout = QtWidgets.QVBoxLayout(frame)
+        self.setup_label(frame_layout, name, QtCore.Qt.AlignHCenter)
+        self.setup_h_line(frame_layout)
+        text_list = ['Azimuth:', 'Elevation:', 'Time:']
+        lbl_list = []
+        for i in range(len(text_list)):
+            layout = QtWidgets.QHBoxLayout()
+            if i == 2:
+                self.setup_h_line(frame_layout)
+            frame_layout.addLayout(layout)
+            self.setup_label(layout, text_list[i])
+            lbl_list.append(self.setup_label(layout, 'None'))
+        return lbl_list
+
+
     def setup_ui(self):
         self.layout = QtWidgets.QHBoxLayout(self)
 
@@ -185,111 +227,22 @@ class PositionWidget(QtWidgets.QWidget):
         pos_layout = QtWidgets.QHBoxLayout()
         visualization_layout.addLayout(pos_layout)
 
-        frame = self.setup_frame(pos_layout)
-        frame_layout = QtWidgets.QVBoxLayout(frame)
-        self.setup_label(frame_layout, 'Target', QtCore.Qt.AlignHCenter)
-        self.setup_h_line(frame_layout)
-        text_list = ['Azimuth:', 'Elevation:', 'Time:']
-        self.target_param_lbl = []
-        for i in range(len(text_list)):
-            layout = QtWidgets.QHBoxLayout()
-            if i == 2:
-                self.setup_h_line(frame_layout)
-            frame_layout.addLayout(layout)
-            self.setup_label(layout, text_list[i])
-            self.target_param_lbl.append(self.setup_label(layout, 'None'))
-
-        frame = self.setup_frame(pos_layout)
-        frame_layout = QtWidgets.QVBoxLayout(frame)
-        self.setup_label(frame_layout, 'Antenna', QtCore.Qt.AlignHCenter)
-        self.setup_h_line(frame_layout)
-        text_list = ['Azimuth:', 'Elevation:', 'Time:']
-        self.antenna_param_lbl = []
-        for i in range(len(text_list)):
-            layout = QtWidgets.QHBoxLayout()
-            if i == 2:
-                self.setup_h_line(frame_layout)
-            frame_layout.addLayout(layout)
-            self.setup_label(layout, text_list[i])
-            self.antenna_param_lbl.append(self.setup_label(layout, 'None'))
-
+        self.target_param_lbl = self.setup_pos_field(pos_layout, 'Target')
+        self.antenna_param_lbl = self.setup_pos_field(pos_layout, 'Antenna')
 
         data_layout = QtWidgets.QVBoxLayout()
         self.layout.addLayout(data_layout)
 
-        frame = self.setup_frame(data_layout)
-        frame_layout = QtWidgets.QVBoxLayout(frame)
-        self.setup_label(frame_layout, 'Decart WGS84 to topocentric\ncoordinate system transition matrix', QtCore.Qt.AlignHCenter)
-        self.dec_to_top_lbl = []
-        for i in range(3):
-            layout = QtWidgets.QHBoxLayout()
-            frame_layout.addLayout(layout)
-            lbl_list = []
-            for j in range(3):
-                lbl_list.append(self.setup_label(layout,'None'))
-            self.dec_to_top_lbl.append(lbl_list)
+        self.dec_to_top_lbl = self.setup_3x3_matrix_data_field(data_layout, 'Decart WGS84 to topocentric\ncoordinate system transition matrix')
+        self.top_to_ascs_lbl = self.setup_3x3_matrix_data_field(data_layout, 'Topocentric to antenna system\ncoordinate system transition matrix')
 
-        frame = self.setup_frame(data_layout)
-        frame_layout = QtWidgets.QVBoxLayout(frame)
-        self.setup_label(frame_layout, 'Topocentric to antenna system\ncoordinate system transition matrix', QtCore.Qt.AlignHCenter)
-        self.top_to_ascs_lbl = []
-        for i in range(3):
-            layout = QtWidgets.QHBoxLayout()
-            frame_layout.addLayout(layout)
-            lbl_list = []
-            for j in range(3):
-                lbl_list.append(self.setup_label(layout,'None'))
-            self.top_to_ascs_lbl.append(lbl_list)
-
-        frame = self.setup_frame(data_layout)
-        frame_layout = QtWidgets.QVBoxLayout(frame)
-        text_list = ['Latitude:', 'Longitude:', 'Altitude:']
-        self.lat_lon_alt_lbl = []
-        for i in range(len(text_list)):
-            layout = QtWidgets.QHBoxLayout()
-            frame_layout.addLayout(layout)
-            self.setup_label(layout, text_list[i])
-            self.lat_lon_alt_lbl.append(self.setup_label(layout, 'None'))
-
-        frame = self.setup_frame(data_layout)
-        frame_layout = QtWidgets.QVBoxLayout(frame)
-        text_list = ['EcefX:', 'EcefY:', 'EcefZ:']
-        self.ecef_lbl = []
-        for i in range(len(text_list)):
-            layout = QtWidgets.QHBoxLayout()
-            frame_layout.addLayout(layout)
-            self.setup_label(layout, text_list[i])
-            self.ecef_lbl.append(self.setup_label(layout, 'None'))
-
-        frame = self.setup_frame(data_layout)
-        frame_layout = QtWidgets.QHBoxLayout(frame)
-        self.setup_label(frame_layout, 'Aiming period:')
-        self.aiming_period_lbl = self.setup_label(frame_layout, 'None')
-
-        frame = self.setup_frame(data_layout)
-        frame_layout = QtWidgets.QVBoxLayout(frame)
-        text_list = ['Vertical motor:', 'Horizontal motor:']
-        self.enable_lbl = []
-        for i in range(len(text_list)):
-            layout = QtWidgets.QHBoxLayout()
-            frame_layout.addLayout(layout)
-            self.setup_label(layout, text_list[i])
-            self.enable_lbl.append(self.setup_label(layout, 'None'))
-
-        frame = self.setup_frame(data_layout)
-        frame_layout = QtWidgets.QVBoxLayout(frame)
-        text_list = ['Motors auto disable:', 'Motors timeout:']
-        self.motors_auto_disable_lbl = []
-        for i in range(len(text_list)):
-            layout = QtWidgets.QHBoxLayout()
-            frame_layout.addLayout(layout)
-            self.setup_label(layout, text_list[i])
-            self.motors_auto_disable_lbl.append(self.setup_label(layout, 'None'))
-
-        frame = self.setup_frame(data_layout)
-        frame_layout = QtWidgets.QHBoxLayout(frame)
-        self.setup_label(frame_layout, 'RSSI:')
-        self.rssi_lbl = self.setup_label(frame_layout, 'None')
+        self.lat_lon_alt_lbl = self.setup_data_field(data_layout, ['Latitude:', 'Longitude:', 'Altitude:'])
+        self.ecef_lbl = self.setup_data_field(data_layout, ['EcefX:', 'EcefY:', 'EcefZ:'])
+        self.aiming_period_lbl = self.setup_data_field(data_layout, ['Aiming period:'])
+        self.enable_lbl = self.setup_data_field(data_layout, ['Vertical motor:', 'Horizontal motor:'])
+        self.motors_auto_disable_lbl = self.setup_data_field(data_layout, ['Motors auto disable:', 'Motors timeout:'])
+        self.rssi_lbl = self.setup_data_field(data_layout, ['RSSI INSTANT:', 'RSSI pkt:', 'SNR pkt:', 'RSSI signal:'])
+        self.gps_filter_lbl = self.setup_data_field(data_layout, ['GPS filter:'])
 
         self.state_request_btn = QtWidgets.QPushButton('State\nrequest')
         visualization_layout.addWidget(self.state_request_btn)
@@ -297,8 +250,13 @@ class PositionWidget(QtWidgets.QWidget):
     def setup_ui_design(self):
         pass
 
+    def change_data_field(self, data_field, data, format_str):
+        for i in range(len(data_field)):
+            if data[i] is not None:
+                data_field[i].setText(format_str.format(data[i]))
+
     def change_rssi(self, data):
-        self.rssi_lbl.setText('{:.0f}'.format(data))
+        self.change_data_field(self.rssi_lbl, data, '{:.0f}')
 
     def change_antenna_pos(self, data):
         for i in range(3):
@@ -310,13 +268,14 @@ class PositionWidget(QtWidgets.QWidget):
             self.target_param_lbl[i].setText('{:.2f}'.format(data[i]))
         self.pos_panel.set_target_pos(data[0], -data[1])
 
+    def change_gps_filter(self, data):
+        self.change_data_field(self.gps_filter_lbl, data, '{s}')
+
     def change_lat_lon_alt(self, data):
-        for i in range(3):
-            self.lat_lon_alt_lbl[i].setText('{:.3f}'.format(data[i]))
+        self.change_data_field(self.lat_lon_alt_lbl, data, '{:.3f}')
 
     def change_ecef(self, data):
-        for i in range(3):
-            self.ecef_lbl[i].setText('{:.3f}'.format(data[i]))
+        self.change_data_field(self.ecef_lbl, data, '{:.3f}')
 
     def change_top_to_ascs_matrix(self, data):
         for i in range(3):
@@ -340,7 +299,7 @@ class PositionWidget(QtWidgets.QWidget):
             self.mode_lbl.setText('Manual control')
 
     def change_aiming_period(self, period):
-        self.aiming_period_lbl.setText('{:.3f}'.format(period))
+        self.change_data_field(self.aiming_period_lbl, [period], '{:.3f}')
 
     def change_motors_enable(self, data):
         font = QtGui.QFont()

@@ -27,7 +27,8 @@ class AbstractAntennaInterface(QtCore.QObject):
     motors_enable_changed = QtCore.pyqtSignal(tuple)
     motors_auto_disable_mode_changed = QtCore.pyqtSignal(bool)
     motors_timeout_changed = QtCore.pyqtSignal(float)
-    rssi_changed = QtCore.pyqtSignal(float)
+    gps_filter_changed = QtCore.pyqtSignal(str)
+    rssi_changed = QtCore.pyqtSignal(tuple)
 
     def set_angle_control_mode(self, mode):
         pass
@@ -110,6 +111,7 @@ class MAVITSInterface(AbstractAntennaInterface):
                     self.motors_enable_changed.emit(tuple(msg.enable))
                     self.motors_auto_disable_mode_changed.emit(msg.motor_auto_disable)
                     self.motors_timeout_changed.emit(msg.motors_timeout)
+                    self.gps_filter_changed.emit(mavutil.mavlink.enums['AS_GPS_FILTER'][msg.filter_id].name)
 
                 elif msg.get_type() == 'RSSI':
                     self.rssi_changed(msg.rssi)
@@ -185,6 +187,12 @@ class MAVITSInterface(AbstractAntennaInterface):
 
     def setup_coord_system(self):
         self.send_message(its_mav.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [2])))
+
+    def setup_no_gps_filter(self):
+        self.send_message(its_mav.MAVLink_as_setup_gps_filter(*(self.convert_time_from_s_to_s_us(time.time()) + [0])))
+
+    def setup_velocity_gps_filter(self):
+        self.send_message(its_mav.MAVLink_as_setup_gps_filter(*(self.convert_time_from_s_to_s_us(time.time()) + [1])))
 
     def park(self):
         self.setup_elevation_zero()

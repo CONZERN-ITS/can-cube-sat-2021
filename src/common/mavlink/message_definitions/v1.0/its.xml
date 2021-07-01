@@ -536,7 +536,7 @@
       <field type="int8_t" name="last_packet_rssi">Last receved packet rssi</field>
       <field type="int8_t" name="last_packet_snr">Last receved packet snr</field>
       <field type="int8_t" name="last_packet_signal_rssi">Last receved packet signal rssi</field>
-      <field type="int8_t" name="last_executed_cmd_seq">Last executed cmd</field>      
+      <field type="uint8_t" name="last_executed_cmd_seq">Last executed cmd</field>      
       
       <field type="uint16_t" name="radio_error_bits">Radio driver error bits</field>
       <field type="uint8_t" name="radio_state">Radio state</field>
