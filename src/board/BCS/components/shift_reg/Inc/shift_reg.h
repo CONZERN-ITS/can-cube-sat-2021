@@ -29,6 +29,9 @@ esp_err_t shift_reg_init_spi(shift_reg_handler_t *hsr, spi_host_device_t port,
 		int bit_count, TickType_t ticksToWait, int pin_cs);
 esp_err_t shift_reg_load(shift_reg_handler_t *hsr);
 
+
+BaseType_t shift_reg_take(shift_reg_handler_t *hsr, uint32_t ticks);
+BaseType_t shift_reg_return(shift_reg_handler_t *hsr);
 void shift_reg_toggle_pin(shift_reg_handler_t *hsr, uint32_t pin);
 void shift_reg_set_level_pin(shift_reg_handler_t *hsr, uint32_t pin, int level);
 

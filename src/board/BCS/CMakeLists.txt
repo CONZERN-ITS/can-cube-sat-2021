@@ -29,4 +29,5 @@ set(EXTRA_COMPONENT_DIRS "components/imi"
                          "sensors"
                          "log_collector"
                          "operator"
-                         "components/operator2")
+                         "components/operator2"
+                         "msp")

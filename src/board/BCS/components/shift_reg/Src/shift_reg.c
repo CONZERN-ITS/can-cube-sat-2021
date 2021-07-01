@@ -61,7 +61,12 @@ esp_err_t shift_reg_init_spi(shift_reg_handler_t *hsr, spi_host_device_t port,
 	hsr->mutex = xSemaphoreCreateMutex();
 	return 0;
 }
-
+BaseType_t shift_reg_take(shift_reg_handler_t *hsr, uint32_t ticks) {
+	return xSemaphoreTake(hsr->mutex, ticks);
+}
+BaseType_t shift_reg_return(shift_reg_handler_t *hsr) {
+	return xSemaphoreGive(hsr->mutex);
+}
 void shift_reg_toggle_pin(shift_reg_handler_t *hsr, uint32_t pin) {
 	assert(pin < hsr->arr_size * 8);
 	//Обратный порядок байт
