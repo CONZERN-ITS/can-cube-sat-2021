@@ -115,11 +115,11 @@ class ZMQITSUSLPInterface(MAVITSInterface):
             msg.get_header().srcSystem = 0
             msg.get_header().srcComponent = 3
             if cookie is not None:
-                msg.seq = cookie
+                seq = cookie
             else:
-                msg.seq = self.cookie
+                seq = self.cookie
                 self.cookie += 1
-
+            self.mav.seq = int(seq)
             multipart = ["its.telecommand_request".encode("utf-8"),
                          ('{ "cookie": %d }' % msg.seq).encode("utf-8"),
                          msg.pack(self.mav)]
@@ -166,12 +166,8 @@ class ZMQITSInterface(MAVITSInterface):
             else:
                 seq = self.cookie
                 self.cookie += 1
-            msg.get_header().seq = int(seq)
             self.mav.seq = int(seq)
-            print(msg.get_seq())
             multipart = ["radio.uplink_frame".encode("utf-8"),
-                         ('{ "cookie": %d }' % msg.get_seq()).encode("utf-8"),
+                         ('{ "cookie": %d }' % int(seq)).encode("utf-8"),
                          msg.pack(self.mav)]
-            print(msg.get_seq())
             self.buf.append(multipart)
-            print(self.buf)
