@@ -269,7 +269,7 @@ class PositionWidget(QtWidgets.QWidget):
         self.pos_panel.set_target_pos(data[0], -data[1])
 
     def change_gps_filter(self, data):
-        self.change_data_field(self.gps_filter_lbl, data, '{s}')
+        self.change_data_field(self.gps_filter_lbl, [data], '{}')
 
     def change_lat_lon_alt(self, data):
         self.change_data_field(self.lat_lon_alt_lbl, data, '{:.3f}')

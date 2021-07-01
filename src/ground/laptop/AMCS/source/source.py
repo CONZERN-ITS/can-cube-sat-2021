@@ -53,6 +53,7 @@ class CentralWidget(QtWidgets.QWidget):
         self.antenna.motors_auto_disable_mode_changed.connect(self.position_widget.change_motors_auto_disable_mode)
         self.antenna.motors_timeout_changed.connect(self.position_widget.change_motors_timeout)
         self.antenna.rssi_changed.connect(self.position_widget.change_rssi)
+        self.antenna.gps_filter_changed.connect(self.position_widget.change_gps_filter)
 
         self.position_control_widget.pos_control_panel.top_btn_clicked.connect(self.antenna.put_up)
         self.position_control_widget.pos_control_panel.bottom_btn_clicked.connect(self.antenna.put_down)
@@ -162,33 +163,57 @@ class MainWindow(QtWidgets.QMainWindow):
     def setup_ui(self):
         self.antenna = self.get_data_interface()
 
-        self.toolbar = self.addToolBar('Commands')
-        self.auto_control_on_btn = self.toolbar.addAction('Turn on\nautomatic\ncontrol')
+        self.control_toolbar = self.addToolBar('Control')
+        self.control_toolbar.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.control_toolbar.setFloatable(False)
+        self.control_toolbar.setMovable(False)
+
+        self.auto_control_on_btn = self.control_toolbar.addAction('Turn on\nautomatic\ncontrol')
         self.auto_control_on_btn.triggered.connect(self.antenna.automatic_control_on)
 
-        self.auto_control_off_btn = self.toolbar.addAction('Turn off\nautomatic\ncontrol')
+        self.auto_control_off_btn = self.control_toolbar.addAction('Turn off\nautomatic\ncontrol')
         self.auto_control_off_btn.triggered.connect(self.antenna.automatic_control_off)
 
-        self.elevation_zero_btn = self.toolbar.addAction('Find elevation\nzero')
+        self.control_toolbar.addSeparator()
+
+        self.elevation_zero_btn = self.control_toolbar.addAction('Find elevation\nzero')
         self.elevation_zero_btn.triggered.connect(self.antenna.setup_elevation_zero)
 
-        self.target_to_north_btn = self.toolbar.addAction('Turn target\nto north')
+        self.target_to_north_btn = self.control_toolbar.addAction('Turn target\nto north')
         self.target_to_north_btn.triggered.connect(self.antenna.target_to_north)
 
-        self.motors_enable_pin_high = self.toolbar.addAction('Enable motors')
+        self.control_toolbar.addSeparator()
+
+        self.setup_coord_system_btn = self.control_toolbar.addAction('Setup coord\nsystem')
+        self.setup_coord_system_btn.triggered.connect(self.antenna.setup_coord_system)
+
+        self.control_toolbar.addSeparator()
+
+        self.setup_no_gps_filter_btn = self.control_toolbar.addAction('No GPS\nfilter')
+        self.setup_no_gps_filter_btn.triggered.connect(self.antenna.setup_no_gps_filter)
+
+        self.setupo_velocity_gps_filter_btn = self.control_toolbar.addAction('Velocity\nGPS filter')
+        self.setupo_velocity_gps_filter_btn.triggered.connect(self.antenna.setup_velocity_gps_filter)
+
+        self.addToolBarBreak()
+        self.drive_toolbar = self.addToolBar('Drive')
+        self.drive_toolbar.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.drive_toolbar.setFloatable(False)
+        self.drive_toolbar.setMovable(False)
+
+        self.motors_enable_pin_high = self.drive_toolbar.addAction('Enable motors')
         self.motors_enable_pin_high.triggered.connect(self.antenna.turn_motors_on)
 
-        self.motors_enable_pin_low = self.toolbar.addAction('Disable motors')
+        self.motors_enable_pin_low = self.drive_toolbar.addAction('Disable motors')
         self.motors_enable_pin_low.triggered.connect(self.antenna.turn_motors_off)
 
-        self.auto_control_on_btn = self.toolbar.addAction('Turn on motors\nauto disable mode')
+        self.drive_toolbar.addSeparator()
+
+        self.auto_control_on_btn = self.drive_toolbar.addAction('Turn on motors\nauto disable mode')
         self.auto_control_on_btn.triggered.connect(self.antenna.motors_auto_disable_on)
 
-        self.auto_control_off_btn = self.toolbar.addAction('Turn off motors\nauto disable mode')
+        self.auto_control_off_btn = self.drive_toolbar.addAction('Turn off motors\nauto disable mode')
         self.auto_control_off_btn.triggered.connect(self.antenna.motors_auto_disable_off)
-
-        self.setup_coord_system_btn = self.toolbar.addAction('Setup coord\nsystem')
-        self.setup_coord_system_btn.triggered.connect(self.antenna.setup_coord_system)
 
         self.menu_bar = self.menuBar()
         self.menu_file = self.menu_bar.addMenu("&File")

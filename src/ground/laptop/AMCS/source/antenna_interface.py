@@ -114,7 +114,7 @@ class MAVITSInterface(AbstractAntennaInterface):
                     self.gps_filter_changed.emit(mavutil.mavlink.enums['AS_GPS_FILTER'][msg.filter_id].name)
 
                 elif msg.get_type() == 'RSSI':
-                    self.rssi_changed(msg.rssi)
+                    self.rssi_changed((msg.rssi, None, None, None))
 
     def convert_time_from_s_to_s_us(self, current_time):
         current_time = math.modf(current_time)
@@ -189,10 +189,10 @@ class MAVITSInterface(AbstractAntennaInterface):
         self.send_message(its_mav.MAVLink_as_send_command_message(*(self.convert_time_from_s_to_s_us(time.time()) + [2])))
 
     def setup_no_gps_filter(self):
-        self.send_message(its_mav.MAVLink_as_setup_gps_filter(*(self.convert_time_from_s_to_s_us(time.time()) + [0])))
+        self.send_message(its_mav.MAVLink_as_setup_gps_filter_message(*(self.convert_time_from_s_to_s_us(time.time()) + [0])))
 
     def setup_velocity_gps_filter(self):
-        self.send_message(its_mav.MAVLink_as_setup_gps_filter(*(self.convert_time_from_s_to_s_us(time.time()) + [1])))
+        self.send_message(its_mav.MAVLink_as_setup_gps_filter_message(*(self.convert_time_from_s_to_s_us(time.time()) + [1])))
 
     def park(self):
         self.setup_elevation_zero()
@@ -209,7 +209,9 @@ class ZMQITSInterface(MAVITSInterface):
             if topic == 'antenna.telemetry_packet':
                 super(ZMQITSInterface, self).messages_reaction(self.mav.parse_buffer(msg[2]))
             elif topic == 'radio.rssi_instant':
-                self.rssi_changed.emit(json.loads(msg[1]).get('rssi', None))
+                self.rssi_changed.emit((json.loads(msg[1]).get('rssi', None), None, None, None))
+            elif topic == 'radio.rssi_packet':
+                self.rssi_changed.emit(tuple([None] + [json.loads(msg[1]).get(key, None) for key in ['rssi_pkt', 'snr_pkt', 'rssi_signal']]))
 
     def send_message(self, msg):
         msg.get_header().srcSystem = 0
