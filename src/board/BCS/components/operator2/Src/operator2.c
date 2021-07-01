@@ -11,6 +11,9 @@
 #include "operator2.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "router.h"
 #include "log_collector.h"
@@ -21,7 +24,7 @@
 #define ROZE_COUNT 4
 #define CMD_COUNT 4
 
-static char *TAG = "OP2";
+const static char *TAG = "OP2";
 
 typedef enum {
 	CS_OFF,
@@ -91,7 +94,7 @@ static void op_task(void *arg) {
 				op_state.roze[mrac.area_id - 1].state = CS_GOT_MSG;
 				op_state.roze[mrac.area_id - 1].seq = msg.seq;
 
-				ESP_LOGV(TAG, "%d:%06d: roze for BSK%d for %d ms", (int)mrac.time_s, mrac.time_us, mrac.area_id, mrac.active_time);
+				ESP_LOGV(TAG, "%d:%06d: roze for BSK%d for %d ms %d", (int)mrac.time_s, mrac.time_us, mrac.area_id, mrac.active_time, msg.seq);
 				stats.count_recieved_cmds++;
 			}
 			if (msg.msgid == MAVLINK_MSG_ID_CMD_ACTIVATE_COMMAND) {
@@ -101,17 +104,18 @@ static void op_task(void *arg) {
 				op_state.cmd[mcac.area_id - 1].state = CS_GOT_MSG;
 				op_state.cmd[mcac.area_id - 1].seq = msg.seq;
 
-				ESP_LOGV(TAG, "%d:%06d: cmd for BSK%d for %d ms", (int)mcac.time_s, mcac.time_us, mcac.area_id, mcac.active_time);
+				ESP_LOGV(TAG, "%d:%06d: cmd for BSK%d for %d ms %d", (int)mcac.time_s, mcac.time_us, mcac.area_id, mcac.active_time, msg.seq);
 				stats.count_recieved_cmds++;
 			}
 			if (msg.msgid == MAVLINK_MSG_ID_IDLE_COMMAND) {
 
 				mavlink_idle_command_t mic = {0};
 				mavlink_msg_idle_command_decode(&msg, &mic);
-				ESP_LOGV(TAG, "%d:%06d: idle", (int)mic.time_s, mic.time_us);
+				ESP_LOGV(TAG, "%d:%06d: idle %d", (int)mic.time_s, mic.time_us, msg.seq);
 				stats.count_recieved_cmds++;
 				stats.count_executed_cmds++;
 				stats.last_executed_cmd_seq = msg.seq;
+				ESP_LOGI(TAG, "set %d", stats.last_executed_cmd_seq);
 			}
 		}
 
@@ -133,6 +137,7 @@ static void op_task(void *arg) {
 					op_state.roze[i].state = CS_OFF;
 					stats.count_executed_cmds++;
 					stats.last_executed_cmd_seq = op_state.roze[i].seq;
+					ESP_LOGI(TAG, "set %d", stats.last_executed_cmd_seq);
 				}
 			}
 		}
@@ -149,6 +154,7 @@ static void op_task(void *arg) {
 					op_state.cmd[i].state = CS_OFF;
 					stats.count_executed_cmds++;
 					stats.last_executed_cmd_seq = op_state.cmd[i].seq;
+					ESP_LOGI(TAG, "set %d", stats.last_executed_cmd_seq);
 				}
 			}
 		}
@@ -167,6 +173,7 @@ static void op_task(void *arg) {
 			conn_stats->count_operator_cmds_recieved = stats.count_recieved_cmds;
 			conn_stats->count_operator_errors = stats.count_errors;
 			conn_stats->last_executed_cmd_seq = stats.last_executed_cmd_seq;
+			//ESP_LOGI(TAG, "%d", conn_stats->last_executed_cmd_seq);
 			conn_stats->update_time_operator = esp_timer_get_time() / 1000;
 			log_collector_give();
 		}

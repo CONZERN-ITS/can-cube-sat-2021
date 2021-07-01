@@ -792,6 +792,17 @@ int main(void)
   			{
   				for (int i = 0; i < 10; i++)
   				{
+  				    {
+  				        static uint32_t prev = 0;
+  				        uint32_t now= HAL_GetTick();
+  				        if (now - prev >= 1000) {
+  				            prev += 1000;
+
+                            struct timeval tv;
+                            time_svc_world_get_time(&tv);
+  				            printf("@TIME: %d.%06d | %d ticks\n", (int)tv.tv_sec, (int)tv.tv_usec, (int)now);
+  				        }
+  				    }
   					// Кормит маджвик данными
   					UpdateDataAll();
   					SINS_updatePrevData();
