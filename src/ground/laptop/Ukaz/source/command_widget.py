@@ -187,7 +187,7 @@ class CommandWidget(QtWidgets.QFrame):
         self.layout = QtWidgets.QGridLayout(self)
         self.commands = []
 
-        self.cookie = (time.time() // 1000) % 1000 
+        self.cookie = 1
 
     def setup_ui_design(self):
         self.settings.beginGroup("CentralWidget/CommandWidget")
