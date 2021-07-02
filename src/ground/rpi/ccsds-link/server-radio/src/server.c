@@ -656,47 +656,62 @@ static int _server_loop(server_t * server)
 {
 	int rc;
 	sx126x_drv_t * const radio = &server->radio;
-	const size_t rx_timeout_limit = server->config.rx_timeout_limit;
+	const size_t rx_timeout_limit_left = server->config.rx_timeout_limit_left;
+	const size_t rx_timeout_limit_zabey = server->config.rx_timeout_limit_zabey;
 
 begin_rx:
 	if (server->stop_requested)
 		return 0;
 
-	do
+	log_trace("going rx");
+	rc = _go_rx(server);
+	if (0 != rc)
+		return rc;
+
+	log_trace("rx begun");
+	// Дальше мы собственно ждем пока этот приём закончится
+	bool got_packet;
+	rc = _wait_for_rx(server, &got_packet);
+	if (0 != rc)
+		return rc;
+
+	log_trace("rx operation complete");
+	server->stats.rx_done_counter++;
+
+	if (got_packet)
 	{
-		log_trace("going rx");
+		server->rx_packet_received = _timespec_now();
+		server->rx_timeout_count = 0;
+		log_trace("rx yielded packet");
+		_fetch_rx(server);
+		server->stats.rx_frame_counter++;
+	}
+	else
+	{
+		server->rx_timeout_count++;
+		log_trace("rx timed out");
+	}
 
-		rc = _go_rx(server);
-		if (0 != rc)
-			return rc;
 
-		log_trace("rx begun");
-		// Дальше мы собственно ждем пока этот приём закончится
-		bool got_packet;
-		rc = _wait_for_rx(server, &got_packet);
-		if (0 != rc)
-			return rc;
-
-		log_trace("rx operation complete");
-		server->stats.rx_done_counter++;
-
-		if (got_packet)
-		{
-			server->rx_packet_received = _timespec_now();
-			server->rx_timeout_count = 0;
-			log_trace("rx yielded packet");
-			_fetch_rx(server);
-			server->stats.rx_frame_counter++;
-		}
-		else
-		{
-			server->rx_timeout_count++;
-			log_trace("rx timed out");
-		}
-
-		// Крутимся тут пока не убедимся что эфир свободен
-	} while(server->rx_timeout_count < rx_timeout_limit);
-
+	// Окей, RX закончился так или иначе
+	// Смотрим свободен ли эфир для TX
+	if (server->rx_timeout_count > rx_timeout_limit_zabey)
+	{
+		// В эфире ничего не было слишком давно. Передаем как сможем
+		log_trace("rx timeout limit zabey");
+	}
+	else if (
+			server->rx_timeout_count == rx_timeout_limit_left
+	)
+	{
+		// Мы попали ровно в окно
+		log_trace("rx timeout limit in window");
+	}
+	else
+	{
+		// В противном случае передавать нельзя и поэтому мы пойдем на прием
+		goto begin_rx;
+	}
 
 	// Раз мы оказались тут, то это означает что эфир свободен
 	log_debug("no rx, channel free. Ready for TX");

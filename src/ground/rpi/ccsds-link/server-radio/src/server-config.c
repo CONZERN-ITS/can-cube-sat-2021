@@ -59,13 +59,14 @@ int server_config_load(server_config_t * config)
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
 			.stop_timer_on_preamble = false,
-			.lora_symb_timeout = 0,
+			.lora_symb_timeout = 100, // примерно 250мс при SF8, BW250, CR4/8
 	};
 	config->radio_rx_timeout_cfg = rx_timeout_cfg;
 
 
 	config->rx_timeout_ms = 600;
-	config->rx_timeout_limit = 0;
+	config->rx_timeout_limit_left = 6; // примерно 6*250 = 1500 мс
+	config->rx_timeout_limit_zabey = config->rx_timeout_limit_left + 120; // Примерно 30*1000 мс
 
 	config->tx_timeout_ms = 0;
 

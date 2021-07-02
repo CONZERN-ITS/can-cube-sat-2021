@@ -16,7 +16,10 @@ typedef struct server_config_t
 		а не в милллисекундах */
 	uint32_t rx_timeout_ms;
 	//! Сколько раз должен случится таймаут на RX, чтобы было разрешено делать TX
-	size_t rx_timeout_limit;
+	size_t rx_timeout_limit_left;
+
+	//! Таймаут по которому мы вообще забиваем на синхронизацию RX TX и просто передаем
+	size_t rx_timeout_limit_zabey;
 	//! Аргумент sx126x_drv_mode_tx */
 	uint32_t tx_timeout_ms;
 
