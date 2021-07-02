@@ -14,10 +14,12 @@ def main(argv):
 	parser = argparse.ArgumentParser("its log player")
 	parser.add_argument("-i,--input,--log-file", nargs="?", type=str, dest="log_file", required=True)
 	parser.add_argument("--speed", nargs="?", type=float, dest="speed", default=1.0)
+	parser.add_argument("--drop-until", nargs="?", type=float, dest="drop_until")
 
 	args = parser.parse_args(argv)
 	filepath = args.log_file
 	speed_factor = 1/args.speed
+	drop_until = args.drop_until
 
 	ctx = zmq.Context()
 	socket = ctx.socket(zmq.PUB)
@@ -34,6 +36,9 @@ def main(argv):
 				break
 
 			msg_time, msg = time_and_msg
+			if drop_until is not None and msg_time < drop_until:
+				continue
+
 			if last_msg_time is not None:
 				# Спим, чтобы отправлять сообщения в том же темпе как и отправитель
 				to_sleep = msg_time - last_msg_time
