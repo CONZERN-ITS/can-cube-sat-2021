@@ -16,7 +16,7 @@
 #define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include "esp_log.h"
 
-const char *TAG = "my_i2c";
+const static char *TAG = "my_i2c";
 typedef struct i2c_dev_t {
 	SemaphoreHandle_t mutex;
 	StaticSemaphore_t xMutexBuffer;
