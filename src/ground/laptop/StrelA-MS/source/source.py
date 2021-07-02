@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import numpy as NumPy
 import time
+import logging
 
 from math import nan
 
@@ -12,6 +13,10 @@ from source import data_widget
 from source import event_widget
 from source.data_control import *
 from source import LOG_FOLDER_PATH
+
+
+_log = logging.getLogger(__name__)
+
 
 class CentralWidget(QtWidgets.QWidget):
     current_values_changed = QtCore.pyqtSignal()
@@ -83,6 +88,7 @@ class MainWindow(QtWidgets.QMainWindow):
     class DataManager(QtCore.QObject):
         new_data = QtCore.pyqtSignal(list)
         autoclose = QtCore.pyqtSignal(str)
+        finished = QtCore.pyqtSignal()
         def __init__(self, data_obj, update_time=0.2):
             super(MainWindow.DataManager, self).__init__()
             self.data_obj = data_obj
@@ -126,7 +132,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.autoclose.emit(str(e))
                     break
                 except Exception as e:
-                    print(e)
+                    _log.exception("error in data manager: %s", e)
                 else:
                     data_buf.extend(data)
                     if (time.time() - start_time) > self.update_time:
@@ -148,6 +154,7 @@ class MainWindow(QtWidgets.QMainWindow):
             except Exception as e:
                 pass
             last_time = 0
+            self.finished.emit()
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -195,6 +202,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data_thread.started.connect(self.data_manager.start)
         self.data_manager.new_data.connect(self.central_widget.new_data_reaction)
         self.data_manager.autoclose.connect(self.connection_action)
+        self.data_manager.finished.connect(self.data_thread.quit)
+
         self.time_btn.triggered.connect(self.reset_time)
 
     def setup_ui_design(self):
@@ -245,24 +254,33 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, evnt):
         self.settings_window.close()
+        self.disconnect()
+        QtCore.QMetaObject.invokeMethod(self.data_thread, "deleteLater")
         super(MainWindow, self).closeEvent(evnt)
+
 
     def connection_action(self, stat_bar_msg=None):
         if not self.data_thread.isRunning():
-            self.central_widget.clear_data()
-            self.settings_window.settings_enabled(False)
-            self.central_widget.set_time_shift()
-            self.central_widget.current_values_changed.emit()
-            self.data_thread.start()
-            self.connection_btn.setText("&Disconnect")
+            self.connect()
         else:
-            self.data_manager.quit()
-            self.data_thread.quit()
-            self.connection_btn.setText("&Connect")
-            time.sleep(0.1)
-            self.settings_window.settings_enabled(True)
-        if (stat_bar_msg is not None) and (stat_bar_msg != False):
+            self.disconnect()
+        if (stat_bar_msg is not None) and (stat_bar_msg is not None):
             pass#print(stat_bar_msg)
 
+    def connect(self):
+        self.central_widget.clear_data()
+        self.settings_window.settings_enabled(False)
+        self.central_widget.set_time_shift()
+        self.central_widget.current_values_changed.emit()
+        self.data_thread.start()
+        self.connection_btn.setText("&Disconnect")
 
-
+    def disconnect(self):
+        self.data_manager.quit()
+        start_time = time.time()
+        while self.data_thread.isRunning():
+            if (time.time() - start_time) > 2:
+                break
+            time.sleep(0.01)
+        self.connection_btn.setText("&Connect")
+        self.settings_window.settings_enabled(True)
