@@ -550,7 +550,7 @@ int HSE_SystemClock_Config(void)
 //  RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 12;
+  RCC_OscInitStruct.PLL.PLLM = 4;
   RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
@@ -613,7 +613,7 @@ int main(void)
 
   //Запускаемся с RTC
   int error = HSE_SystemClock_Config();
-  if (1 == error)
+  if (error)
   {
 	  error = 0;
 	  error = HSI_SystemClock_Config();
