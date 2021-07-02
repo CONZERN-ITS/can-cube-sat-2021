@@ -25,6 +25,7 @@ class StatusWidget(QtWidgets.QWidget):
                 self.set_enabled(True)
                 self.set_status(status)
                 self.set_status_type(status_type)
+                self.set_stage_id(stage_id)
 
             def get_name(self):
                 return self.name
@@ -37,6 +38,12 @@ class StatusWidget(QtWidgets.QWidget):
 
             def set_status(self, status='Undefined'):
                 self.status = status
+
+            def get_stage_id(self):
+                return self.stage_id
+
+            def set_stage_id(self, stage_id=0):
+                self.stage_id = stage_id
 
             def get_status_type(self):
                 return self.status_type
@@ -143,15 +150,17 @@ class StatusWidget(QtWidgets.QWidget):
         def endReset(self):
             self.endResetModel()
 
-        def update_cmd(self, cookie, status='Undefined', status_type=Command.STATUS_UNKNOWN, name='Undefined'):
+        def update_cmd(self, cookie, status='Undefined', status_type=Command.STATUS_UNKNOWN, stage_id=0, name='Undefined'):
             for cmd in self.cmd_list:
                 if cmd.get_cookie() == cookie:
-                    self.beginReset()
-                    cmd.set_status_type(status_type)
-                    cmd.set_status(status)
-                    if (status_type == StatusWidget.StatusModel.Command.STATUS_FAILURE) or (status_type == StatusWidget.StatusModel.Command.STATUS_SUCCSESS):
-                        cmd.set_enabled(False)
-                    self.endReset()
+                    if cmd.get_stage_id() <= stage_id:
+                        self.beginReset()
+                        cmd.set_status_type(status_type)
+                        cmd.set_status(status)
+                        cmd.set_stage_id(stage_id)
+                        if (status_type == StatusWidget.StatusModel.Command.STATUS_FAILURE) or (status_type == StatusWidget.StatusModel.Command.STATUS_SUCCSESS):
+                            cmd.set_enabled(False)
+                        self.endReset()
                     return
 
             cmd = StatusWidget.StatusModel.Command(name=name,
