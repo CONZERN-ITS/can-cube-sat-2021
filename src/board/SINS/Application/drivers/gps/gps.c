@@ -100,7 +100,7 @@ static void gps_power(bool on)
 static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * packet_)
 {
 	gps_cfg_state_t * const cfg_state = &_cfg_state;
-	printf("gps: got packet 0x%04X\n", packet_->pid);
+	//printf("gps: got packet 0x%04X\n", packet_->pid);
 
 	// FIXME: Возможно стоит что-то сделать, чтобы не использовать оба пакета на одном такте?
 	// Если они оба придут (а они оба придут)
@@ -145,7 +145,7 @@ static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * 
 		{
 			// дождалис
 			const ubx_ack_packet_t * packet = &packet_->packet.ack;
-			printf("gps: got ack 0x%04X\n", packet->packet_pid);
+			//printf("gps: got ack 0x%04X\n", packet->packet_pid);
 			if (cfg_state->sent_packet_pid == packet->packet_pid)
 				cfg_state->sent_packet_ack_status = GPS_CFG_ACK_STATUS_GOT_ACK;
 		}
@@ -157,7 +157,7 @@ static void _internal_packet_callback(void * user_arg, const ubx_any_packet_t * 
 		{
 			// не дождались
 			const ubx_nack_packet_t * packet = &packet_->packet.nack;
-			printf("gps: got nack 0x%04X\n", packet->packet_pid);
+			//printf("gps: got nack 0x%04X\n", packet->packet_pid);
 			if (cfg_state->sent_packet_pid == packet->packet_pid)
 				cfg_state->sent_packet_ack_status = GPS_CFG_ACK_STATUS_GOT_NACK;
 		}
@@ -208,7 +208,7 @@ static int _send_conf_packet(const uint8_t * packet)
 	if (hal_error != HAL_OK)
 		return sins_hal_status_to_errno(hal_error);
 
-	printf("gps: sent gps config packet pid 0x%04X\n", ubx_packet_pid(packet));
+	//printf("gps: sent gps config packet pid 0x%04X\n", ubx_packet_pid(packet));
 	return 0;
 }
 
@@ -225,7 +225,7 @@ static int _gps_configure_step_packet()
 		// Мы дошли до последнего пакета и успешно завершились
 		state->last_error = 0;
 		state->enabled = 0;
-		printf("gps: configuration complete\n");
+		//printf("gps: configuration complete\n");
 		return 0;
 	}
 
@@ -234,7 +234,7 @@ static int _gps_configure_step_packet()
 	{
 		state->enabled = 0;
 		// state->result выставили при прошлой ошибке
-		printf("gps: configuration failed\n");
+		//printf("gps: configuration failed\n");
 		return state->last_error;
 	}
 
@@ -295,7 +295,7 @@ static void _gps_configure_step()
 				// Ставим ошибку
 				state->last_error = -ETIMEDOUT;
 				// Таймаут наступил, пробуем отправить пакет еще раз, если попытки не кончились
-				printf("gps: ack timedout\n");
+				//printf("gps: ack timedout\n");
 				_gps_configure_step_packet();
 			}
 			// Продолжаем ждать
@@ -373,7 +373,7 @@ void gps_configure_begin()
 	if (state->enabled)
 		return; // Мы уже конфигурируемся
 
-	printf("gps: configuration start\n");
+	//printf("gps: configuration start\n");
 	//gps_power_off();
 	//HAL_Delay(100);
 	//gps_power_on();
