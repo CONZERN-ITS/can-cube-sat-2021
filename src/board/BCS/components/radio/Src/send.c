@@ -373,7 +373,7 @@ static int _radio_init(radio_t * server)
 
 	const sx126x_drv_lora_rx_timeout_cfg_t rx_timeout_cfg = {
 			.stop_timer_on_preamble = false,
-			.lora_symb_timeout = 24*5
+			.lora_symb_timeout = 0
 	};
 
 
@@ -698,12 +698,12 @@ static void send_task2(void *arg) {
 			return;
 		}
 
-		if (rs == RS_RX && RADIO_RX_PERIOD < now - period_start) {
+		if (rs == RS_RX && RADIO_RX_PERIOD < now - period_start && packet_done) {
 			log_info("START TX0");
 			rs = RS_TX;
 			period_start = now;
 		}
-		if (rs == RS_TX && RADIO_TX_PERIOD < now - period_start) {
+		if (rs == RS_TX && RADIO_TX_PERIOD < now - period_start && packet_done) {
 			log_info("START RX");
 			rs = RS_RX;
 			period_start = now;
@@ -720,6 +720,7 @@ static void send_task2(void *arg) {
 			period_start = now;
 			i_really_want_to_start_now = 1;
 			last_sent = now;
+			error_count_tx += MAX_ERRORS / 2 + 1;
 		}
 
 
@@ -753,7 +754,7 @@ static void send_task2(void *arg) {
 			}
 			if (rs == RS_RX) {
 				ESP_LOGV("radio", "new rx");
-				rc = sx126x_drv_mode_rx(&server->dev, 0);
+				rc = sx126x_drv_mode_rx(&server->dev, RADIO_RX_PERIOD / 1000);
 				if (0 != rc) {
 					error_count_rx++;
 					log_error("unable to switch radio to rx mode: %d. Dropping frame", rc);
