@@ -52,7 +52,8 @@ class MAVITSInterface(AbstractCommanInterface):
 
     def msg_reaction(self, msg):
         if msg.get_type() == 'BCU_RADIO_CONN_STATS':
-            self.command_ststus_changed.emit([msg.last_executed_cmd_seq, 'executed', self.STATUS_SUCCSESS])
+            if msg.last_executed_cmd_seq > 0:
+                self.command_ststus_changed.emit([msg.last_executed_cmd_seq, 'executed', self.STATUS_SUCCSESS])
 
     def generate_message(self, name, data):
         command = None
