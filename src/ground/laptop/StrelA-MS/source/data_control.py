@@ -11,7 +11,9 @@ import numpy as NumPy
 import struct
 import zmq
 import json
+import logging
 
+_log = logging.getLogger(__name__)
 
 from source.functions.wgs84 import wgs84_xyz_to_latlonh as wgs84_conv
 
@@ -76,7 +78,7 @@ class MAVDataSource():
             if msg.get_type() == "BAD_DATA":
                 msg_list.append(Message(message_id=msg.get_type(),
                                         source_id='0_0',
-                                        msg_time=0,
+                                        msg_time=time.time(),
                                         msg_data={}))
                 continue
             data = msg.to_dict()
@@ -113,10 +115,6 @@ class MAVDataSource():
                                     source_id=(str(header.srcSystem) + '_' + str(header.srcComponent)),
                                     msg_time=msg_time,
                                     msg_data=data))
-            #print(msg_list[-1].get_time())
-            #print(msg_list[-1].get_message_id())
-            #print(msg_list[-1].get_source_id())
-            #print(msg_list[-1].get_data_dict())
         return msg_list
 
     def stop(self):
@@ -182,6 +180,8 @@ class ZMQDataSource():
         self.bus_bpcs = bus_bpcs
         self.topics = topics
         self.log_path = log_path
+        self.pkt_num = None
+        self.pkt_count = 0
 
     def start(self):
         self.zmq_ctx = zmq.Context()
@@ -200,7 +200,7 @@ class ZMQDataSource():
         self.mav.robust_parsing = True
 
     def read_data(self):
-        events = dict(self.poller.poll(1000))
+        events = dict(self.poller.poll(10))
         if self.sub_socket in events:
             zmq_msg = self.sub_socket.recv_multipart()
 
@@ -220,6 +220,20 @@ class ZMQDataSource():
                                 msg_time=self._extract_mdt_time(zmq_msg),
                                 msg_data=json.loads(zmq_msg[1].decode("utf-8")))]
 
+            data = []
+            if zmq_msg[0] == b'radio.downlink_frame':
+                num = json.loads(zmq_msg[1].decode("utf-8")).get("frame_no", None)
+                if num is not None:
+                    if (num is not None) and (self.pkt_num is not None) and ((self.pkt_num + 1) > num):
+                        print(num - (self.pkt_num + 1))
+                        self.pkt_count += num - (self.pkt_num + 1)
+                self.pkt_num = num
+                data.append(Message(message_id='LOST_MESSAGES',
+                                    source_id=('0_0'),
+                                    msg_time=time.time(),
+                                    msg_data={'count': self.pkt_count,
+                                              'num': self.pkt_num}))
+
             msg_buf = zmq_msg[2]
 
             if not self.notimestamps:
@@ -227,13 +241,14 @@ class ZMQDataSource():
             self.log.write(msg_buf)
 
             msg = self.mav.parse_buffer(msg_buf)
+            _log.debug("got message: %s", list([str(x) for x in msg]))
 
             if msg is None:
                 raise RuntimeError("No Message")
-            data = MAVDataSource.get_data(MAVDataSource, msg)
+            data.extend(MAVDataSource.get_data(MAVDataSource, msg))
             return data
         else:
             raise RuntimeError("No Message")
 
     def stop(self):
-        self.log
+        self.log.close()

@@ -65,6 +65,10 @@ CentralWidget:
         name: GCS RADIO STATS
         sourse_id: '1_0'
         message_id: 'radio.stats'
+      LOST_MESSAGES:
+        name: LOST_MESSAGES
+        sourse_id: '0_0'
+        message_id: 'LOST_MESSAGES'
       def_time_limit: 20
     Packet_table:
       BAD_DATA:

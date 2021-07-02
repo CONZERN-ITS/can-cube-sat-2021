@@ -29,10 +29,13 @@ CentralWidget:
         sourse_id: '11_0'
         message_id: 'SINS_ISC'
       CUBE_1_SINS_GPS:
-        is_on: false
         name: 11_0_GPS_UBX_NAV_SOL
         sourse_id: '11_0'
         message_id: 'GPS_UBX_NAV_SOL'
+      LOST_MESSAGES:
+        name: LOST_MESSAGES
+        sourse_id: '0_0'
+        message_id: 'LOST_MESSAGES'
       is_on: true
       def_time_limit: 20
     Packet_table:

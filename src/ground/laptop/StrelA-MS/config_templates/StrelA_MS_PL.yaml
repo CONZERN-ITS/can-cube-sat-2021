@@ -45,7 +45,10 @@ CentralWidget:
         name: 13_0_PLD_STATS
         sourse_id: '13_0'
         message_id: 'PLD_STATS'
-      is_on: true
+      LOST_MESSAGES:
+        name: LOST_MESSAGES
+        sourse_id: '0_0'
+        message_id: 'LOST_MESSAGES'
       def_time_limit: 20
     Packet_table:
       BAD_DATA:
