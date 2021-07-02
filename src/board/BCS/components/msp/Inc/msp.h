@@ -9,6 +9,7 @@
 #define COMPONENTS_MSP_INC_MSP_H_
 
 #include "inttypes.h"
+#include "freertos/FreeRTOS.h"
 
 #define MSP_MAX_POWER (8 * (2300 - 300))
 
@@ -38,9 +39,6 @@ typedef enum {
 
 	MSP_BSK5_HEAT,
 
-	MSP_PL_VENT,//600
-	MSP_PL_PUMP,//800
-
 	MSP_MODULE_COUNT
 } msp_module_t;
 
@@ -48,7 +46,7 @@ typedef enum {
 
 void msp_init();
 
-void msp_rethink(uint32_t ticks);
+BaseType_t msp_rethink(uint32_t ticks);
 
 void msp_turn_on(msp_module_t module, int is_on);
 

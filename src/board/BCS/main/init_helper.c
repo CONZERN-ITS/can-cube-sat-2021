@@ -34,6 +34,7 @@
 #include "router.h"
 #include "mavlink/its/mavlink.h"
 #include "mavlink_help2.h"
+#include "msp.h"
 #include "radio.h"
 #include "sdio.h"
 #include "control_heat.h"
@@ -229,22 +230,33 @@ void init_helper(void) {
 	ESP_LOGD("SYSTEM", "imi inited");
 
 	shift_reg_init_spi(&hsr, ITS_SPISR_PORT, 27, 100 / portTICK_PERIOD_MS, ITS_PIN_SPISR_CS_SR);
+	msp_init();
+	msp_turn_on(MSP_BCU_HEAT, 0);
+	msp_turn_on(MSP_BSK1_HEAT, 0);
+	msp_turn_on(MSP_BSK2_HEAT, 0);
+	msp_turn_on(MSP_BSK3_HEAT, 0);
+	msp_turn_on(MSP_BSK4_HEAT, 0);
+	msp_turn_on(MSP_BSK5_HEAT, 0);
+
+	msp_turn_on(MSP_BSK1_CMD, 0);
+	msp_turn_on(MSP_BSK2_CMD, 0);
+	msp_turn_on(MSP_BSK3_CMD, 0);
+	msp_turn_on(MSP_BSK4_CMD, 0);
+
+	msp_turn_on(MSP_BSK1_ROZE, 0);
+	msp_turn_on(MSP_BSK2_ROZE, 0);
+	msp_turn_on(MSP_BSK3_ROZE, 0);
+	msp_turn_on(MSP_BSK4_ROZE, 0);
+
+	msp_turn_on(MSP_BSK1_VCC, 0);
+	msp_turn_on(MSP_BSK2_VCC, 0);
+	msp_turn_on(MSP_BSK3_VCC, 0);
+	msp_turn_on(MSP_BSK4_VCC, 0);
+
+	msp_rethink(portMAX_DELAY);
 	ESP_LOGD("SYSTEM", "Shift reg inited");
 
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK1_VCC, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK2_VCC, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK3_VCC, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK4_VCC, 0);
-
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK1_ROZE, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK2_ROZE, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK3_ROZE, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK4_ROZE, 0);
-
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK1_CMD, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK2_CMD, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK3_CMD, 0);
-	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_BSK4_CMD, 0);
+	shift_reg_take(&hsr, portMAX_DELAY);
 
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_SINS_VCC, 1);
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_SD_VCC, 1);
@@ -256,6 +268,7 @@ void init_helper(void) {
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL5_VCC, 1);
 	shift_reg_set_level_pin(&hsr, ITS_PIN_SR_PL6_VCC, 1);
 	shift_reg_load(&hsr);
+	shift_reg_return(&hsr);
 
 	control_heat_init(&hsr, 1, 1);
 	control_heat_set_max_consumption(1199);

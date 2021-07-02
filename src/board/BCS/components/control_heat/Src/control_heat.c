@@ -11,7 +11,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 
 #include "router.h"
@@ -20,17 +20,18 @@
 #include "log_collector.h"
 #include "radio.h"
 #include "pinout_cfg.h"
+#include "msp.h"
 
 #include <math.h>
 
 #define HEAT_COUNT 6
-static const int heat_pin[] = {
-		ITS_PIN_SR_BCU_HEAT,
-		ITS_PIN_SR_BSK1_HEAT,
-		ITS_PIN_SR_BSK2_HEAT,
-		ITS_PIN_SR_BSK3_HEAT,
-		ITS_PIN_SR_BSK4_HEAT,
-		ITS_PIN_SR_BSK5_HEAT,
+static const int heat_module[] = {
+		MSP_BCU_HEAT,
+		MSP_BSK1_HEAT,
+		MSP_BSK2_HEAT,
+		MSP_BSK3_HEAT,
+		MSP_BSK4_HEAT,
+		MSP_BSK5_HEAT,
 };
 
 static void _task_recv(void *arg);
@@ -207,11 +208,10 @@ static void _task_update(void *arg) {
 		}
 		//Запишем на сдвиговые регистры новое состояние
 		for (int sensor = 0; sensor < HEAT_COUNT; sensor++) {
-			shift_reg_set_level_pin(_hsr, heat_pin[sensor], new[sensor] == ON);
-
+			msp_turn_on(heat_module[sensor], new[sensor] == ON);
 		}
-		esp_err_t rc = shift_reg_load(_hsr);
-		if (rc == ESP_OK) {
+		BaseType_t rc = msp_rethink(portMAX_DELAY);
+		if (rc == pdTRUE) {
 			for (int i = 0; i < HEAT_COUNT; i++) {
 				if (new[i] == ON && state[i] == OFF) {
 					ESP_LOGD("CONTROL_HEAT", "now ON %d %f", i, temperature[i]);
@@ -226,6 +226,7 @@ static void _task_update(void *arg) {
 			log_data.last_error = LOG_ERROR_LL_API;
 			log_data.error_count++;
 		}
+		msp_rethink(portMAX_DELAY);
 		//Соберем немного логов
 		log_collector_add(LOG_COMP_ID_SHIFT_REG, &log_data);
 		vTaskDelay(CONTROL_HEAT_UPDATE_PERIOD / portTICK_PERIOD_MS);

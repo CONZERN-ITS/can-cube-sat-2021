@@ -11,6 +11,10 @@
 #include "msp.h"
 #include "msp_cfg.h"
 #include "shift_reg.h"
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#include "esp_log.h"
+
+const static char *TAG = "MSP";
 
 typedef struct {
 	int is_it_should_be_on;
@@ -41,9 +45,16 @@ void msp_init() {
 	}
 }
 
-void msp_rethink(uint32_t ticks) {
+BaseType_t msp_rethink(uint32_t ticks) {
+	ESP_LOGV(TAG, "rethink");
 	int sum = 0;
-	shift_reg_take(&hsr, ticks);
+	BaseType_t rc = 0;
+	rc = shift_reg_take(&hsr, ticks);
+	if (rc != pdTRUE) {
+		ESP_LOGE(TAG, "hmmm %d", (int)rc);
+		return rc;
+	}
+	ESP_LOGV(TAG, "update states");
 	for (int i = 0; i < MSP_MODULE_COUNT; i++) {
 		int index = sorted[i];
 		if (msp_module_cfg_arr[index].priority == 0) {
@@ -58,8 +69,21 @@ void msp_rethink(uint32_t ticks) {
 		}
 		shift_reg_set_level_pin(&hsr, msp_module_cfg_arr[index].pin, mmp[index].is_it_really_on);
 	}
-	shift_reg_return(&hsr);
-	shift_reg_load(&hsr);
+	char str[100] = {0};
+	char str2[100] = {0};
+	int size = 0;
+	int size2 = 0;
+	for (int i = 0; i < MSP_MODULE_COUNT; i++) {
+		size += snprintf(str + size, sizeof(str) - size, "%d", mmp[i].is_it_really_on);
+		size2 += snprintf(str2 + size2, sizeof(str2) - size2, "%d", mmp[i].is_it_should_be_on);
+	}
+	ESP_LOGD(TAG, "modules  on: %s", str);
+	ESP_LOGD(TAG, "modules son: %s", str2);
+	rc = shift_reg_return(&hsr);
+	if (rc != pdTRUE) {
+		return rc;
+	}
+	return shift_reg_load(&hsr);
 }
 
 

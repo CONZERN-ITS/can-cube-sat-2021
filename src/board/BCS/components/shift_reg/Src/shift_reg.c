@@ -12,6 +12,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_err.h"
+#define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
@@ -21,14 +22,8 @@ esp_err_t shift_reg_load(shift_reg_handler_t *hsr) {
 	trans.tx_buffer = hsr->byte_arr;
 	trans.length = hsr->arr_size * 8; //В битах
 
-	if (xSemaphoreTake(hsr->mutex, hsr->ticksToWait) == pdFALSE) {
-		return -1;
-	}
 	esp_err_t ret = spi_device_polling_transmit(hsr->hspi, &trans);
 
-	if (xSemaphoreGive(hsr->mutex) == pdFALSE) {
-		return -1;
-	}
 	return ret;
 }
 
@@ -62,9 +57,12 @@ esp_err_t shift_reg_init_spi(shift_reg_handler_t *hsr, spi_host_device_t port,
 	return 0;
 }
 BaseType_t shift_reg_take(shift_reg_handler_t *hsr, uint32_t ticks) {
+	ESP_LOGD("SR", "take");
+
 	return xSemaphoreTake(hsr->mutex, ticks);
 }
 BaseType_t shift_reg_return(shift_reg_handler_t *hsr) {
+	ESP_LOGD("SR", "return");
 	return xSemaphoreGive(hsr->mutex);
 }
 void shift_reg_toggle_pin(shift_reg_handler_t *hsr, uint32_t pin) {

@@ -19,6 +19,7 @@
 #include "log_collector.h"
 #include "shift_reg.h"
 #include "pinout_cfg.h"
+#include "msp.h"
 
 
 #define ROZE_COUNT 4
@@ -54,18 +55,18 @@ typedef struct {
 
 extern shift_reg_handler_t hsr;
 
-const static int pin_roze[] = {
-		ITS_PIN_SR_BSK1_ROZE,
-		ITS_PIN_SR_BSK2_ROZE,
-		ITS_PIN_SR_BSK3_ROZE,
-		ITS_PIN_SR_BSK4_ROZE,
+const static int module_roze[] = {
+		MSP_BSK1_ROZE,
+		MSP_BSK2_ROZE,
+		MSP_BSK3_ROZE,
+		MSP_BSK4_ROZE,
 };
 
-const static int pin_cmd[] = {
-		ITS_PIN_SR_BSK1_CMD,
-		ITS_PIN_SR_BSK2_CMD,
-		ITS_PIN_SR_BSK3_CMD,
-		ITS_PIN_SR_BSK4_CMD,
+const static int module_cmd[] = {
+		MSP_BSK1_CMD,
+		MSP_BSK2_CMD,
+		MSP_BSK3_CMD,
+		MSP_BSK4_CMD,
 };
 
 static void op_task(void *arg) {
@@ -122,22 +123,24 @@ static void op_task(void *arg) {
 		//-------------------------------------------------------------------------------
 		// Управление всем
 		//-------------------------------------------------------------------------------
-
 		int64_t now = esp_timer_get_time();
+		int is_msp_changed = 0;
 		for (int i = 0; i < ROZE_COUNT; i++) {
 			if (op_state.roze[i].state == CS_GOT_MSG) {
 				op_state.roze[i].start = now;
 				op_state.roze[i].end = now + op_state.roze[i].duration;
 				op_state.roze[i].state = CS_ON;
-				shift_reg_set_level_pin(&hsr, pin_roze[i], 1);
+				msp_turn_on(module_roze[i], 1);
+				is_msp_changed = 1;
 			}
 			if (op_state.roze[i].state == CS_ON) {
 				if (op_state.roze[i].end <= now) {
-					shift_reg_set_level_pin(&hsr, pin_roze[i], 0);
+					msp_turn_on(module_roze[i], 0);
 					op_state.roze[i].state = CS_OFF;
 					stats.count_executed_cmds++;
 					stats.last_executed_cmd_seq = op_state.roze[i].seq;
 					ESP_LOGI(TAG, "set %d", stats.last_executed_cmd_seq);
+					is_msp_changed = 1;
 				}
 			}
 		}
@@ -146,21 +149,23 @@ static void op_task(void *arg) {
 				op_state.cmd[i].start = now;
 				op_state.cmd[i].end = now + op_state.cmd[i].duration;
 				op_state.cmd[i].state = CS_ON;
-				shift_reg_set_level_pin(&hsr, pin_cmd[i], 1);
+				msp_turn_on(module_cmd[i], 1);
+				is_msp_changed = 1;
 			}
 			if (op_state.cmd[i].state == CS_ON) {
 				if (op_state.cmd[i].end <= now) {
-					shift_reg_set_level_pin(&hsr, pin_cmd[i], 0);
+					msp_turn_on(module_cmd[i], 0);
 					op_state.cmd[i].state = CS_OFF;
 					stats.count_executed_cmds++;
 					stats.last_executed_cmd_seq = op_state.cmd[i].seq;
 					ESP_LOGI(TAG, "set %d", stats.last_executed_cmd_seq);
+					is_msp_changed = 1;
 				}
 			}
 		}
-
-		shift_reg_load(&hsr);
-
+		if (is_msp_changed) {
+			msp_rethink(portMAX_DELAY);
+		}
 
 
 		//-------------------------------------------------------------------------------
@@ -180,5 +185,6 @@ static void op_task(void *arg) {
 	}
 }
 void op2_init() {
+	ESP_LOGV(TAG, "inited");
 	xTaskCreatePinnedToCore(op_task, "OP2 task", configMINIMAL_STACK_SIZE + 3000, 0, 20, 0, tskNO_AFFINITY);
 }

@@ -27,7 +27,7 @@ typedef struct {
 	int power;
 } msp_module_cfg_t;
 
-msp_module_cfg_t msp_module_cfg_arr[MSP_MODULE_COUNT] = {
+static msp_module_cfg_t msp_module_cfg_arr[MSP_MODULE_COUNT] = {
 		[MSP_BCU_HEAT]  = {3, ITS_PIN_SR_BCU_HEAT, 300 * 8},
 
 		[MSP_BSK1_VCC]  = {0, ITS_PIN_SR_BSK1_VCC, 0 * 8},
