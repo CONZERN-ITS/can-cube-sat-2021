@@ -223,7 +223,7 @@ void dosim_read_momentary(mavlink_pld_dosim_data_t * msg)
 
 	const dosim_measure_t * const pre_head = &buf->linear_buffer[prehead_index];
 	msg->count_tick = pre_head->accumulated_tics;
-	msg->delta_time = pre_head->interval_begin - pre_head->interval_end;
+	msg->delta_time = pre_head->interval_end - pre_head->interval_begin;
 
 }
 
