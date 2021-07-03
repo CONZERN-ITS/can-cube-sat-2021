@@ -37,6 +37,9 @@ void its_sync_time(its_time_t *from_bcs) {
     if (llabs(diff) > 5000) {
         uint64_t new = now.sec * 1000 + now.usec + diff;
 
+        ist_count__time_syncs_count();
+        its_set_correction_delta_time(HAL_GetTick(), diff / 1000, diff % 1000);
+
         now.sec = new / 1000;
         now.usec = new % 1000;
         its_settimeofday(&now);
@@ -46,12 +49,18 @@ void its_sync_time(its_time_t *from_bcs) {
     } else if (llabs(diff) > 200) {
         bad_time++;
         big_diff += diff;
+
+        its_count__time_sync_attempts();
     } else {
         diff = 0;
         bad_time = 0;
+        its_count__time_sync_attempts();
     }
     if (bad_time >= 5) {
         uint64_t new = now.sec * 1000 + now.usec + big_diff / bad_time;
+
+        ist_count__time_syncs_count();
+        its_set_correction_delta_time(HAL_GetTick(), diff / 1000, diff % 1000);
 
         now.sec = new / 1000;
         now.usec = new % 1000;

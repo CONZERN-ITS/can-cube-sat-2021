@@ -161,6 +161,16 @@ void tupdate() {
 }
 
 
+void send_stats(void)
+{
+	mavlink_message_t msg;
+	mavlink_ark_stats_t stats_msg;
+	its_collect_ark_stats(&stats_msg);
+	mavlink_msg_ark_stats_encode(mavlink_system, (uint8_t)0, &msg, &stats_msg);
+	uplink_packet(&msg);
+}
+
+
 void task_send_update(void *arg) {
     static uint32_t prev = 0;
     if (HAL_GetTick() - prev >= 1000){
@@ -171,6 +181,7 @@ void task_send_update(void *arg) {
     }
     eupdate();
     tupdate();
+    send_stats();
 
 }
 
