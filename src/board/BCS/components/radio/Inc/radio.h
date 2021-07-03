@@ -11,6 +11,8 @@
 
 #include "sx126x_drv.h"
 #include "mavlink_help2.h"
+
+// Периоды отправки сообщений. Больше - реже
 #define RADIO_SEND_ID_ARRAY(F) \
 	F(0, MAVLINK_MSG_ID_ELECTRICAL_STATE, 15) \
 	F(1, MAVLINK_MSG_ID_OWN_TEMP, 20) \
@@ -18,7 +20,7 @@
 	F(3, MAVLINK_MSG_ID_PLD_BME280_DATA, 15) \
 	F(4, MAVLINK_MSG_ID_PLD_ME2O2_DATA, 15) \
 	F(5, MAVLINK_MSG_ID_PLD_MICS_6814_DATA, 15) \
-	F(6, MAVLINK_MSG_ID_SINS_isc, 15) \
+	F(6, MAVLINK_MSG_ID_SINS_isc, 5) \
 	F(7, MAVLINK_MSG_ID_GPS_UBX_NAV_SOL, 15)
 
 #define RADIO_SEND_BAN(F) \

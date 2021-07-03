@@ -345,7 +345,7 @@ static int _radio_init(radio_t * server)
 			// Параметры усилителей и частот
 			.frequency = 438125*1000,
 			.pa_ramp_time = SX126X_PA_RAMP_1700_US,
-			.pa_power = 10,
+			.pa_power = 17,
 			.lna_boost = true,
 
 			// Параметры пакетирования
@@ -417,7 +417,7 @@ bad_exit:
 	_radio_deinit(server);
 	return -1;
 }
-
+/*
 
 static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx126x_drv_evt_t * event)
 {
@@ -529,11 +529,11 @@ static void task_send(void *arg) {
 		}
 		ESP_LOGV("radio", "filled");
 		if ((is_filled && radio_server->is_ready_to_send) || esp_timer_get_time() - last_changed > 1000000 * 10) {
-/*			log_info("out buf: ");
+			log_info("out buf: ");
 			for (int i = 0; i < radio_server->radio_buf.size; i++) {
 				printf("0x%02X ", radio_server->radio_buf.buf[i]);
 			}
-			printf("\n");*/
+			printf("\n");
 
 			rc = sx126x_drv_payload_write(&radio_server->dev, radio_server->radio_buf.buf, ITS_RADIO_PACKET_SIZE);
 			if (0 != rc) {
@@ -588,14 +588,14 @@ static void task_send(void *arg) {
 
 	}
 
-}
+}*/
 typedef enum {
 	RS_NONE,
 	RS_TX,
 	RS_RX,
 } radio_state_t;
 #define RADIO_TX_PERIOD 4000 * 1000
-#define RADIO_RX_PERIOD 4000 * 1000
+#define RADIO_RX_PERIOD 2000 * 1000
 #define RADIO_START_ANYWAY 10000 * 1000
 #define PERIOD_SEND 600
 #define PERIOD_MSG (600 / (ITS_RADIO_PACKET_SIZE / 40) * 1000)
