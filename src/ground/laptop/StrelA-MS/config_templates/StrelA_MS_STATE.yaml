@@ -531,7 +531,7 @@ CentralWidget:
             - vbat
             field_name:
             - SINS vdda
-            - SINS vdda
+            - SINS vbat
             color:
             - g
             - '#FF4646'
