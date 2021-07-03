@@ -163,6 +163,16 @@ void tupdate() {
 
 void send_stats(void)
 {
+	static uint32_t prev = 0;
+	uint32_t delta_time = 1000;
+
+
+	if (HAL_GetTick() - prev < delta_time)
+		return;
+
+
+	prev = HAL_GetTick();
+
 	mavlink_message_t msg;
 	mavlink_ark_stats_t stats_msg;
 	its_collect_ark_stats(&stats_msg);
