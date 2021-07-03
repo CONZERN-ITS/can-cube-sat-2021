@@ -414,7 +414,7 @@
       <field type="uint8_t"  name="active_oscillator">Active oscillator for this computer. see enum ACTIVE_OSCILLATOR</field>
       <field type="uint8_t"  name="time_base">time base for on board time service</field>
       <field type="uint16_t" name="time_syncs_attempted">How many times a world time correction was attempted</field>
-      <field type="uint16_t" name="time_syncs_performed">How many times a world time correction was attempted</field>
+      <field type="uint16_t" name="time_syncs_performed">How many times a world time correction was performed</field>
       <field type="uint32_t"  name="last_time_sync_time_steady" unit="ms">timestamp of last performed time correction</field>
       <field type="int64_t"  name="last_time_sync_delta_s" unit="s">Correction delta in seconds during last time sync</field>
       <field type="int32_t"  name="last_time_sync_delta_us" unit="us">Correction delta in useconds during last time sync</field>
@@ -547,6 +547,28 @@
       <field type="uint16_t" name="count_operator_cmds_executed">Count of executed commands by operator</field>
       <field type="uint16_t" name="count_operator_errors">Count of operator errors</field>
       
+    </message>
+
+
+	<!--  Antenna system messages. Id range: 50400 - 50499  -->
+    <message id="50400" name="ARK_STATS">
+      <description>
+        This message contains internal statistics of ARK subsystem
+      </description>
+
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+      
+      <field type="uint16_t" name="resets_count">mcu reset counter</field>
+      <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
+      <field type="uint8_t"  name="active_oscillator">Active oscillator for this computer. see enum ACTIVE_OSCILLATOR</field>
+      <field type="uint8_t"  name="time_base">time base for on board time service</field>
+      <field type="uint16_t" name="time_syncs_attempted">How many times a world time correction was attempted</field>
+      <field type="uint16_t" name="time_syncs_performed">How many times a world time correction was performed</field>
+      <field type="uint32_t"  name="last_time_sync_time_steady" unit="ms">timestamp of last performed time correction</field>
+      <field type="int64_t"  name="last_time_sync_delta_s" unit="s">Correction delta in seconds during last time sync</field>
+      <field type="int32_t"  name="last_time_sync_delta_us" unit="us">Correction delta in useconds during last time sync</field>
     </message>
     
 
