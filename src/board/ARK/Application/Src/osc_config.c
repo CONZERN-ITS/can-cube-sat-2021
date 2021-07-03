@@ -1,8 +1,8 @@
 
-#include <stm32f1xx_hal.h>>
+#include <stm32f1xx_hal.h>
 
 
-void HSE_SystemClock_Config(void)
+int HSE_SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
