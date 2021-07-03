@@ -38,7 +38,7 @@ void its_sync_time(its_time_t *from_bcs) {
         uint64_t new = now.sec * 1000 + now.usec + diff;
 
         ist_count__time_syncs_count();
-        its_set_correction_delta_time(HAL_GetTick(), diff / 1000, diff % 1000);
+        its_set_correction_delta_time(HAL_GetTick(), diff / 1000, (diff % 1000) * 1000);
 
         now.sec = new / 1000;
         now.usec = new % 1000;

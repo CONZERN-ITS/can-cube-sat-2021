@@ -250,7 +250,7 @@ void its_collect_ark_stats(mavlink_ark_stats_t * msg)
 	its_time_t now;
 	its_gettimeofday(&now);
 	msg->time_s = now.sec;
-	msg->time_us = now.usec;
+	msg->time_us = now.usec * 1000;
 	msg->time_steady = HAL_GetTick();
 
 
