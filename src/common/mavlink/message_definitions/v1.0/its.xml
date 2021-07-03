@@ -347,8 +347,6 @@
       
       <field type="int32_t" name="gps_uart_init_error"> last gps_uart init error</field>
       <field type="int32_t" name="mems_i2c_error"> last mems_i2s error</field>
-      <field type="int32_t" name="uart_transfer_init_error"> last uart_transfer init error</field>
-      <field type="int32_t" name="uart_transfer_error"> last uart_transfer error</field>
       <field type="int32_t" name="timers_error"> last timers error</field>
       <field type="int32_t" name="rtc_error"> last rtc error</field>
 

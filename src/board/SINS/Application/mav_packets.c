@@ -249,9 +249,6 @@ int mavlink_errors_packet(void)
 
 	errors_msg.timers_error = error_system.timers_error;
 
-	errors_msg.uart_transfer_init_error = error_system.uart_transfer_init_error;
-	errors_msg.uart_transfer_error = error_system.uart_transfer_error;
-
 	errors_msg.osc_source = error_system.osc_source;
 
 	errors_msg.reset_counter = error_system.reset_counter;

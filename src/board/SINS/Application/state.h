@@ -41,9 +41,6 @@ typedef struct {
 
 	int mems_i2c_error;
 
-	int uart_transfer_init_error;
-	int uart_transfer_error;
-
 	int timers_error;
 	int rtc_error;
 

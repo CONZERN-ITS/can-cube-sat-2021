@@ -713,7 +713,6 @@ int main(void)
 
   		error = 0;
   		error = uplink_init();
-  		error_system.uart_transfer_init_error = error;
   		if (error != 0)
   			system_reset();				//Если не запустился uart, то мы - кирпич
 

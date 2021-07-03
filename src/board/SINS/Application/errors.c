@@ -83,8 +83,7 @@ void error_system_check(void)
 		(error_system.lis3mdl_error == 0)				&&
 		(error_system.lsm6ds3_error == 0)				&&
 		(error_system.rtc_error == 0)					&&
-		(error_system.timers_error == 0)				&&
-		(error_system.uart_transfer_init_error == 0))
+		(error_system.timers_error == 0))
 	{
 		led_blink(3, 400);
 	}
