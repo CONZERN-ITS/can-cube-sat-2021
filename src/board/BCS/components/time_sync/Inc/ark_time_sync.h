@@ -15,7 +15,6 @@
 
 #define ARK_TIME_SYNC_PRIOD 1000 //ms
 
-int ark_tsync_send_signal(uint8_t *data, size_t *size);
 
 void ark_tsync_task(void *pvParametres);
 

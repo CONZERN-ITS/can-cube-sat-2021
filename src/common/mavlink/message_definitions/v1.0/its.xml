@@ -548,6 +548,35 @@
       <field type="uint16_t" name="count_operator_errors">Count of operator errors</field>
       
     </message>
+    <message id="50302" name="BCU_TIME_SYNC_STATS">
+      <description>
+        BCU's statistics of time syncing from host and to IMI clients
+      </description>
+
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+      
+      <field type="uint32_t" name="updated_time_steady" units="ms">Steady time, when last time updated</field>
+      
+      <field type="uint64_t" name="updated_time_from_s" units="s">Old BCU's timestamp, when last time updated</field>
+      <field type="uint32_t" name="updated_time_from_us" units="us">Old BCU's timestamp, when last time updated</field>
+      <field type="uint8_t" name="updated_time_from_base">Old BCU's base</field>
+      
+      <field type="uint64_t" name="updated_time_to_s" units="s">New BCU's timestamp, when last time updated</field>
+      <field type="uint32_t" name="updated_time_to_us" units="us">New BCU's timestamp, when last time updated</field>
+      <field type="uint8_t" name="updated_time_to_base">New BCU's base</field>
+
+      <field type="uint32_t" name="count_of_time_updates">Count of time updates</field>
+      <field type="uint32_t" name="count_of_aggressive_time_updates">Count of aggressive time updates</field>
+      
+      <field type="uint32_t" name="imi_time_sync_steady" units="ms">Steady time of last syncing of IMI clients</field>
+      <field type="uint32_t" name="imi_count_of_syncs">Count of syncs with IMI clients</field>
+      
+      <field type="uint64_t" name="imi_time_s" units="s">Sync time of IMI clients</field>
+      <field type="uint32_t" name="imi_time_us" units="us">Sync time of IMI clients</field>
+      <field type="uint8_t" name="imi_time_base">Sync time base</field>
+    </message>
 
 
 	<!--  Antenna system messages. Id range: 50400 - 50499  -->

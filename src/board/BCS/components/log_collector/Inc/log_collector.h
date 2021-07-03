@@ -43,6 +43,7 @@ typedef enum {
 typedef struct {
 	log_data_t log_data[log_comp_name_size];
 	mavlink_bcu_radio_conn_stats_t conn_stats;
+	mavlink_bcu_time_sync_stats_t time_stats;
 	SemaphoreHandle_t mutex;
 } log_collector_t;
 
@@ -71,5 +72,6 @@ BaseType_t log_collector_take(uint32_t tickTimeout);
 BaseType_t log_collector_give();
 
 mavlink_bcu_radio_conn_stats_t *log_collector_get_conn_stats();
+mavlink_bcu_time_sync_stats_t *log_collector_get_time_sync();
 
 #endif /* COMPONENTS_LOG_COLLECTOR_INC_LOG_COLLECTOR_H_ */

@@ -71,20 +71,25 @@ static void log_collector_task(void *arg) {
 
 
 
-		ESP_LOGV(TAG, "5");
 		its_rt_sender_ctx_t ctx = {0};
 		ctx.from_isr = 0;
 
+		ESP_LOGV(TAG, "5");
 		mavlink_msg_bcu_radio_conn_stats_encode(mavlink_system, COMP_ANY_0, &msg, &coll->conn_stats);
+		its_rt_route(&ctx, &msg, 0);
+
+		ESP_LOGV(TAG, "6");
+		mavlink_msg_bcu_time_sync_stats_encode(mavlink_system, COMP_ANY_0, &msg, &coll->time_stats);
 		its_rt_route(&ctx, &msg, 0);
 
 		xSemaphoreGive(coll->mutex);
 
-		ESP_LOGV(TAG, "6");
+		ESP_LOGV(TAG, "7");
 		mavlink_msg_bcu_stats_encode(mavlink_system, COMP_ANY_0, &msg, &mbs);
 		its_rt_route(&ctx, &msg, 0);
 
-		ESP_LOGV(TAG, "7");
+
+		ESP_LOGV(TAG, "8");
 
 		vTaskDelayUntil(&xLastWakeTime, LOG_COLLECTOR_SEND_PERIOD / portTICK_PERIOD_MS);
 	}
@@ -143,4 +148,8 @@ BaseType_t log_collector_give() {
 mavlink_bcu_radio_conn_stats_t *log_collector_get_conn_stats() {
 	ESP_LOGV(TAG, "log_collector_get_conn_stats");
 	return &_coll.conn_stats;
+}
+mavlink_bcu_time_sync_stats_t *log_collector_get_time_sync() {
+	ESP_LOGV(TAG, "log_collector_get_time_stats");
+	return &_coll.time_stats;
 }
