@@ -9,9 +9,13 @@ CentralWidget:
         name: 13_0_PLD_ME2O2_DATA
         sourse_id: '13_0'
         message_id: 'PLD_ME2O2_DATA'
-      PLD_DOSIM_DATA:
-        name: 13_0_PLD_DOSIM_DATA
-        sourse_id: '13_0'
+      PLD_DOSIM_DATA_MOMENTARY:
+        name: 13_0_PLD_DOSIM_DATA (Momentary)
+        sourse_id: '13_1'
+        message_id: 'PLD_DOSIM_DATA'
+      PLD_DOSIM_DATA_WINDOWED:
+        name: 13_1_PLD_DOSIM_DATA (Accumlated)
+        sourse_id: '13_1'
         message_id: 'PLD_DOSIM_DATA'
       PLD_MICS_6814_DATA:
         name: 13_0_PLD_MICS_6814_DATA
@@ -103,9 +107,13 @@ CentralWidget:
         name: BCU C0 BCU_RADIO_CONN_STATS
         sourse_id: '10_0'
         message_id: 'BCU_RADIO_CONN_STATS'
-      PLD_DOSIM_DATA:
-        name: PLD C0 PLD_DOSIM_DATA
+      PLD_DOSIM_DATA_MOMENTARY:
+        name: PLD PLD_DOSIM_DATA_MOMENTARY
         sourse_id: '13_0'
+        message_id: 'PLD_DOSIM_DATA'
+      PLD_DOSIM_DATA_WINDOWED:
+        name: PLD PLD_DOSIM_DATA_WINDOWED
+        sourse_id: '13_1'
         message_id: 'PLD_DOSIM_DATA'
       PLD_BME280_DATA_IN:
         name: PLD C2 PLD_BME280_DATA (IN)
@@ -464,11 +472,23 @@ CentralWidget:
             - dose_max
             - dose_min
             field_name:
-            - max
-            - min
+            - max_momentary
+            - min_momentary
             color:
             - '#FF4646'
             - '#0096FF'
+          13_1_PLD_DOSIM_DATA:
+            sourse_id: '13_1'
+            message_id: PLD_DOSIM_DATA
+            field_id:
+            - dose_max
+            - dose_min
+            field_name:
+            - max_windowed
+            - min_windowed
+            color:
+            - '#f0ff46'
+            - '#09ff00'
         name: Dose
         legend_is_on: true
         is_on: true
