@@ -72,5 +72,6 @@ void shift_reg_toggle_pin(shift_reg_handler_t *hsr, uint32_t pin) {
 }
 void shift_reg_set_level_pin(shift_reg_handler_t *hsr, uint32_t pin, int level) {
 	assert(pin < hsr->arr_size * 8);
+	ESP_LOGD("SR", "set %d %d", (int)pin, level);
 	hsr->byte_arr[hsr->arr_size - 1 - pin / 8] = (hsr->byte_arr[hsr->arr_size - 1 - pin / 8] & ~(1 << (pin % 8))) | (level << (pin % 8));
 }

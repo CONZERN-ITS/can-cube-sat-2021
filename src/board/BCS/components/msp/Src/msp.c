@@ -79,15 +79,15 @@ BaseType_t msp_rethink(uint32_t ticks) {
 	}
 	ESP_LOGD(TAG, "modules  on: %s", str);
 	ESP_LOGD(TAG, "modules son: %s", str2);
+	rc = shift_reg_load(&hsr);
 	rc = shift_reg_return(&hsr);
-	if (rc != pdTRUE) {
-		return rc;
-	}
-	return shift_reg_load(&hsr);
+
+	return rc != pdTRUE;
 }
 
 
 void msp_turn_on(msp_module_t module, int is_on) {
+	ESP_LOGV(TAG, "module %d is %d", module, is_on);
 	mmp[module].is_it_should_be_on = is_on;
 }
 
