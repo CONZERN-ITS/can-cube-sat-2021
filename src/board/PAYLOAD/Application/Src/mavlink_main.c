@@ -213,11 +213,11 @@ void mav_main_process_owntemp_message(mavlink_own_temp_t * msg)
 }
 
 
-void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg)
+void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg, uint8_t comp_id)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("dosim : count_tick=%lu, delta time=%lu\n",
-			msg->count_tick, msg->delta_time
+	printf("dosim : compid: %d, count_tick=%lu, delta time=%lu\n",
+			(int)comp_id, msg->count_tick, msg->delta_time
 	);
 
 	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
@@ -231,7 +231,7 @@ void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg)
 	mavlink_message_t ms;
 	mavlink_msg_pld_dosim_data_encode(mavlink_system, COMP_ANY_0, &ms, msg);
 	uint16_t size = mavlink_msg_to_send_buffer(_its_link_output_buf, &ms);
-	mav_main_send_to_its_link(MAVLINK_COMM_0, _its_link_output_buf, size);
+	mav_main_send_to_its_link(comp_id, _its_link_output_buf, size);
 #endif
 }
 

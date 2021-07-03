@@ -437,7 +437,7 @@
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
       <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
       
-      <field type="uint32_t" name="count_tick" units="tick">Count ticks</field>
+      <field type="int64_t"  name="count_tick" units="tick">Count ticks</field>
       <field type="uint32_t" name="delta_time" units="ms">Time for count ticks</field>
     </message> 
 

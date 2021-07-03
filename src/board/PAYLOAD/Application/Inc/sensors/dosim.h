@@ -12,6 +12,10 @@
 
 void dosim_init(void);
 
-void dosim_read(mavlink_pld_dosim_data_t * msg);
+void dosim_work(void);
+
+void dosim_read_momentary(mavlink_pld_dosim_data_t * msg);
+
+void dosim_read_windowed(mavlink_pld_dosim_data_t * msg);
 
 #endif /* INC_SENSORS_DOSIM_H_ */

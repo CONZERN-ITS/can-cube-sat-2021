@@ -50,9 +50,12 @@
 //! Периодичность выдачи данных со встроенных сенсоров (в тактах)
 #define PACKET_PERIOD_INTEGRATED (5)
 #define PACKET_OFFSET_INTEGRATED (3)
-// ! Периодичность выдачи данных с дозиметра (в тактах)
-#define PACKET_PERIOD_DOSIM (5)
-#define PACKET_OFFSET_DOSIM (1)
+// ! Периодичность выдачи последних данных с дозиметра (в тактах)
+#define PACKET_PERIOD_DOSIM_MOMENTARY (5)
+#define PACKET_OFFSET_DOSIM_MOMENTARY (1)
+// ! Периодичность выдачи накопленных данных с дозиметра (в тактах)
+#define PACKET_PERIOD_DOSIM_WINDOWED (5)
+#define PACKET_OFFSET_DOSIM_WINDOWED (1)
 //! Периодичность выдачи данных с ДНК (в тактах)
 #define PACKET_PERIOD_DNA (5)
 #define PACKET_OFFSET_DNA (1)
@@ -176,6 +179,8 @@ int app_main()
 		dna_control_work();
 		// Управляем компрессором
 		its_ccontrol_work();
+		// Аккамулируем значения дозиметра
+		dosim_work();
 
 		if (tock % PACKET_PERIOD_BME == PACKET_OFFSET_BME)
 		{
@@ -257,14 +262,19 @@ int app_main()
 				mav_main_process_dna_message(&pld_dna_msg);
 		}
 
-
-		if (tock % PACKET_PERIOD_DOSIM == PACKET_OFFSET_DOSIM)
+		if (tock % PACKET_PERIOD_DOSIM_MOMENTARY == PACKET_OFFSET_DOSIM_MOMENTARY)
 		{
 			mavlink_pld_dosim_data_t pld_dosim_msg = {0};
-			dosim_read(&pld_dosim_msg);
-			mav_main_process_dosim_message(&pld_dosim_msg);
+			dosim_read_momentary(&pld_dosim_msg);
+			mav_main_process_dosim_message(&pld_dosim_msg, 0);
 		}
 
+		if (tock % PACKET_PERIOD_DOSIM_WINDOWED == PACKET_OFFSET_DOSIM_WINDOWED)
+		{
+			mavlink_pld_dosim_data_t pld_dosim_msg = {0};
+			dosim_read_windowed(&pld_dosim_msg);
+			mav_main_process_dosim_message(&pld_dosim_msg, 1);
+		}
 
 		if (tock % PACKET_PERIOD_OWN_STATS == PACKET_OFFSET_OWN_STATS)
 		{

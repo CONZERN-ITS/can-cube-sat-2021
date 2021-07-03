@@ -54,7 +54,7 @@ void mav_main_process_ms5611_message(const mavlink_pld_ms5611_data_t * msg, PLD_
 void mav_main_process_me2o2_message(mavlink_pld_me2o2_data_t * msg);
 void mav_main_process_mics_message(mavlink_pld_mics_6814_data_t * msg);
 void mav_main_process_owntemp_message(mavlink_own_temp_t * msg);
-void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg);
+void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg, uint8_t comp_id);
 void mav_main_process_dna_message(mavlink_pld_dna_data_t * msg);
 void mav_main_process_own_stats(mavlink_pld_stats_t * msg);
 void mav_main_process_i2c_link_stats(mavlink_i2c_link_stats_t * msg);
