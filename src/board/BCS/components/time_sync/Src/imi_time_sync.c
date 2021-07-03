@@ -5,7 +5,8 @@
  *      Author: sereshotes
  */
 
-#include "ark_time_sync.h"
+#include "../Inc/imi_time_sync.h"
+
 #include "time_sync.h"
 #define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
@@ -20,6 +21,11 @@
 #include "imi.h"
 
 
+#define IMI_TIME_SYNC_SIGNAL_LENGTH 100 //ms
+
+#define IMI_TIME_SYNC_PRIOD 1000 //ms
+
+
 typedef struct {
 	uint32_t count;
 	struct timeval last_sent;
@@ -27,7 +33,7 @@ typedef struct {
 	uint8_t base;
 } imi_sync_stats_t;
 
-int ark_tsync_send_signal(uint8_t *data, size_t *size, imi_sync_stats_t *stats) {
+int imi_tsync_send_signal(uint8_t *data, size_t *size, imi_sync_stats_t *stats) {
 	struct timeval tp;
 
 	TickType_t start = xTaskGetTickCount();
@@ -52,20 +58,20 @@ int ark_tsync_send_signal(uint8_t *data, size_t *size, imi_sync_stats_t *stats) 
 	mavlink_msg_timestamp_encode(CUBE_1_BCU, 0, &msg, &mts);
 	assert (*size >= mavlink_max_message_length(&msg));
 	*size = mavlink_msg_to_send_buffer(data, &msg);
-	vTaskDelayUntil(&start, ARK_SIGNAL_LENGTH / portTICK_RATE_MS);
+	vTaskDelayUntil(&start, IMI_TIME_SYNC_SIGNAL_LENGTH / portTICK_RATE_MS);
 
 	gpio_set_level(ITS_PIN_I2CTM_TIME, 1);
 	return 0;
 }
 
 
-void ark_tsync_task(void *pvParametres) {
+static void imi_tsync_task(void *pvParametres) {
 	int is_updated = 0;
 	imi_sync_stats_t stats = {0};
 	while (1) {
 		uint8_t packet[MAVLINK_MAX_PACKET_LEN];
 		size_t size = sizeof(packet);
-		ark_tsync_send_signal(packet, &size, &stats);
+		imi_tsync_send_signal(packet, &size, &stats);
 		if (imi_send_all(ITS_IMI_PORT, packet, size, 100 / portTICK_RATE_MS)) {
 			ESP_LOGI("TIME", "synced i2c devices");
 		} else {
@@ -86,6 +92,10 @@ void ark_tsync_task(void *pvParametres) {
 				log_collector_give();
 			}
 		}
-		vTaskDelay(ARK_TIME_SYNC_PRIOD / portTICK_RATE_MS);
+		vTaskDelay(IMI_TIME_SYNC_PRIOD / portTICK_RATE_MS);
 	}
+}
+
+void imi_tsync_init() {
+	xTaskCreatePinnedToCore(imi_tsync_task, "IMI time sync", configMINIMAL_STACK_SIZE + 4000, "IMI time sync", 1, 0, tskNO_AFFINITY);
 }

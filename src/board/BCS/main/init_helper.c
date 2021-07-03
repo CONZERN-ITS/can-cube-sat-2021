@@ -30,7 +30,7 @@
 #include "uart_mavlink.h"
 #include "time_sync.h"
 
-#include "ark_time_sync.h"
+#include <imi_time_sync.h>
 #include "router.h"
 #include "mavlink/its/mavlink.h"
 #include "mavlink_help2.h"
@@ -290,7 +290,8 @@ void init_helper(void) {
 	ts.pin = ITS_PIN_PPS;
 	ts.period = 100 * 1000000;
 	time_sync_from_sins_install(&ts);
-	xTaskCreatePinnedToCore(ark_tsync_task, "ARK time sync", configMINIMAL_STACK_SIZE + 4000, "ARK time sync", 1, 0, tskNO_AFFINITY);
+	imi_tsync_init();
+
 	radio_send_init();
 
 	ESP_LOGD("SYSTEM", "radio inited");

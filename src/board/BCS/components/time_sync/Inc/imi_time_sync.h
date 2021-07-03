@@ -11,11 +11,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define ARK_SIGNAL_LENGTH 1000 //ms
 
-#define ARK_TIME_SYNC_PRIOD 1000 //ms
-
-
-void ark_tsync_task(void *pvParametres);
+void imi_tsync_init();
 
 #endif /* COMPONENTS_ARK_TIME_SYNC_INC_ARK_TIME_SYNC_H_ */
