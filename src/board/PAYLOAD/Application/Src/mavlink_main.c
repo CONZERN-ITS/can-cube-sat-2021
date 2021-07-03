@@ -229,9 +229,9 @@ void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg, uint8_t comp
 
 #ifdef PROCESS_TO_ITSLINK
 	mavlink_message_t ms;
-	mavlink_msg_pld_dosim_data_encode(mavlink_system, COMP_ANY_0, &ms, msg);
+	mavlink_msg_pld_dosim_data_encode(mavlink_system, comp_id, &ms, msg);
 	uint16_t size = mavlink_msg_to_send_buffer(_its_link_output_buf, &ms);
-	mav_main_send_to_its_link(comp_id, _its_link_output_buf, size);
+	mav_main_send_to_its_link(MAVLINK_COMM_0, _its_link_output_buf, size);
 #endif
 }
 
