@@ -31,6 +31,8 @@
 #include "esp_sntp.h"
 #include "log_collector.h"
 
+const char *TAG = "TIME_SYNC";
+
 typedef struct {
 
 	int base;
@@ -194,12 +196,14 @@ static void time_sync_task(void *arg) {
 		uint32_t ticks_to_wait = is_updated ? 200 / portTICK_PERIOD_MS : portMAX_DELAY;
 		is_any_msg = 0;
 		if (xQueueReceive(id.queue, &temp_msg, ticks_to_wait) == pdTRUE)  {
+			//ESP_LOGV(TAG, "Got message?. Trying to sync");
 			//Был ли pps сигнал
 			if (ulTaskNotifyTake(pdTRUE, 0) == 0) {
 				ESP_LOGI("TIME SYNC","Where is signal?");
 				is_any_msg = 0;
 			} else {
-				while (xQueueReceive(id.queue, &temp_msg, 0) == pdTRUE) {
+				do  {
+					//ESP_LOGV(TAG, "hmmmm");
 					//Пришло ли это от SINS
 					if (temp_msg.sysid != CUBE_1_SINS) {
 						ESP_LOGI("TIME SYNC","Who is sending it?");
@@ -207,10 +211,12 @@ static void time_sync_task(void *arg) {
 					}
 					msg = temp_msg;
 					is_any_msg = 1;
-				}
+				} while (xQueueReceive(id.queue, &temp_msg, 0) == pdTRUE);
 			}
+
 		}
 		if (is_any_msg) {
+			//ESP_LOGV(TAG, "Got message. Trying to sync");
 			is_updated = _try_aggressive_sync(ts, &msg, &stats) || is_updated;
 			is_updated = _try_soft_sync(ts, &stats) || is_updated;
 		}
