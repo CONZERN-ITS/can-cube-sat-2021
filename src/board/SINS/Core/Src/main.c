@@ -868,6 +868,7 @@ int main(void)
   			mavlink_errors_packet();
   			mavlink_its_link_stats();
   			commissar_work();
+  			mavlink_comissar_report();
 
   			if (RCC_PLLSOURCE_HSI == __HAL_RCC_GET_PLL_OSCSOURCE())
   			{
