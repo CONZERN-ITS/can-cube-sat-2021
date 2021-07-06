@@ -163,22 +163,6 @@ static void _task_update(void *arg) {
 		for (int i = 0; i < HEAT_COUNT; i++) {
 			arr[i] = i;
 		}
-		//Поуправляем радио. Если плата слишком горячая, то...
-		if (temperature[0] > CONTROL_HEAT_RADIO_HIGH_THD) {
-			portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
-			portENTER_CRITICAL(&myMutex);
-			radio_send_set_sleep_delay(7000);
-			portEXIT_CRITICAL(&myMutex);
-			ESP_LOGD("CONTROL_HEAT", "TOO hot! Radio OFF");
-
-		}
-		if (temperature[0] < CONTROL_HEAT_RADIO_LOW_THD) {
-			portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
-			portENTER_CRITICAL(&myMutex);
-			radio_send_set_sleep_delay(RADIO_SLEEP_DEFAULT);
-			portEXIT_CRITICAL(&myMutex);
-			ESP_LOGD("CONTROL_HEAT", "Cool! Radio ON");
-		}
 		//Выключим те, от которых ничего не слышно
 		for (int i = 0; i < HEAT_COUNT; i++) {
 			if ((now - last_time_finite[i]) / 1000 > FINITE_TIMEOUT) {

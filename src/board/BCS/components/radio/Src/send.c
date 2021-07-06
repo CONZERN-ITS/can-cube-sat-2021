@@ -7,10 +7,10 @@
 
 
 #include "radio.h"
+#include "../Inc_private/radio_help.h"
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
 #include "pinout_cfg.h"
 #include "log_collector.h"
@@ -21,297 +21,6 @@
 
 static radio_t radio_server;
 
-
-#define log_error(fmt, ...) ESP_LOGE("radio", fmt, ##__VA_ARGS__)
-#define log_trace(fmt, ...) ESP_LOGD("radio", fmt, ##__VA_ARGS__)
-#define log_warn(fmt, ...) ESP_LOGW("radio", fmt, ##__VA_ARGS__)
-#define log_info(fmt, ...) ESP_LOGI("radio", fmt, ##__VA_ARGS__)
-
-typedef struct  {
-	int id; //ID сообщения
-	float period; //Период отправки сообщений (в кол-ве сообщений)
-	int last; //Номер сообщения, когда был отправлен
-	int is_updated; //Обновлен ли после последнего отправления
-	mavlink_message_t last_msg; //Сообщение на отправку
-} msg_container;
-
-/*
- * Буфер всех заданных сообщений
- */
-#define F(__msg_hash, __msg_id, __period) {__msg_id, __period, -__period, 0, {0}},
-static const msg_container arr_id[] = {
-		RADIO_SEND_ID_ARRAY(F)
-};
-#undef F
-
-/*
- * Хэш-функция для получения индекса в массиве arr_id для заданного
- * номера сообщения.
- * Работает через switch/case. В теории C компилятор способен
- * оптимизировать это при больших кол-ах case. Поэтому через
- * define определенно switch/case выражение, которое возвращает
- * индекс в массиве arr_id для msgid данного сообщения.
- */
-static int get_hash(int id) {
-#define F(x,a,b) case a: return x;
-	switch(id) {
-	RADIO_SEND_ID_ARRAY(F)
-	default:
-		return -1;
-	}
-#undef F
-}
-
-//! Проверка на то, что сообщение забанено на отправку по радио
-/*! Вернет 0, если не забанено и не 0, если забанено */
-static int is_msg_banned(int msg_id)
-{
-#define F(__msg_id) case __msg_id: return 1;
-	switch (msg_id) {
-	RADIO_SEND_BAN(F)
-	default: break;
-	}
-#undef F
-
-	return 0;
-}
-
-#define RADIO_SEND_BUF_SIZE 60
-static msg_container arr_buf[RADIO_SEND_BUF_SIZE];
-static int arr_buf_size = 0;
-
-/*
- * Поиск контейнера для данного сообщения в буфере arr_buf
- */
-static msg_container* find(const mavlink_message_t *msg) {
-	for (int i = 0; i < arr_buf_size; i++) {
-		if (arr_buf[i].last_msg.msgid == msg->msgid &&
-			arr_buf[i].last_msg.compid == msg->compid &&
-			arr_buf[i].last_msg.sysid == msg->sysid) {
-			return  &arr_buf[i];
-		}
-	}
-	return 0;
-}
-/*
- * Создание контейнера в буфере arr_buf для данного сообщения
- */
-static int add(const mavlink_message_t *msg) {
-
-	if (is_msg_banned(msg->msgid)) {
-		return 2;
-	}
-
-	if (arr_buf_size >= RADIO_SEND_BUF_SIZE) {
-		ESP_LOGE("radio", "No free space for new msg");
-		return 1;
-	}
-
-	ESP_LOGI("radio", "Add: %d %d:%d", msg->msgid, msg->sysid, msg->compid);
-	int id = get_hash(msg->msgid);
-	if (id >= 0) {
-		arr_buf_size++;
-		arr_buf[arr_buf_size - 1] = arr_id[id];
-	} else {
-		arr_buf_size++;
-		arr_buf[arr_buf_size - 1].id = msg->msgid;
-		arr_buf[arr_buf_size - 1].period = RADIO_DEFAULT_PERIOD;
-		arr_buf[arr_buf_size - 1].last = -RADIO_DEFAULT_PERIOD;
-	}
-	return 0;
-}
-
-/*
- * Обновление сообщения в соответствующем контейнере из буфера arr_buf.
- * Если контейнера нет - создает новый.
- */
-static void update_msg(const mavlink_message_t *msg) {
-	msg_container *st = find(msg);
-	if (!st) {
-		if (add(msg)) {
-			return;
-		}
-		st = &arr_buf[arr_buf_size - 1];
-	}
-	st->last_msg = *msg;
-	st->is_updated = 1;
-}
-/*
- * Коэффициент важности/срочности/хорошести данного сообщения.
- * Больше - важнее.
- */
-static float get_coef(const msg_container *a, int now) {
-	//assert(a->period > 0);
-	return (now - a->last) / a->period;
-}
-/*
- * Отбирает самое важное/срочное/лучшее сообщение для отправки.
- * now - количество отпраленных сообщений до этого момента.
- */
-static msg_container *get_best(int now) {
-	msg_container *st_best = 0;
-	float coef_best = 0;
-	for (int i = 0; i < arr_buf_size; i++) {
-		float coef = get_coef(&arr_buf[i], now);
-		if (coef > coef_best && arr_buf[i].is_updated) {
-			st_best = &arr_buf[i];
-			coef_best = coef;
-		}
-	}
-	if (st_best) {
-		ESP_LOGI("radio", "chosen %d with coef %f, period %f, last %d, now %d",
-				st_best->id, coef_best, st_best->period, st_best->last, now);
-	}
-	return st_best;
-}
-
-
-/*
- * Настройки safe_uart_send
- */
-typedef struct  {
-	uint32_t baud_send; //Баудрейт устр-ва в бит/сек
-	uint32_t buffer_size; //Размер буфера внутри устр-ва
-	uart_port_t port; //Порт уарта
-	int super_portion_byte_limit;
-	int empty_buffer_time_limit;
-	int64_t sleep_delay;
-} safe_send_cfg_t;
-
-/*
- * Параметры safe_uart_send
- */
-
-typedef enum sleep_state_t
-{
-	SLEEP_STATE_SENDING,
-	SLEEP_STATE_WAIT_ZERO,
-	SLEEP_STATE_WAIT_TIME,
-} sleep_state_t;
-
-
-
-typedef struct  {
-	safe_send_cfg_t cfg; //Настройки
-	int filled;	//Заполненность буферв
-	int64_t last_checked; //Время в мкс последнего изменения filled
-	sleep_state_t sleep_state;
-	int super_portion_byte_counter;
-	int empty_buffer_time_deadline;
-} safe_send_t;
-
-
-static 	safe_send_t sst = {
-	.cfg = {
-			.baud_send = 2400 / 2,
-			.buffer_size = 1000,
-			.port = ITS_UARTR_PORT,
-			.super_portion_byte_limit = 300,
-			.empty_buffer_time_limit = 0,
-			.sleep_delay = RADIO_DEFAULT_PERIOD,
-	},
-	.sleep_state = SLEEP_STATE_SENDING,
-	.super_portion_byte_counter = 300
-};
-
-/*
-static int is_sleeping(safe_send_t *sst) {
-	int new_state = sst->sleep_state;
-	int64_t now = esp_timer_get_time();
-	if (sst->sleep_state == 0) {
-		new_state = (now - sst->last_changed_sleep_time) / 1000 > RADIO_SLEEP_AWAKE_LEGNTH ? 1 : 0;
-	} else {
-		new_state = (now - sst->last_changed_sleep_time) / 1000 > RADIO_SLEEP_SLEEP_LENGTH ? 0 : 1;
-	}
-	if (new_state != sst->sleep_state) {
-		ESP_LOGD("radio", "state: %d %d %d", (int)now, (int)sst->last_changed_sleep_time, (int)sst->sleep_state);
-		sst->last_changed_sleep_time = now;
-	}
-	sst->sleep_state = new_state;
-	return sst->sleep_state;
-}
-*/
-int fill_one_packet(radio_t * server) {
-	log_info("fill_one_packet %d" ,server->packet_count);
-	if (server->radio_buf.index == 0) {
-		uint16_t count = server->packet_count;
-
-		memcpy(server->radio_buf.buf, (uint8_t *)&count, sizeof(count));
-
-		server->packet_count++;
-		server->radio_buf.index += sizeof(count);
-	}
-	if (server->radio_buf.index < server->radio_buf.size) {
-		log_info("gen %d %d", server->radio_buf.index, server->radio_buf.size);
-		if (server->mav_buf.size - server->mav_buf.index <= 0) {
-			msg_container *st = 0;
-			st = get_best(server->msg_count);
-			if (0 == st) {
-				goto end;
-			}
-
-			server->mav_buf.size = mavlink_msg_to_send_buffer(server->mav_buf.buf, &st->last_msg);
-			server->mav_buf.index = 0;
-			st->is_updated = 0; // Сообщение внутри контейнера уже не свежее
-			st->last = server->msg_count;// Запоминаем, когда сообщение было отправленно в последний раз
-			server->msg_count++;
-		}
-
-		uint8_t *out = server->mav_buf.buf + server->mav_buf.index;
-		int cnt = server->mav_buf.size - server->mav_buf.index;
-		int diff = server->radio_buf.size - server->radio_buf.index;
-		if (cnt > diff) {
-			cnt = diff;
-		}
-		memcpy(server->radio_buf.buf + server->radio_buf.index, out, cnt);
-		server->mav_buf.index += cnt;
-		server->radio_buf.index += cnt;
-
-	}
-end:
-	return server->radio_buf.index == server->radio_buf.size;
-}
-
-
-int fill_packet(radio_t * server) {
-	log_info("fill_packet %d" ,server->packet_count);
-	if (server->radio_buf.index == 0) {
-		uint16_t count = server->packet_count;
-
-		memcpy(server->radio_buf.buf, (uint8_t *)&count, sizeof(count));
-
-		server->packet_count++;
-
-		server->radio_buf.index += sizeof(count);
-	}
-	while (server->radio_buf.index < server->radio_buf.size) {
-		log_info("gen %d %d", server->radio_buf.index, server->radio_buf.size);
-		if (server->mav_buf.size - server->mav_buf.index > 0) {
-			uint8_t *out = server->mav_buf.buf + server->mav_buf.index;
-			int cnt = server->mav_buf.size - server->mav_buf.index;
-			int diff = server->radio_buf.size - server->radio_buf.index;
-			if (cnt > diff) {
-				cnt = diff;
-			}
-			memcpy(server->radio_buf.buf + server->radio_buf.index, out, cnt);
-			server->mav_buf.index += cnt;
-			server->radio_buf.index += cnt;
-		} else {
-			msg_container *st = 0;
-			st = get_best(server->msg_count);
-			if (0 == st) {
-				break;
-			}
-
-			server->mav_buf.size = mavlink_msg_to_send_buffer(server->mav_buf.buf, &st->last_msg);
-			server->mav_buf.index = 0;
-			st->is_updated = 0; // Сообщение внутри контейнера уже не свежее
-			st->last = server->msg_count;// Запоминаем, когда сообщение было отправленно в последний раз
-			server->msg_count++;
-		}
-	}
-	return server->radio_buf.index == server->radio_buf.size;
-}
 
 static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx126x_drv_evt_t * event);
 
@@ -417,28 +126,85 @@ bad_exit:
 	_radio_deinit(server);
 	return -1;
 }
-/*
 
-static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx126x_drv_evt_t * event)
-{
-	int rc;
-	log_trace("Event handler");
+static void _save_logs(radio_t *server) {
 
 
-	switch (event->kind)
+	if (log_collector_take(0) == pdTRUE) {
+		ESP_LOGV("radio", "logs");
+		mavlink_bcu_radio_conn_stats_t *conn_stats = log_collector_get_conn_stats();
+
+		sx126x_drv_state_t drv_state = 0;
+		sx126x_stats_t drv_stats = {0};
+		sx126x_lora_packet_status_t drv_packet = {0};
+		uint16_t drv_bits;
+
+		sx126x_drv_get_stats(&server->dev, &drv_stats);
+		sx126x_drv_lora_packet_status(&server->dev, &drv_packet);
+		sx126x_drv_get_device_errors(&server->dev, &drv_bits);
+		drv_state = sx126x_drv_state(&server->dev);
+
+		conn_stats->last_packet_time = server->stats.last_packet_time;
+		conn_stats->last_packet_rssi = drv_packet.rssi_pkt;
+		conn_stats->last_packet_signal_rssi = drv_packet.signal_rssi_pkt;
+		conn_stats->last_packet_snr = drv_packet.snr_pkt;
+
+		conn_stats->count_packet_recieved = drv_stats.pkt_received;
+		conn_stats->count_crc_errors = drv_stats.crc_errors;
+		conn_stats->count_hdr_errors = drv_stats.hdr_errors;
+		conn_stats->count_mavlink_msgs_recieved = server->stats.count_recieved_mavlink_msgs;
+
+		conn_stats->radio_error_bits = drv_bits;
+		conn_stats->radio_state = drv_state;
+		conn_stats->update_time_radio = esp_timer_get_time() / 1000;
+		log_collector_give();
+	}
+}
+
+typedef enum {
+	RS_NONE,
+	RS_TX,
+	RS_RX,
+} radio_trans_dir_state_t;
+#define RADIO_TX_PERIOD 4000 * 1000
+#define RADIO_RX_PERIOD 2000 * 1000
+#define RADIO_START_ANYWAY 10000 * 1000
+#define PERIOD_SEND 600
+#define PERIOD_MSG (600 / (ITS_RADIO_PACKET_SIZE / 40) * 1000)
+#define MAX_ERRORS 5
+
+
+
+
+
+typedef struct {
+	int packet_done;
+	int i_really_want_to_start_now;
+	int64_t last_sent;
+	int64_t last_added;
+	int64_t period_start;
+	uint32_t error_count_tx;
+	uint32_t error_count_rx;
+	radio_trans_dir_state_t dir_state;
+} radio_private_state_t;
+
+
+static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_private_state_t *state, int64_t now) {
+	int rc = 0;
+	switch (event.kind)
 	{
 	case SX126X_DRV_EVTKIND_RX_DONE:
-		if (!event->arg.rx_done.timed_out) {
+		if (!event.arg.rx_done.timed_out) {
 			log_trace("rx done");
 
 			uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
-			rc = sx126x_drv_payload_read(&radio_server->dev, buf, sizeof(buf));
+			rc = sx126x_drv_payload_read(&server->dev, buf, sizeof(buf));
 			if (0 != rc)
 			{
 				log_error("unable to read frame from radio buffer: %d", rc);
 				return;
 			}
-			radio_server->stats.last_packet_time = esp_timer_get_time() / 1000;
+			server->stats.last_packet_time = esp_timer_get_time() / 1000;
 
 			for (int i = 0; i < sizeof(buf); i++) {
 				printf("0x%02X ", buf[i]);
@@ -447,10 +213,10 @@ static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx1
 			mavlink_message_t msg = {0};
 			mavlink_status_t st = {0};
 			for (int i = 0; i < sizeof(buf); i++) {
-				if (mavlink_parse_char(radio_server->mavlink_chan, buf[i], &msg, &st)) {
+				if (mavlink_parse_char(server->mavlink_chan, buf[i], &msg, &st)) {
 					log_trace("yay! we've got a message %d", msg.msgid);
 
-					radio_server->stats.count_recieved_mavlink_msgs++;
+					server->stats.count_recieved_mavlink_msgs++;
 
 					its_rt_sender_ctx_t ctx = {0};
 					its_rt_route(&ctx, &msg, SERVER_SMALL_TIMEOUT_MS);
@@ -459,148 +225,98 @@ static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx1
 		} else {
 			log_trace("rx timeout");
 		}
-		radio_server->is_ready_to_send = 1;
+		state->packet_done = 1;
 		break;
 
 	case SX126X_DRV_EVTKIND_TX_DONE:
-		if (event->arg.tx_done.timed_out)
-		{
-			// Ой, что-то пошло не так
+		if (event.arg.tx_done.timed_out) {
+			state->error_count_tx++;
 			log_error("TX TIMED OUT!");
-		}
-		else
-		{
-			// Все пошло так
+		} else {
+			state->error_count_tx = 0;
 			log_info("tx done");
+			server->radio_buf.index = 0;
 		}
-
-		rc = sx126x_drv_mode_rx(&radio_server->dev, 0);
-		if (0 != rc) {
-			log_error("unable to switch radio to rx mode: %d. Dropping frame", rc);
-			return;
-		}
+		state->packet_done = 1;
+		state->last_sent = now;
 		break;
 	default:
+		log_info("no event");
 		break;
 	}
 }
-static void task_send(void *arg) {
-	radio_t * radio_server = arg;
-	// Конфигурация отправки пакетов с контроллируемой скоростью
 
-	// Регистрация таска в маршрутизаторе
-	its_rt_task_identifier tid = {
-			.name = "radio_send"
-	};
-	//Регистрируем на сообщения всех типов
-	tid.queue = xQueueCreate(20, MAVLINK_MAX_PACKET_LEN);
-	its_rt_register_for_all(tid);
+static void _update_state(radio_private_state_t *state, int64_t now) {
 
-
-	sx126x_drv_mode_rx(&radio_server->dev, 0);
-	static int64_t last_changed = 0;
-	last_changed = esp_timer_get_time();
-	while (1) {
-		ESP_LOGV("radio", "STEP");
-		uint32_t dummy = 0;
-		xTaskNotifyWait(0, 0, &dummy, 50 / portTICK_PERIOD_MS);
-		sx126x_drv_evt_t event;
-		int rc = sx126x_drv_poll_event(&radio_server->dev, &event);
-		ESP_LOGV("radio", "poll");
-		if (rc) {
-			ESP_LOGE("radio", "poll %d", rc);
-		}
-
-		if (0 == rc && event.kind != SX126X_DRV_EVTKIND_NONE)
-			_radio_event_handler(&radio_server->dev, radio_server, &event);
-
-		ESP_LOGV("radio", "recieving");
-		mavlink_message_t incoming_msg = {0};
-		while (pdTRUE == xQueueReceive(tid.queue, &incoming_msg, 0))
-		{
-			// Если мы получили сообщение - складываем в его хранилище
-			update_msg	(&incoming_msg);
-		}
-		int is_filled = 0;
-		if (radio_server->is_ready_to_send) {
-			is_filled = fill_packet(radio_server);
-		} else {
-			is_filled = fill_one_packet(radio_server);
-		}
-		ESP_LOGV("radio", "filled");
-		if ((is_filled && radio_server->is_ready_to_send) || esp_timer_get_time() - last_changed > 1000000 * 10) {
-			log_info("out buf: ");
-			for (int i = 0; i < radio_server->radio_buf.size; i++) {
-				printf("0x%02X ", radio_server->radio_buf.buf[i]);
-			}
-			printf("\n");
-
-			rc = sx126x_drv_payload_write(&radio_server->dev, radio_server->radio_buf.buf, ITS_RADIO_PACKET_SIZE);
-			if (0 != rc) {
-				log_error("unable to write tx payload to radio: %d. Dropping frame", rc);
-				return;
-			}
-
-			ESP_LOGV("radio", "writed");
-			rc = sx126x_drv_mode_tx(&radio_server->dev, 0);
-			if (0 != rc) {
-				log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
-				return;
-			}
-
-			ESP_LOGV("radio", "txed");
-			radio_server->is_ready_to_send = 0;
-			radio_server->radio_buf.index = 0;
-			last_changed = esp_timer_get_time();
-		}
-
-
-		if (log_collector_take(10 / portTICK_PERIOD_MS) == pdTRUE) {
-			mavlink_bcu_radio_conn_stats_t *conn_stats = log_collector_get_conn_stats();
-
-			sx126x_drv_state_t drv_state = 0;
-			sx126x_stats_t drv_stats = {0};
-			sx126x_lora_packet_status_t drv_packet = {0};
-			uint16_t drv_bits;
-
-			sx126x_drv_get_stats(&radio_server->dev, &drv_stats);
-			sx126x_drv_lora_packet_status(&radio_server->dev, &drv_packet);
-			sx126x_drv_get_device_errors(&radio_server->dev, &drv_bits);
-			drv_state = sx126x_drv_state(&radio_server->dev);
-
-			conn_stats->last_packet_time = radio_server->stats.last_packet_time;
-			conn_stats->last_packet_rssi = drv_packet.rssi_pkt;
-			conn_stats->last_packet_signal_rssi = drv_packet.signal_rssi_pkt;
-			conn_stats->last_packet_snr = drv_packet.snr_pkt;
-
-			conn_stats->count_packet_recieved = drv_stats.pkt_received;
-			conn_stats->count_crc_errors = drv_stats.crc_errors;
-			conn_stats->count_hdr_errors = drv_stats.hdr_errors;
-			conn_stats->count_mavlink_msgs_recieved = radio_server->stats.count_recieved_mavlink_msgs;
-
-			conn_stats->radio_error_bits = drv_bits;
-			conn_stats->radio_state = drv_state;
-			conn_stats->update_time_radio = esp_timer_get_time() / 1000;
-			log_collector_give();
-		}
-
-		ESP_LOGV("radio", "sleep?");
-
+	if (state->dir_state == RS_RX && RADIO_RX_PERIOD < now - state->period_start && state->packet_done) {
+		log_info("START TX0");
+		state->dir_state = RS_TX;
+		state->period_start = now;
 	}
+	if (state->dir_state == RS_TX && RADIO_TX_PERIOD < now - state->period_start && state->packet_done) {
+		log_info("START RX");
+		state->dir_state = RS_RX;
+		state->period_start = now;
+	}
+	if (state->dir_state == RS_NONE) {
+		log_info("START TX2");
+		state->dir_state = RS_TX;
+		state->period_start = now;
+	}
+	if (RADIO_START_ANYWAY < now - state->last_sent) {
+		log_warn("waited too long. Start anyway");
+		log_info("START TX3");
+		state->dir_state = RS_TX;
+		state->period_start = now;
+		state->i_really_want_to_start_now = 1;
+		state->last_sent = now;
+		state->error_count_tx += MAX_ERRORS / 2 + 1;
+	}
+}
 
-}*/
-typedef enum {
-	RS_NONE,
-	RS_TX,
-	RS_RX,
-} radio_state_t;
-#define RADIO_TX_PERIOD 4000 * 1000
-#define RADIO_RX_PERIOD 2000 * 1000
-#define RADIO_START_ANYWAY 10000 * 1000
-#define PERIOD_SEND 600
-#define PERIOD_MSG (600 / (ITS_RADIO_PACKET_SIZE / 40) * 1000)
-#define MAX_ERRORS 5
-static void send_task2(void *arg) {
+static void _try_to_send_or_recv(radio_t *server, radio_private_state_t *state, int64_t now) {
+	int rc = 0;
+	ESP_LOGV("radio", "TEST: %d %d %d %d", (int)state->last_sent, (int)now, state->packet_done, state->dir_state);
+	if ((state->packet_done && now - state->last_sent >= 000 * 1000) || state->i_really_want_to_start_now) {
+		state->packet_done = 0;
+		state->i_really_want_to_start_now = 0;
+
+		if (state->dir_state == RS_TX) {
+			ESP_LOGV("radio", "new tx");
+			fill_packet(server);
+			if (server->radio_buf.index < server->radio_buf.size) {
+				memset(&server->radio_buf.buf[server->radio_buf.index], 0, server->radio_buf.size - server->radio_buf.index);
+
+				server->radio_buf.index = server->radio_buf.size;
+			}
+			if (LOG_LOCAL_LEVEL >= ESP_LOG_VERBOSE) {
+				for (int i = 0; i < server->radio_buf.size; i++) {
+					printf("0x%02X ", server->radio_buf.buf[i]);
+				}
+				printf("\n");
+				fflush(stdout);
+			}
+			sx126x_drv_payload_write(&server->dev, server->radio_buf.buf, server->radio_buf.size);
+			rc = sx126x_drv_mode_tx(&server->dev, 0);
+			if (0 != rc) {
+				state->error_count_tx++;
+				log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
+				state->i_really_want_to_start_now = 1;
+			}
+		}
+		if (state->dir_state == RS_RX) {
+			ESP_LOGV("radio", "new rx");
+			rc = sx126x_drv_mode_rx(&server->dev, RADIO_RX_PERIOD / 1000);
+			if (0 != rc) {
+				state->error_count_rx++;
+				log_error("unable to switch radio to rx mode: %d. Dropping frame", rc);
+				state->i_really_want_to_start_now = 1;
+			}
+		}
+	}
+}
+
+static void radio_loop(void *arg) {
 	radio_t * server = arg;
 	// Конфигурация отправки пакетов с контроллируемой скоростью
 
@@ -611,15 +327,9 @@ static void send_task2(void *arg) {
 	//Регистрируем на сообщения всех типов
 	tid.queue = xQueueCreate(20, MAVLINK_MAX_PACKET_LEN);
 	its_rt_register_for_all(tid);
+	radio_private_state_t state = {0};
 	int64_t now = esp_timer_get_time();
-	int64_t last_added = now;
-	int64_t period_start = now;
-	int64_t last_sent = now;
-	int i_really_want_to_start_now = 1;
-	radio_state_t rs = 0;
-	int error_count_tx = 0;
-	int error_count_rx = 0;
-	int packet_done = 0;
+
 	while (1) {
 		now = esp_timer_get_time();
 		mavlink_message_t incoming_msg = {0};
@@ -628,9 +338,9 @@ static void send_task2(void *arg) {
 			// Если мы получили сообщение - складываем в его хранилище
 			update_msg(&incoming_msg);
 		}
-		while (PERIOD_MSG < now - last_added) {
+		while (PERIOD_MSG < now - state.last_added) {
 			fill_one_packet(server);
-			last_added += PERIOD_MSG;
+			state.last_added += PERIOD_MSG;
 		}
 
 		sx126x_drv_evt_t event;
@@ -640,167 +350,26 @@ static void send_task2(void *arg) {
 			ESP_LOGE("radio", "poll %d", rc);
 		}
 		if (0 == rc) {
-			switch (event.kind)
-			{
-			case SX126X_DRV_EVTKIND_RX_DONE:
-				if (!event.arg.rx_done.timed_out) {
-					log_trace("rx done");
-
-					uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
-					rc = sx126x_drv_payload_read(&server->dev, buf, sizeof(buf));
-					if (0 != rc)
-					{
-						log_error("unable to read frame from radio buffer: %d", rc);
-						return;
-					}
-					server->stats.last_packet_time = esp_timer_get_time() / 1000;
-
-					for (int i = 0; i < sizeof(buf); i++) {
-						printf("0x%02X ", buf[i]);
-					}
-					printf("\n");
-					mavlink_message_t msg = {0};
-					mavlink_status_t st = {0};
-					for (int i = 0; i < sizeof(buf); i++) {
-						if (mavlink_parse_char(server->mavlink_chan, buf[i], &msg, &st)) {
-							log_trace("yay! we've got a message %d", msg.msgid);
-
-							server->stats.count_recieved_mavlink_msgs++;
-
-							its_rt_sender_ctx_t ctx = {0};
-							its_rt_route(&ctx, &msg, SERVER_SMALL_TIMEOUT_MS);
-						}
-					}
-				} else {
-					log_trace("rx timeout");
-				}
-				packet_done = 1;
-				break;
-
-			case SX126X_DRV_EVTKIND_TX_DONE:
-				if (event.arg.tx_done.timed_out) {
-					error_count_tx++;
-					log_error("TX TIMED OUT!");
-				} else {
-					error_count_tx = 0;
-					log_info("tx done");
-					server->radio_buf.index = 0;
-				}
-				packet_done = 1;
-				last_sent = now;
-				break;
-			default:
-				log_info("no event");
-				break;
-			}
+			_process_event(server, event, &state, now);
 		}
-		if (error_count_tx > MAX_ERRORS && error_count_rx > MAX_ERRORS) {
-			return;
+		if (state.error_count_tx > MAX_ERRORS && state.error_count_rx > MAX_ERRORS) {
+			goto big_error;
 		}
 
-		if (rs == RS_RX && RADIO_RX_PERIOD < now - period_start && packet_done) {
-			log_info("START TX0");
-			rs = RS_TX;
-			period_start = now;
-		}
-		if (rs == RS_TX && RADIO_TX_PERIOD < now - period_start && packet_done) {
-			log_info("START RX");
-			rs = RS_RX;
-			period_start = now;
-		}
-		if (rs == RS_NONE) {
-			log_info("START TX2");
-			rs = RS_TX;
-			period_start = now;
-		}
-		if (RADIO_START_ANYWAY < now - last_sent) {
-			log_warn("waited too long. Start anyway");
-			log_info("START TX3");
-			rs = RS_TX;
-			period_start = now;
-			i_really_want_to_start_now = 1;
-			last_sent = now;
-			error_count_tx += MAX_ERRORS / 2 + 1;
-		}
+		_update_state(&state, now);
 
+		_try_to_send_or_recv(server, &state, now);
 
-		ESP_LOGV("radio", "TEST: %d %d %d %d", (int)last_sent, (int)now, packet_done, rs);
-		if ((packet_done && now - last_sent >= 000 * 1000) || i_really_want_to_start_now) {
-			packet_done = 0;
-			i_really_want_to_start_now = 0;
+		_save_logs(server);
 
-			if (rs == RS_TX) {
-				ESP_LOGV("radio", "new tx");
-				fill_packet(server);
-				if (server->radio_buf.index < server->radio_buf.size) {
-					memset(&server->radio_buf.buf[server->radio_buf.index], 0, server->radio_buf.size - server->radio_buf.index);
-
-					server->radio_buf.index = server->radio_buf.size;
-				}
-				if (LOG_LOCAL_LEVEL >= ESP_LOG_VERBOSE) {
-					for (int i = 0; i < server->radio_buf.size; i++) {
-						printf("0x%02X ", server->radio_buf.buf[i]);
-					}
-					printf("\n");
-					fflush(stdout);
-				}
-				sx126x_drv_payload_write(&server->dev, server->radio_buf.buf, server->radio_buf.size);
-				rc = sx126x_drv_mode_tx(&server->dev, 0);
-				if (0 != rc) {
-					error_count_tx++;
-					log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
-					i_really_want_to_start_now = 1;
-				}
-			}
-			if (rs == RS_RX) {
-				ESP_LOGV("radio", "new rx");
-				rc = sx126x_drv_mode_rx(&server->dev, RADIO_RX_PERIOD / 1000);
-				if (0 != rc) {
-					error_count_rx++;
-					log_error("unable to switch radio to rx mode: %d. Dropping frame", rc);
-					i_really_want_to_start_now = 1;
-				}
-			}
-		}
-
-
-
-
-		if (log_collector_take(0) == pdTRUE) {
-			ESP_LOGV("radio", "logs");
-			mavlink_bcu_radio_conn_stats_t *conn_stats = log_collector_get_conn_stats();
-
-			sx126x_drv_state_t drv_state = 0;
-			sx126x_stats_t drv_stats = {0};
-			sx126x_lora_packet_status_t drv_packet = {0};
-			uint16_t drv_bits;
-
-			sx126x_drv_get_stats(&server->dev, &drv_stats);
-			sx126x_drv_lora_packet_status(&server->dev, &drv_packet);
-			sx126x_drv_get_device_errors(&server->dev, &drv_bits);
-			drv_state = sx126x_drv_state(&server->dev);
-
-			conn_stats->last_packet_time = server->stats.last_packet_time;
-			conn_stats->last_packet_rssi = drv_packet.rssi_pkt;
-			conn_stats->last_packet_signal_rssi = drv_packet.signal_rssi_pkt;
-			conn_stats->last_packet_snr = drv_packet.snr_pkt;
-
-			conn_stats->count_packet_recieved = drv_stats.pkt_received;
-			conn_stats->count_crc_errors = drv_stats.crc_errors;
-			conn_stats->count_hdr_errors = drv_stats.hdr_errors;
-			conn_stats->count_mavlink_msgs_recieved = server->stats.count_recieved_mavlink_msgs;
-
-			conn_stats->radio_error_bits = drv_bits;
-			conn_stats->radio_state = drv_state;
-			conn_stats->update_time_radio = esp_timer_get_time() / 1000;
-			log_collector_give();
-		}
 
 		vTaskDelay(20 / portTICK_PERIOD_MS);
 	}
-
+big_error:
+	ESP_LOGE("radio", "too many errors. Restarting...");
+	return;
 }
-static void send_task3(void *arg) {
+static void radio_task(void *arg) {
 	int rc = 0;
 	while (1) {
 		rc = _radio_init(&radio_server);
@@ -809,7 +378,7 @@ static void send_task3(void *arg) {
 			continue;
 		}
 
-		send_task2(arg);
+		radio_loop(arg);
 	}
 }
 
@@ -827,9 +396,6 @@ void radio_send_resume(void) {
 		vTaskResume(task_s);
 }
 
-void radio_send_set_sleep_delay(int64_t sleep_delay) {
-	sst.cfg.sleep_delay = sleep_delay;
-}
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
 	TaskHandle_t *handler = arg;
@@ -842,7 +408,7 @@ void radio_send_init(void) {
 	radio_server.radio_buf.capacity = ITS_RADIO_PACKET_SIZE;
 	radio_server.radio_buf.size = ITS_RADIO_PACKET_SIZE;
 
-	xTaskCreatePinnedToCore(send_task3, "Radio send", configMINIMAL_STACK_SIZE + 4000, &radio_server, 4, &task_s, tskNO_AFFINITY);
+	xTaskCreatePinnedToCore(radio_task, "Radio send", configMINIMAL_STACK_SIZE + 4000, &radio_server, 4, &task_s, tskNO_AFFINITY);
 
 /*
 
