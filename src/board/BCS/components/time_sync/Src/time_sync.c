@@ -229,8 +229,10 @@ static void time_sync_task(void *arg) {
 				mbtss->count_of_aggressive_time_updates = stats.count_aggressive;
 				mbtss->updated_time_from_s = stats.last_from.tv_sec;
 				mbtss->updated_time_from_us = stats.last_from.tv_usec;
+				mbtss->updated_time_from_base = stats.last_from_base;
 				mbtss->updated_time_to_s = stats.last_to.tv_sec;
 				mbtss->updated_time_to_us = stats.last_to.tv_usec;
+				mbtss->updated_time_to_base = stats.last_to_base;
 				mbtss->updated_time_steady = stats.last_when / 1000;
 				log_collector_give();
 			}
