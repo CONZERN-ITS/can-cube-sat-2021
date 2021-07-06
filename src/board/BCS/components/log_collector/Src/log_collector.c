@@ -41,6 +41,10 @@ static void log_collector_task(void *arg) {
 		coll->conn_stats.time_us = tv.tv_usec;
 		coll->conn_stats.time_steady = now;
 
+		coll->time_stats.time_s = tv.tv_sec;
+		coll->time_stats.time_us = tv.tv_usec;
+		coll->time_stats.time_steady = now;
+
 		mbs.time_s = tv.tv_sec;
 		mbs.time_us = tv.tv_usec;
 		mbs.time_steady = now;
