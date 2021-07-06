@@ -59,7 +59,7 @@ static bool _check_swap_sync()
 }
 
 
-static void _tmv_normalize(const struct timeval * value)
+static void _tmv_normalize(struct timeval * value)
 {
 	// Обрабатываем переполнения микросекунд
 	if (value->tv_usec > 1000*1000)
