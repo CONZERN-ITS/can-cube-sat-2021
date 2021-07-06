@@ -359,6 +359,7 @@ void mav_main_process_commissar_report(uint8_t component_id, const mavlink_commi
 
 void mav_main_process_ccompressor_state(const mavlink_pld_compressor_data_t * msg)
 {
+#ifdef PROCESS_TO_PRINTF
 	printf("compressor state\n");
 
 	printf(
@@ -370,4 +371,12 @@ void mav_main_process_ccompressor_state(const mavlink_pld_compressor_data_t * ms
 		(uint32_t)(msg->time_s >> 4*8), (uint32_t)(msg->time_s & 0xFFFFFFFF), msg->time_us
 	);
 	printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+#endif
+
+#ifdef PROCESS_TO_ITSLINK
+	mavlink_message_t ms;
+	mavlink_msg_pld_compressor_data_encode(mavlink_system, COMP_ANY_0, &ms, msg);
+	uint16_t size = mavlink_msg_to_send_buffer(_its_link_output_buf, &ms);
+	mav_main_send_to_its_link(MAVLINK_COMM_0, _its_link_output_buf, size);
+#endif
 }
