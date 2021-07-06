@@ -158,7 +158,7 @@ static int _try_soft_sync(ts_sync *ts, time_sync_stats_t *stats) {
 			t.tv_sec = estimated / 1000000;
 			t.tv_usec = estimated % 1000000;
 			stats->last_to = t;
-			stats->last_when = now;
+			stats->last_when = esp_timer_get_time();
 			stats->count_total++;
 			stats->last_from_base = ts->mutex_safe.base;
 			stats->last_to_base = ts->min_collected_base;

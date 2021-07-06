@@ -77,7 +77,7 @@ static void imi_tsync_task(void *pvParametres) {
 		} else {
 			ESP_LOGE("TIME", "can't sync i2c devices");
 		}
-
+		is_updated = 1;
 
 		if (is_updated) {
 			if (log_collector_take(0) == pdTRUE) {

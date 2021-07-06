@@ -22,9 +22,6 @@
 static radio_t radio_server;
 
 
-static void _radio_event_handler(sx126x_drv_t * drv, radio_t * radio_server, sx126x_drv_evt_t * event);
-
-
 static void _radio_deinit(radio_t * server)
 {
 	sx126x_drv_t * const radio = &server->dev;
