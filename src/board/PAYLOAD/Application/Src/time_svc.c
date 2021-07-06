@@ -59,22 +59,43 @@ static bool _check_swap_sync()
 }
 
 
+static void _tmv_normalize(const struct timeval * value)
+{
+	// Обрабатываем переполнения микросекунд
+	if (value->tv_usec > 1000*1000)
+	{
+		int64_t dv = value->tv_usec / (1000*1000);
+		value->tv_sec += dv;
+		value->tv_usec -= dv*1000*1000;
+	}
+
+	if (value->tv_usec < -1*1000*1000)
+	{
+		int64_t dv = value->tv_usec / (-1*1000*1000);
+		value->tv_sec -= dv;
+		value->tv_usec += dv * 1000*1000;
+	}
+
+	// Если микросекунды меньше нуля, но секунды при этом есть - перекидываем знак в секунды
+	if (value->tv_sec != 0 && value->tv_usec < 0)
+	{
+		value->tv_sec -= 1;
+		value->tv_usec += 1000*1000;
+	}
+}
+
+
 static struct timeval _tmv_diff(const struct timeval * left, const struct timeval * right)
 {
 	int64_t seconds = (int64_t)left->tv_sec - (int64_t)right->tv_sec;
 	int32_t useconds = (int32_t)left->tv_usec - (int32_t)right->tv_usec;
-
-	if (useconds < 0)
-	{
-		useconds += 1000*1000;
-		seconds -= 1;
-	}
 
 	struct timeval retval = {
 			.tv_sec = seconds,
 			.tv_usec = useconds
 	};
 
+	_tmv_normalize(&retval);
 	return retval;
 }
 
@@ -84,17 +105,12 @@ static struct timeval _tmv_add(const struct timeval * left, const struct timeval
 	int64_t seconds = (int64_t)left->tv_sec + (int64_t)right->tv_sec;
 	int32_t useconds = (int32_t)left->tv_usec + (int32_t)right->tv_usec;
 
-	if (useconds > 1000*1000)
-	{
-		useconds -= 1000*1000;
-		seconds += 1;
-	}
-
 	struct timeval retval = {
 			.tv_sec = seconds,
 			.tv_usec = useconds
 	};
 
+	_tmv_normalize(&retval);
 	return retval;
 }
 
@@ -105,7 +121,7 @@ void time_svc_init(void)
 	__HAL_TIM_ENABLE_IT(TIMESVC_TIM_HANDLE, TIM_IT_UPDATE);
 	__HAL_TIM_ENABLE(TIMESVC_TIM_HANDLE);
 
-	// Таймер настроен так, что тикает два раза в секунду
+	// Таймер настроен так, что тикает 10 раз в секунду
 	// и переполняется раз в секунду.
 	// (частота на входе таймера 10 кГц, период 10*000 циклов)
 }
@@ -219,10 +235,12 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	struct timeval diff;
 	diff = _tmv_diff(&host_sync_stamp, local_sync_stamp);
 
+	/*
 	printf("host_time: %"PRId32", %"PRId32"\n", (int32_t)host_sync_stamp.tv_sec, host_sync_stamp.tv_usec);
 	printf("local_time: %"PRId32", %"PRId32"\n", (int32_t)local_sync_stamp->tv_sec, local_sync_stamp->tv_usec);
 	printf("time_sync_diff: %"PRId32", %"PRId32"\n", (int32_t)diff.tv_sec, diff.tv_usec);
 	printf("=-=-=-=-\n");
+	*/
 
 	// Если разница меньше половины миллисекунды, то забиваем конечно
 	if (diff.tv_sec == 0 && labs(diff.tv_usec) < 500)
