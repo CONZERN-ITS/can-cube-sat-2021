@@ -116,13 +116,15 @@ class MAVITSControlInterface(AbstractControlInterface):
                     self.setup_gps_filter(mavutil.mavlink.enums['AS_GPS_FILTER'][msg.filter_id].name)
                 elif msg.get_type() == "GPS_UBX_NAV_SOL":
                     if (msg.gpsFix > 0) and (msg.gpsFix < 4):
-                        self.target_last_time = convert_time_from_s_us_to_s(msg.time_s, msg.time_us)
+                        self.target_last_time = (msg.time_s, msg.time_us)
                         position = [msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100]
                         position = self.gps_filter.filter_out(coords=NumPy.array(position).reshape((3, 1)),
                                                               coords_time=self.target_last_time)
-                        
-                        if ((self.auto_control_mode) and (position is not None) and ((time.time() + self.aiming_period) > self.last_rotation_time)):
-                            self.update_target_position_WGS84_DEC(position)
+                        if self.guidance_math.get_coord_system_sucsess_flag():
+                            vector = self.guidance_math.count_vector(NumPy.array(position).reshape((3, 1)))
+                            (self.target_alpha, self.target_phi) = self.guidance_math.count_target_angles(vector)
+                            if ((self.auto_control_mode) and (position is not None) and ((time.time() + self.aiming_period) > self.last_rotation_time)):
+                                self.update_target_position_GCSCS_ANG(self.target_alpha, self.target_phi)
         return response
 
     def setup_gps_filter(self, gps_filter='NO_FILTER'):
@@ -185,21 +187,23 @@ class MAVITSControlInterface(AbstractControlInterface):
         self.update_target_position_WGS84_VEC(vector)
 
     def update_target_position_WGS84_VEC(self, vector):
-        self.update_target_position_GCSCS_VEC(self.guidance_math.count_vector(vector))
+        if self.guidance_math.get_coord_system_sucsess_flag():
+            self.update_target_position_GCSCS_VEC(self.guidance_math.count_vector(vector))
 
     def update_target_position_GCSCS_VEC(self, vector):
         if self.guidance_math.get_coord_system_sucsess_flag():
-            (self.target_alpha, self.target_phi) = self.guidance_math.count_target_angles(vector)
+            self.update_target_position_GCSCS_ANG(*self.guidance_math.count_target_angles(vector))
 
-            if (self.target_alpha - self.azimuth) > 180:
-                self.update_target_position(azimuth=(self.target_alpha - self.azimuth - 360),
-                                            elevation=(self.target_phi - self.elevation))
-            elif (self.target_alpha - self.azimuth) < -180:
-                self.update_target_position(azimuth=(self.target_alpha - self.azimuth + 360),
-                                            elevation=(self.target_phi - self.elevation))
-            else:
-                self.update_target_position(azimuth=(self.target_alpha - self.azimuth),
-                                            elevation=(self.target_phi - self.elevation))
+    def update_target_position_GCSCS_ANG(self, target_alpha, target_phi):
+        if (target_alpha - self.azimuth) > 180:
+            self.update_target_position(azimuth=(target_alpha - self.azimuth - 360),
+                                        elevation=(target_phi - self.elevation))
+        elif (target_alpha - self.azimuth) < -180:
+            self.update_target_position(azimuth=(target_alpha - self.azimuth + 360),
+                                        elevation=(target_phi - self.elevation))
+        else:
+            self.update_target_position(azimuth=(target_alpha - self.azimuth),
+                                        elevation=(target_phi - self.elevation))
 
     def recount_angle(self, angle):
         if angle < -180:
@@ -229,12 +233,13 @@ class ZMQITSControlInterface(MAVITSControlInterface):
     def __init__(self, *args, **kwargs):
         super(ZMQITSControlInterface, self).__init__(*args, **kwargs)
         self.mav = its_mav.MAVLink(file=None)
+        self.mav.robust_parsing = True
 
     def messages_reaction(self, msgs):
         response = []
         for msg in msgs:
             topic = msg[0].decode('utf-8')
-            if topic == 'antenna.command_packet':
+            if (topic == 'antenna.command_packet') or (topic == "radio.downlink_frame"):
                 for mav_msg in super(ZMQITSControlInterface, self).messages_reaction(self.mav.parse_buffer(msg[2])):
                     response.append(self._wrap_in_antenna_telemetry_packet(mav_msg))
         return response

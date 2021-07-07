@@ -11,7 +11,8 @@ if DATA_CONTROL_TYPE == 'MAVLink':
 elif DATA_CONTROL_TYPE == 'ZMQ':
 	BUS_BPCS = "tcp://127.0.0.1:7778"
 	BUS_BSCP = "tcp://127.0.0.1:7777"
-	TOPICS = ["antenna.command_packet"]
+	TOPICS = ["antenna.command_packet",
+			  "radio.downlink_frame"]
 	DATA_TIMEOUT = 10
 
 
@@ -74,7 +75,7 @@ HSM_NEG_LIMIT_PINS_MAP = {}
 
 # Antenna settings
 DEFAULT_ANTENNA_AIMING_PERIOD = 1
-STATE_SETTINGS_PERIOD = 0.1
+STATE_SETTINGS_PERIOD = 0.5
 
 # Drive settings
 MOTORS_TIMEOUT = 20
