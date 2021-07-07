@@ -15,6 +15,8 @@
 #include <inttypes.h>
 #include <stdio.h>
 
+#include <sys/time.h>
+
 
 // Целые части секунд
 static time_t _seconds;
@@ -56,62 +58,6 @@ static bool _check_swap_sync()
 	__enable_irq();
 
 	return true;
-}
-
-
-static void _tmv_normalize(struct timeval * value)
-{
-	// Обрабатываем переполнения микросекунд
-	if (value->tv_usec > 1000*1000)
-	{
-		int64_t dv = value->tv_usec / (1000*1000);
-		value->tv_sec += dv;
-		value->tv_usec -= dv*1000*1000;
-	}
-
-	if (value->tv_usec < -1*1000*1000)
-	{
-		int64_t dv = value->tv_usec / (-1*1000*1000);
-		value->tv_sec -= dv;
-		value->tv_usec += dv * 1000*1000;
-	}
-
-	// Если микросекунды меньше нуля, но секунды при этом есть - перекидываем знак в секунды
-	if (value->tv_sec != 0 && value->tv_usec < 0)
-	{
-		value->tv_sec -= 1;
-		value->tv_usec += 1000*1000;
-	}
-}
-
-
-static struct timeval _tmv_diff(const struct timeval * left, const struct timeval * right)
-{
-	int64_t seconds = (int64_t)left->tv_sec - (int64_t)right->tv_sec;
-	int32_t useconds = (int32_t)left->tv_usec - (int32_t)right->tv_usec;
-
-	struct timeval retval = {
-			.tv_sec = seconds,
-			.tv_usec = useconds
-	};
-
-	_tmv_normalize(&retval);
-	return retval;
-}
-
-
-static struct timeval _tmv_add(const struct timeval * left, const struct timeval * right)
-{
-	int64_t seconds = (int64_t)left->tv_sec + (int64_t)right->tv_sec;
-	int32_t useconds = (int32_t)left->tv_usec + (int32_t)right->tv_usec;
-
-	struct timeval retval = {
-			.tv_sec = seconds,
-			.tv_usec = useconds
-	};
-
-	_tmv_normalize(&retval);
-	return retval;
 }
 
 
@@ -233,7 +179,7 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 
 	// Считаем разницу между временем у нас и у хоста на момент метки
 	struct timeval diff;
-	diff = _tmv_diff(&host_sync_stamp, local_sync_stamp);
+	timersub(&host_sync_stamp, local_sync_stamp, &diff);
 
 	/*
 	printf("host_time: %"PRId32", %"PRId32"\n", (int32_t)host_sync_stamp.tv_sec, host_sync_stamp.tv_usec);
@@ -242,16 +188,22 @@ void time_svc_on_mav_message(const mavlink_message_t * msg)
 	printf("=-=-=-=-\n");
 	*/
 
-	// Если разница меньше половины миллисекунды, то забиваем конечно
-	if (diff.tv_sec == 0 && labs(diff.tv_usec) < 500)
+	// Если разница меньше 100мс, то забиваем
+	if (diff.tv_sec == 0 && diff.tv_usec < (suseconds_t)100000)
 		return;
+
+	// Для отрицального diff usec пишется в несколько ином формате (всегда положительное)
+	if (diff.tv_sec == -1 && diff.tv_usec > ((suseconds_t)1000000 - (suseconds_t)100000))
+		return ;
 
 	// Берем наше текущее время
 	struct timeval current_time;
 	time_svc_gettimeofday(&current_time);
 
 	// добавляем разницу
-	current_time = _tmv_add(&current_time, &diff);
+	struct timeval tmp;
+	timeradd(&current_time, &diff, &tmp);
+	current_time = tmp;
 
 	// Делаем это время текущим
 	// FIXME: нужно бы добавить сколько-то микросекунд на все эти операции
