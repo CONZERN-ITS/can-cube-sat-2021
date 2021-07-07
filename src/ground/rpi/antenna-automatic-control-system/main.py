@@ -82,7 +82,8 @@ if __name__ == '__main__':
     elif DATA_CONTROL_TYPE == 'ZMQ':
         data_object = data_control.ZMQDataSource(bus_bpcs=BUS_BPCS,
                                                  bus_bscp=BUS_BSCP,
-                                                 topics=TOPICS)
+                                                 topics=TOPICS,
+                                                 timeout=DATA_TIMEOUT)
     data_object.start()
 
     # Control interface (protocol) initialization

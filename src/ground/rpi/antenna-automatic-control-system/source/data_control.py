@@ -64,10 +64,11 @@ class MAVDataSource(AbstractDataSource):
 
 
 class ZMQDataSource(AbstractDataSource):
-    def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", bus_bscp="tcp://127.0.0.1:7777", topics=[]):
+    def __init__(self, bus_bpcs="tcp://127.0.0.1:7778", bus_bscp="tcp://127.0.0.1:7777", topics=[], timeout=1000):
         self.bus_bpcs = bus_bpcs
         self.bus_bscp = bus_bscp
         self.topics = topics
+        self.timeout = timeout
 
     def start(self):
         self.zmq_ctx = zmq.Context()
@@ -84,7 +85,7 @@ class ZMQDataSource(AbstractDataSource):
         self.poller.register(self.sub_socket, zmq.POLLIN)
 
     def read_data(self):
-        events = dict(self.poller.poll(1000))
+        events = dict(self.poller.poll(self.timeout))
         if self.sub_socket in events:
             return self.sub_socket.recv_multipart()
         else:
