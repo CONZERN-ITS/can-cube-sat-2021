@@ -80,9 +80,9 @@ int sx126x_brd_get_chip_type(sx126x_board_t * brd, sx126x_chip_type_t * chip_typ
 }
 
 int sx126x_brd_reset(sx126x_board_t * brd) {
-	gpio_set_level(ITS_PIN_SPISR_CS_RA, 0);
+	gpio_set_level(ITS_PIN_RADIO_RESET, 0);
 	vTaskDelay(50 / portTICK_RATE_MS);
-	gpio_set_level(ITS_PIN_SPISR_CS_RA, 1);
+	gpio_set_level(ITS_PIN_RADIO_RESET, 1);
 	return 0;
 }
 
