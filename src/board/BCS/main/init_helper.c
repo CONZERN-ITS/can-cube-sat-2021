@@ -180,7 +180,7 @@ void init_basic(void) {
 		};
 		static gpio_config_t reset = {
 			.mode = GPIO_MODE_OUTPUT_OD,
-			.pull_up_en = GPIO_PULLUP_ENABLE,
+			.pull_up_en = GPIO_PULLUP_DISABLE, // pullup резистор есть на плате
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
 			.intr_type = GPIO_INTR_DISABLE,
 			.pin_bit_mask = 1ULL << ITS_PIN_RADIO_RESET
