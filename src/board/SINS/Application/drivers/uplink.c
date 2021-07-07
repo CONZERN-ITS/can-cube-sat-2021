@@ -40,6 +40,8 @@ static its_injected_message_t _injected_msgs[] =
 		{ .msgid = MAVLINK_MSG_ID_I2C_LINK_STATS },
 		{ .msgid = MAVLINK_MSG_ID_OWN_TEMP },
 		{ .msgid = MAVLINK_MSG_ID_COMMISSAR_REPORT },
+		{ .msgid = MAVLINK_MSG_ID_LIGHT_DIODE },
+		{ .msgid = MAVLINK_MSG_ID_LDS_DIR }
 };
 
 

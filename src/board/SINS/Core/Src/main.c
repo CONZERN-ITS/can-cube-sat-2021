@@ -783,9 +783,6 @@ int main(void)
   		// Пашем, работяги
   		for (; ; )
   		{
-  			// Пробуем отправить отложенные сообщения
-  			uplink_flush_injected();
-
   			// подбираем частоту данных (система против потома)
   			for (int u = 0; u < 5; u++)
   			{
@@ -809,6 +806,8 @@ int main(void)
 
   				// Оставь, пусть работает
   				gps_poll();
+  	  			// Пробуем отправить отложенные сообщения
+  	  			uplink_flush_injected();
 
   				// Проверяем процесс конфигурации
   				const int gps_cfg_status = gps_configure_status();
