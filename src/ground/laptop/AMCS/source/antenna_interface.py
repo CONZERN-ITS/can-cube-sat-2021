@@ -94,6 +94,7 @@ class MAVITSInterface(AbstractAntennaInterface):
         super(MAVITSInterface, self).__init__(*args, **kwargs)
         self.control_mode = True
         self.mav = its_mav.MAVLink(file=None)
+        self.mav.robust_parsing = True
         self.set_angle_control_mode()
 
     def messages_reaction(self, msgs):
