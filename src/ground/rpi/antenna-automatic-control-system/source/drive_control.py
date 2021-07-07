@@ -103,7 +103,7 @@ class BowElectromechanicalDrive(AbstractElectromechanicalDrive):
 
     def vertical_rotation(self, angle):
         if self.vertical_motor is not None:
-            self.last_vertical_limit = self.vertical_motor.rotate_using_angle(ang)
+            self.last_vertical_limit = self.vertical_motor.rotate_using_angle(angle)
             phi = self.vertical_motor.steps_to_angle(self.vertical_motor.get_last_steps_num(),
                                                      self.vertical_motor.get_last_steps_direction())
             if self.last_vertical_limit is not None:
