@@ -8,6 +8,7 @@ import math
 import time
 import numpy as NumPy
 from source import auto_guidance_math
+from config import *
 
 
 class AbstractControlInterface():
@@ -71,7 +72,7 @@ class MAVITSControlInterface(AbstractControlInterface):
         self.target_alpha = 0
         self.target_phi = 0
         self.target_last_time = (0, 0)
-        self.setup_gps_filter()
+        self.setup_gps_filter(DEFAULT_GPS_FILTER)
 
     def messages_reaction(self, msgs):
         response = []
@@ -127,7 +128,7 @@ class MAVITSControlInterface(AbstractControlInterface):
     def setup_gps_filter(self, gps_filter='NO_FILTER'):
         if gps_filter == 'VELOCITY_FILTER':
             self.gps_filter = auto_guidance_math.VelocityGPSFilter(GPS_FILTER_MAX_VELOCITY)
-            self.gps_filter_id = mavutil.mavlink.enums['AS_GPS_FILTER'][gps_filter]
+            self.gps_filter_id = 1
         else:
             self.gps_filter = auto_guidance_math.AbstractGPSFilter()
             self.gps_filter_id = 0
