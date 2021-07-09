@@ -44,6 +44,7 @@
 #include "backup_sram.h"
 #include "drivers/led.h"
 #include "errors.h"
+#include "SolTrack.h"
 
 #include "mav_packet.h"
 
