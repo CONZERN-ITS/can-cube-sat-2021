@@ -28,7 +28,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 
 #include "pinout_cfg.h"
@@ -75,7 +75,7 @@ static void sensors_task(void *arg) {
 
 			{ .bytes = { 0x28, 0xC3, 0xA1, 0xE6, 0x0B, 0x00, 0x00, 0xA7 } }, // БКУ   +
 			{ .bytes = { 0x28, 0x24, 0xDF, 0xAB, 0x0A, 0x00, 0x00, 0x12 } }, // БСК 1 +
-			{ .bytes = { 0x28, 0x88, 0x50, 0xAC, 0x0A, 0x00, 0x00, 0x11 } }, // БСК 2 +
+			{ .bytes = { 0x28, 0x1B, 0xB1, 0xAB, 0x0A, 0x00, 0x00, 0x68 } }, // БСК 2 +
 			{ .bytes = { 0x28, 0x13, 0x4D, 0xAC, 0x0A, 0x00, 0x00, 0xC8 } }, // БСК 3 +
 			{ .bytes = { 0x28, 0x2F, 0x68, 0xAC, 0x0A, 0x00, 0x00, 0x72 } }, // БСК 4 +
 			{ .bytes = { 0x28, 0x36, 0x86, 0xE6, 0x0B, 0x00, 0x00, 0x97 } }  // БСК 5 +
@@ -257,13 +257,14 @@ static void sensors_ina_task(void *arg) {
 	cfg.shunt_range = INA219_SHUNT_RANGE_320MV;
 	cfg.shunt_res = INA219_ADC_RES_12_BIT_OVS_128;
 	cfg.mode = INA219_MODE_SHUNT_AND_BUS_CONT;
-	cfg.current_lsb =  ((ina219_float_t)(10.0/0x8000));
-	cfg.shunt_r = 0.1;
+	cfg.current_lsb =  ((ina219_float_t)(1.0/0x8000));
+	cfg.shunt_r = 0.01;
 	for (int i = 0; i < INA_MAX; i++) {
 
 		rc = ina219_set_cfg(&ina[i], &cfg);
 		ESP_LOGD(TAG, "ina2: %d", rc);
-		rc = ina219_get_cfg(&ina[i], &cfg);
+		ina219_cfg_t cfg2 = {0};
+		rc = ina219_get_cfg(&ina[i], &cfg2);
 		ESP_LOGD(TAG, "ina2: %d", rc);
 	}
 	while (1) {

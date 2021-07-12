@@ -11,7 +11,7 @@
 */
 
 
-#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include <esp_log.h>
 #include <math.h>
 #include <esp_err.h>
@@ -168,7 +168,7 @@ static uint16_t _make_cal_reg(ina219_float_t current_lsb, ina219_float_t shunt_r
 
 	// волшебные цифры из даташита
 	const ina219_float_t calib = INA219_FLOAT(0.04096)/(current_lsb * shunt_r);
-	return ((uint16_t)calib);
+	return ((uint16_t)calib << 1);
 	// << 1 так как нулевой бит регистра резервирован, а фактическое значение идет с бита 1
 }
 
@@ -298,6 +298,9 @@ int ina219_get_cfg(ina219_t * device, ina219_cfg_t *cfg)
 	if (error)
 		return error;
 	_parse_cfg_reg(raw, &_cfg);
+	error = _read_reg(device, INA219_CALREG_ADDR, &raw);
+	if (error)
+		return error;
 	*cfg = _cfg;
 	return 0;
 }
@@ -342,7 +345,7 @@ int ina219_read_primary(ina219_t * device, ina219_primary_data_t * data)
 
 int ina219_read_all_data(ina219_t *device, ina219_data_t *data) {
 	int err = 0;
-	uint16_t raw[4];
+	uint16_t raw[4] = {0};
 
 	err = _read_reg(device, INA219_BUSVREG_ADDR, &raw[0]);
 	if (err) {
@@ -362,6 +365,7 @@ int ina219_read_all_data(ina219_t *device, ina219_data_t *data) {
 	}
 
 	err = _read_reg(device, INA219_CURRENTREG_ADDR, &raw[2]);
+	ESP_LOGD(TAG, "current: %d", raw[2]);
 	if (err) {
 		data->current = NAN;
 	} else {
