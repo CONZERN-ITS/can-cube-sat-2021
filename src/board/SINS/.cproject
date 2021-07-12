@@ -407,6 +407,8 @@
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Application/drivers}&quot;"/>
                                     									
+                                    <listOptionValue builtIn="false" value="../Drivers/madgwick_lds/Inc"/>
+                                    									
                                     <listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
                                     									
                                     <listOptionValue builtIn="false" value="../Core/Inc"/>
@@ -417,7 +419,9 @@
                                     									
                                     <listOptionValue builtIn="false" value="../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy"/>
                                     									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Drivers/madgwick_lds/Inc}&quot;"/>
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/SINS/Drivers/madgwick_lds}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="../Drivers/SolTrack/Inc"/>
                                     								
                                 </option>
                                 								
@@ -471,11 +475,11 @@
                     					
                     <sourceEntries>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-                        						
                         <entry excluding="library/lsm6ds3_STdC/example|library/lis3mdl_STdC/example" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Application"/>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+                        						
+                        <entry excluding="SolTrack/examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
                         					
                     </sourceEntries>
                     				
