@@ -66,7 +66,13 @@ __attribute__((unused))
 static void dekart_to_euler(const float x[3], float sph[3]) {
     sph[0] = sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
     sph[1] = acos(x[2] / sph[0]);
-    sph[2] = atan(x[1] / x[0]);
+    sph[2] = atan2(x[1], x[0]);
+}
+__attribute__((unused))
+static void euler_to_dekart(float x[3], const float sph[3]) {
+    x[0] = sph[0] * sin(sph[1]) * cos(sph[2]);
+    x[1] = sph[0] * sin(sph[1]) * sin(sph[2]);
+    x[2] = sph[0] * cos(sph[1]);
 }
 __attribute__((unused))
 static float degrees(float a) {

@@ -101,7 +101,7 @@ state_zero_t state_zero;
 stateSINS_isc_t stateSINS_isc;
 stateSINS_isc_t stateSINS_isc_prev;
 stateSINS_lds_t stateSINS_lds;
-
+static int use_lds = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -216,7 +216,63 @@ static void calibration_magn()
 }
 */
 
+void on_gps_packet_ahrs(void *arg, const ubx_any_packet_t * packet) {
 
+    static int32_t last_good_packet_time = 0;
+
+    if (last_good_packet_time - (int32_t)HAL_GetTick() > 1000 * 1800) {
+        use_lds = 0;
+    }
+    int is_packet_valid = (packet->packet.gpstime.valid_flags & UBX_NAVGPSTIME_FLAGS__LEAPS_VALID) &&
+            (packet->packet.gpstime.valid_flags & UBX_NAVGPSTIME_FLAGS__TOW_VALID) &&
+            (packet->packet.gpstime.valid_flags & UBX_NAVGPSTIME_FLAGS__WEEK_VALID) &&
+            (packet->packet.navsol.gps_fix == UBX_FIX_TYPE__3D);
+
+    if (!is_packet_valid) {
+        return;
+    }
+    last_good_packet_time = HAL_GetTick();
+    use_lds = 1;
+
+    struct timeval tv = {0};
+    time_svc_world_get_time(&tv);
+    struct Time time = {0};
+    time_t seconds = tv.tv_sec;
+    struct tm *lt = localtime(&seconds);
+    time.second = tv.tv_sec / 60 % 60 + tv.tv_usec / 1000000.0;
+    time.minute = lt->tm_min;
+    time.hour = lt->tm_hour;
+    time.day = lt->tm_mday;
+    time.month = lt->tm_mon;
+    time.year = lt->tm_year;
+
+    struct Location location = {0};
+    //location.latitude = packet->packet.navsol.pos_ecef;
+
+    int useDegrees = 0;
+    int useNorthEqualsZero = 0;
+    int computeRefrEquatorial = 0;
+    int computeDistance = 0;
+
+    struct Position position = {0};
+
+    float long_lat_coords[3] = {0};
+    float xyz_coords[3] = {packet->packet.navsol.pos_ecef[0], packet->packet.navsol.pos_ecef[1], packet->packet.navsol.pos_ecef[2]};
+    dekart_to_euler(xyz_coords, long_lat_coords);
+    location.latitude = M_PI / 2 - long_lat_coords[1];
+    location.longitude = long_lat_coords[2];
+    SolTrack(time, location, &position, useDegrees, useNorthEqualsZero, computeRefrEquatorial, computeDistance);
+
+    float dir_sph[3] = {0};
+    dir_sph[0] = 1;
+    dir_sph[1] = M_PI / 2 - position.altitude;
+    dir_sph[2] = position.azimuthRefract;
+    float dir_xyz[3] = {0};
+
+    euler_to_dekart(dir_xyz, dir_sph);
+
+    ahrs_updateVecReal(AHRS_LIGHT, vec_arrToVec(dir_xyz));
+}
 // Функция для слежения за здоровьем GPS и передачи его пакетов в мавлинк
 static void on_gps_packet_main(void * arg, const ubx_any_packet_t * packet)
 {
@@ -244,6 +300,7 @@ static void on_gps_packet_main(void * arg, const ubx_any_packet_t * packet)
 
 	// Передаем дальше для обработки
 	on_gps_packet(arg, packet);
+	on_gps_packet_ahrs(arg, packet);
 }
 
 void quat_to_angles(float* quat, float *ang){
@@ -319,7 +376,7 @@ int UpdateDataAll(void)
     quaternion_t ori = {1, 0, 0, 0};
     if ((error_system.lsm6ds3_error == 0) && (error_system.lis3mdl_error == 0) && ITS_SINS_USE_MAG) {
         ahrs_vectorActivate(AHRS_MAG, 1);
-        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS);
+        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS && use_lds);
         ahrs_setKoefB(beta);
         ahrs_updateVecReal(AHRS_MAG, ahrs_get_good_vec_from_mag(vec_arrToVec(magn)));
         ahrs_updateVecMeasured(AHRS_MAG, vec_arrToVec(magn));
@@ -329,7 +386,7 @@ int UpdateDataAll(void)
         ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
         ahrs_updateGyroData(vec_arrToVec(gyro));
         ahrs_calculateOrientation(dt);
-    } else if (error_system.lsm6ds3_error == 0) {
+    } else if (error_system.lsm6ds3_error == 0 && use_lds) {
         ahrs_vectorActivate(AHRS_MAG, 0);
         ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS);
         ahrs_setKoefB(beta);
