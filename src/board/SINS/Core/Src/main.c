@@ -335,13 +335,20 @@ int UpdateDataAll(void)
 	if (ITS_SINS_USE_LDS) {
 	    float arr[ITS_SINS_LDS_COUNT] = {0};
 	    read_ldiods(arr);
-	    for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
-	        stateSINS_lds.sensor[i] = arr[i];
-	    }
+        for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
+            stateSINS_lds.sensor[i] = arr[i];
+        }
+
 	    lds_find(light, arr);
 	    for (int i = 0; i < 3; i++) {
 	        stateSINS_lds.dir[i] = light[i];
 	    }
+        static int tick = 0;
+        if (tick % 50 == 0) {
+            tick = 0;
+            printf("lds: %.3f %.3f %.3f\n", light[0], light[1], light[2]);
+        }
+        tick++;
 
         stateSINS_lds.error = lds_err = lds_get_error(light, arr);
         time_svc_world_get_time(&stateSINS_lds.tv);
@@ -1406,7 +1413,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 static void read_ldiods(float arr[ITS_SINS_LDS_COUNT]) {
-    static const analog_target_t order[ITS_SINS_LDS_COUNT] = {
+    static const analog_target_t order_adc[ITS_SINS_LDS_COUNT] = {
         ANALOG_TARGET_LED_0,
         ANALOG_TARGET_LED_1,
         ANALOG_TARGET_LED_2,
@@ -1418,14 +1425,26 @@ static void read_ldiods(float arr[ITS_SINS_LDS_COUNT]) {
         ANALOG_TARGET_LED_8,
         ANALOG_TARGET_LED_9
     };
+    static const analog_target_t order_led[ITS_SINS_LDS_COUNT] = {
+        LDIODE_SWAP_0,
+        LDIODE_SWAP_1,
+        LDIODE_SWAP_2,
+        LDIODE_SWAP_3,
+        LDIODE_SWAP_4,
+        LDIODE_SWAP_5,
+        LDIODE_SWAP_6,
+        LDIODE_SWAP_7,
+        LDIODE_SWAP_8,
+        LDIODE_SWAP_9,
+    };
 
     for (int i = 0; i < ITS_SINS_LDS_COUNT; i++)
     {
         uint16_t value;
-        int rc = analog_get_raw(order[i], 5, &value);
+        int rc = analog_get_raw(order_adc[i], 5, &value);
         assert(0 == rc);
         float v = ((float)value / (1 << 12)) * 3.3;
-        arr[i] = v;
+        arr[order_led[i]] = v;
     }
 }
 /* USER CODE END 4 */

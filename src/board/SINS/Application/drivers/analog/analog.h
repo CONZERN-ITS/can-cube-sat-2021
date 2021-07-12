@@ -11,6 +11,19 @@
 #include <stdint.h>
 
 
+typedef enum ldiode_swap_t {
+    LDIODE_SWAP_0 = 2,
+    LDIODE_SWAP_1 = 1,
+    LDIODE_SWAP_2 = 0,
+    LDIODE_SWAP_3 = 6,
+    LDIODE_SWAP_4 = 5,
+    LDIODE_SWAP_5 = 4,
+    LDIODE_SWAP_6 = 3,
+    LDIODE_SWAP_7 = 9,
+    LDIODE_SWAP_8 = 8,
+    LDIODE_SWAP_9 = 7,
+} ldiode_swap_t;
+
 //! Целевой аналоговый сенсор, с которым требуется работать
 typedef enum analog_target_t
 {
@@ -19,6 +32,19 @@ typedef enum analog_target_t
 	//! Напряжение на VBAT
 	ANALOG_TARGET_VBAT,
 	// Фотоидиоды
+
+
+/*    ANALOG_TARGET_LED_0,
+    ANALOG_TARGET_LED_1,
+    ANALOG_TARGET_LED_2,
+    ANALOG_TARGET_LED_3,
+    ANALOG_TARGET_LED_4,
+    ANALOG_TARGET_LED_5,
+    ANALOG_TARGET_LED_6,
+    ANALOG_TARGET_LED_7,
+    ANALOG_TARGET_LED_8,
+    ANALOG_TARGET_LED_9,*/
+
 	ANALOG_TARGET_LED_0,
 	ANALOG_TARGET_LED_1,
 	ANALOG_TARGET_LED_2,
