@@ -234,6 +234,15 @@ static void sensors_task(void *arg) {
 	vTaskDelete(0);
 }
 
+static void _ina_set_cfg(ina219_t *ina, const ina219_cfg_t *cfg, const char *name) {
+	int rc;
+	rc = ina219_set_cfg(ina, cfg);
+	ESP_LOGD(TAG, "ina %s set: %d",name, rc);
+	ina219_cfg_t cfg2 = {0};
+	rc = ina219_get_cfg(ina, &cfg2);
+	ESP_LOGD(TAG, "ina %s get: %d", name, rc);
+}
+
 
 static void sensors_ina_task(void *arg) {
 #define INA_MAX 4
@@ -257,16 +266,17 @@ static void sensors_ina_task(void *arg) {
 	cfg.shunt_range = INA219_SHUNT_RANGE_320MV;
 	cfg.shunt_res = INA219_ADC_RES_12_BIT_OVS_128;
 	cfg.mode = INA219_MODE_SHUNT_AND_BUS_CONT;
-	cfg.current_lsb =  ((ina219_float_t)(1.0/0x8000));
-	cfg.shunt_r = 0.01;
-	for (int i = 0; i < INA_MAX; i++) {
+	cfg.current_lsb =  ((ina219_float_t)(30.0/0x8000));
+	cfg.shunt_r = 0.1;
 
-		rc = ina219_set_cfg(&ina[i], &cfg);
-		ESP_LOGD(TAG, "ina2: %d", rc);
-		ina219_cfg_t cfg2 = {0};
-		rc = ina219_get_cfg(&ina[i], &cfg2);
-		ESP_LOGD(TAG, "ina2: %d", rc);
-	}
+	_ina_set_cfg(&ina[0], &cfg, "0");
+	cfg.shunt_r = 0.01;
+	_ina_set_cfg(&ina[1], &cfg, "1");
+	_ina_set_cfg(&ina[2], &cfg, "2");
+	_ina_set_cfg(&ina[3], &cfg, "3");
+
+
+
 	while (1) {
 		struct timeval tp = {0};
 		gettimeofday(&tp, 0);
