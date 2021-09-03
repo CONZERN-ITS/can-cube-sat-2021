@@ -292,12 +292,13 @@ static void sensors_ina_task(void *arg) {
 				mes[i].current = data.current;
 				mes[i].voltage = data.busv;
 			}
+			ESP_LOGI(TAG, "ina raw: %f", data.shuntv);
 			ESP_LOGI(TAG, "@ina fin reading %d", i);
 
 			mes[i].time_s = tp.tv_sec;
 			mes[i].time_us = tp.tv_usec;
 			mes[i].time_steady = (uint32_t) now;
-			vTaskDelay(500 / portTICK_PERIOD_MS);
+			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		for (int i = 0; i < INA_MAX; i++) {
 			ESP_LOGD("SENSORS", "@ina [%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
