@@ -9,7 +9,7 @@
 #define COMPONENTS_RADIO_INC_PRIVATE_RADIO_HELP_H_
 
 #include "radio.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 
 typedef struct  {
@@ -222,7 +222,7 @@ static int is_sleeping(safe_send_t *sst) {
 	sst->sleep_state = new_state;
 	return sst->sleep_state;
 }
-*/
+*//*
 static int fill_one_packet(radio_t * server) {
 	log_info("fill_one_packet %d" ,server->packet_count);
 	if (server->radio_buf.index == 0) {
@@ -262,32 +262,37 @@ static int fill_one_packet(radio_t * server) {
 	}
 end:
 	return server->radio_buf.index == server->radio_buf.size;
-}
+}*/
 
 
-static int fill_packet(radio_t * server) {
-	log_info("fill_packet %d" ,server->packet_count);
-	if (server->radio_buf.index == 0) {
-		uint16_t count = server->packet_count;
-
-		memcpy(server->radio_buf.buf, (uint8_t *)&count, sizeof(count));
-
-		server->packet_count++;
-
-		server->radio_buf.index += sizeof(count);
+static int rbuf_fill(radio_t * server) {
+	log_info("rbuf_fill %d %d" ,server->packet_count, server->radio_buf_to_write);
+	if (server->radio_buf_to_write >= RADIO_TX_COUNT) {
+		return 0;
 	}
-	while (server->radio_buf.index < server->radio_buf.size) {
-		log_info("gen %d %d", server->radio_buf.index, server->radio_buf.size);
+	radio_buf_t *buf = &server->radio_buf[server->radio_buf_to_write];
+	buf->index = 0;
+	server->radio_buf_to_write++;
+	uint16_t count = server->packet_count;
+
+	memcpy(buf->buf, (uint8_t *)&count, sizeof(count));
+
+	server->packet_count++;
+
+	buf->index += sizeof(count);
+
+	while (buf->index < buf->size) {
+		log_info("gen %d %d", buf->index, buf->size);
 		if (server->mav_buf.size - server->mav_buf.index > 0) {
 			uint8_t *out = server->mav_buf.buf + server->mav_buf.index;
 			int cnt = server->mav_buf.size - server->mav_buf.index;
-			int diff = server->radio_buf.size - server->radio_buf.index;
+			int diff = buf->size - buf->index;
 			if (cnt > diff) {
 				cnt = diff;
 			}
-			memcpy(server->radio_buf.buf + server->radio_buf.index, out, cnt);
+			memcpy(buf->buf + buf->index, out, cnt);
 			server->mav_buf.index += cnt;
-			server->radio_buf.index += cnt;
+			buf->index += cnt;
 		} else {
 			msg_container *st = 0;
 			st = get_best(server->msg_count);
@@ -302,7 +307,26 @@ static int fill_packet(radio_t * server) {
 			server->msg_count++;
 		}
 	}
-	return server->radio_buf.index == server->radio_buf.size;
+	if (buf->index < buf->size) {
+		memset(buf->buf + buf->index, 0, buf->size - buf->index);
+	}
+	return 1;
+}
+
+static radio_buf_t* rbuf_get(radio_t * server) {
+	log_info("rbuf_get %d", server->radio_buf_to_read);
+	assert(server->radio_buf_to_read < RADIO_TX_COUNT);
+	return &server->radio_buf[server->radio_buf_to_read];
+}
+static void rbuf_pull(radio_t * server) {
+	log_info("rbuf_pull %d", server->radio_buf_to_read);
+	server->radio_buf_to_read++;
+}
+
+static void rbuf_reset(radio_t * server) {
+	log_info("rbuf_reset %d %d", server->radio_buf_to_read, server->radio_buf_to_write);
+	server->radio_buf_to_read = 0;
+	server->radio_buf_to_write = 0;
 }
 
 #endif /* COMPONENTS_RADIO_INC_PRIVATE_RADIO_HELP_H_ */

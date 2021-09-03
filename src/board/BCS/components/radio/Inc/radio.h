@@ -41,6 +41,18 @@
 #define SERVER_POLL_TIMEOUT_MS (1000)
 #define SERVER_SMALL_TIMEOUT_MS 4000
 
+
+#define _DIV_TRUNC(a, b) (((a) + (b) - 1) / (b))
+
+#define RADIO_TX_PERIOD (4000 * 1000)
+#define RADIO_RX_PERIOD (2000 * 1000)
+#define RADIO_START_ANYWAY (10000 * 1000)
+/*
+ * Это поле не меняется автоматически!!! См. _radio_init
+ */
+#warning "Это поле не меняется автоматитически"
+#define RADIO_TX_COUNT 7
+
 typedef uint64_t msg_cookie_t;
 #define MSG_COOKIE_T_PLSHOLDER PRIu64
 
@@ -49,8 +61,16 @@ typedef struct {
 	size_t size;
 	size_t index;
 	size_t capacity;
-	uint8_t buf[];
+	uint8_t buf[ITS_RADIO_PACKET_SIZE];
 } radio_buf_t;
+
+
+typedef struct {
+	size_t size;
+	size_t index;
+	size_t capacity;
+	uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+} mav_buf_t;
 
 typedef struct {
 	uint16_t count_recieved_mavlink_msgs;
@@ -59,11 +79,12 @@ typedef struct {
 
 typedef struct radio_t {
 	sx126x_drv_t dev;
-	radio_buf_t mav_buf;
-	uint8_t _mav_buf[MAVLINK_MAX_PACKET_LEN];
+	mav_buf_t mav_buf;
 
-	radio_buf_t radio_buf;
-	uint8_t _radio_buf[ITS_RADIO_PACKET_SIZE];
+	radio_buf_t radio_buf[RADIO_TX_COUNT];
+	int radio_buf_to_write;
+	int radio_buf_to_read;
+
 
 	uint8_t mavlink_chan;
 	uint32_t msg_count;

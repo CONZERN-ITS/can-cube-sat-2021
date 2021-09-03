@@ -11,13 +11,15 @@
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
-#include "esp_log.h"
+
 #include "pinout_cfg.h"
 #include "log_collector.h"
 
 #define RADIO_SEND_DELAY 50
 #define RADIO_SLEEP_AWAKE_LEGNTH 300 //ms
 #define RADIO_SLEEP_SLEEP_LENGTH 4000 //ms
+#define MAX_ERRORS 5
+#define RADIO_PACKET_PERIOD ((RADIO_TX_PERIOD + RADIO_RX_PERIOD) / RADIO_TX_COUNT)
 
 static radio_t radio_server;
 
@@ -163,12 +165,7 @@ typedef enum {
 	RS_TX,
 	RS_RX,
 } radio_trans_dir_state_t;
-#define RADIO_TX_PERIOD 4000 * 1000
-#define RADIO_RX_PERIOD 2000 * 1000
-#define RADIO_START_ANYWAY 10000 * 1000
-#define PERIOD_SEND 600
-#define PERIOD_MSG (600 / (ITS_RADIO_PACKET_SIZE / 40) * 1000)
-#define MAX_ERRORS 5
+
 
 
 
@@ -232,23 +229,24 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 		} else {
 			state->error_count_tx = 0;
 			log_info("tx done");
-			server->radio_buf.index = 0;
+			rbuf_pull(server);
 		}
 		state->packet_done = 1;
 		state->last_sent = now;
 		break;
 	default:
-		log_info("no event");
+		log_trace("no event");
 		break;
 	}
 }
 
-static void _update_state(radio_private_state_t *state, int64_t now) {
+static void _update_state(radio_private_state_t *state, radio_t *server, int64_t now) {
 
 	if (state->dir_state == RS_RX && RADIO_RX_PERIOD < now - state->period_start && state->packet_done) {
 		log_info("START TX0");
 		state->dir_state = RS_TX;
 		state->period_start = now;
+		rbuf_reset(server);
 	}
 	if (state->dir_state == RS_TX && RADIO_TX_PERIOD < now - state->period_start && state->packet_done) {
 		log_info("START RX");
@@ -268,32 +266,35 @@ static void _update_state(radio_private_state_t *state, int64_t now) {
 		state->i_really_want_to_start_now = 1;
 		state->last_sent = now;
 		state->error_count_tx += MAX_ERRORS / 2 + 1;
+		rbuf_reset(server);
 	}
 }
 
 static void _try_to_send_or_recv(radio_t *server, radio_private_state_t *state, int64_t now) {
 	int rc = 0;
 	ESP_LOGV("radio", "TEST: %d %d %d %d", (int)state->last_sent, (int)now, state->packet_done, state->dir_state);
+	/*
+	 * Надо принять/получить пакет? Если предыдущий пакет закончил отправку/получение
+	 * и прошло достаточно времени, то надо отправить/получить.
+	 * Иногда мы очень хотим отправить. Например, при каком-то зависании. В этом случае
+	 * state->i_really_want_to_start_now становится равным единице.
+	 */
 	if ((state->packet_done && now - state->last_sent >= 000 * 1000) || state->i_really_want_to_start_now) {
+
 		state->packet_done = 0;
 		state->i_really_want_to_start_now = 0;
 
 		if (state->dir_state == RS_TX) {
 			ESP_LOGV("radio", "new tx");
-			fill_packet(server);
-			if (server->radio_buf.index < server->radio_buf.size) {
-				memset(&server->radio_buf.buf[server->radio_buf.index], 0, server->radio_buf.size - server->radio_buf.index);
-
-				server->radio_buf.index = server->radio_buf.size;
-			}
+			radio_buf_t *buf = rbuf_get(server);
 			if (LOG_LOCAL_LEVEL >= ESP_LOG_VERBOSE) {
-				for (int i = 0; i < server->radio_buf.size; i++) {
-					printf("0x%02X ", server->radio_buf.buf[i]);
+				for (int i = 0; i < buf->size; i++) {
+					printf("0x%02X ", buf->buf[i]);
 				}
 				printf("\n");
 				fflush(stdout);
 			}
-			sx126x_drv_payload_write(&server->dev, server->radio_buf.buf, server->radio_buf.size);
+			sx126x_drv_payload_write(&server->dev, buf->buf, buf->size);
 			rc = sx126x_drv_mode_tx(&server->dev, 0);
 			if (0 != rc) {
 				state->error_count_tx++;
@@ -335,9 +336,10 @@ static void radio_loop(void *arg) {
 			// Если мы получили сообщение - складываем в его хранилище
 			update_msg(&incoming_msg);
 		}
-		while (PERIOD_MSG < now - state.last_added) {
-			fill_one_packet(server);
-			state.last_added += PERIOD_MSG;
+		if (RADIO_PACKET_PERIOD < now - state.last_added) {
+			if (rbuf_fill(server)) {
+				state.last_added = now;
+			}
 		}
 
 		sx126x_drv_evt_t event;
@@ -353,7 +355,7 @@ static void radio_loop(void *arg) {
 			goto big_error;
 		}
 
-		_update_state(&state, now);
+		_update_state(&state, server, now);
 
 		_try_to_send_or_recv(server, &state, now);
 
@@ -402,8 +404,10 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 void radio_send_init(void) {
 	radio_server.mavlink_chan = mavlink_claim_channel();
 	radio_server.mav_buf.capacity = MAVLINK_MAX_PACKET_LEN;
-	radio_server.radio_buf.capacity = ITS_RADIO_PACKET_SIZE;
-	radio_server.radio_buf.size = ITS_RADIO_PACKET_SIZE;
+	for (int i = 0; i < RADIO_TX_COUNT; i++) {
+		radio_server.radio_buf[i].capacity = ITS_RADIO_PACKET_SIZE;
+		radio_server.radio_buf[i].size = ITS_RADIO_PACKET_SIZE;
+	}
 
 	xTaskCreatePinnedToCore(radio_task, "Radio send", configMINIMAL_STACK_SIZE + 4000, &radio_server, 4, &task_s, tskNO_AFFINITY);
 
