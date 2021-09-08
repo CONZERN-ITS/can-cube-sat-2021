@@ -4,46 +4,31 @@
  *  Created on: Apr 24, 2020
  *      Author: sereshotes
  */
+#include <stdio.h>
 #include <task_ds.h>
 #include "main.h"
 
 #include "assert.h"
 #include "task.h"
 #include "ds18b20.h"
+#include "onewire.h"
+
+//#define DS_SEARCH
 
 static float ds_temp[TDS_TEMP_MAX_COUNT];
 static int _is_valid[TDS_TEMP_MAX_COUNT];
 
-#if !defined CUBE_1 && !defined CUBE_2
 
-	static ds18b20_config_t hds[TDS_TEMP_MAX_COUNT];
-	static int ds_count = 0;
+static ds18b20_config_t hds[TDS_TEMP_MAX_COUNT] =
+{
+        // Из-за путаницы при сборке в первом кубе стоит вторая АКБ
+        { .rom = 0xc301206bf4fb5828 }, // банка 1
+        { .rom = 0xe501206c06262828 }, // банка 2
+        { .rom = 0x8101206bffd48f28 }, // банка 3
+        { .rom = 0x0000000b4dbaca28 }  // банка 4
+};
+static int ds_count = 4;
 
-#elif defined CUBE_1 && !defined CUBE_2
-	static ds18b20_config_t hds[TDS_TEMP_MAX_COUNT] =
-	{
-			// Из-за путаницы при сборке в первом кубе стоит вторая АКБ
-			{ .rom = 0xa601206bf929d228 }, // банка 1
-			{ .rom = 0xe501206c06262828 }, // банка 2
-			{ .rom = 0x8101206bffd48f28 }, // банка 3
-			{ .rom = 0x0000000b4dbaca28 }  // банка 4
-	};
-	static const int ds_count = 4;
-
-#elif defined CUBE_2 && !defined CUBE_1
-	static ds18b20_config_t hds[TDS_TEMP_MAX_COUNT] =
-	{
-			// Из-за путаницы при сборке во втором кубе стоит первая АКБ
-			{ .rom = 0x8b00000b4dc90b28 }, // банка 1
-			{ .rom = 0x3900000b4de81f28 }, // банка 2
-			{ .rom = 0xf800000b4d5f8d28 }, // банка 3
-			{ .rom = 0xf500000b4d235a28 }  // банка 4
-	};
-	static const int ds_count = 4;
-
-#else
-	#error "invalid cube definition"
-#endif
 
 static onewire_t how;
 
@@ -82,7 +67,7 @@ void task_ds_init(void *arg) {
     onewire_Init(&how, OW_GPIO_Port, OW_Pin);
     HAL_Delay(100);
 
-#if !defined CUBE_1 && !defined CUBE_2
+#ifdef DS_SEARCH
     int status = onewire_First(&how);
     int index = 0;
     while (status) {
@@ -99,7 +84,15 @@ void task_ds_init(void *arg) {
         }
     }
     ds_count = index;
-
+    printf("DS_TASK ds count = %d:\n", ds_count);
+    for (int i = 0; i < ds_count; i++) {
+        printf("\t[i] = ");
+        uint8_t *arr = (uint8_t*) &hds[i].rom;
+        for (int j = 0; j < sizeof(hds[i].rom); j++) {
+            printf("0x%02x, ", arr[j]);
+        }
+        printf("\n");
+    }
     if (ds_count == 0) {
         return;
     }
@@ -115,9 +108,15 @@ void task_ds_init(void *arg) {
     ds18b20_StartAll(&hds[0]);
 }
 
+void TM_GPIO_SetPinAsInput(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 void task_ds_update(void *arg) {
     static uint32_t prev = 0;
-    if (ds_count == 0 || HAL_GetTick() - prev < TDS_READ_PERIOD || !ds18b20_AllDone(hds)) {
+    int is_done = ds18b20_AllDone(hds);
+    if (!is_done) {
+        return;
+    }
+    uint32_t now = HAL_GetTick();
+    if (ds_count == 0 || now - prev < TDS_READ_PERIOD) {
         return;
     }
 
@@ -126,7 +125,10 @@ void task_ds_update(void *arg) {
         _is_valid[i] = ds18b20_Read(&hds[i], &ds_temp[i]);
     }
     ds18b20_StartAll(&hds[0]);
-
+    ONEWIRE_INPUT(hds[0].how);
+    for (int i = 0; i < ds_count; i++) {
+        printf("DS[%d] = %d.%02d\n", i, (int)ds_temp[i], (int)(ds_temp[i] * 100) % 100);
+    }
     for (int i = 0; i < callback_count; i++) {
         (*callback_arr[i])();
     }
