@@ -16,13 +16,7 @@
 #ifndef STATE_H_
 #define STATE_H_
 
-
-#define CALIBRATION 	0
-#define CALIBRATION_LSM 0
-#define CALIBRATION_LIS 0
-#define GPS				0
-#define LSM6DS3			0
-#define LIS3MDL			0
+#define _IWDG			1
 
 
 // if error set value and go to end

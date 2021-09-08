@@ -346,7 +346,7 @@ int UpdateDataAll(void)
         static int tick = 0;
         if (tick % 50 == 0) {
             tick = 0;
-            printf("lds: %.3f %.3f %.3f\n", light[0], light[1], light[2]);
+//            printf("lds: %.3f %.3f %.3f\n", light[0], light[1], light[2]);
         }
         tick++;
 

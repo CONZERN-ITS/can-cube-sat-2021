@@ -132,7 +132,7 @@ int uplink_write_mav(const mavlink_message_t * msg)
 	}
 
 	#ifdef _IWDG
-	if (0 == error)
+	if (error > 0)
 	{
 		// Перезапускаем iwdg после успешной отпраки сообщения
 		HAL_IWDG_Refresh(&hiwdg);
@@ -142,7 +142,7 @@ int uplink_write_mav(const mavlink_message_t * msg)
 	// its_i2c_link_write возвращает количество байт в случае успеха. Нам тут это не надо
 	// Сводим ответ до 0 в случае успеха
 
-	if (error)
+	if (error < 0)
 		return error;
 
 	return 0;
