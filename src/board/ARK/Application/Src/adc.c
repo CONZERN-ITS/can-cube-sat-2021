@@ -15,23 +15,17 @@
 #define ADC_PERIOD 1000 //ms
 #define ADC_COUNT_IN_ROW 10
 
-static int convert_count = 0;
 uint16_t temp_int = 0;
 uint16_t vref = 0;
 #define tV_25   1.43f      // Напряжение (в вольтах) на датчике при температуре 25 °C.
 #define tSlope  0.0043f    // Изменение напряжения (в вольтах) при изменении температуры на градус.
 extern ADC_HandleTypeDef hadc1;
 
-typedef enum {
-    CONV_TEMP,
-    CONV_VCC,
-    CONV_COUNT,
-} conversion_t;
-static conversion_t current_conversion;
-static float t_avg = 0;
-static float v_avg = 0;
-#define BUF_SIZE 100
-static uint16_t buf[BUF_SIZE];
+#define BUF_SIZE 200
+#define MEASURE_PERIOD_MS 1000
+#define TEMP_SENSOR_V25 1430 // (1340 .. 1520) mv
+#define TEMP_SENSOR_SLOPE 4.3 // (4.0 .. 4.6)
+static uint16_t adc_buffer[BUF_SIZE];
 
 // Напряжение со встроенного термистра при 25 градусах (в милливольта)
 #define INTERNAL_TEMP_V25 (1430.0f)
@@ -39,83 +33,47 @@ static uint16_t buf[BUF_SIZE];
 #define INTERNAL_TEMP_AVG_SLOPE (4.3f)
 
 void adc_task_init(void *arg) {
-    //HAL_ADCEx_Calibration_Start(&hadc1);
-    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)buf, BUF_SIZE);
+	HAL_ADCEx_Calibration_Start(&hadc1);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, sizeof(adc_buffer)/sizeof(adc_buffer[0]));
 }
 
 void adc_task_update(void *arg) {
 
-    static uint32_t prev = 0;
-    uint32_t now = HAL_GetTick();
-    if (now - prev > 500) {
-        float t_avg = 0;
-        for (int i = 0; i < BUF_SIZE; i+=2) {
-            t_avg += buf[i];
-        }
-        float v_avg = 0;
-        for (int i = 1; i < BUF_SIZE; i+=2) {
-            v_avg += buf[i];
-        }
-        v_avg /= (float)BUF_SIZE;
-        float v_res = VREFINT_CAL_VREF * (*VREFINT_CAL_ADDR) / (vrefint);
-        t_avg /= (float)BUF_SIZE;
-        float t_res = t_avg;
-    }
+	static uint32_t prev = 0;
 
-    if (current_conversion == CONV_COUNT && convert_count < ADC_COUNT_IN_ROW) {
-        convert_count++;
+	const uint32_t now = HAL_GetTick();
+	if (now - prev < MEASURE_PERIOD_MS)
+		return;
 
-        float t0 = temp_int * 3.3 / (float)0x0FFF;
-        float t = (tV_25 - t0) / tSlope + 25;
-        t_avg += t;
-        float v0 =  vref * 3.3 / (float)0x0FFF;
-        v_avg += v0;
+	prev = now;
 
-        //printf("-----temp: %d\n", (int)(100 * t));
+	int64_t temp_raw_accum = 0;
+	int64_t vref_raw_accum = 0;
+	for (size_t i = 0; i < sizeof(adc_buffer)/sizeof(adc_buffer[0]); i++)
+	{
+		if (i % 2 == 0)
+			temp_raw_accum += adc_buffer[i];
+		else
+			vref_raw_accum += adc_buffer[i];
+	}
 
-        current_conversion = 0;
-        printf("ADC: t = %d.%d, v = %d.%d\n", (int)t, (int)(t * 100) % 100, (int)v0, (int)(v0 * 100) % 100);
-        HAL_ADC_Start_IT(&hadc1);
-    }
-    static uint32_t time = 0;
-    static mavlink_message_t msg;
-    static int is_sending = 0;
-    if (convert_count >= ADC_COUNT_IN_ROW && HAL_GetTick() - time > ADC_PERIOD && !is_sending) {
-        time = HAL_GetTick();
-        convert_count = 0;
-        t_avg /= ADC_COUNT_IN_ROW;
-        v_avg /= ADC_COUNT_IN_ROW;
+	float temp_raw_avg = (float)temp_raw_accum / (sizeof(adc_buffer) / sizeof(adc_buffer[0]) / 2);
+	float vref_raw_avg = (float)vref_raw_accum / (sizeof(adc_buffer) / sizeof(adc_buffer[0]) / 2);
+	float vdda = 1200.f / vref_raw_avg  * 0xfff;
+	float vtemp = vdda / 0xfff * temp_raw_avg;
+	float temp_c = (TEMP_SENSOR_V25 - vtemp) / TEMP_SENSOR_SLOPE + 25;
+	printf("ADC: vdda: %d, temp_uc %d\n", (int)(vdda), (int)(temp_c*1000));
 
-        its_time_t here = {0};
-        its_gettimeofday(&here);
+	static mavlink_message_t msg;
+	its_time_t here = {0};
+	its_gettimeofday(&here);
 
-        mavlink_own_temp_t mot = {0};
-        mot.deg = t_avg;
-        mot.time_s = here.sec;
-        mot.time_us = here.usec;
-        mot.vdda = v_avg;
+	mavlink_own_temp_t mot = {0};
+	mot.time_s = here.sec;
+	mot.time_us = here.usec;
+	mot.vdda = vdda;
+	mot.deg = temp_c;
 
-        mavlink_msg_own_temp_encode(mavlink_system, COMP_ANY_0, &msg, &mot);
-
-        is_sending = 1;
-        t_avg = 0;
-        v_avg = 0;
-    }
-    if (is_sending) {
-        if (uplink_packet(&msg) >= 0) {
-            is_sending = 0;
-        }
-    }
-}
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
-    if(hadc->Instance == ADC1) {
-        if (current_conversion == CONV_TEMP) {
-            temp_int = HAL_ADC_GetValue(hadc);
-            current_conversion++;
-        }
-        if (current_conversion == CONV_VCC) {
-            vref = HAL_ADC_GetValue(hadc);
-            current_conversion++;
-        }
-    }
+	mavlink_msg_own_temp_encode(mavlink_system, COMP_ANY_0, &msg, &mot);
+	uplink_packet(&msg);
 }
