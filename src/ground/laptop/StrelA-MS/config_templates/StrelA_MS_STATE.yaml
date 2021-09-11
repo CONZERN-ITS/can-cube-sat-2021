@@ -277,6 +277,15 @@ CentralWidget:
             - SINS
             color:
             - '#FFFFFF'
+          ARK_OWN_TEMP:
+            sourse_id: '12_0'
+            message_id: 'OWN_TEMP'
+            field_id:
+            - deg
+            field_name:
+            - ARK
+            color:
+            - '#0096FF'
           CUBE_1_BCU_TEMP_COMP_0:
             sourse_id: '10_0'
             message_id: 'THERMAL_STATE'
@@ -535,6 +544,15 @@ CentralWidget:
             color:
             - g
             - '#FF4646'
+          ARK_VOLTAGE:
+            sourse_id: '12_0'
+            message_id: 'OWN_TEMP'
+            field_id:
+            - vdda
+            field_name:
+            - ARK vdda
+            color:
+            - b
         legend_is_on: true
         is_on: true
         max_data_length: 100
@@ -733,7 +751,7 @@ MainWindow:
       connection: udpin:0.0.0.0:14540
       notimestamps: true
     ZMQ:
-      # bus_bpcs: "tcp://192.168.0.210:7778"
+      # bus_bpcs: "tcp://192.168.0.200:7778"
       bus_bpcs: "tcp://192.168.1.223:7778"
       topics:
       - "its.telemetry_packet"
