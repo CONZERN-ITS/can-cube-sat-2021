@@ -11,7 +11,7 @@ CentralWidget:
         message_id: 'PLD_ME2O2_DATA'
       PLD_DOSIM_DATA_MOMENTARY:
         name: 13_0_PLD_DOSIM_DATA (Momentary)
-        sourse_id: '13_1'
+        sourse_id: '13_0'
         message_id: 'PLD_DOSIM_DATA'
       PLD_DOSIM_DATA_WINDOWED:
         name: 13_1_PLD_DOSIM_DATA (Accumlated)
@@ -446,11 +446,11 @@ CentralWidget:
         Packets:
           13_0_PLD_EXT_BME280_DATA:
             sourse_id: '13_1'
-            message_id: PLD_BME280_DATA
+            message_id: PLD_MS5611_DATA
             field_id:
             - altitude
             field_name:
-            - BME280 out
+            - alt ms5611 out
             color:
             - g
         name: Altitude
@@ -498,7 +498,7 @@ CentralWidget:
         - 0
         - 1
         - 1
-        units: 'mR/h'
+        units: 'uR/h'
       DNA temperature:
         Packets:
           13_0_PLD_DNA_DATA:
