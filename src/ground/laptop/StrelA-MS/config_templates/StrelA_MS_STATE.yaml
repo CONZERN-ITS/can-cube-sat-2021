@@ -1,6 +1,18 @@
 CentralWidget:
   DataWidget:
     Data_table:
+      PL_I2C_LINK_STATS:
+        name: 13_0_I2C_LINK_STATS
+        sourse_id: '13_0'
+        message_id: 'I2C_LINK_STATS'
+      SINS_I2C_LINK_STATS:
+        name: 12_0_I2C_LINK_STATS
+        sourse_id: '12_0'
+        message_id: 'I2C_LINK_STATS'
+      ARK_I2C_LINK_STATS:
+        name: 11_0_I2C_LINK_STATS
+        sourse_id: '11_0'
+        message_id: 'I2C_LINK_STATS'
       CUBE_1_BCU_TEMP_COMP_0:
         name: BCU C0 THERMAL_STATE
         sourse_id: '10_0'
@@ -203,6 +215,18 @@ CentralWidget:
         name: GCS RADIO STATS
         sourse_id: '1_0'
         message_id: 'radio.stats'
+      PL_I2C_LINK_STATS:
+        name: 13_0_I2C_LINK_STATS
+        sourse_id: '13_0'
+        message_id: 'I2C_LINK_STATS'
+      SINS_I2C_LINK_STATS:
+        name: 12_0_I2C_LINK_STATS
+        sourse_id: '12_0'
+        message_id: 'I2C_LINK_STATS'
+      ARK_I2C_LINK_STATS:
+        name: 11_0_I2C_LINK_STATS
+        sourse_id: '11_0'
+        message_id: 'I2C_LINK_STATS'
       is_on: true
     Time_table:
       CUBE_1_BCU:
