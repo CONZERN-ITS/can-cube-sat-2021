@@ -89,8 +89,13 @@ typedef struct {
 typedef struct {
     struct timeval tv;
     float sensor[ITS_SINS_LDS_COUNT];
-    float dir[3];
-    float error;
+    float dir_xyz[3];
+    float dir_sph[3];
+    float dir_error;
+
+    float dir_real[3];
+    int do_we_use_lds;
+    uint32_t last_valid_gps_packet_time;
 }stateSINS_lds_t;
 
 

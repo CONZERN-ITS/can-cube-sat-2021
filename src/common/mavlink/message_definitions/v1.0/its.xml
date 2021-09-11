@@ -361,6 +361,22 @@
       <field type="uint16_t" name="reset_cause">RESET_CAUSE enum values bitwise combination. Shows cause of last reset</field>
     </message>
 
+    <message id="50104" name="SINS_AHRS_STATS">
+      <description>
+        This message contains SINS AHRS stats
+      </description>
+      <field type="uint64_t" name="time_s" units="s">Time since the Unix epoch</field>
+      <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
+      <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
+      
+      <field type="uint8_t" name="is_lds_used_for_ahrs"> Field that shows is LDS used for AHRS calculations</field>
+      <field type="uint32_t" name="last_valid_packet_time" units="ms">Steady time of last valid GPS packet</field>
+      
+      <field type="float[3]" name="light_dir_real">Direction of light calculated by SolTrack using GPS data in reference to Earth</field>
+      <field type="float[3]" name="light_dir_measured">Direction of light calculated by internal algorithm using light dioides data in the local reference system</field>
+      <field type="float" name="light_dir_error">Error calculated by internal algorithm</field>
+    </message>
+
 
     <!--  Payload messages. Id range: 50200 - 50299  -->
     <message id="50200" name="PLD_BME280_DATA">

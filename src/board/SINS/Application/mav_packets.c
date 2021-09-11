@@ -60,24 +60,48 @@ int mavlink_sins_isc(stateSINS_isc_t * state_isc)
 
 int mavlink_lds_dir(stateSINS_lds_t * state)
 {
-	mavlink_lds_dir_t mld;
-	mld.time_s = state->tv.tv_sec;
-	mld.time_us = state->tv.tv_usec;
-	mld.time_steady = HAL_GetTick();
-	//printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
-	//printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
+    mavlink_lds_dir_t mld;
+    mld.time_s = state->tv.tv_sec;
+    mld.time_us = state->tv.tv_usec;
+    mld.time_steady = HAL_GetTick();
+    //printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
+    //printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
 
 
-	mld.x = state->dir[0];
-	mld.y = state->dir[1];
-	mld.z = state->dir[2];
-	mld.error = state->error;
+    mld.x = state->dir_xyz[0];
+    mld.y = state->dir_xyz[1];
+    mld.z = state->dir_xyz[2];
+    mld.error = state->dir_error;
 
 
-	mavlink_message_t msg;
-	mavlink_msg_lds_dir_encode(SYSTEM_ID, COMPONENT_ID, &msg, &mld);
-	int error = uplink_write_mav(&msg);
-	return error;
+    mavlink_message_t msg;
+    mavlink_msg_lds_dir_encode(SYSTEM_ID, COMPONENT_ID, &msg, &mld);
+    int error = uplink_write_mav(&msg);
+    return error;
+}
+
+int mavlink_ahrs_stats(stateSINS_lds_t * state)
+{
+    mavlink_sins_ahrs_stats_t msas;
+    msas.time_s = state->tv.tv_sec;
+    msas.time_us = state->tv.tv_usec;
+    msas.time_steady = HAL_GetTick();
+    //printf("Accel: %f %f %f \n", state_lds->accel[0], state_lds->accel[1], state_lds->accel[2]);
+    //printf("Mag: %f %f %f \n", state_lds->magn[0], state_lds->magn[1], state_lds->magn[2]);
+
+
+    for (int i = 0; i < 3; i++) {
+        msas.light_dir_measured[i] = state->dir_sph[i];
+        msas.light_dir_real[i] = state->dir_real[i];
+    }
+    msas.light_dir_error = state->dir_error;
+    msas.last_valid_packet_time = state->last_valid_gps_packet_time;
+    msas.is_lds_used_for_ahrs = state->do_we_use_lds;
+
+    mavlink_message_t msg;
+    mavlink_msg_sins_ahrs_stats_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msas);
+    int error = uplink_write_mav(&msg);
+    return error;
 }
 
 int mavlink_light_diode(stateSINS_lds_t * state)
