@@ -183,7 +183,14 @@ void send_stats(void)
 	its_i2c_link_stats_t i2c_stats;
 	its_i2c_link_stats(&i2c_stats);
 
+	its_time_t now;
+	its_gettimeofday(&now);
+
 	mavlink_i2c_link_stats_t i2c_stats_msg;
+	i2c_stats_msg.time_s = now.sec;
+	i2c_stats_msg.time_us = now.usec;
+	i2c_stats_msg.time_steady = HAL_GetTick();
+
 	i2c_stats_msg.rx_packet_start_cnt = i2c_stats.rx_packet_start_cnt;
 	i2c_stats_msg.rx_packet_done_cnt = i2c_stats.rx_packet_done_cnt;
 	i2c_stats_msg.rx_cmds_start_cnt = i2c_stats.rx_cmds_start_cnt;
