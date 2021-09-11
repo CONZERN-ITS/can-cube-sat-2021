@@ -15,6 +15,7 @@
 #include "stdlib.h"
 #include "inttypes.h"
 
+#include "its-i2c-link.h"
 
 
 static int tsend_therm_period = 1000 / TDS_TEMP_MAX_COUNT;
@@ -177,6 +178,43 @@ void send_stats(void)
 	mavlink_ark_stats_t stats_msg;
 	its_collect_ark_stats(&stats_msg);
 	mavlink_msg_ark_stats_encode(mavlink_system, (uint8_t)0, &msg, &stats_msg);
+	uplink_packet(&msg);
+
+	its_i2c_link_stats_t i2c_stats;
+	its_i2c_link_stats(&i2c_stats);
+
+	mavlink_i2c_link_stats_t i2c_stats_msg;
+	i2c_stats_msg.rx_packet_start_cnt = i2c_stats.rx_packet_start_cnt;
+	i2c_stats_msg.rx_packet_done_cnt = i2c_stats.rx_packet_done_cnt;
+	i2c_stats_msg.rx_cmds_start_cnt = i2c_stats.rx_cmds_start_cnt;
+	i2c_stats_msg.rx_cmds_done_cnt = i2c_stats.rx_cmds_done_cnt;
+	i2c_stats_msg.rx_drops_start_cnt = i2c_stats.rx_drops_start_cnt;
+	i2c_stats_msg.rx_drops_done_cnt = i2c_stats.rx_drops_done_cnt;
+
+	i2c_stats_msg.tx_psize_start_cnt = i2c_stats.tx_psize_start_cnt;
+	i2c_stats_msg.tx_psize_done_cnt = i2c_stats.tx_psize_done_cnt;
+	i2c_stats_msg.tx_packet_start_cnt = i2c_stats.tx_packet_start_cnt;
+	i2c_stats_msg.tx_packet_done_cnt = i2c_stats.tx_packet_done_cnt;
+	i2c_stats_msg.tx_zeroes_start_cnt = i2c_stats.tx_zeroes_start_cnt;
+	i2c_stats_msg.tx_zeroes_done_cnt = i2c_stats.tx_zeroes_done_cnt;
+	i2c_stats_msg.tx_empty_buffer_cnt = i2c_stats.tx_empty_buffer_cnt;
+	i2c_stats_msg.tx_overruns_cnt = i2c_stats.tx_overruns_cnt;
+
+	i2c_stats_msg.cmds_get_size_cnt = i2c_stats.cmds_get_size_cnt;
+	i2c_stats_msg.cmds_get_packet_cnt = i2c_stats.cmds_get_packet_cnt;
+	i2c_stats_msg.cmds_set_packet_cnt = i2c_stats.cmds_set_packet_cnt;
+	i2c_stats_msg.cmds_invalid_cnt = i2c_stats.cmds_invalid_cnt;
+
+	i2c_stats_msg.restarts_cnt = i2c_stats.restarts_cnt;
+	i2c_stats_msg.berr_cnt = i2c_stats.berr_cnt;
+	i2c_stats_msg.arlo_cnt = i2c_stats.arlo_cnt;
+	i2c_stats_msg.ovf_cnt = i2c_stats.ovf_cnt;
+	i2c_stats_msg.af_cnt = i2c_stats.af_cnt;
+	i2c_stats_msg.btf_cnt = i2c_stats.btf_cnt;
+	i2c_stats_msg.tx_wrong_size_cnt = i2c_stats.tx_wrong_size_cnt;
+	i2c_stats_msg.rx_wrong_size_cnt = i2c_stats.rx_wrong_size_cnt;
+
+	mavlink_msg_i2c_link_stats_encode(mavlink_system, (uint8_t)0, &msg, &i2c_stats_msg);
 	uplink_packet(&msg);
 }
 
