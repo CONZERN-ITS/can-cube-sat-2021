@@ -5,12 +5,27 @@
  *      Author: sereshotes
  */
 
+#include "main.h"
+
+#include "assert.h"
+#include "task.h"
+#include "ina219_helper.h"
+
 #ifndef INC_TASK_INA_H_
 #define INC_TASK_INA_H_
 
 #define TINA_READ_PERIOD 0
 #define TINA_CALLBACK_COUNT 3
 #define INA_TIMEOUT 100
+
+
+extern I2C_HandleTypeDef hi2c2;
+#define INA_BUS_HANDLE (&hi2c2)
+
+#define INA_I2C_FORCE_RESET 	__HAL_RCC_I2C2_FORCE_RESET
+#define INA_I2C_RELEASE_RESET 	__HAL_RCC_I2C2_RELEASE_RESET
+
+
 
 #if defined CUBE_1 && !defined CUBE_2
 #   define TINA_COUNT 2

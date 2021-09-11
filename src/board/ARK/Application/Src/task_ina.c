@@ -7,16 +7,11 @@
 
 #include "task_ina.h"
 
-#include "main.h"
-
-#include "assert.h"
-#include "task.h"
-#include "ina219_helper.h"
 
 static tina_value_t ina_value[TINA_COUNT];
 static int _is_valid[TINA_COUNT];
 
-extern I2C_HandleTypeDef hi2c2;
+
 static ina219_t hina[2];
 
 static void (*ina_callback_arr[TINA_CALLBACK_COUNT])(void);
@@ -36,8 +31,8 @@ int tina219_get_value(tina_value_t **arr, int **is_valid) {
 void task_ina_init(void *arg) {
 
 #   if defined CUBE_1 && !defined CUBE_2
-	ina219_init_default(&hina[0], &hi2c2, INA219_I2CADDR_A1_GND_A0_GND << 1, INA_TIMEOUT);
-	ina219_init_default(&hina[1], &hi2c2, INA219_I2CADDR_A1_GND_A0_VSP << 1, INA_TIMEOUT);
+	ina219_init_default(&hina[0], INA_BUS_HANDLE, INA219_I2CADDR_A1_GND_A0_GND << 1, INA_TIMEOUT);
+	ina219_init_default(&hina[1], INA_BUS_HANDLE, INA219_I2CADDR_A1_GND_A0_VSP << 1, INA_TIMEOUT);
 #   elif defined CUBE_2 && !defined CUBE_1
     // не делаем ничего, так как ин тут нет
 #   else
@@ -65,6 +60,20 @@ void task_ina_update(void *arg) {
              ina_value[i].voltage = ina219_bus_voltage_convert(&hina[i], pd.busv);
          } else {
              _is_valid[i] = 0;
+
+             // Грузим шину, если получам невалидные данные
+             INA_I2C_FORCE_RESET();
+             INA_I2C_RELEASE_RESET();
+
+             HAL_I2C_MspDeInit(INA_BUS_HANDLE);
+             HAL_Delay(10);
+             __HAL_I2C_RESET_HANDLE_STATE(INA_BUS_HANDLE);
+             HAL_I2C_MspInit(INA_BUS_HANDLE);
+
+             //ужасный копипаст
+             ina219_init_default(&hina[0], INA_BUS_HANDLE, INA219_I2CADDR_A1_GND_A0_GND << 1, INA_TIMEOUT);
+             ina219_init_default(&hina[1], INA_BUS_HANDLE, INA219_I2CADDR_A1_GND_A0_VSP << 1, INA_TIMEOUT);
+
          }
     }
 
