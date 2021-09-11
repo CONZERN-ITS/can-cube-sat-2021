@@ -220,12 +220,11 @@ void on_gps_packet_ahrs(void *arg, const ubx_any_packet_t * packet) {
         return;
     }
 
-    int is_packet_valid = (packet->packet.gpstime.valid_flags & UBX_NAVGPSTIME_FLAGS__LEAPS_VALID) &&
-            (packet->packet.gpstime.valid_flags & UBX_NAVGPSTIME_FLAGS__TOW_VALID) &&
-            (packet->packet.gpstime.valid_flags & UBX_NAVGPSTIME_FLAGS__WEEK_VALID) &&
-            (packet->packet.navsol.gps_fix == UBX_FIX_TYPE__3D);
+    int is_packet_valid =
+            (packet->pid == UBX_PID_NAV_SOL &&
+             packet->packet.navsol.gps_fix == UBX_FIX_TYPE__3D);
 
-    if (!is_packet_valid) {
+    if (!is_packet_valid || time_svc_timebase() != TIME_SVC_TIMEBASE__GPS) {
         return;
     }
 
