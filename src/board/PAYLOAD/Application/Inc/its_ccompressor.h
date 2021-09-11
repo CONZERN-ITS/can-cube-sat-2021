@@ -14,7 +14,7 @@
 
 void its_ccontrol_init() ;
 
-void its_ccontrol_update_altitude(float altitude);
+void its_ccontrol_update_altitude(float altitude, bool data_from_ms5611);
 
 void its_ccontrol_update_inner_pressure(float pressure);
 

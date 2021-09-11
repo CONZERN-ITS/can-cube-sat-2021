@@ -200,7 +200,7 @@ int app_main()
 			if (0 == rc)
 			{
 				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD)
-					its_ccontrol_update_altitude(bme_msg.altitude);
+					its_ccontrol_update_altitude(bme_msg.altitude, 0);
 
 				mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
 			}
@@ -213,7 +213,7 @@ int app_main()
 			commissar_accept_report(COMMISSAR_SUB_MS5611_EXT, rc);
 			if (rc == 0)
 			{
-				its_ccontrol_update_altitude(data.altitude);
+				its_ccontrol_update_altitude(data.altitude, 1);
 				mav_main_process_ms5611_message(&data, PLD_LOC_EXTERNAL);
 			}
 

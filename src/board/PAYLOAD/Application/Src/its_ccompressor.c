@@ -59,6 +59,7 @@ static its_ccontrol_hal_t control = {
 	}
 };
 
+static int last_time_get_ms5611_data = 0;
 
 void its_ccontrol_init()
 {
@@ -74,9 +75,18 @@ void its_ccontrol_init()
 }
 
 
-void its_ccontrol_update_altitude(float altitude)
+void its_ccontrol_update_altitude(float altitude, bool data_from_ms5611)
 {
-	ccontrol_update_altitude(altitude);
+	if (data_from_ms5611)
+	{
+		last_time_get_ms5611_data = HAL_GetTick();
+		ccontrol_update_altitude(altitude);
+	}
+	else
+	{
+		if ((last_time_get_ms5611_data - HAL_GetTick()) > 5000)
+			ccontrol_update_altitude(altitude);
+	}
 }
 
 
