@@ -71,7 +71,7 @@ void adc_task_update(void *arg) {
 	mavlink_own_temp_t mot = {0};
 	mot.time_s = here.sec;
 	mot.time_us = here.usec;
-	mot.vdda = vdda;
+	mot.vdda = vdda/1000;
 	mot.deg = temp_c;
 
 	mavlink_msg_own_temp_encode(mavlink_system, COMP_ANY_0, &msg, &mot);
