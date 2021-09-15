@@ -82,7 +82,7 @@ BaseType_t msp_rethink(uint32_t ticks) {
 	rc = shift_reg_load(&hsr);
 	rc = shift_reg_return(&hsr);
 
-	return rc != pdTRUE;
+	return rc;
 }
 
 
