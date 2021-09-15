@@ -33,10 +33,12 @@
 #define MOUNT_POINT "/sdcard"
 #define NAME_BASE "T"
 
-#define SD_GLOBAL_MAX_RETRY_COUNT 4
 #define SD_GLOBAL_RETRY_DELAY 50
-#define SD_MOUNT_MAX_RETRY_COUNT 10
+#define SD_MOUNT_MAX_RETRY_COUNT 3
 #define SD_MOUNT_DELAY 2000
+#define SD_WRITE_MAX_RETRY_COUNT 4
+#define SD_SAVE_MAX_RETRY_COUNT 4
+#define SD_OPEN_MAX_RETRY_COUNT 2
 
 #define SD_SAVE_RETRY_DELAY 1000 //ms
 #define SD_SAVE_PERIOD 10000 //ms
@@ -192,7 +194,7 @@ static int _sd_mount_connect() {
 	//gpio_set_pull_mode(13, GPIO_PULLUP_ONLY);   // D3, needed in 4- and 1-line modes
 
 	sdmmc_host_t host = SDMMC_HOST_DEFAULT();
-	host.max_freq_khz = SDMMC_FREQ_DEFAULT;
+	host.max_freq_khz = 5000;
 	host.flags = SDMMC_HOST_FLAG_1BIT;
 
 	sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
@@ -270,40 +272,41 @@ cycle:
 			}
 		} break;
 		case SD_STATE_MOUNTED_UNOPEN: {
-			if (sd_retry_count > SD_GLOBAL_MAX_RETRY_COUNT) {
-				ESP_LOGE("SD", "Can't open file. Have to reboot SD %d", sd_retry_count);
-				sd_retry_count = 0;
+			static int retry_open = 0;
+			if (retry_open > SD_OPEN_MAX_RETRY_COUNT) {
+				ESP_LOGE("SD", "Can't open file. Have to reboot SD %d", retry_open);
+				retry_open = 0;
 				esp_vfs_fat_sdcard_unmount(mount_point, card);
 				sd_state = SD_STATE_UNMOUNTED;
 				goto cycle;
 			}
 			if (name_number < 0) {
 				if (_sd_find_last(MOUNT_POINT, &name_number)) {
-					sd_retry_count++;
+					retry_open++;
 					sd_error_count++;
 					vTaskDelay(SD_GLOBAL_RETRY_DELAY / portTICK_PERIOD_MS);
 					goto cycle;
 				} else {
-					sd_retry_count = 0;
+					retry_open = 0;
 				}
 			}
 			char str[200] = {0};
 			snprintf(str, sizeof(str), MOUNT_POINT"/"NAME_BASE"%d", name_number);
 			if ((fout = _sd_open(str)) < 0) {
-				sd_retry_count++;
+				retry_open++;
 				sd_error_count++;
 				vTaskDelay(SD_GLOBAL_RETRY_DELAY / portTICK_PERIOD_MS);
 				goto cycle;
 			} else {
 				sd_state = SD_STATE_OPEN_WRITING;
-				sd_retry_count = 0;
+				retry_open = 0;
 			}
 		} break;
 		case SD_STATE_OPEN_WRITING: {
 			static int retry_write = 0;
 			static int retry_save = 0;
 
-			if (retry_write > SD_GLOBAL_MAX_RETRY_COUNT || retry_save > SD_GLOBAL_MAX_RETRY_COUNT) {
+			if (retry_write > SD_WRITE_MAX_RETRY_COUNT || retry_save > SD_SAVE_MAX_RETRY_COUNT) {
 				ESP_LOGE("SD", "Can't write anymore. Have to create new file %d %d", retry_write, retry_save);
 				retry_write = 0;
 				retry_save = 0;
