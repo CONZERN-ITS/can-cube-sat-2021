@@ -99,7 +99,7 @@ static int add(const mavlink_message_t *msg) {
 		return 1;
 	}
 
-	ESP_LOGI("radio", "Add: %d %d:%d", msg->msgid, msg->sysid, msg->compid);
+	log_trace("Add: %d %d:%d", msg->msgid, msg->sysid, msg->compid);
 	int id = get_hash(msg->msgid);
 	if (id >= 0) {
 		arr_buf_size++;
@@ -151,7 +151,7 @@ static msg_container *get_best(int now) {
 		}
 	}
 	if (st_best) {
-		ESP_LOGI("radio", "chosen %d with coef %f, period %f, last %d, now %d",
+		log_trace("chosen %d with coef %f, period %f, last %d, now %d",
 				st_best->id, coef_best, st_best->period, st_best->last, now);
 	}
 	return st_best;
@@ -192,6 +192,7 @@ typedef struct  {
 	int empty_buffer_time_deadline;
 } safe_send_t;
 
+/*
 
 static 	safe_send_t sst = {
 	.cfg = {
@@ -205,6 +206,7 @@ static 	safe_send_t sst = {
 	.sleep_state = SLEEP_STATE_SENDING,
 	.super_portion_byte_counter = 300
 };
+*/
 
 /*
 static int is_sleeping(safe_send_t *sst) {
@@ -266,7 +268,7 @@ end:
 
 
 static int rbuf_fill(radio_t * server) {
-	log_info("rbuf_fill %d %d" ,server->packet_count, server->radio_buf_to_write);
+	log_trace("rbuf_fill %d %d" ,server->packet_count, server->radio_buf_to_write);
 	if (server->radio_buf_to_write >= RADIO_TX_COUNT) {
 		return 0;
 	}
@@ -282,7 +284,7 @@ static int rbuf_fill(radio_t * server) {
 	buf->index += sizeof(count);
 
 	while (buf->index < buf->size) {
-		log_info("gen %d %d", buf->index, buf->size);
+		log_trace("gen %d %d", buf->index, buf->size);
 		if (server->mav_buf.size - server->mav_buf.index > 0) {
 			uint8_t *out = server->mav_buf.buf + server->mav_buf.index;
 			int cnt = server->mav_buf.size - server->mav_buf.index;
@@ -314,17 +316,17 @@ static int rbuf_fill(radio_t * server) {
 }
 
 static radio_buf_t* rbuf_get(radio_t * server) {
-	log_info("rbuf_get %d", server->radio_buf_to_read);
+	log_trace("rbuf_get %d", server->radio_buf_to_read);
 	assert(server->radio_buf_to_read < RADIO_TX_COUNT);
 	return &server->radio_buf[server->radio_buf_to_read];
 }
 static void rbuf_pull(radio_t * server) {
-	log_info("rbuf_pull %d", server->radio_buf_to_read);
+	log_trace("rbuf_pull %d", server->radio_buf_to_read);
 	server->radio_buf_to_read++;
 }
 
 static void rbuf_reset(radio_t * server) {
-	log_info("rbuf_reset %d %d", server->radio_buf_to_read, server->radio_buf_to_write);
+	log_trace("rbuf_reset %d %d", server->radio_buf_to_read, server->radio_buf_to_write);
 	server->radio_buf_to_read = 0;
 	server->radio_buf_to_write = 0;
 }

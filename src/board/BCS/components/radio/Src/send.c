@@ -189,7 +189,7 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 	{
 	case SX126X_DRV_EVTKIND_RX_DONE:
 		if (!event.arg.rx_done.timed_out) {
-			log_trace("rx done");
+			log_info("rx done");
 
 			uint8_t buf[ITS_RADIO_PACKET_SIZE] = {0};
 			rc = sx126x_drv_payload_read(&server->dev, buf, sizeof(buf));
@@ -199,16 +199,17 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 				return;
 			}
 			server->stats.last_packet_time = esp_timer_get_time() / 1000;
-
-			for (int i = 0; i < sizeof(buf); i++) {
-				printf("0x%02X ", buf[i]);
+			if (LOG_LOCAL_LEVEL >= ESP_LOG_DEBUG) {
+				for (int i = 0; i < sizeof(buf); i++) {
+					printf("0x%02X ", buf[i]);
+				}
+				printf("\n");
 			}
-			printf("\n");
 			mavlink_message_t msg = {0};
 			mavlink_status_t st = {0};
 			for (int i = 0; i < sizeof(buf); i++) {
 				if (mavlink_parse_char(server->mavlink_chan, buf[i], &msg, &st)) {
-					log_trace("yay! we've got a message %d", msg.msgid);
+					log_info("yay! we've got a message %d", msg.msgid);
 
 					server->stats.count_recieved_mavlink_msgs++;
 
@@ -217,7 +218,7 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 				}
 			}
 		} else {
-			log_trace("rx timeout");
+			log_info("rx timeout");
 		}
 		state->packet_done = 1;
 		break;
@@ -300,6 +301,8 @@ static void _try_to_send_or_recv(radio_t *server, radio_private_state_t *state, 
 				state->error_count_tx++;
 				log_error("unable to switch radio to tx mode: %d. Dropping frame", rc);
 				state->i_really_want_to_start_now = 1;
+			} else {
+				log_info("sending packet...");
 			}
 		}
 		if (state->dir_state == RS_RX) {
@@ -309,6 +312,8 @@ static void _try_to_send_or_recv(radio_t *server, radio_private_state_t *state, 
 				state->error_count_rx++;
 				log_error("unable to switch radio to rx mode: %d. Dropping frame", rc);
 				state->i_really_want_to_start_now = 1;
+			} else {
+				log_info("receiving packet...");
 			}
 		}
 	}

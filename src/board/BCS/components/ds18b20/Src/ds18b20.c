@@ -43,7 +43,7 @@
 #include "driver/gpio.h"
 #include "esp_system.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
+#define LOG_LOCAL_LEVEL ESP_LOG_NONE
 #include "esp_log.h"
 
 #include "ds18b20.h"

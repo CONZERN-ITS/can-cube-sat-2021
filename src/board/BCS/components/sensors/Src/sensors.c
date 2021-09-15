@@ -28,7 +28,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 
 #include "pinout_cfg.h"
@@ -86,7 +86,7 @@ static void sensors_task(void *arg) {
 	const int num_devices = 6;
 #else // if defined SENSORS_ONEWIRE_SEARCH
 	OneWireBus_ROMCode device_rom_codes[ITS_OWB_MAX_DEVICES];
-	ESP_LOGD(TAG, "Find devices:");
+	ESP_LOGI(TAG, "Find devices:");
 
 	int num_devices = 0;
 
@@ -98,13 +98,13 @@ static void sensors_task(void *arg) {
 		char rom_code_s[17];
 		owb_string_from_rom_code(search_state.rom_code, rom_code_s, sizeof(rom_code_s));
 		uint8_t *p = search_state.rom_code.bytes;
-		ESP_LOGD(TAG, "  %d : %s : 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+		ESP_LOGI(TAG, "  %d : %s : 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
 				num_devices, rom_code_s, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
 		device_rom_codes[num_devices] = search_state.rom_code;
 		++num_devices;
 		owb_search_next(owb, &search_state, &found);
 	}
-	ESP_LOGD(TAG, "Found %d device%s", num_devices, num_devices == 1 ? "" : "s");
+	ESP_LOGI(TAG, "Found %d device%s", num_devices, num_devices == 1 ? "" : "s");
 
 #endif
 
@@ -114,7 +114,7 @@ static void sensors_task(void *arg) {
 		char rom_code_s[OWB_ROM_CODE_STRING_LENGTH] = {0};
 		owb_string_from_rom_code(*rom_code, rom_code_s, sizeof(rom_code_s));
 
-		ESP_LOGD(TAG, "checking ds18b20 number %d", i);
+		ESP_LOGI(TAG, "checking ds18b20 number %d", i);
 
 		bool is_present;
 		owb_status search_status = owb_verify_rom(owb, *rom_code, &is_present);
@@ -150,7 +150,7 @@ static void sensors_task(void *arg) {
 	bool parasitic_power = false;
 	ds18b20_check_for_parasite_power(owb, &parasitic_power);
 	if (parasitic_power) {
-		ESP_LOGD(TAG, "Parasitic-powered devices detected");
+		ESP_LOGI(TAG, "Parasitic-powered devices detected");
 	}
 
 	// In parasitic-power mode, devices cannot indicate when conversions are complete,
@@ -200,7 +200,7 @@ static void sensors_task(void *arg) {
 			}
 			ESP_LOGV(TAG, "read");
 			for (int i = 0; i < num_devices; i++) {
-				ESP_LOGV(TAG, "@ds  [%d] temp: %0.2f", i, readings[i]);
+				ESP_LOGI(TAG, "@ds  [%d] temp: %0.2f", i, readings[i]);
 			}
 
 			for (int i = 0; i < num_devices; ++i) {
@@ -221,7 +221,7 @@ static void sensors_task(void *arg) {
 	}
 	else
 	{
-		ESP_LOGD(TAG, "No DS18B20 devices detected!");
+		ESP_LOGE(TAG, "No DS18B20 devices detected!");
 	}
 
 	// clean up dynamically allocated data
@@ -270,7 +270,7 @@ static void sensors_ina_task(void *arg) {
 	cfg.shunt_r = 0.1;
 
 	_ina_set_cfg(&ina[0], &cfg, "0");
-	cfg.shunt_r = 0.01;
+	cfg.shunt_r = 0.1;
 	_ina_set_cfg(&ina[1], &cfg, "1");
 	_ina_set_cfg(&ina[2], &cfg, "2");
 	_ina_set_cfg(&ina[3], &cfg, "3");
@@ -283,7 +283,7 @@ static void sensors_ina_task(void *arg) {
 		mavlink_electrical_state_t mes[INA_MAX];
 		int64_t now = esp_timer_get_time();
 		for (int i = 0; i < INA_MAX; i++) {
-			ESP_LOGI(TAG, "@ina reading %d", i);
+			ESP_LOGV(TAG, "@ina reading %d", i);
 			ina219_data_t data = {0};
 			if (ina219_read_all_data(&ina[i], &data)) {
 				mes[i].current = NAN;
@@ -292,8 +292,8 @@ static void sensors_ina_task(void *arg) {
 				mes[i].current = data.current;
 				mes[i].voltage = data.busv;
 			}
-			ESP_LOGI(TAG, "ina raw: %f", data.shuntv);
-			ESP_LOGI(TAG, "@ina fin reading %d", i);
+			ESP_LOGD(TAG, "ina raw: %f", data.shuntv);
+			ESP_LOGV(TAG, "@ina fin reading %d", i);
 
 			mes[i].time_s = tp.tv_sec;
 			mes[i].time_us = tp.tv_usec;
@@ -301,7 +301,7 @@ static void sensors_ina_task(void *arg) {
 			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		for (int i = 0; i < INA_MAX; i++) {
-			ESP_LOGD("SENSORS", "@ina [%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
+			ESP_LOGI("SENSORS", "@ina [%d] current: %f, voltage: %0.7f", i, mes[i].current, mes[i].voltage);
 		}
 		for (int i = 0; i < INA_MAX; i++) {
 			mavlink_message_t msg;
