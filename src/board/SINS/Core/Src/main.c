@@ -320,7 +320,7 @@ int UpdateDataAll(void)
 	int error = 0;
 
 	//30 минут
-    if (stateSINS_lds.last_valid_gps_packet_time - HAL_GetTick() > 1000 * 1800) {
+    if (HAL_GetTick() - stateSINS_lds.last_valid_gps_packet_time > 1000 * 1800) {
         stateSINS_lds.do_we_use_lds = 0;
     }
 	//	Arrays
@@ -405,9 +405,9 @@ int UpdateDataAll(void)
         ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
         ahrs_updateGyroData(vec_arrToVec(gyro));
         ahrs_calculateOrientation(dt);
-    } else if (error_system.lsm6ds3_error == 0 && stateSINS_lds.do_we_use_lds) {
+    } else if (error_system.lsm6ds3_error == 0) {
         ahrs_vectorActivate(AHRS_MAG, 0);
-        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS);
+        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS && stateSINS_lds.do_we_use_lds);
         ahrs_setKoefB(beta);
         ahrs_updateVecReal(AHRS_LIGHT, vec_init(0, 1, 0));
         ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
