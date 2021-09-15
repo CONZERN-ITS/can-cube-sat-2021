@@ -443,7 +443,6 @@ static owb_status _init(owb_rmt_driver_info *info, gpio_num_t gpio_num,
     // force pin direction to input to enable path to RX channel
     PIN_INPUT_ENABLE(GPIO_PIN_MUX_REG[gpio_num]);
 
-    gpio_set_pull_mode(gpio_num, GPIO_PULLUP_ONLY);
 
     // enable open drain
     GPIO.pin[gpio_num].pad_driver = 1;
