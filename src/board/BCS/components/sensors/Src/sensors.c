@@ -38,8 +38,6 @@
 #include "ds18b20.h"
 #include "ina219.h"
 
-#define ITS_ESP_DEBUG
-
 //#define SENSORS_ONEWIRE_SEARCH
 
 static void sensors_ina_task(void *arg);
