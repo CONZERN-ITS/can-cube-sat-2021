@@ -254,7 +254,8 @@ static void sd_task(void *arg) {
 cycle:
 		switch (sd_state) {
 		case SD_STATE_UNMOUNTED: {
-			if (sd_retry_count > SD_MOUNT_MAX_RETRY_COUNT) {
+			// не перезапускать первые две минуты после включения
+			if (sd_retry_count > SD_MOUNT_MAX_RETRY_COUNT && esp_timer_get_time() > 120 * 1000000) {
 				ESP_LOGE("SD", "Have to restart esp32 %d", sd_retry_count);
 				ESP_LOGE("SD", "Restarting...");
 				sd_retry_count = 0;
