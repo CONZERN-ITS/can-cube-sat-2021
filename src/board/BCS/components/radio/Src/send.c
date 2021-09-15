@@ -328,9 +328,10 @@ static void radio_loop(void *arg) {
 			.name = "radio_send"
 	};
 	//Регистрируем на сообщения всех типов
-	tid.queue = xQueueCreate(20, MAVLINK_MAX_PACKET_LEN);
+	tid.queue = xQueueCreate(40, MAVLINK_MAX_PACKET_LEN);
 	its_rt_register_for_all(tid);
 	radio_private_state_t state = {0};
+	state.packet_done = 1;
 	int64_t now = esp_timer_get_time();
 
 	while (1) {
