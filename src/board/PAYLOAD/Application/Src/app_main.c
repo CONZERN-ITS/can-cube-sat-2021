@@ -26,6 +26,8 @@
 
 #include "commissar.h"
 
+//#define ITS_PLD_COMPRESSOR_TESTS
+
 //! БМЕ принципиально не показывает давление ниже 30ы 0000
 //! Поэтому с этого момента мы его показания для управления компрессором не используем
 #define BME_PRESSURE_THRESHOLD (31*1000)
@@ -148,6 +150,42 @@ int app_main()
 	int64_t tock = 0;
 	while(1)
 	{
+#ifdef ITS_PLD_COMPRESSOR_TESTS
+		// грязный хак для теста компрессора
+		const uint32_t compressor_period = 30*1000;
+		const uint32_t compressor_on_time = 20*1000;
+		const uint32_t valve_close_time = 25*1000;
+
+		static uint32_t compressor_power_on = 0 + compressor_period;
+		static uint32_t compressor_power_off = 0;
+		static uint32_t valve_power_off = 0;
+		static bool compressor_on = false;
+		static bool valve_closed = false;
+
+		if (compressor_on && HAL_GetTick() >= compressor_power_off)
+		{
+			compressor_power_on += compressor_period;
+			its_ccontrol_pump_override(false);
+			compressor_on = false;
+		}
+		if (!compressor_on && HAL_GetTick() >= compressor_power_on)
+		{
+			compressor_power_off = compressor_power_on + compressor_on_time;
+			its_ccontrol_pump_override(true);
+			compressor_on = true;
+
+			valve_power_off = compressor_power_on + valve_close_time;
+			its_ccontrol_valve_override(true);
+			valve_closed = true;
+		}
+		if (valve_closed && HAL_GetTick() >= valve_power_off)
+		{
+			its_ccontrol_valve_override(false);
+			valve_closed = false;
+		}
+		// Конец грязного хака
+#endif // ITS_PLD_COMPRESSOR_TESTS
+
 		// Сбрасываем вотчдог
 		// UPD делаем это не тут, а в mavlink_main при успешной отправке сообщения
 		// Сдесь сбрасываем только если мавлинк отключен для отладки

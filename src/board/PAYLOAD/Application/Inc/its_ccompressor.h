@@ -22,4 +22,8 @@ void its_ccontrol_work(void);
 
 void its_ccontrol_get_state(mavlink_pld_compressor_data_t * msg);
 
+void its_ccontrol_pump_override(bool enable);
+
+void its_ccontrol_valve_override(bool enable);
+
 #endif /* INC_SENSORS_ITS_CCOMPRESSOR_H_ */

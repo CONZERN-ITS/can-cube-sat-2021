@@ -114,3 +114,15 @@ void its_ccontrol_get_state(mavlink_pld_compressor_data_t * msg)
 	msg->pump_on = control.pump_running;
 	msg->valve_open = control.valve_open;
 }
+
+
+void its_ccontrol_pump_override(bool enable)
+{
+	ccontrol_pump_control((ccontrol_hal_t *)&control, enable);
+}
+
+
+void its_ccontrol_valve_override(bool enable)
+{
+	ccontrol_valve_control((ccontrol_hal_t *)&control, enable);
+}
