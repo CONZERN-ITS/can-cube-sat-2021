@@ -71,36 +71,10 @@ static int _radio_ctor(server_t * server)
 }
 
 
-static int _radio_configure(server_t * server)
+static int _radio_reconfigure(server_t * server, sx126x_drv_t * const radio)
 {
-	int rc;
+	int rc = 0;
 	uint16_t device_errors = 0;
-	sx126x_drv_t * const radio = &server->radio;
-
-	device_errors = 0;
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	if (0 == rc)
-		log_info("radio before reset; device_errors = 0x%04"PRIx16"", rc, device_errors);
-	else
-		log_warn("unable to fetch radio errors before reset: %d", rc);
-
-	rc = sx126x_drv_reset(radio);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("radio after reset; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
-	if (0 != rc)
-		goto bad_exit;
-
-	_reset_stats(&server->stats);
-
-	device_errors = 0;
-	rc = sx126x_drv_configure_basic(radio, &server->config.radio_basic_cfg);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("radio configure basic; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
-	if (0 != rc)
-		goto bad_exit;
-
-
-	device_errors = 0;
 	sx126x_drv_get_device_errors(radio, &device_errors);
 	rc = sx126x_drv_configure_lora_modem(radio, &server->config.radio_modem_cfg);
 	log_info("radio configure lora modem; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
@@ -133,6 +107,44 @@ static int _radio_configure(server_t * server)
 	rc = sx126x_drv_mode_standby(radio);
 	sx126x_drv_get_device_errors(radio, &device_errors);
 	log_info("radio configure standby; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
+	if (0 != rc)
+		goto bad_exit;
+
+bad_exit:
+	_radio_dtor(server);
+	return -1;
+}
+
+
+static int _radio_configure(server_t * server)
+{
+	int rc;
+	uint16_t device_errors = 0;
+	sx126x_drv_t * const radio = &server->radio;
+
+	device_errors = 0;
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	if (0 == rc)
+		log_info("radio before reset; device_errors = 0x%04"PRIx16"", rc, device_errors);
+	else
+		log_warn("unable to fetch radio errors before reset: %d", rc);
+
+	rc = sx126x_drv_reset(radio);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("radio after reset; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
+	if (0 != rc)
+		goto bad_exit;
+
+	_reset_stats(&server->stats);
+
+	device_errors = 0;
+	rc = sx126x_drv_configure_basic(radio, &server->config.radio_basic_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("radio configure basic; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = _radio_reconfigure(server, radio);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -778,6 +790,7 @@ int server_ctor(server_t * server, const server_config_t * config)
 	int rc;
 	memset(server, 0x00, sizeof(*server));
 	server->config = *config;
+	server->pa_request = -1;
 
 	rc = zserver_init(&server->zserver);
 	if (0 != rc)

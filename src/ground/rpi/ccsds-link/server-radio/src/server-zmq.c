@@ -16,6 +16,7 @@
 #define ITS_SUB_ENDPOINT_KEY "ITS_GBUS_BPCS_ENDPOINT"
 
 #define ITS_GBUS_TOPIC_UPLINK_FRAME "radio.uplink_frame"
+#define ITS_GBUS_TOPIC_PA_POWER "radio.sdr_pa_power"
 #define ITS_GBUS_TOPIC_DOWNLINK_FRAME "radio.downlink_frame"
 #define ITS_GBUS_TOPIC_UPLINK_STATE "radio.uplink_state"
 #define ITS_GBUS_TOPIC_RSSI_INSTANT "radio.rssi_instant"
@@ -29,6 +30,13 @@ typedef struct timestamp_t
 	uint64_t seconds;
 	uint32_t microseconds;
 } timestamp_t;
+
+
+typedef enum now_topic_t {
+	TOPIC_FRAME,
+	TOPIC_PA_POWER,
+	TOPIC_INVALID
+} now_topic_t;
 
 
 #define TIMESTAMP_S_PRINT_FMT PRIu64
@@ -47,6 +55,66 @@ static struct timestamp_t _get_world_time(void)
 			.microseconds = tsc.tv_nsec / 1000
 	};
 	return retval;
+}
+
+
+//! Разбор метаданных входящего TX фрейма
+static int _parse_tx_pa_power_metadata(
+		const char * json_buffer, size_t buffer_size, int8_t * pa_power
+)
+{
+	jsmn_parser parser;
+	jsmn_init(&parser);
+
+	jsmntok_t t[3];
+	int parsed_tokens = jsmn_parse(&parser, json_buffer, buffer_size, t, sizeof(t)/sizeof(*t));
+	if (parsed_tokens != 3)
+	{
+		log_error(
+				"invalid tx meta json \"%s\", expected json in form \"{ \"pa_power\": <number> }\": %d",
+				parsed_tokens
+		);
+		return -1;
+	}
+
+	if (t[0].type != JSMN_OBJECT || t[1].type != JSMN_STRING || t[2].type != JSMN_PRIMITIVE)
+	{
+		log_error(
+				"invalid tx meta json token types: %d, %d, %d",
+				(int)t[0].type, (int)t[1].type, (int)t[2].type
+		);
+		return -1;
+	}
+
+	const jsmntok_t * key_tok = &t[1];
+	const char expected_key[] = "pa_power";
+	const size_t expected_key_size = sizeof(expected_key) - 1;
+	if (expected_key_size != key_tok->end - key_tok->start)
+	{
+		log_error("tx meta json: pa_power tooken len mismatch");
+		return -1;
+	}
+
+	if (0 != strncmp(json_buffer + key_tok->start, expected_key, expected_key_size))
+	{
+		log_error("invalid tx metadata pa_power key");
+		return -1;
+	}
+
+
+	const jsmntok_t * value_tok = &t[2];
+	const char * const value_str_begin_ptr = json_buffer + value_tok->start;
+	char * value_str_end_ptr;
+
+	int8_t value = strtoull(value_str_begin_ptr, &value_str_end_ptr, 0);
+	if (value_str_end_ptr != json_buffer + value_tok->end)
+	{
+		log_error("unable to parse tx message pa_power from json metadata");
+		return -1;
+	}
+
+	*pa_power = value;
+	return 0;
 }
 
 
@@ -222,16 +290,59 @@ void zserver_deinit(zserver_t * zserver)
 }
 
 
+now_topic_t detect_topic(zmq_msg_t * msg)
+{
+
+	char topic_buffer[1024] = {0};
+	enum now_topic_t now_topic;
+	const size_t msg_size = zmq_msg_size(msg);
+
+	const char expected_topic[] = ITS_GBUS_TOPIC_UPLINK_FRAME;
+	const size_t expected_topic_size = sizeof(expected_topic) - 1;
+	if (expected_topic_size == msg_size)
+	{
+		memcpy(topic_buffer, zmq_msg_data(msg), msg_size);
+		if (0 == strncmp(topic_buffer, expected_topic, msg_size))
+		{
+			now_topic = TOPIC_FRAME;
+		}
+	}
+	else
+	{
+		// Может это не тот топик?
+		const char expected_topic[] = ITS_GBUS_TOPIC_PA_POWER;
+		const size_t expected_topic_size = sizeof(expected_topic) - 1;
+		if (expected_topic_size == msg_size)
+		{
+			memcpy(topic_buffer, zmq_msg_data(msg), msg_size);
+			if (0 == strncmp(topic_buffer, expected_topic, msg_size))
+			{
+				now_topic = TOPIC_PA_POWER;
+			}
+			else
+			{
+				now_topic = TOPIC_INVALID;
+				log_debug("get invalid topic value");
+			}
+		}
+	}
+
+	return now_topic;
+}
+
+
 int zserver_recv_tx_packet(
 	zserver_t * zserver, uint8_t * buffer, size_t buffer_size,
-	size_t * packet_size, msg_cookie_t * packet_cookie
+	size_t * packet_size, msg_cookie_t * packet_cookie, int8_t * packet_pa_power,
+	get_message_type_t * message_type
 )
 {
 	int rc;
-	enum state_t { STATE_TOPIC, STATE_COOKIE, STATE_FRAME, STATE_FLUSH };
+	enum state_t { STATE_TOPIC, STATE_PA_POWER, STATE_COOKIE, STATE_FRAME, STATE_FLUSH };
 	enum state_t state = STATE_TOPIC;
 
 	msg_cookie_t cookie;
+	int8_t pa_power;
 	zmq_msg_t msg;
 	while(1)
 	{
@@ -255,26 +366,45 @@ int zserver_recv_tx_packet(
 				state = STATE_FLUSH;
 				break;
 			}
-			const char expected_topic[] = ITS_GBUS_TOPIC_UPLINK_FRAME;
-			const size_t expected_topic_size = sizeof(expected_topic) - 1;
-			if (expected_topic_size != msg_size)
-			{
-				// Просто молча уйдем. Не тот топик - это еще не катастрофа
-				log_debug("skipping input bus message with invalid topic size");
+
+			now_topic_t topic = detect_topic(&msg);
+			if (TOPIC_INVALID == topic)
 				state = STATE_FLUSH;
-				break;
-			}
-			memcpy(topic_buffer, zmq_msg_data(&msg), msg_size);
-			if (0 != strncmp(topic_buffer, expected_topic, msg_size))
+			else if (TOPIC_FRAME == topic)
+				state = STATE_COOKIE;
+			else if (TOPIC_PA_POWER == topic)
+				state = STATE_PA_POWER;
+
+			// Все ок, работаем дальше
+
+		} break;
+
+		case STATE_PA_POWER: {
+			// Мы сейчас копируем куку сообщения
+			char json_buffer[1024] = {0};
+			const size_t msg_size = zmq_msg_size(&msg);
+			if (msg_size > sizeof(json_buffer))
 			{
-				log_debug("skipping input bus message with invalid topic value");
+				log_error("unable to receive tx message metadata. message is too big");
 				state = STATE_FLUSH;
 				break;
 			}
 
-			// Все ок, работаем дальше
-			state = STATE_COOKIE;
-		} break;
+			memcpy(json_buffer, zmq_msg_data(&msg), msg_size);
+			rc = _parse_tx_pa_power_metadata(json_buffer, msg_size, &pa_power);
+			if (rc < 0)
+			{
+				// Сообщение об ошибке уже написали
+				state = STATE_FLUSH;
+				break;
+			}
+
+			// Все ок, разобралось
+			*packet_pa_power = pa_power;
+			*message_type = MESSAGE_PA_POWER;
+			state = STATE_FLUSH;
+			break;
+		}
 
 		case STATE_COOKIE: {
 			// Мы сейчас копируем куку сообщения
@@ -320,6 +450,7 @@ int zserver_recv_tx_packet(
 			memcpy(buffer, zmq_msg_data(&msg), portion_size);
 			*packet_size = rcved_size;
 			*packet_cookie = cookie;
+			*message_type = MESSAGE_FRAME;
 			state = STATE_FLUSH;
 			} break;
 

@@ -56,6 +56,9 @@ typedef struct server_t
 	struct timespec tx_state_last_report_timepoint;
 
 	volatile sig_atomic_t stop_requested;
+
+	int8_t pa_request;
+
 } server_t;
 
 
