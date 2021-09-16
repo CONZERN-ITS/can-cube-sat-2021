@@ -3,9 +3,15 @@ import struct
 import enum
 import dataclasses
 
+import json
+import zmq
+
 
 INTERFACE = "127.0.0.1"
 PORT = 40868
+
+
+bus_endpoint = "tcp://192.168.1.223:7777"
 
 def twos_comp(val, bits=8):
     """compute the 2's complement of int value val"""
@@ -122,6 +128,11 @@ class LoraTapHeaderParser:
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((INTERFACE, PORT,))
 
+ctx = zmq.Context()
+socket = ctx.socket(zmq.PUB)
+print("connecting to %s" % bus_endpoint)
+socket.connect(bus_endpoint)
+
 parser = LoraTapHeaderParser()
 
 template = b'loraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloralora'
@@ -154,3 +165,15 @@ while True:
     else:
         bad_ones += 1
     print("good: %s, bad: %s" % (good_ones, bad_ones))
+
+
+    packet = {'snr' : rssi_bytes[-1], 'cookie': cookie}
+
+    parts = [
+        b"sdr.payload", 
+        json.dumps(packet).encode("utf-8"),
+        payload
+    ]
+
+    socket.send_multipart(parts)
+
