@@ -231,6 +231,16 @@ int zserver_init(zserver_t * zserver)
 		goto bad_exit;
 	}
 
+	{
+		const char topic[] = ITS_GBUS_TOPIC_PA_POWER;
+		rc = zmq_setsockopt(zserver->sub_socket, ZMQ_SUBSCRIBE, topic, sizeof(topic)-1);
+		if (rc < 0)
+		{
+			log_error("unable to subscribe pub socket: %d, %d: %s", rc, errno, strerror(errno));
+			goto bad_exit;
+		}
+	}
+
 	zserver->pub_socket = zmq_socket(zserver->zmq, ZMQ_PUB);
 	if (!zserver->pub_socket)
 	{
@@ -294,7 +304,7 @@ now_topic_t detect_topic(zmq_msg_t * msg)
 {
 
 	char topic_buffer[1024] = {0};
-	enum now_topic_t now_topic;
+	enum now_topic_t now_topic = TOPIC_INVALID;
 	const size_t msg_size = zmq_msg_size(msg);
 
 	const char expected_topic[] = ITS_GBUS_TOPIC_UPLINK_FRAME;
@@ -307,7 +317,8 @@ now_topic_t detect_topic(zmq_msg_t * msg)
 			now_topic = TOPIC_FRAME;
 		}
 	}
-	else
+
+	if (TOPIC_INVALID == now_topic)
 	{
 		// Может это не тот топик?
 		const char expected_topic[] = ITS_GBUS_TOPIC_PA_POWER;
@@ -322,7 +333,6 @@ now_topic_t detect_topic(zmq_msg_t * msg)
 			else
 			{
 				now_topic = TOPIC_INVALID;
-				log_debug("get invalid topic value");
 			}
 		}
 	}
@@ -360,6 +370,8 @@ int zserver_recv_tx_packet(
 		case STATE_TOPIC: {
 			char topic_buffer[1024] = {0};
 			const size_t msg_size = zmq_msg_size(&msg);
+
+
 			if (msg_size > sizeof(topic_buffer))
 			{
 				log_error("unable to read input message topic. It is too large");
@@ -383,6 +395,8 @@ int zserver_recv_tx_packet(
 			// Мы сейчас копируем куку сообщения
 			char json_buffer[1024] = {0};
 			const size_t msg_size = zmq_msg_size(&msg);
+
+
 			if (msg_size > sizeof(json_buffer))
 			{
 				log_error("unable to receive tx message metadata. message is too big");
