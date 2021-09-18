@@ -11,10 +11,8 @@ import struct
 from source import settings_control
 from source import RES_ROOT
 
-from source import colors
-
 MESH_PATH = os.path.join(RES_ROOT, "models/CanCubeSat-2-for-GKS.stl")
-MESH_COLOR_PATH = os.path.join(RES_ROOT, "models/CanCubeSat-for-GKS_color.mfcl")
+MESH_COLOR_PATH = os.path.join(RES_ROOT, "models/CanCubeSat-2-for-GKS_color.mfcl")
 SCENE_MESH_PATH = os.path.join(RES_ROOT, "models/axis.stl")
 SCENE_MESH_COLOR_PATH = os.path.join(RES_ROOT, "models/axis.mfcl")
 

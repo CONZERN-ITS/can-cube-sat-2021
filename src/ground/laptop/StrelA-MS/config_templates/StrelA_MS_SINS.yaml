@@ -213,7 +213,7 @@ CentralWidget:
     - '#0000FF'
     - '#FF0000'
     - '#FFFF00'
-    is_on: false
+    is_on: true
     position:
     - 0
     - 2
@@ -323,7 +323,7 @@ CentralWidget:
         - 1
         - 1
         units: m
-    is_on: false
+    is_on: true
     position:
     - 0
     - 0
@@ -335,7 +335,7 @@ CentralWidget:
     - 55.9
     - 37.8
     follow: true
-    is_on: false
+    is_on: true
     max_data_length: 40
     sourse_id: '11_0'
     message_id: 'GPS_UBX_NAV_SOL'
@@ -344,7 +344,7 @@ CentralWidget:
     position:
     - 0
     - 1
-    - 2
+    - 1
     - 1
     zoom: 4
   ModelWidget:
@@ -360,14 +360,14 @@ CentralWidget:
       - -5
     Camera:
       azimuth: 0
-      distance: 470
+      distance: 640
       elevation: 35
       pan:
       - 0
       - 0
-      - 30
+      - 0
     Grid:
-      is_on: false
+      is_on: true
       scale:
       - 3
       - 3
@@ -379,12 +379,12 @@ CentralWidget:
     Mesh:
       Colors:
         is_on: true
-        path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS_color.mfcl
+        path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-2-for-GKS_color.mfcl
       compute_normals: true
-      draw_edges: true
+      draw_edges: false
       draw_faces: true
       path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-2-for-GKS.stl
-      shader: balloon #edgeHilight
+      shader: edgeHilight
       smooth: false
     Scene:
       Colors:
@@ -397,7 +397,7 @@ CentralWidget:
       path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/axis.stl
       shader: balloon
       smooth: false
-    background_color: '#323232'
+    background_color: '#505050'
     is_on: true
     sourse_id: '11_0'
     message_id: 'SINS_ISC'
@@ -407,8 +407,8 @@ CentralWidget:
     - quaternion[2]
     - quaternion[3]
     position:
-    - 0
-    - 0
+    - 1
+    - 1
     - 1
     - 1
   EventWidget:
@@ -463,7 +463,7 @@ MainWindow:
       connection: udpin:0.0.0.0:14540
       notimestamps: true
     ZMQ:
-      bus_bpcs: "tcp://192.168.1.210:7778"
+      bus_bpcs: "tcp://192.168.1.223:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
