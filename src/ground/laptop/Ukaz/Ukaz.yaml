@@ -1,4 +1,26 @@
 CentralWidget:
+  DataWidget:
+    Data_table:
+      CUBE_1_RADIO_CONN_STATS:
+        name: BCU C0 BCU_RADIO_CONN_STATS
+        sourse_id: '10_0'
+        message_id: 'BCU_RADIO_CONN_STATS'
+      GCS_RADIO_STATS:
+        name: GCS RADIO STATS
+        sourse_id: '1_0'
+        message_id: 'radio.stats'
+      def_time_limit: 20
+    background_color: '#888888'
+    colors:
+    - '#0000FF'
+    - '#FF0000'
+    - '#FFFF00'
+    is_on: true
+    position:
+    - 0
+    - 2
+    - 1
+    - 1
   CommandWidget:
     ROZE_ACTIVATE_COMMAND:
       name: 'ROZE_ACTIVATE_COMMAND'
@@ -44,11 +66,21 @@ CentralWidget:
         - 0
         - 1
         - 1
+    position:
+    - 0
+    - 1
+    - 1
+    - 1
   StatusWidget:
     background_color: '#888888'
     succsess_color: '#00FF00'
     processing_color: '#0000FF'
     failure_color: '#FF0000'
+    position:
+    - 0
+    - 0
+    - 1
+    - 1
 MainWindow:
   DataInterface:
     type: ZMQITS
@@ -62,6 +94,9 @@ MainWindow:
       topics:
         - radio.uplink_state
         - radio.downlink_frame
+        - 'radio.rssi_instant'
+        - 'radio.rssi_packet'
+        - 'radio.stats'
     type: ZMQ
   size:
   - 1000

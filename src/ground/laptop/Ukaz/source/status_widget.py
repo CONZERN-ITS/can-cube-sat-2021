@@ -254,8 +254,12 @@ class StatusWidget(QtWidgets.QWidget):
         cmd = self.cmds.get_cmd_list()[self.processing_cmds.mapToSource(self.processing_cmds_tree.selectionModel().currentIndex()).row()]
         self.cmds.update_cmd(cmd.get_cookie(), 'deleted by operator', StatusWidget.StatusModel.Command.STATUS_FAILURE)
 
-    def new_msg_reaction(self, data):
-        self.cmds.update_cmd(*data)
+    def new_msg_reaction(self, msg):
+        self.cmds.update_cmd(cookie=msg.get_cookie(),
+                             status=msg.get_status(),
+                             status_type=msg.get_status_type(),
+                             stage_id=msg.get_stage_id(),
+                             name=msg.get_name())
 
     def clear_data(self):
         self.cmds.clear()

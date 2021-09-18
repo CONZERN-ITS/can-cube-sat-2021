@@ -1,4 +1,5 @@
 from PyQt5 import QtCore
+import typing
 import os
 os.environ['MAVLINK_DIALECT'] = "its"
 os.environ['MAVLINK20'] = "its"
@@ -12,10 +13,80 @@ import math
 import time
 
 
+class DataMessage():
+    def __init__(self, message_id, source_id, msg_time, msg_data):
+        self.message_id = message_id
+        self.source_id = source_id
+        self.data = msg_data
+        self.time = msg_time
+        self.creation_time = time.time()
+
+    def get_message_id(self):
+        return self.message_id
+
+    def get_source_id(self):
+        return self.source_id
+
+    def get_time(self):
+        return self.time
+
+    def get_data_dict(self):
+        return self.data
+
+    def get_creation_time(self):
+        return self.creation_time
+
+
+class CommandStatusMessage():
+    STATUS_UNKNOWN = 0
+    STATUS_PROCESSING = 1
+    STATUS_SUCCSESS = 2
+    STATUS_FAILURE = 3
+
+    def __init__(self, cookie, 
+                       status='Undefined',
+                       status_type=STATUS_UNKNOWN,
+                       stage_id=0,
+                       name='Undefined'):
+
+        self.cookie = cookie
+        self.set_status(status)
+        self.set_status_type(status_type)
+        self.set_stage_id(stage_id)
+        self.set_name(name)
+
+    def get_cookie(self):
+        return self.cookie
+
+    def get_status(self):
+        return self.status
+
+    def get_status_type(self):
+        return self.status_type
+
+    def get_stage_id(self):
+        return self.stage_id
+
+    def get_name(self):
+        return self.name
+
+    def set_status(self, status='Undefined'):
+        self.status = status
+
+    def set_status_type(self, status_type=STATUS_UNKNOWN):
+        self.status_type = status_type
+
+    def set_stage_id(self, stage_id=0):
+        self.stage_id = stage_id
+
+    def set_name(self, name='Undefined'):
+        self.name = name
+
+
 class AbstractCommanInterface(QtCore.QObject):
     send_msg = QtCore.pyqtSignal(object)
-
-    command_ststus_changed = QtCore.pyqtSignal(list)
+    command_ststus_changed = QtCore.pyqtSignal(object)
+    data_changed = QtCore.pyqtSignal(object)
 
     STATUS_UNKNOWN = 0
     STATUS_PROCESSING = 1
@@ -53,7 +124,21 @@ class MAVITSInterface(AbstractCommanInterface):
     def msg_reaction(self, msg):
         if msg.get_type() == 'BCU_RADIO_CONN_STATS':
             if msg.last_executed_cmd_seq > 0:
-                self.command_ststus_changed.emit([msg.last_executed_cmd_seq, 'executed', self.STATUS_SUCCSESS, 2])
+                self.command_ststus_changed.emit(CommandStatusMessage(cookie=msg.last_executed_cmd_seq, 
+                                                                      status='Executed',
+                                                                      status_type=self.STATUS_SUCCSESS,
+                                                                      stage_id=2))
+        if msg.get_type() != "BAD_DATA":
+            header = msg.get_header()
+            data = msg.to_dict()
+            data.pop('mavpackettype')
+            msg_time = data.pop("time_s", time.time()) + data.pop("time_us", 0)/1000000
+            self.data_changed.emit(DataMessage(message_id=msg.get_type(),
+                                               source_id=(str(header.srcSystem) + '_' + str(header.srcComponent)),
+                                               msg_time=msg_time,
+                                               msg_data=data))
+
+
 
     def generate_message(self, name, data):
         command = None
@@ -98,18 +183,21 @@ class ZMQITSUSLPInterface(MAVITSInterface):
             status = data.get('event', None)
             if (cookie is not None) and (status is not None):
                 if status == 'rejected':
-                    status_type = self.STATUS_FAILURE
+                    status_type = CommandStatusMessage.STATUS_FAILURE
                 elif status == 'accepted':
-                    status_type = self.STATUS_PROCESSING
+                    status_type = CommandStatusMessage.STATUS_PROCESSING
                 elif status == 'emitted':
-                    status_type = self.STATUS_PROCESSING
+                    status_type = CommandStatusMessage.STATUS_PROCESSING
                 elif status == 'delivered':
-                    status_type = self.STATUS_SUCCSESS
+                    status_type = CommandStatusMessage.STATUS_SUCCSESS
                 elif status == 'undelivered':
-                    status_type = self.STATUS_FAILURE
+                    status_type = CommandStatusMessage.STATUS_FAILURE
                 else:
-                    status_type = self.STATUS_UNKNOWN
-                self.command_ststus_changed.emit([cookie, status, status_type, 1])
+                    status_type = CommandStatusMessage.STATUS_UNKNOWN
+                self.command_ststus_changed.emit(CommandStatusMessage(cookie=cookie, 
+                                                                      status=status,
+                                                                      status_type=status_type,
+                                                                      stage_id=1))
 
     def send_command(self, msg, cookie=None):
         if msg is not None:
@@ -128,6 +216,22 @@ class ZMQITSUSLPInterface(MAVITSInterface):
 
 
 class ZMQITSInterface(MAVITSInterface):
+
+    def _extract_mdt_time(self, zmq_message: typing.List[bytes]) -> float:
+        """ Извлекает из сообщения на ZMQ шине таймштамп если он там есть
+            Если не удалось - возвращает time.time() """
+        mdt = zmq_message[1]
+        parsed = json.loads(mdt)  # type: typing.Dict
+
+        timestamp = None
+        if "time_s" in parsed and "time_us" in parsed:
+            try:
+                timestamp = int(parsed["time_s"]) + float(parsed["time_us"])/1000/1000
+            except:
+                pass
+
+        return timestamp if timestamp is not None else time.time()
+
     def __init__(self):
         super(ZMQITSInterface, self).__init__()
         self.cookie = 1
@@ -144,19 +248,44 @@ class ZMQITSInterface(MAVITSInterface):
                     self.send_msg.emit(self.buf.pop())
             cookie = data.get('cookie_in_progress', None)
             if cookie is not  None:
-                self.command_ststus_changed.emit([cookie, 'in progress', self.STATUS_PROCESSING, 1])
+                self.command_ststus_changed.emit(CommandStatusMessage(cookie=cookie, 
+                                                                      status='in progress',
+                                                                      status_type=CommandStatusMessage.STATUS_PROCESSING,
+                                                                      stage_id=1))
             cookie = data.get('cookie_sent', None)
             if cookie is not  None:
-                self.command_ststus_changed.emit([cookie, 'sent', self.STATUS_PROCESSING, 1])
+                self.command_ststus_changed.emit(CommandStatusMessage(cookie=cookie, 
+                                                                      status='sent',
+                                                                      status_type=CommandStatusMessage.STATUS_PROCESSING,
+                                                                      stage_id=1))
             cookie = data.get('cookie_dropped', None)
             if cookie is not  None:
-                self.command_ststus_changed.emit([cookie, 'dropped', self.STATUS_FAILURE, 1])
+                self.command_ststus_changed.emit(CommandStatusMessage(cookie=cookie, 
+                                                                      status='dropped',
+                                                                      status_type=CommandStatusMessage.STATUS_FAILURE,
+                                                                      stage_id=1))
         elif msg[0] == b'radio.downlink_frame':
             msg_buf = msg[2]
             mav_msgs = self.mav.parse_buffer(msg_buf)
             if mav_msgs is not  None:
                 for mav_msg in mav_msgs:
                     super(ZMQITSInterface, self).msg_reaction(mav_msg)
+
+        elif msg[0] == b'radio.rssi_instant':
+            self.data_changed.emit(DataMessage(message_id='radio.rssi_instant',
+                                               source_id=('1_0'),
+                                               msg_time=self._extract_mdt_time(msg),
+                                               msg_data=json.loads(msg[1].decode("utf-8"))))
+        elif msg[0] == b'radio.rssi_packet':
+            self.data_changed.emit(DataMessage(message_id='radio.rssi_packet',
+                                               source_id=('1_0'),
+                                               msg_time=self._extract_mdt_time(msg),
+                                               msg_data=json.loads(msg[1].decode("utf-8"))))
+        elif msg[0] == b'radio.stats':
+            self.data_changed.emit(DataMessage(message_id='radio.stats',
+                                               source_id=('1_0'),
+                                               msg_time=self._extract_mdt_time(msg),
+                                               msg_data=json.loads(msg[1].decode("utf-8"))))
 
     def send_command(self, msg, cookie=None):
         if msg is not None:

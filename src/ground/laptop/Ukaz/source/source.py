@@ -7,6 +7,7 @@ from math import nan
 from source import settings_control
 from source import command_widget
 from source import status_widget
+from source import data_widget
 from source.data_control import *
 from source.command_interface import *
 from source import LOG_FOLDER_PATH
@@ -15,26 +16,46 @@ class CentralWidget(QtWidgets.QWidget):
     def __init__(self):
         super(CentralWidget, self).__init__()
         self.settings = settings_control.init_settings()
+        self.widgets_dict = {}
 
         self.setup_ui()
         self.setup_ui_design()
 
     def setup_ui(self):
-        self.layout = QtWidgets.QHBoxLayout(self)
+        self.grid_layout = QtWidgets.QGridLayout(self)
 
-        self.status_widget = status_widget.StatusWidget()
-        self.layout.addWidget(self.status_widget)
-        self.command_widget = command_widget.CommandWidget()
-        self.layout.addWidget(self.command_widget)
+        self.settings.beginGroup("CentralWidget")
+        if self.settings.value("DataWidget/is_on") != False:
+            self.widgets_dict.update([("DataWidget", data_widget.DataWidget())])
+        if self.settings.value("CommandWidget/is_on") != False:
+            self.widgets_dict.update([("CommandWidget", command_widget.CommandWidget())])
+        if self.settings.value("StatusWidget/is_on") != False:
+            self.widgets_dict.update([("StatusWidget", status_widget.StatusWidget())])
+
+        for key in self.widgets_dict.keys():
+            self.settings.beginGroup(key)
+            position = self.settings.value("position")
+            self.grid_layout.addWidget(self.widgets_dict[key], *[int(num) for num in position])
+            self.settings.endGroup()
+        self.settings.endGroup()
+
+        for i in range(self.grid_layout.columnCount()):
+            self.grid_layout.setColumnMinimumWidth(i, 50)
+            self.grid_layout.setColumnStretch(i, 1)
+        for i in range(self.grid_layout.rowCount()):
+            self.grid_layout.setRowMinimumHeight(i, 50)
+            self.grid_layout.setRowStretch(i, 1)
 
     def new_data_reaction (self, data):
         pass
 
     def clear_data(self):
-        self.command_widget.clear()
+        for widget in self.widgets_dict.items():
+            widget[1].clear_data()
 
     def setup_ui_design(self):
-        self.command_widget.setup_ui_design()
+        for widget in self.widgets_dict.items():
+            widget[1].setup_ui_design()
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -123,10 +144,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.interface = self.get_data_interface()
-        self.interface.command_ststus_changed.connect(self.central_widget.status_widget.new_msg_reaction)
+        self.status_widget = self.central_widget.widgets_dict.get('StatusWidget', None)
+        if self.status_widget is not None:
+            self.interface.command_ststus_changed.connect(self.status_widget.new_msg_reaction)
+        self.data_widget = self.central_widget.widgets_dict.get('DataWidget', None)
+        if self.data_widget is not None:
+            self.interface.data_changed.connect(self.data_widget.new_msg_reaction)
 
         self.data_obj = self.get_data_object()
-        self.central_widget.command_widget.send_msg.connect(self.send_msg)
+        self.command_widget = self.central_widget.widgets_dict.get('CommandWidget', None)
+        if self.command_widget is not None:
+            self.command_widget.send_msg.connect(self.send_msg)
 
         self.data_manager = MainWindow.DataManager(self.data_obj)
         self.interface.send_msg.connect(self.data_manager.write_data)
@@ -150,7 +178,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.msg_box.setDetailedText(str(msg))
             if self.msg_box.exec() == QtWidgets.QMessageBox.Yes:
                 self.interface.send_command(msg, data[2])
-                self.central_widget.status_widget.add_command(data[0], data[2])
+                if self.status_widget is not None:
+                    self.status_widget.add_command(data[0], data[2])
 
     def get_data_object(self):
         self.settings.beginGroup('MainWindow/DataSourse')
