@@ -408,6 +408,7 @@ static void _report_radio_stats(server_t * server)
 		return;
 	}
 
+	server->stats.current_pa_power = server->config.radio_modem_cfg.pa_power;
 	zserver_send_stats(&server->zserver, &stats, device_errors, &server->stats);
 
 	// А еще напишем в свою консоль что происходит
@@ -426,6 +427,10 @@ static void _report_radio_stats(server_t * server)
 	log_info(
 			"stats: lrx_rssi_pkt: %d, lrx_rssi_sig: %d, lrx_rssi_snr: %d",
 			server->stats.last_rx_rssi_pkt, server->stats.last_rx_rssi_signal, server->stats.last_rx_snr
+	);
+
+	log_info(
+			"stats: current pa power: %d", server->config.radio_modem_cfg.pa_power
 	);
 
 	log_info("=-=-=-=-=-=-=-=-=-=-=-=-");
@@ -600,14 +605,17 @@ static int _go_tx(server_t * server)
 
 	if (server->pa_request >= 0)
 	{
-		//FIXME: ет проверки на ошибку при реконфигурации
+		server->config.radio_modem_cfg.pa_power = server->pa_request;
 		rc = _radio_reconfigure(server, radio);
+		log_info("change pa_power on %d", server->pa_request);
+		server->pa_request = -1;
+
 		if (0 != rc)
 		{
 			log_error("pa_power reconfigure radio failed: %d", rc);
 			return rc;
 		}
-		log_info("change pa_power on %d", server->pa_request);
+
 	}
 
 	rc = sx126x_drv_payload_write(radio, server->tx_buffer, server->config.radio_packet_cfg.payload_length);

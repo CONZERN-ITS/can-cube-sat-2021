@@ -748,7 +748,8 @@ int zserver_send_stats(
 			"\"error_pa_ramp\": %s, "
 			"\"srv_rx_done\": %"PRIu32", "
 			"\"srv_rx_frames\": %"PRIu32", "
-			"\"srv_tx_frames\": %"PRIu32" "
+			"\"srv_tx_frames\": %"PRIu32","
+			"\"current_pa_power\": %"PRId8""
 		"}",
 		now.seconds,
 		now.microseconds,
@@ -761,7 +762,8 @@ int zserver_send_stats(
 		device_errors & SX126X_DEVICE_ERROR_XOSC_START	? "true": "false",
 		device_errors & SX126X_DEVICE_ERROR_PLL_LOCK	? "true": "false",
 		device_errors & SX126X_DEVICE_ERROR_PA_RAMP		? "true": "false",
-		server_stats->rx_done_counter, server_stats->rx_frame_counter, server_stats->tx_frame_counter
+		server_stats->rx_done_counter, server_stats->rx_frame_counter, server_stats->tx_frame_counter,
+		server_stats->current_pa_power
 	);
 	if (rc < 0 || rc >= sizeof(json_buffer))
 	{
