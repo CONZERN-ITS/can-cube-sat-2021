@@ -225,26 +225,26 @@ void on_gps_packet_ahrs(void *arg, const ubx_any_packet_t * packet) {
              packet->packet.navsol.gps_fix == UBX_FIX_TYPE__3D);
 
     if (!is_packet_valid || time_svc_timebase() != TIME_SVC_TIMEBASE__GPS) {
-        return;
+        //return;
     }
 
     struct timeval tv = {0};
     time_svc_world_get_time(&tv);
     struct Time time = {0};
     time_t seconds = tv.tv_sec;
-    struct tm *lt = localtime(&seconds);
-    time.second = tv.tv_sec / 60 % 60 + tv.tv_usec / 1000000.0;
+    struct tm *lt = gmtime(&seconds);
+    time.second = tv.tv_sec % 60 + tv.tv_usec / 1000000.0;
     time.minute = lt->tm_min;
     time.hour = lt->tm_hour;
     time.day = lt->tm_mday;
-    time.month = lt->tm_mon;
-    time.year = lt->tm_year;
+    time.month = lt->tm_mon + 1;
+    time.year = lt->tm_year + 1900;
 
     struct Location location = {0};
     //location.latitude = packet->packet.navsol.pos_ecef;
 
     int useDegrees = 0;
-    int useNorthEqualsZero = 0;
+    int useNorthEqualsZero = 1;
     int computeRefrEquatorial = 0;
     int computeDistance = 0;
 
@@ -253,8 +253,8 @@ void on_gps_packet_ahrs(void *arg, const ubx_any_packet_t * packet) {
     float long_lat_coords[3] = {0};
     float xyz_coords[3] = {packet->packet.navsol.pos_ecef[0], packet->packet.navsol.pos_ecef[1], packet->packet.navsol.pos_ecef[2]};
     dekart_to_euler(xyz_coords, long_lat_coords);
-    location.latitude = M_PI / 2 - long_lat_coords[1];
-    location.longitude = long_lat_coords[2];
+    location.latitude = (M_PI / 2 - long_lat_coords[1]);
+    location.longitude = (long_lat_coords[2]);
     SolTrack(time, location, &position, useDegrees, useNorthEqualsZero, computeRefrEquatorial, computeDistance);
 
     float dir_sph[3] = {0};
@@ -397,11 +397,13 @@ int UpdateDataAll(void)
         ahrs_vectorActivate(AHRS_MAG, 1);
         ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS && stateSINS_lds.do_we_use_lds);
         ahrs_setKoefB(beta);
+
         ahrs_updateVecReal(AHRS_MAG, ahrs_get_good_vec_from_mag(vec_arrToVec(magn)));
         ahrs_updateVecMeasured(AHRS_MAG, vec_arrToVec(magn));
 
         ahrs_updateVecReal(AHRS_LIGHT, vec_init(0, 1, 0));
         ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
+
         ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
         ahrs_updateGyroData(vec_arrToVec(gyro));
         ahrs_calculateOrientation(dt);

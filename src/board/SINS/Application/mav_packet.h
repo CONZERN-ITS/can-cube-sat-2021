@@ -28,6 +28,6 @@ int mavlink_its_link_stats(void);
 int mavlink_lds_dir(stateSINS_lds_t * state);
 int mavlink_light_diode(stateSINS_lds_t * state);
 int mavlink_comissar_report();
-
+int mavlink_ahrs_stats(stateSINS_lds_t * state);
 
 #endif /* MAV_PACKET_H_ */
