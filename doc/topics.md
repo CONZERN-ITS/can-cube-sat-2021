@@ -326,7 +326,9 @@ RSSI значение передается JSON объектом, содержа
 		// сколько пакетов выгреб из радио сервер
 		"srv_rx_frames": { "type": "integer", "minimum": 0, "maximum": 4294967295},
 		// Сколько пакетов отправил в небо сервер
-		"srv_tx_frames": { "type": "integer", "minimum": 0, "maximum": 4294967295}
+		"srv_tx_frames": { "type": "integer", "minimum": 0, "maximum": 4294967295},
+		// текущая настройка мощности передатчика
+		"current_pa_power": { "type": "integer", "minimum": -127, "maximum": 128 }
 	}
 }
 ```
