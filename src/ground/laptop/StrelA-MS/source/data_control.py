@@ -252,5 +252,5 @@ class ZMQDataSource():
             raise RuntimeError("No Message")
 
     def stop(self):
-        self.pkt_count = None
+        self.pkt_count = 0
         self.log.close()
