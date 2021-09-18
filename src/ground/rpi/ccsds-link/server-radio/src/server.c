@@ -71,31 +71,13 @@ static int _radio_ctor(server_t * server)
 }
 
 
-static int _radio_configure(server_t * server)
+static int _radio_reconfigure(server_t * server, sx126x_drv_t * const radio)
 {
-	int rc;
+	int rc = 0;
 	uint16_t device_errors = 0;
-	sx126x_drv_t * const radio = &server->radio;
-
-	device_errors = 0;
 	sx126x_drv_get_device_errors(radio, &device_errors);
-	if (0 == rc)
-		log_info("radio before reset; device_errors = 0x%04"PRIx16"", rc, device_errors);
-	else
-		log_warn("unable to fetch radio errors before reset: %d", rc);
-
-	rc = sx126x_drv_reset(radio);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("radio after reset; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
-	if (0 != rc)
-		goto bad_exit;
-
-	_reset_stats(&server->stats);
-
-	device_errors = 0;
-	rc = sx126x_drv_configure_basic(radio, &server->config.radio_basic_cfg);
-	sx126x_drv_get_device_errors(radio, &device_errors);
-	log_info("radio configure basic; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
+	rc = sx126x_drv_mode_standby_rc(radio);
+	log_info("radio standby rc; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
 	if (0 != rc)
 		goto bad_exit;
 
@@ -139,6 +121,45 @@ static int _radio_configure(server_t * server)
 	return 0;
 
 bad_exit:
+	return -1;
+}
+
+
+static int _radio_configure(server_t * server)
+{
+	int rc;
+	uint16_t device_errors = 0;
+	sx126x_drv_t * const radio = &server->radio;
+
+	device_errors = 0;
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	if (0 == rc)
+		log_info("radio before reset; device_errors = 0x%04"PRIx16"", rc, device_errors);
+	else
+		log_warn("unable to fetch radio errors before reset: %d", rc);
+
+	rc = sx126x_drv_reset(radio);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("radio after reset; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
+	if (0 != rc)
+		goto bad_exit;
+
+	_reset_stats(&server->stats);
+
+	device_errors = 0;
+	rc = sx126x_drv_configure_basic(radio, &server->config.radio_basic_cfg);
+	sx126x_drv_get_device_errors(radio, &device_errors);
+	log_info("radio configure basic; rc = %d, device_errors = 0x%04"PRIx16"", rc, device_errors);
+	if (0 != rc)
+		goto bad_exit;
+
+	rc = _radio_reconfigure(server, radio);
+	if (0 != rc)
+		goto bad_exit;
+
+	return 0;
+
+bad_exit:
 	_radio_dtor(server);
 	return -1;
 }
@@ -150,12 +171,14 @@ static void _load_tx(server_t * server)
 
 	size_t packet_size;
 	msg_cookie_t packet_cookie;
+	int8_t packet_pa_power;
+	get_message_type_t message_type;
 
 	memset(server->tx_buffer, 0x00, server->config.radio_packet_cfg.payload_length);
 	rc = zserver_recv_tx_packet(
 		&server->zserver,
 		server->tx_buffer, server->config.radio_packet_cfg.payload_length,
-		&packet_size, &packet_cookie
+		&packet_size, &packet_cookie, &packet_pa_power, &message_type
 	);
 
 	if (0 != rc)
@@ -164,9 +187,20 @@ static void _load_tx(server_t * server)
 		return;
 	}
 
-	server->tx_buffer_size = packet_size;
-	server->tx_cookie_wait = packet_cookie;
-	server->tx_cookies_updated = true;
+
+	if (MESSAGE_FRAME == message_type)
+	{
+		server->tx_cookie_wait = packet_cookie;
+		server->tx_cookies_updated = true;
+		server->tx_buffer_size = packet_size;
+	}
+	else if (MESSAGE_PA_POWER == message_type)
+	{
+		server->tx_cookies_updated = false;
+		server->pa_request = packet_pa_power;
+		log_info("get PA_POWER packet");
+
+	}
 
 	if (server->tx_buffer_size)
 		log_info(
@@ -374,6 +408,7 @@ static void _report_radio_stats(server_t * server)
 		return;
 	}
 
+	server->stats.current_pa_power = server->config.radio_modem_cfg.pa_power;
 	zserver_send_stats(&server->zserver, &stats, device_errors, &server->stats);
 
 	// А еще напишем в свою консоль что происходит
@@ -392,6 +427,10 @@ static void _report_radio_stats(server_t * server)
 	log_info(
 			"stats: lrx_rssi_pkt: %d, lrx_rssi_sig: %d, lrx_rssi_snr: %d",
 			server->stats.last_rx_rssi_pkt, server->stats.last_rx_rssi_signal, server->stats.last_rx_snr
+	);
+
+	log_info(
+			"stats: current pa power: %d", server->config.radio_modem_cfg.pa_power
 	);
 
 	log_info("=-=-=-=-=-=-=-=-=-=-=-=-");
@@ -563,6 +602,21 @@ static int _go_tx(server_t * server)
 	int rc;
 	sx126x_drv_t * const radio = &server->radio;
 	const uint32_t hw_timeout = server->config.tx_timeout_ms;
+
+	if (server->pa_request >= 0)
+	{
+		server->config.radio_modem_cfg.pa_power = server->pa_request;
+		rc = _radio_reconfigure(server, radio);
+		log_info("change pa_power on %d", server->pa_request);
+		server->pa_request = -1;
+
+		if (0 != rc)
+		{
+			log_error("pa_power reconfigure radio failed: %d", rc);
+			return rc;
+		}
+
+	}
 
 	rc = sx126x_drv_payload_write(radio, server->tx_buffer, server->config.radio_packet_cfg.payload_length);
 	if (0 != rc)
@@ -778,6 +832,7 @@ int server_ctor(server_t * server, const server_config_t * config)
 	int rc;
 	memset(server, 0x00, sizeof(*server));
 	server->config = *config;
+	server->pa_request = -1;
 
 	rc = zserver_init(&server->zserver);
 	if (0 != rc)

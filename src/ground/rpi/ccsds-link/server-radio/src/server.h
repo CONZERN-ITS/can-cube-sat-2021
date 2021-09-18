@@ -26,6 +26,7 @@ typedef struct server_stats_t
 	int8_t last_rx_rssi_pkt;
 	int8_t last_rx_rssi_signal;
 	int8_t last_rx_snr;
+	int8_t current_pa_power;
 } server_stats_t;
 
 
@@ -56,6 +57,9 @@ typedef struct server_t
 	struct timespec tx_state_last_report_timepoint;
 
 	volatile sig_atomic_t stop_requested;
+
+	int8_t pa_request;
+
 } server_t;
 
 

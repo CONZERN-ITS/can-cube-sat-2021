@@ -21,6 +21,10 @@ typedef struct zserver_t
 	void * pub_socket;
 } zserver_t;
 
+typedef enum get_message_type_t {
+	MESSAGE_FRAME,
+	MESSAGE_PA_POWER
+} get_message_type_t;
 
 struct server_stats_t;
 typedef struct server_stats_t server_stats_t;
@@ -33,7 +37,8 @@ void zserver_deinit(zserver_t * zserver);
 
 int zserver_recv_tx_packet(
 	zserver_t * zserver, uint8_t * buffer, size_t buffer_size,
-	size_t * packet_size, msg_cookie_t * packet_cookie
+	size_t * packet_size, msg_cookie_t * packet_cookie, int8_t * packet_pa_power,
+	get_message_type_t * message_type
 );
 
 
