@@ -132,7 +132,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.autoclose.emit(str(e))
                     break
                 except Exception as e:
-                    _log.exception("error in data manager: %s", e)
+                    _log.exception("Error in data thread: %s", e)
                 else:
                     data_buf.extend(data)
                     if (time.time() - start_time) > self.update_time:

@@ -25,7 +25,7 @@ class StatusWidget(QtWidgets.QWidget):
                 self.set_enabled(True)
                 self.set_status(status)
                 self.set_status_type(status_type)
-                self.set_stage_id(0)
+                self.set_stage_id()
 
             def get_name(self):
                 return self.name
