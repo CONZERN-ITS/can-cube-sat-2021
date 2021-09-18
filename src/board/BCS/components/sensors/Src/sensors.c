@@ -206,6 +206,7 @@ static void sensors_task(void *arg) {
 				mavlink_message_t msg = {0};
 				mts.time_s = tv.tv_sec;
 				mts.time_us = tv.tv_usec;
+				mts.time_steady = esp_timer_get_time() / 1000;
 				mts.temperature = errors[i] == DS18B20_OK ? readings[i] : NAN;
 				mavlink_msg_thermal_state_encode(mavlink_system, i, &msg, &mts);
 				its_rt_sender_ctx_t ctx = {0};
@@ -295,7 +296,7 @@ static void sensors_ina_task(void *arg) {
 
 			mes[i].time_s = tp.tv_sec;
 			mes[i].time_us = tp.tv_usec;
-			mes[i].time_steady = (uint32_t) now;
+			mes[i].time_steady = (uint32_t) now / 1000;
 			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		for (int i = 0; i < INA_MAX; i++) {
