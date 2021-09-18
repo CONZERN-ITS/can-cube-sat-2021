@@ -203,6 +203,7 @@ class ZMQDataSource():
         events = dict(self.poller.poll(10))
         if self.sub_socket in events:
             zmq_msg = self.sub_socket.recv_multipart()
+            data = []
 
             if zmq_msg[0] == b'radio.rssi_instant':
                 return [Message(message_id='radio.rssi_instant',
@@ -220,8 +221,7 @@ class ZMQDataSource():
                                 msg_time=self._extract_mdt_time(zmq_msg),
                                 msg_data=json.loads(zmq_msg[1].decode("utf-8")))]
 
-            data = []
-            if zmq_msg[0] == b'radio.downlink_frame':
+            elif zmq_msg[0] == b'radio.downlink_frame':
                 num = json.loads(zmq_msg[1].decode("utf-8")).get("frame_no", None)
                 if (num is not None) and (self.pkt_num is not None):
                     if ((self.pkt_num + 1) < num):
@@ -233,18 +233,20 @@ class ZMQDataSource():
                                     msg_data={'count': self.pkt_count,
                                               'num': self.pkt_num}))
 
-            msg_buf = zmq_msg[2]
+            if len(zmq_msg) > 2:
+                msg_buf = zmq_msg[2]
 
-            if not self.notimestamps:
-                self.log.write(struct.pack("<Q", int(time.time() * 1.0e6) & -3))
-            self.log.write(msg_buf)
+                if not self.notimestamps:
+                    self.log.write(struct.pack("<Q", int(time.time() * 1.0e6) & -3))
+                self.log.write(msg_buf)
 
-            msg = self.mav.parse_buffer(msg_buf)
-            _log.debug("got message: %s", list([str(x) for x in msg]))
+                msg = self.mav.parse_buffer(msg_buf)
+                _log.debug("got message: %s", list([str(x) for x in msg]))
 
-            if msg is None:
-                raise RuntimeError("No Message")
-            data.extend(MAVDataSource.get_data(MAVDataSource, msg))
+                if msg is None:
+                    raise RuntimeError("No Message")
+                data.extend(MAVDataSource.get_data(MAVDataSource, msg))
+
             return data
         else:
             raise RuntimeError("No Message")
