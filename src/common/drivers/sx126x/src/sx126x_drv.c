@@ -645,7 +645,7 @@ int sx126x_drv_mode_standby_rc(sx126x_drv_t * drv)
 	rc = _wait_busy(drv);
 	SX126X_RETURN_IF_NONZERO(rc);
 
-	rc = _switch_state_to_standby(drv, SX126X_DRV_STATE_STANDBY_RC);
+	rc = _switch_state_to_standby(drv, SX126X_DRV_STANDBY_SWITCH_RC);
 	SX126X_RETURN_IF_NONZERO(rc);
 
 	return 0;
