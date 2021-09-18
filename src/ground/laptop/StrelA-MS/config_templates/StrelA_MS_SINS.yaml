@@ -213,6 +213,7 @@ CentralWidget:
     - '#0000FF'
     - '#FF0000'
     - '#FFFF00'
+    is_on: true
     position:
     - 0
     - 2
@@ -343,12 +344,12 @@ CentralWidget:
     position:
     - 0
     - 1
-    - 2
+    - 1
     - 1
     zoom: 4
   ModelWidget:
     Axis:
-      is_on: true
+      is_on: false
       scale:
       - 6.5
       - 6.5
@@ -359,12 +360,12 @@ CentralWidget:
       - -5
     Camera:
       azimuth: 0
-      distance: 470
+      distance: 640
       elevation: 35
       pan:
       - 0
       - 0
-      - 30
+      - 0
     Grid:
       is_on: true
       scale:
@@ -378,11 +379,11 @@ CentralWidget:
     Mesh:
       Colors:
         is_on: true
-        path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS_color.mfcl
+        path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-2-for-GKS_color.mfcl
       compute_normals: true
       draw_edges: false
       draw_faces: true
-      path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS.stl
+      path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-2-for-GKS.stl
       shader: edgeHilight
       smooth: false
     Scene:
@@ -396,7 +397,7 @@ CentralWidget:
       path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/axis.stl
       shader: balloon
       smooth: false
-    background_color: '#323232'
+    background_color: '#505050'
     is_on: true
     sourse_id: '11_0'
     message_id: 'SINS_ISC'

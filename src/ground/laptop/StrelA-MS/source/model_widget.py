@@ -11,8 +11,8 @@ import struct
 from source import settings_control
 from source import RES_ROOT
 
-MESH_PATH = os.path.join(RES_ROOT, "models/CanCubeSat-for-GKS.stl")
-MESH_COLOR_PATH = os.path.join(RES_ROOT, "models/CanCubeSat-for-GKS_color.mfcl")
+MESH_PATH = os.path.join(RES_ROOT, "models/CanCubeSat-2-for-GKS.stl")
+MESH_COLOR_PATH = os.path.join(RES_ROOT, "models/CanCubeSat-2-for-GKS_color.mfcl")
 SCENE_MESH_PATH = os.path.join(RES_ROOT, "models/axis.stl")
 SCENE_MESH_COLOR_PATH = os.path.join(RES_ROOT, "models/axis.mfcl")
 
@@ -95,6 +95,7 @@ class ModelWidget(OpenGL.GLViewWidget):
                 model_color = self._get_face_colors(SCENE_MESH_COLOR_PATH)
 
             faces = NumPy.array([(i, i + 1, i + 2,) for i in range(0, len(verts), 3)])
+            verts *= 1.5
 
             self.scene.setMeshData(vertexes=verts,
                                    faces=faces, 
