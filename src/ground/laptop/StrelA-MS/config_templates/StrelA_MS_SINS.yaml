@@ -213,6 +213,7 @@ CentralWidget:
     - '#0000FF'
     - '#FF0000'
     - '#FFFF00'
+    is_on: false
     position:
     - 0
     - 2
@@ -322,7 +323,7 @@ CentralWidget:
         - 1
         - 1
         units: m
-    is_on: true
+    is_on: false
     position:
     - 0
     - 0
@@ -334,7 +335,7 @@ CentralWidget:
     - 55.9
     - 37.8
     follow: true
-    is_on: true
+    is_on: false
     max_data_length: 40
     sourse_id: '11_0'
     message_id: 'GPS_UBX_NAV_SOL'
@@ -348,7 +349,7 @@ CentralWidget:
     zoom: 4
   ModelWidget:
     Axis:
-      is_on: true
+      is_on: false
       scale:
       - 6.5
       - 6.5
@@ -366,7 +367,7 @@ CentralWidget:
       - 0
       - 30
     Grid:
-      is_on: true
+      is_on: false
       scale:
       - 3
       - 3
@@ -380,10 +381,10 @@ CentralWidget:
         is_on: true
         path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS_color.mfcl
       compute_normals: true
-      draw_edges: false
+      draw_edges: true
       draw_faces: true
-      path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-for-GKS.stl
-      shader: edgeHilight
+      path: /media/sf_git/can-cube-sat/src/ground/laptop/source/models/CanCubeSat-2-for-GKS.stl
+      shader: balloon #edgeHilight
       smooth: false
     Scene:
       Colors:
@@ -406,8 +407,8 @@ CentralWidget:
     - quaternion[2]
     - quaternion[3]
     position:
-    - 1
-    - 1
+    - 0
+    - 0
     - 1
     - 1
   EventWidget:
@@ -462,7 +463,7 @@ MainWindow:
       connection: udpin:0.0.0.0:14540
       notimestamps: true
     ZMQ:
-      bus_bpcs: "tcp://192.168.1.223:7778"
+      bus_bpcs: "tcp://192.168.1.210:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
