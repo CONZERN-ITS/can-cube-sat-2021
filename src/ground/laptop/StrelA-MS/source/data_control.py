@@ -221,7 +221,7 @@ class ZMQDataSource():
                                 msg_time=self._extract_mdt_time(zmq_msg),
                                 msg_data=json.loads(zmq_msg[1].decode("utf-8")))]
 
-            elif zmq_msg[0] == b'radio.downlink_frame':
+            elif (zmq_msg[0] == b'radio.downlink_frame') or (zmq_msg[0] == b'sdr.downlink_frame'):
                 num = json.loads(zmq_msg[1].decode("utf-8")).get("frame_no", None)
                 if (num is not None) and (self.pkt_num is not None):
                     if ((self.pkt_num + 1) < num):
