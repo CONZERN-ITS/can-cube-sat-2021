@@ -223,9 +223,8 @@ class ZMQDataSource():
             data = []
             if zmq_msg[0] == b'radio.downlink_frame':
                 num = json.loads(zmq_msg[1].decode("utf-8")).get("frame_no", None)
-                if num is not None:
-                    if (num is not None) and (self.pkt_num is not None) and ((self.pkt_num + 1) < num):
-                        print(num - (self.pkt_num + 1))
+                if (num is not None) and (self.pkt_num is not None):
+                    if ((self.pkt_num + 1) < num):
                         self.pkt_count += num - (self.pkt_num + 1)
                 self.pkt_num = num
                 data.append(Message(message_id='LOST_MESSAGES',
