@@ -453,8 +453,17 @@ CentralWidget:
             - alt ms5611 out
             color:
             - g
+          11_0_GPS_UBX_NAV_SOL:
+            sourse_id: '11_0'
+            message_id: GPS_UBX_NAV_SOL
+            field_id:
+            - alt
+            field_name:
+            - alt gps
+            color:
+            - r
         name: Altitude
-        legend_is_on: false
+        legend_is_on: true
         is_on: true
         max_data_length: 100
         position:
@@ -660,7 +669,7 @@ MainWindow:
       connection: udpin:0.0.0.0:14540
       notimestamps: true
     ZMQ:
-      bus_bpcs: "tcp://192.168.1.223:7778"
+      bus_bpcs: "tcp://192.168.1.210:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
