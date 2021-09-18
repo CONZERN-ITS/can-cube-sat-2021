@@ -6,6 +6,8 @@ from source import RES_ROOT, USER_SETTINGS_PATH
 
 DEFAULT_SETTINGS_PATH = os.path.join(RES_ROOT, "UKAZ_default.yml")
 
+APP_ICON_PATH = os.path.join(RES_ROOT, "images/StrelA_MS.png")
+
 SETTINGS_PATH = USER_SETTINGS_PATH
 if 'UKAZ_CONFIG' in os.environ:
     if os.path.exists(os.environ['UKAZ_CONFIG']):

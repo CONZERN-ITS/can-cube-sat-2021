@@ -119,7 +119,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.settings = settings_control.init_settings()
 
-        #self.setWindowIcon(QtGui.QIcon(APP_ICON_PATH))
+        self.setWindowIcon(QtGui.QIcon(settings_control.APP_ICON_PATH))
 
         self.setup_ui()
         self.setup_ui_design()
@@ -165,12 +165,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data_thread.start()
 
     def setup_ui_design(self):
-        self.resize(600, 800)
+        self.resize(*[int(num) for num in self.settings.value('MainWindow/size')])
         self.setWindowTitle("Ukaz")
 
         self.menu_file.setTitle("&File")
         self.action_exit.setText("&Exit")
         self.action_exit.setStatusTip("Exit")
+
+        self.central_widget.setup_ui_design()
 
     def send_msg(self, data):
         msg = self.interface.generate_message(*data[:2])
