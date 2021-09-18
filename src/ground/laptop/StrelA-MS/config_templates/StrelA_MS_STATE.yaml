@@ -410,7 +410,7 @@ CentralWidget:
         - 1
         - 1
         units: C
-      Voltage:
+      SB_Voltage:
         Packets:
           CUBE_1_BCU_EL_STATE_COMP_0:
             sourse_id: '10_0'
@@ -448,35 +448,17 @@ CentralWidget:
             - BSK4
             color:
             - '#00FFFF'
-          CUBE_1_PCU_EL_STATE_COMP_0:
-            sourse_id: '12_0'
-            message_id: 'ELECTRICAL_STATE'
-            field_id:
-            - voltage
-            field_name:
-            - BMS+
-            color:
-            - '#FFFF00'
-          CUBE_1_PCU_EL_STATE_COMP_1:
-            sourse_id: '12_1'
-            message_id: 'ELECTRICAL_STATE'
-            field_id:
-            - voltage
-            field_name:
-            - BUS+
-            color:
-            - '#FF00FF'
         legend_is_on: true
         is_on: true
         max_data_length: 100
-        name: "Voltage"
+        name: "Sun battary voltage"
         position:
         - 1
-        - 1
+        - 0
         - 1
         - 1
         units: V
-      Current:
+      SB_Current:
         Packets:
           CUBE_1_BCU_EL_STATE_COMP_0:
             sourse_id: '10_0'
@@ -514,6 +496,48 @@ CentralWidget:
             - BSK4
             color:
             - '#00FFFF'
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        name: "Sun battary current"
+        position:
+        - 1
+        - 1
+        - 1
+        - 1
+        units: A
+      A_Voltage:
+        Packets:
+          CUBE_1_PCU_EL_STATE_COMP_0:
+            sourse_id: '12_0'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - voltage
+            field_name:
+            - BMS+
+            color:
+            - '#FFFF00'
+          CUBE_1_PCU_EL_STATE_COMP_1:
+            sourse_id: '12_1'
+            message_id: 'ELECTRICAL_STATE'
+            field_id:
+            - voltage
+            field_name:
+            - BUS+
+            color:
+            - '#FF00FF'
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
+        name: "Accumulator voltage"
+        position:
+        - 2
+        - 0
+        - 1
+        - 1
+        units: V
+      A_Current:
+        Packets:
           CUBE_1_PCU_EL_STATE_COMP_0:
             sourse_id: '12_0'
             message_id: 'ELECTRICAL_STATE'
@@ -535,9 +559,9 @@ CentralWidget:
         legend_is_on: true
         is_on: true
         max_data_length: 100
-        name: "Current"
+        name: "Accumulator current"
         position:
-        - 0
+        - 2
         - 1
         - 1
         - 1
@@ -580,10 +604,10 @@ CentralWidget:
         legend_is_on: true
         is_on: true
         max_data_length: 100
-        name: "Own temperature"
+        name: "Own voltage"
         position:
-        - 1
         - 0
+        - 1
         - 1
         - 1
         units: C
@@ -609,7 +633,7 @@ CentralWidget:
         max_data_length: 100
         name: "RSSI"
         position:
-        - 2
+        - 3
         - 0
         - 1
         - 1
@@ -630,7 +654,7 @@ CentralWidget:
         max_data_length: 100
         name: "RSSI Instant"
         position:
-        - 2
+        - 3
         - 1
         - 1
         - 1
@@ -776,7 +800,7 @@ MainWindow:
       notimestamps: true
     ZMQ:
       # bus_bpcs: "tcp://192.168.0.200:7778"
-      bus_bpcs: "tcp://192.168.1.223:7778"
+      bus_bpcs: "tcp://192.168.1.210:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
