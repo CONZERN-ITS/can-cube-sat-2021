@@ -1,128 +1,26 @@
 import socket
 import struct
 import enum
+import datetime
 import dataclasses
 
 import json
 import zmq
+import time
 
 
 INTERFACE = "127.0.0.1"
 PORT = 40868
 
-
 bus_endpoint = "tcp://192.168.1.223:7777"
 
-def twos_comp(val, bits=8):
-    """compute the 2's complement of int value val"""
-    if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
-        val = val - (1 << bits)        # compute negative value
-    return val                         # return positive value as is
 
-
-class LoraSF(enum.IntEnum):
-    SF7: 7
-    SF8: 8
-    SF9: 9
-    SF10: 10
-    SF11: 11
-    SF12: 12
-
-
-@dataclasses.dataclass
-class LoraTAPHeader:
-
-    lt_version: int
-    lt_length: int
-    frequency: int
-    bandwidth: int
-    sf: LoraSF 
-    packet_rssi: int
-    max_rssi: int
-    current_rssi: int
-    snr: int
-
-    data: bytes
-
-    def bandwidth_hz(self):
-        return self.bandwidth * 125*1000
-
-    def packet_rssi_dbm(self):
-        if self.snr_db() > 0:
-            return -139 + self.packet_rssi
-        else:
-            return -139 + (self.packet_rssi / 4)
-
-    def max_rssi_dbm(self):
-        return -139 + self.max_rssi
-
-    def current_rssi_dbm(self):
-        return -139 + self.current_rssi
-
-    def snr_db(self):
-        return self.snr / 4
-
-
-
-
-class LoraTapHeaderParser:
-
-    def __init__(self):
-        self.primary_struct = struct.Struct(
-            "<"  # little-endian
-            "B"  # uint8_t lt_version
-            "x"  # uint8_t lt_padding
-            "H"  # uin16_t lt_length
-        )
-
-        self.channel_struct = struct.Struct(
-            "<"
-            "L"  # uint32_t frequency
-            "B"  # uint8_t bandwidth
-            "B"  # uint8_t sf
-        )
-
-        self.rssi_struct = struct.Struct(
-            "<"
-            "4B"  # packet_rssi, max_rssi, current_rssi, snr
-        )
-
-        self.syncword_struct = struct.Struct(
-            "<"
-            "B"  # uint8_t LoRa radio sync word [0x34 = LoRaWAN]
-        )
-
-    def parse(self, data: bytes) -> LoraTAPHeader:
-        retval = {}
-
-        portion, leftovers = data[0:self.primary_struct.size], data[self.primary_struct.size:]
-        version, length = self.primary_struct.unpack(portion)
-        retval["lt_version"] = version
-        retval["lt_length"] = length
-
-        portion, leftovers = leftovers[0:self.channel_struct.size], data[self.channel_struct.size:]
-        frequency, bandwidth, sf = self.channel_struct.unpack(portion)
-        retval["frequency"] = frequency 
-        retval["bandwidth"] = bandwidth
-        retval["sf"] = sf
-
-        portion, leftovers = leftovers[0:self.rssi_struct.size], data[self.channel_struct.size:]
-        print(f"portion = {portion}")
-        values = self.rssi_struct.unpack(portion)
-        
-        retval["snr"] = twos_comp(values[3])/4
-        if retval["snr"] > 0:
-            retval["packet_rssi"] = -139 + values[0]
-        else:
-            retval["packet_rssi"] = -139 + values[0]/4
-
-        retval["max_rssi"] = -139 + values[1]
-        retval["current_rssi"] = -139 + values[2]
-
-        retval["data"] = leftovers
-
-        return LoraTAPHeader(**retval)
-
+def generate_logfile_name():
+    now = datetime.datetime.utcnow().replace(microsecond=0)
+    isostring = now.isoformat()  # строка вида 2021-04-27T23:17:31
+    isostring = isostring.replace("-", "")  # Строка вида 20210427T23:17:31
+    isostring = isostring.replace(":", "")  # Строка вида 20210427T231731, то что надо
+    return "sdr-lora-log-" + isostring + ".bin"
 
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -133,14 +31,10 @@ socket = ctx.socket(zmq.PUB)
 print("connecting to %s" % bus_endpoint)
 socket.connect(bus_endpoint)
 
-parser = LoraTapHeaderParser()
-
-template = b'loraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloraloralora'
-good_ones = 0
-bad_ones = 0
-
-log_file = "lora_log.bin"
+log_file = generate_logfile_name()
 log_stream = open(log_file, mode="wb")
+
+cookie = 1
 
 while True:
     data, port = sock.recvfrom(4096)
@@ -154,26 +48,38 @@ while True:
     tap_bytes = data[:lora_tap_len]
     rssi_bytes = data[lora_tap_len:][:lora_mac_len]
     payload = data[lora_tap_len + lora_mac_len:][:-crc_len]
-    crc = data[-crc_len:]
+    crc_bytes = data[-crc_len:]
     print(
         "tap: %s, mac: %s, payload: %s, crc: %s"
-        % (tap_bytes.hex(), rssi_bytes.hex(), payload, crc.hex())
+        % (tap_bytes.hex(), rssi_bytes.hex(), payload.hex(), crc_bytes.hex())
     )
-    
-    if payload == template:
-        good_ones += 1
-    else:
-        bad_ones += 1
-    print("good: %s, bad: %s" % (good_ones, bad_ones))
 
+    frame_no = payload[:2]
+    frame_no, = struct.unpack("<H", frame_no)
+    payload = payload[2:]
 
-    packet = {'snr' : rssi_bytes[-1], 'cookie': cookie}
+    now = time.time()
+    packet = {
+        'time_s': int(now),
+        'time_us': int((now - int(now)) * 1000_0000),
+        'cookie': cookie,
+        'snr' : rssi_bytes[0],
+        'frame_no': frame_no,
+
+        'tap_bytes': tap_bytes.hex(),
+        'rssi_bytes': rssi_bytes.hex(),
+        'crc_bytes': crc_bytes.hex(),
+    }
 
     parts = [
-        b"sdr.payload", 
+        b"sdr.downlink_frame", 
         json.dumps(packet).encode("utf-8"),
         payload
     ]
 
     socket.send_multipart(parts)
+    cookie += 1
+    cookie &= 0xFFFF_FFFF_FFFF_FFFF
+    if cookie == 0:
+        cookie = 1
 
