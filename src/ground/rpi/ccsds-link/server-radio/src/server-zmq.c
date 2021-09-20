@@ -16,7 +16,7 @@
 #define ITS_SUB_ENDPOINT_KEY "ITS_GBUS_BPCS_ENDPOINT"
 
 #define ITS_GBUS_TOPIC_UPLINK_FRAME "radio.uplink_frame"
-#define ITS_GBUS_TOPIC_PA_POWER "radio.sdr_pa_power"
+#define ITS_GBUS_TOPIC_PA_POWER "radio.pa_power_request"
 #define ITS_GBUS_TOPIC_DOWNLINK_FRAME "radio.downlink_frame"
 #define ITS_GBUS_TOPIC_UPLINK_STATE "radio.uplink_state"
 #define ITS_GBUS_TOPIC_RSSI_INSTANT "radio.rssi_instant"
@@ -80,7 +80,7 @@ static int _parse_tx_pa_power_metadata(
 	if (t[0].type != JSMN_OBJECT || t[1].type != JSMN_STRING || t[2].type != JSMN_PRIMITIVE)
 	{
 		log_error(
-				"invalid tx meta json token types: %d, %d, %d",
+				"invalid pa_power json token types: %d, %d, %d",
 				(int)t[0].type, (int)t[1].type, (int)t[2].type
 		);
 		return -1;
@@ -97,7 +97,7 @@ static int _parse_tx_pa_power_metadata(
 
 	if (0 != strncmp(json_buffer + key_tok->start, expected_key, expected_key_size))
 	{
-		log_error("invalid tx metadata pa_power key");
+		log_error("invalid pa_power json key");
 		return -1;
 	}
 
@@ -748,8 +748,9 @@ int zserver_send_stats(
 			"\"error_pa_ramp\": %s, "
 			"\"srv_rx_done\": %"PRIu32", "
 			"\"srv_rx_frames\": %"PRIu32", "
-			"\"srv_tx_frames\": %"PRIu32","
-			"\"current_pa_power\": %"PRId8""
+			"\"srv_tx_frames\": %"PRIu32", "
+			"\"current_pa_power\": %"PRId8", "
+			"\"requested_pa_power\": %"PRId8""
 		"}",
 		now.seconds,
 		now.microseconds,
@@ -763,7 +764,8 @@ int zserver_send_stats(
 		device_errors & SX126X_DEVICE_ERROR_PLL_LOCK	? "true": "false",
 		device_errors & SX126X_DEVICE_ERROR_PA_RAMP		? "true": "false",
 		server_stats->rx_done_counter, server_stats->rx_frame_counter, server_stats->tx_frame_counter,
-		server_stats->current_pa_power
+		server_stats->current_pa_power,
+		server_stats->requested_pa_power
 	);
 	if (rc < 0 || rc >= sizeof(json_buffer))
 	{

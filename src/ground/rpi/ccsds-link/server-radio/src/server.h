@@ -27,6 +27,7 @@ typedef struct server_stats_t
 	int8_t last_rx_rssi_signal;
 	int8_t last_rx_snr;
 	int8_t current_pa_power;
+	int8_t requested_pa_power;
 } server_stats_t;
 
 

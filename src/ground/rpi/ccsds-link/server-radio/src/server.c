@@ -409,6 +409,7 @@ static void _report_radio_stats(server_t * server)
 	}
 
 	server->stats.current_pa_power = server->config.radio_modem_cfg.pa_power;
+	server->stats.requested_pa_power = server->pa_request;
 	zserver_send_stats(&server->zserver, &stats, device_errors, &server->stats);
 
 	// А еще напишем в свою консоль что происходит

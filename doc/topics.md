@@ -31,8 +31,6 @@
 {
 	"type": "object",
 	"properties": {
-		"time_s": { "type:" "integer" },
-		"time_us": { "type:" "integer" },
 		"cookie": {
 			"type": "integer",
 			"minimum": 1
@@ -328,7 +326,9 @@ RSSI значение передается JSON объектом, содержа
 		// Сколько пакетов отправил в небо сервер
 		"srv_tx_frames": { "type": "integer", "minimum": 0, "maximum": 4294967295},
 		// текущая настройка мощности передатчика
-		"current_pa_power": { "type": "integer", "minimum": -127, "maximum": 128 }
+		"current_pa_power": { "type": "integer", "minimum": -127, "maximum": 128 },
+		// Запрошенное значение мощности для следующего фрейма
+		"requested_pa_power": { "type": "integer", "minimum": -127, "maximum": 128 }
 	}
 }
 ```
@@ -349,7 +349,9 @@ RSSI значение передается JSON объектом, содержа
 	"error_pa_ramp": false,
 	"srv_rx_done": 3,
 	"srv_rx_frames": 0,
-	"srv_tx_frames": 0 
+	"srv_tx_frames": 0,
+	"current_pa_power": 22,
+	"requested_pa_power": -1,
 }
 ```
 
@@ -357,6 +359,30 @@ RSSI значение передается JSON объектом, содержа
 
 Генерируются сервером-радио периодически.
 
+
+#### radio.pa_power_request
+
+Это сообщение является командой серверу радио на изменение мощности передатчика. Реальное изменение происходит при реконфигурации приёмника перед отправкой пакета наверх. И после этого его можно контроллировать в сообщении `radio.stats`.
+
+Сообщение состоит из двух частей. Первая часть это топик. Вторая часть это жсон с единственным полем: `pa_power`.
+
+Схема:
+
+```json
+{
+	"type": "object",
+	"properties": {
+		// Запрашиваемая мощность
+		"pa_power": { "type": "integer", "minimum": -127, "maximum": 128 }
+	}
+}
+```
+
+Пример:
+
+```json
+{ "pa_power": 22 }
+```
 
 ### Сообщения сервера USLP стека
 
