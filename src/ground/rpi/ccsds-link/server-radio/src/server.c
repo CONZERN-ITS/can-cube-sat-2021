@@ -198,7 +198,7 @@ static void _load_tx(server_t * server)
 	{
 		server->tx_cookies_updated = false;
 		server->pa_request = packet_pa_power;
-		log_info("get PA_POWER packet");
+		log_info("got PA_POWER update request with value: %"PRId8"", server->pa_request);
 
 	}
 
@@ -431,7 +431,9 @@ static void _report_radio_stats(server_t * server)
 	);
 
 	log_info(
-			"stats: current pa power: %d", server->config.radio_modem_cfg.pa_power
+			"stats: current pa power: %d, requested_pa_power",
+			server->config.radio_modem_cfg.pa_power,
+			server->pa_request
 	);
 
 	log_info("=-=-=-=-=-=-=-=-=-=-=-=-");
