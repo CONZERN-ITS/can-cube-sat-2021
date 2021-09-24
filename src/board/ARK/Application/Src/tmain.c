@@ -126,6 +126,6 @@ void time_recv_callback(const mavlink_message_t *msg) {
     its_set_time_base(mts.time_base);
     its_time_t t;
     t.sec = mts.time_s;
-    t.usec = mts.time_us / 1000;
+    t.msec = mts.time_us / 1000;
     its_sync_time(&t);
 }

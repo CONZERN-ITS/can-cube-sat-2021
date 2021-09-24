@@ -27,7 +27,7 @@
 
 typedef struct {
     uint64_t sec;
-    uint16_t usec;
+    uint16_t msec;
 } its_time_t;
 
 

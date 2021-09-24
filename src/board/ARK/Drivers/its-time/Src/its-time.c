@@ -122,7 +122,7 @@ void __attribute__((weak)) its_gettimeofday(its_time_t *time) {
     _read_DIV_CNT_timesafe(its_time_h.RTCx, &div, &cnt);
     uint16_t usec = _div_tick_to_usec(div + 1, its_time_h.div_load + 1);
     usec += its_time_h.usec_shift;
-    time->usec = usec % 1000;
+    time->msec = usec % 1000;
     time->sec  = cnt + usec / 1000;
 }
 
@@ -132,7 +132,7 @@ void __attribute__((weak)) its_gettimeofday_with_timebase(its_time_t *time, uint
 	_read_DIV_CNT_timesafe(its_time_h.RTCx, &div, &cnt);
 	uint16_t usec = _div_tick_to_usec(div + 1, its_time_h.div_load + 1);
 	usec += its_time_h.usec_shift;
-	time->usec = usec % 1000;
+	time->msec = usec % 1000;
 	time->sec  = cnt + usec / 1000;
 
 	*time_base = its_time_h.time_base;
@@ -143,7 +143,7 @@ void __attribute__((weak)) its_gettimeofday_with_timebase(its_time_t *time, uint
  * explained in comments for its_gettimeofday
  */
 void __attribute__((weak)) its_settimeofday(its_time_t *time) {
-    its_time_h.usec_shift = time->usec;
+    its_time_h.usec_shift = time->msec;
     LL_RTC_DisableWriteProtection(its_time_h.RTCx);
     LL_RTC_TIME_Set(its_time_h.RTCx, time->sec);
     LL_RTC_EnableWriteProtection(its_time_h.RTCx);
@@ -152,7 +152,7 @@ void __attribute__((weak)) its_settimeofday(its_time_t *time) {
 
 void __attribute__((weak)) its_settimeofday_with_timebase(its_time_t *time, uint8_t time_base) {
 	its_time_h.time_base = time_base;
-	its_time_h.usec_shift = time->usec;
+	its_time_h.usec_shift = time->msec;
     LL_RTC_DisableWriteProtection(its_time_h.RTCx);
     LL_RTC_TIME_Set(its_time_h.RTCx, time->sec);
     LL_RTC_EnableWriteProtection(its_time_h.RTCx);
@@ -250,7 +250,7 @@ void its_collect_ark_stats(mavlink_ark_stats_t * msg)
 	its_time_t now;
 	its_gettimeofday(&now);
 	msg->time_s = now.sec;
-	msg->time_us = now.usec * 1000;
+	msg->time_us = now.msec * 1000;
 	msg->time_steady = HAL_GetTick();
 
 

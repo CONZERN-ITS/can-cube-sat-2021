@@ -32,16 +32,16 @@ void its_sync_time(its_time_t *from_bcs) {
 
     static int bad_time = 0;
     static int64_t big_diff = 0;
-    int64_t diff = -(last_exti.sec * 1000 + last_exti.usec) + (from_bcs->sec * 1000 + from_bcs->usec);
+    int64_t diff = -(last_exti.sec * 1000 + last_exti.msec) + (from_bcs->sec * 1000 + from_bcs->msec);
 
     if (llabs(diff) > 5000) {
-        uint64_t new = now.sec * 1000 + now.usec + diff;
+        uint64_t new = now.sec * 1000 + now.msec + diff;
 
         ist_count__time_syncs_count();
         its_set_correction_delta_time(HAL_GetTick(), diff / 1000, (diff % 1000) * 1000);
 
         now.sec = new / 1000;
-        now.usec = new % 1000;
+        now.msec = new % 1000;
         its_settimeofday(&now);
 
         bad_time = 0;
@@ -57,13 +57,13 @@ void its_sync_time(its_time_t *from_bcs) {
         its_count__time_sync_attempts();
     }
     if (bad_time >= 5) {
-        uint64_t new = now.sec * 1000 + now.usec + big_diff / bad_time;
+        uint64_t new = now.sec * 1000 + now.msec + big_diff / bad_time;
 
         ist_count__time_syncs_count();
         its_set_correction_delta_time(HAL_GetTick(), diff / 1000, diff % 1000);
 
         now.sec = new / 1000;
-        now.usec = new % 1000;
+        now.msec = new % 1000;
         its_settimeofday(&now);
 
 

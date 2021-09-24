@@ -86,7 +86,7 @@ void eupdate() {
         if (!is_gened) {
             mavlink_electrical_state_t mest = {0};
             mest.time_s = tim.sec;
-            mest.time_us = tim.usec * 1000;
+            mest.time_us = tim.msec * 1000;
             mest.time_steady = HAL_GetTick();
 
             mest.current = current[ina_index];
@@ -143,7 +143,7 @@ void tupdate() {
         if (!is_gened) {
             mavlink_thermal_state_t mtst = {0};
             mtst.time_s = tim.sec;
-            mtst.time_us = tim.usec * 1000;
+            mtst.time_us = tim.msec * 1000;
             mtst.time_steady = HAL_GetTick();
             mtst.temperature = temp[ds_index];
 
@@ -188,7 +188,7 @@ void send_stats(void)
 
 	mavlink_i2c_link_stats_t i2c_stats_msg;
 	i2c_stats_msg.time_s = now.sec;
-	i2c_stats_msg.time_us = now.usec;
+	i2c_stats_msg.time_us = now.msec * 1000;
 	i2c_stats_msg.time_steady = HAL_GetTick();
 
 	i2c_stats_msg.rx_packet_start_cnt = i2c_stats.rx_packet_start_cnt;
@@ -232,7 +232,7 @@ void task_send_update(void *arg) {
         prev = HAL_GetTick();
         static its_time_t tim;
         its_gettimeofday(&tim);
-        printf("TIME: %"PRIu32".%03"PRIu32"\n", (uint32_t)tim.sec, (uint32_t)tim.usec);
+        printf("TIME: %"PRIu32".%03"PRIu32"\n", (uint32_t)tim.sec, (uint32_t)tim.msec);
     }
     eupdate();
     tupdate();

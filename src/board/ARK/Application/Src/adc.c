@@ -70,7 +70,8 @@ void adc_task_update(void *arg) {
 
 	mavlink_own_temp_t mot = {0};
 	mot.time_s = here.sec;
-	mot.time_us = here.usec;
+    mot.time_us = here.msec * 1000;
+    mot.time_steady = HAL_GetTick();
 	mot.vdda = vdda/1000;
 	mot.deg = temp_c;
 
