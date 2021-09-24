@@ -216,7 +216,7 @@ static void calibration_magn()
 */
 
 void on_gps_packet_ahrs(void *arg, const ubx_any_packet_t * packet) {
-    if (!ITS_SINS_USE_LDS) {
+    if (!ITS_SINS_AHRS_USE_LDS) {
         return;
     }
 
@@ -225,7 +225,7 @@ void on_gps_packet_ahrs(void *arg, const ubx_any_packet_t * packet) {
              packet->packet.navsol.gps_fix == UBX_FIX_TYPE__3D);
 
     if (!is_packet_valid || time_svc_timebase() != TIME_SVC_TIMEBASE__GPS) {
-        //return;
+        return;
     }
 
     struct timeval tv = {0};
@@ -336,7 +336,7 @@ int UpdateDataAll(void)
 
 	float light[3];
 	float lds_err = 0;
-	if (ITS_SINS_USE_LDS) {
+	if (ITS_SINS_AHRS_USE_LDS) {
 	    float arr[ITS_SINS_LDS_COUNT] = {0};
 	    read_ldiods(arr);
         for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
@@ -393,23 +393,28 @@ int UpdateDataAll(void)
 
     float beta = 6.0;
     quaternion_t ori = {1, 0, 0, 0};
-    if ((error_system.lsm6ds3_error == 0) && (error_system.lis3mdl_error == 0) && ITS_SINS_USE_MAG) {
-        ahrs_vectorActivate(AHRS_MAG, 1);
-        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS && stateSINS_lds.do_we_use_lds);
+
+    if ((error_system.lsm6ds3_error == 0)) {
+        int use_lds = ITS_SINS_AHRS_USE_LDS && stateSINS_lds.do_we_use_lds;
+        int use_mag = (error_system.lis3mdl_error == 0) && ITS_SINS_AHRS_USE_MAG && !(use_lds && ITS_SINS_AHRS_LDS_MAG_EXCLUSIVE);
+        ahrs_vectorActivate(AHRS_MAG, use_mag);
+        ahrs_vectorActivate(AHRS_LIGHT, use_lds);
+        ahrs_vectorActivate(AHRS_ACCEL, 1);
         ahrs_setKoefB(beta);
 
         ahrs_updateVecReal(AHRS_MAG, ahrs_get_good_vec_from_mag(vec_arrToVec(magn)));
+        //Real of light is set in on_gps_packet_ahrs
+        //Real of accel is set on start
+
         ahrs_updateVecMeasured(AHRS_MAG, vec_arrToVec(magn));
-
-        ahrs_updateVecReal(AHRS_LIGHT, vec_init(0, 1, 0));
         ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
-
         ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
+
         ahrs_updateGyroData(vec_arrToVec(gyro));
         ahrs_calculateOrientation(dt);
     } else if (error_system.lsm6ds3_error == 0) {
         ahrs_vectorActivate(AHRS_MAG, 0);
-        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_USE_LDS && stateSINS_lds.do_we_use_lds);
+        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_AHRS_USE_LDS && stateSINS_lds.do_we_use_lds);
         ahrs_setKoefB(beta);
         ahrs_updateVecReal(AHRS_LIGHT, vec_init(0, 1, 0));
         ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
