@@ -65,6 +65,5 @@ def main(args):
 
 
 import sys
-#main(sys.argv[1:])
-main(['10'])
+main(sys.argv[1:])
 exit()
