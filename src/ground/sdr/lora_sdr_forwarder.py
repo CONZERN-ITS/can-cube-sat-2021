@@ -4,16 +4,17 @@ import enum
 import datetime
 import dataclasses
 
+import os
 import json
 import zmq
 import time
 
 
-INTERFACE = "127.0.0.1"
+INTERFACE = "0.0.0.0"
 PORT = 40868
 
-bus_endpoint = "tcp://192.168.1.223:7777"
-
+#bus_endpoint = "tcp://192.168.1.223:7777"
+bus_endpoint = os.environ["ITS_GBUS_BSCP_ENDPOINT"]
 
 def generate_logfile_name():
     now = datetime.datetime.utcnow().replace(microsecond=0)
