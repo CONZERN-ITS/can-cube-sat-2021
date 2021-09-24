@@ -447,41 +447,6 @@ for better performance, but worse accuracy.</value>
     </param>
   </block>
   <block>
-    <key>lora_message_file_sink</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(848, 264)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>lora_message_file_sink_0</value>
-    </param>
-    <param>
-      <key>path</key>
-      <value>/tmp/lora-log</value>
-    </param>
-  </block>
-  <block>
     <key>lora_message_socket_sink</key>
     <param>
       <key>alias</key>
@@ -513,7 +478,7 @@ for better performance, but worse accuracy.</value>
     </param>
     <param>
       <key>ip</key>
-      <value>127.0.0.1</value>
+      <value>192.168.1.223</value>
     </param>
     <param>
       <key>layer</key>
@@ -1068,12 +1033,6 @@ for better performance, but worse accuracy.</value>
       <value>None</value>
     </param>
   </block>
-  <connection>
-    <source_block_id>lora_lora_receiver_0</source_block_id>
-    <sink_block_id>lora_message_file_sink_0</sink_block_id>
-    <source_key>frames</source_key>
-    <sink_key>in</sink_key>
-  </connection>
   <connection>
     <source_block_id>lora_lora_receiver_0</source_block_id>
     <sink_block_id>lora_message_socket_sink_0</sink_block_id>

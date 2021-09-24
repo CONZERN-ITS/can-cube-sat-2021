@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Lora Receive Realtime
-# Generated: Sat Sep 18 14:13:31 2021
+# Generated: Fri Sep 24 17:33:46 2021
 ##################################################
 
 if __name__ == '__main__':
@@ -113,14 +113,12 @@ class lora_receive_realtime(grc_wxgui.top_block_gui):
         self.osmosdr_source_0.set_antenna('', 0)
         self.osmosdr_source_0.set_bandwidth(0, 0)
 
-        self.lora_message_socket_sink_0 = lora.message_socket_sink('127.0.0.1', 40868, 0)
-        self.lora_message_file_sink_0 = lora.message_file_sink('/tmp/lora-log')
+        self.lora_message_socket_sink_0 = lora.message_socket_sink('192.168.1.223', 40868, 0)
         self.lora_lora_receiver_0 = lora.lora_receiver(1e6, capture_freq, ([target_freq]), bw, sf, False, 4, True, False, downlink, decimation, False, False)
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.lora_lora_receiver_0, 'frames'), (self.lora_message_file_sink_0, 'in'))
         self.msg_connect((self.lora_lora_receiver_0, 'frames'), (self.lora_message_socket_sink_0, 'in'))
         self.connect((self.osmosdr_source_0, 0), (self.lora_lora_receiver_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.wxgui_constellationsink2_0, 0))
