@@ -431,7 +431,7 @@ static void _report_radio_stats(server_t * server)
 	);
 
 	log_info(
-			"stats: current pa power: %d, requested_pa_power",
+			"stats: current pa power: %d, requested_pa_power: %"PRId8"",
 			server->config.radio_modem_cfg.pa_power,
 			server->pa_request
 	);
