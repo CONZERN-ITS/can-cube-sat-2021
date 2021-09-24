@@ -145,10 +145,10 @@ class PositionWidget(QtWidgets.QWidget):
         self.setup_ui()
         self.setup_ui_design()
 
-    def setup_frame(self, layout):
+    def setup_frame(self, layout, stretch=0):
         frame = QtWidgets.QFrame()
         frame.setFrameStyle(QtWidgets.QFrame.Panel|QtWidgets.QFrame.Raised)
-        layout.addWidget(frame)
+        layout.addWidget(frame, stretch=stretch)
         return frame
 
     def setup_h_line(self, layout):
@@ -230,19 +230,42 @@ class PositionWidget(QtWidgets.QWidget):
         self.target_param_lbl = self.setup_pos_field(pos_layout, 'Target')
         self.antenna_param_lbl = self.setup_pos_field(pos_layout, 'Antenna')
 
-        data_layout = QtWidgets.QVBoxLayout()
+        data_layout = QtWidgets.QHBoxLayout()
+        data_layout_1_col = QtWidgets.QVBoxLayout()
+        data_layout_2_col = QtWidgets.QVBoxLayout()
         self.layout.addLayout(data_layout)
+        data_layout.addLayout(data_layout_1_col)
+        data_layout.addLayout(data_layout_2_col)
 
-        self.dec_to_top_lbl = self.setup_3x3_matrix_data_field(data_layout, 'Decart WGS84 to topocentric\ncoordinate system transition matrix')
-        self.top_to_ascs_lbl = self.setup_3x3_matrix_data_field(data_layout, 'Topocentric to antenna system\ncoordinate system transition matrix')
+        self.dec_to_top_lbl = self.setup_3x3_matrix_data_field(data_layout_1_col, 'Decart WGS84 to topocentric\ncoordinate system transition matrix')
+        self.top_to_ascs_lbl = self.setup_3x3_matrix_data_field(data_layout_1_col, 'Topocentric to antenna system\ncoordinate system transition matrix')
 
-        self.lat_lon_alt_lbl = self.setup_data_field(data_layout, ['Latitude:', 'Longitude:', 'Altitude:'])
-        self.ecef_lbl = self.setup_data_field(data_layout, ['EcefX:', 'EcefY:', 'EcefZ:'])
-        self.aiming_period_lbl = self.setup_data_field(data_layout, ['Aiming period:'])
-        self.enable_lbl = self.setup_data_field(data_layout, ['Vertical motor:', 'Horizontal motor:'])
-        self.motors_auto_disable_lbl = self.setup_data_field(data_layout, ['Motors auto disable:', 'Motors timeout:'])
-        self.rssi_lbl = self.setup_data_field(data_layout, ['RSSI INSTANT:', 'RSSI pkt:', 'SNR pkt:', 'RSSI signal:'])
-        self.gps_filter_lbl = self.setup_data_field(data_layout, ['GPS filter:'])
+        self.lat_lon_alt_lbl = self.setup_data_field(data_layout_1_col, ['Latitude:', 'Longitude:', 'Altitude:'])
+        self.ecef_lbl = self.setup_data_field(data_layout_1_col, ['EcefX:', 'EcefY:', 'EcefZ:'])
+        self.aiming_period_lbl = self.setup_data_field(data_layout_1_col, ['Aiming period:'])
+        self.enable_lbl = self.setup_data_field(data_layout_1_col, ['Vertical motor:', 'Horizontal motor:'])
+        self.motors_auto_disable_lbl = self.setup_data_field(data_layout_1_col, ['Motors auto disable:', 'Motors timeout:'])
+        self.rssi_lbl = self.setup_data_field(data_layout_2_col, ['RSSI INSTANT:', 'RSSI pkt:', 'SNR pkt:', 'RSSI signal:'])
+        self.radio_stats_lbl = self.setup_data_field(data_layout_2_col, ["pkt received:", 
+                                                                         "crc errors:", 
+                                                                         "hdr errors:", 
+                                                                         "error rc64k calib:", 
+                                                                         "error rc13m calib:", 
+                                                                         "error pll calib:",
+                                                                         "error adc calib:",
+                                                                         "error img calib:",
+                                                                         "error xosc calib:",
+                                                                         "error pll lock:",
+                                                                         "error pa ramp:",
+                                                                         "srv rx done:",
+                                                                         "srv rx frames:",
+                                                                         "srv tx frames:",
+                                                                         "current pa power:",
+                                                                         "requested pa power:"])
+        self.gps_filter_lbl = self.setup_data_field(data_layout_2_col, ['GPS filter:'])
+
+        self.setup_frame(data_layout_1_col, 3)#.addStretch()
+        self.setup_frame(data_layout_2_col, 3)#.addStretch()
 
         self.state_request_btn = QtWidgets.QPushButton('State\nrequest')
         visualization_layout.addWidget(self.state_request_btn)
@@ -257,6 +280,9 @@ class PositionWidget(QtWidgets.QWidget):
 
     def change_rssi(self, data):
         self.change_data_field(self.rssi_lbl, data, '{:.0f}')
+
+    def change_radio_stats(self, data):
+        self.change_data_field(self.radio_stats_lbl, data, '{}')
 
     def change_antenna_pos(self, data):
         for i in range(3):

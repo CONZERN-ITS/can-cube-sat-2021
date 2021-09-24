@@ -53,6 +53,7 @@ class CentralWidget(QtWidgets.QWidget):
         self.antenna.motors_auto_disable_mode_changed.connect(self.position_widget.change_motors_auto_disable_mode)
         self.antenna.motors_timeout_changed.connect(self.position_widget.change_motors_timeout)
         self.antenna.rssi_changed.connect(self.position_widget.change_rssi)
+        self.antenna.radio_stats_changed.connect(self.position_widget.change_radio_stats)
         self.antenna.gps_filter_changed.connect(self.position_widget.change_gps_filter)
 
         self.position_control_widget.pos_control_panel.top_btn_clicked.connect(self.antenna.put_up)
@@ -64,6 +65,7 @@ class CentralWidget(QtWidgets.QWidget):
         self.position_control_widget.mode_true_btn.toggled.connect(self.antenna.set_angle_control_mode)
         self.position_control_widget.set_aiming_period_btn.clicked.connect(self.set_aiming_period_btn_action)
         self.position_control_widget.set_motors_timeout_btn.clicked.connect(self.set_motors_timeout_btn_action)
+        self.position_control_widget.set_pa_power_btn.clicked.connect(self.set_pa_power_btn_action)
 
         self.antenna.command_sent.connect(self.command_log.add_data)
 
@@ -88,6 +90,12 @@ class CentralWidget(QtWidgets.QWidget):
     def set_motors_timeout_btn_action(self):
         try:
             self.antenna.set_motors_timeout(float(self.position_control_widget.motors_timeout_line_edit.text()))
+        except ValueError:
+            pass
+
+    def set_pa_power_btn_action(self):
+        try:
+            self.antenna.change_pa_power(int(self.position_control_widget.pa_power_line_edit.text()))
         except ValueError:
             pass
 

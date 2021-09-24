@@ -236,6 +236,7 @@ class PositionControlWidget(QtWidgets.QWidget):
     def setup_ui(self):
         double_validator = QtGui.QDoubleValidator()
         double_validator.setLocale(QtCore.QLocale(QtCore.QLocale.English))
+        int_validator = QtGui.QIntValidator()
         self.layout = QtWidgets.QVBoxLayout(self)
 
         self.pos_control_panel = PositionControlPanel()
@@ -294,6 +295,17 @@ class PositionControlWidget(QtWidgets.QWidget):
         frame_layout.addWidget(self.motors_timeout_line_edit, 0, 1)
         self.set_motors_timeout_btn = QtWidgets.QPushButton('Send')
         frame_layout.addWidget(self.set_motors_timeout_btn, 1, 0, 1, 2)
+
+        frame = self.setup_frame(self.layout)
+        frame_layout = QtWidgets.QGridLayout(frame)
+        label = QtWidgets.QLabel('Power amplifier power (10, 14, 17, 20, 22):')
+        frame_layout.addWidget(label, 0, 0)
+        self.pa_power_line_edit = QtWidgets.QLineEdit()
+        self.pa_power_line_edit.setText('22')
+        self.pa_power_line_edit.setValidator(int_validator)
+        frame_layout.addWidget(self.pa_power_line_edit, 0, 1)
+        self.set_pa_power_btn = QtWidgets.QPushButton('Send')
+        frame_layout.addWidget(self.set_pa_power_btn, 1, 0, 1, 2)
 
     def setup_ui_design(self):
         pass

@@ -29,6 +29,7 @@ class AbstractAntennaInterface(QtCore.QObject):
     motors_timeout_changed = QtCore.pyqtSignal(float)
     gps_filter_changed = QtCore.pyqtSignal(str)
     rssi_changed = QtCore.pyqtSignal(tuple)
+    radio_stats_changed = QtCore.pyqtSignal(tuple)
 
     def set_angle_control_mode(self, mode):
         pass
@@ -86,6 +87,9 @@ class AbstractAntennaInterface(QtCore.QObject):
         pass
 
     def setup_elevation_zero(self):
+        pass
+
+    def change_pa_power(self, power):
         pass
 
 
@@ -213,6 +217,23 @@ class ZMQITSInterface(MAVITSInterface):
                 self.rssi_changed.emit((json.loads(msg[1]).get('rssi', None), None, None, None))
             elif topic == 'radio.rssi_packet':
                 self.rssi_changed.emit(tuple([None] + [json.loads(msg[1]).get(key, None) for key in ['rssi_pkt', 'snr_pkt', 'rssi_signal']]))
+            elif topic == 'radio.stats':
+                self.radio_stats_changed.emit(tuple([json.loads(msg[1]).get(key, None) for key in ["pkt_received",
+                                                                                                   "crc_errors",
+                                                                                                   "hdr_errors",
+                                                                                                   "error_rc64k_calib",
+                                                                                                   "error_rc13m_calib",
+                                                                                                   "error_pll_calib",
+                                                                                                   "error_adc_calib",
+                                                                                                   "error_img_calib",
+                                                                                                   "error_xosc_calib",
+                                                                                                   "error_pll_lock",
+                                                                                                   "error_pa_ramp",
+                                                                                                   "srv_rx_done",
+                                                                                                   "srv_rx_frames",
+                                                                                                   "srv_tx_frames",
+                                                                                                   "current_pa_power",
+                                                                                                   "requested_pa_power"]]))
 
     def send_message(self, msg):
         msg.get_header().srcSystem = 0
@@ -220,5 +241,11 @@ class ZMQITSInterface(MAVITSInterface):
         multipart = ["antenna.command_packet".encode("utf-8"),
                      bytes(),
                      msg.pack(self.mav)]
+        self.send_msg.emit(multipart)
+        self.command_sent.emit(str(msg))
+
+    def change_pa_power(self, power):
+        multipart = ["radio.pa_power_request".encode("utf-8"),
+                     ]
         self.send_msg.emit(multipart)
         self.command_sent.emit(str(msg))
