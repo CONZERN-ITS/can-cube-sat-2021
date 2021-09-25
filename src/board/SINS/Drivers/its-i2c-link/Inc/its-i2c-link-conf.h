@@ -20,7 +20,7 @@
 //! Количество приёмных буферов (каждый по I2C_LINK_PACKET_SIZE байт)
 #define I2C_LINK_RXBUF_COUNT	(5)
 //! Количество отправных буферов (каждый по I2C_LINK_PACKET_SIZE байт)
-#define I2C_LINK_TXBUF_COUNT (5)
+#define I2C_LINK_TXBUF_COUNT (20)
 
 //! LL i2c-handle (I2C_Typedef)
 #define I2C_LINK_BUS_HANDLE (I2C1)
