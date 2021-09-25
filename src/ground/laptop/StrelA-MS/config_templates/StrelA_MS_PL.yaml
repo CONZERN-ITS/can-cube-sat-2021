@@ -107,6 +107,10 @@ CentralWidget:
         name: BCU C0 BCU_RADIO_CONN_STATS
         sourse_id: '10_0'
         message_id: 'BCU_RADIO_CONN_STATS'
+      PLD_DOSIM_DATA:
+        name: PLD C0 PLD_DOSIM_DATA
+        sourse_id: '13_0'
+        message_id: 'PLD_DOSIM_DATA'
       PLD_DOSIM_DATA_MOMENTARY:
         name: PLD PLD_DOSIM_DATA_MOMENTARY
         sourse_id: '13_0'
@@ -187,6 +191,26 @@ CentralWidget:
         name: GCS RADIO INSTANT RSSI
         sourse_id: '1_0'
         message_id: 'radio.rssi_instant'
+      GCS_RADIO_STATS:
+        name: GCS RADIO STATS
+        sourse_id: '1_0'
+        message_id: 'radio.stats'
+      PL_I2C_LINK_STATS:
+        name: 13_0_I2C_LINK_STATS
+        sourse_id: '13_0'
+        message_id: 'I2C_LINK_STATS'
+      SINS_I2C_LINK_STATS:
+        name: 12_0_I2C_LINK_STATS
+        sourse_id: '12_0'
+        message_id: 'I2C_LINK_STATS'
+      ARK_I2C_LINK_STATS:
+        name: 11_0_I2C_LINK_STATS
+        sourse_id: '11_0'
+        message_id: 'I2C_LINK_STATS'
+      ANTENNA_STATE:
+        name: AS_STATE
+        sourse_id: '0_0'
+        message_id: 'AS_STATE'
       is_on: true
     Time_table:
       CUBE_1_BCU:
@@ -675,6 +699,8 @@ MainWindow:
       - "radio.downlink_frame"
       - 'radio.rssi_instant'
       - 'radio.rssi_packet'
+      - 'radio.stats'
+      - "antenna.telemetry_packet"
       notimestamps: true
     type: ZMQ
   size:

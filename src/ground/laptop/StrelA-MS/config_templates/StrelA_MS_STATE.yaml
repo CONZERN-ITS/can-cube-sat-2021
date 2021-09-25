@@ -139,6 +139,14 @@ CentralWidget:
         name: PLD C0 PLD_DOSIM_DATA
         sourse_id: '13_0'
         message_id: 'PLD_DOSIM_DATA'
+      PLD_DOSIM_DATA_MOMENTARY:
+        name: PLD PLD_DOSIM_DATA_MOMENTARY
+        sourse_id: '13_0'
+        message_id: 'PLD_DOSIM_DATA'
+      PLD_DOSIM_DATA_WINDOWED:
+        name: PLD PLD_DOSIM_DATA_WINDOWED
+        sourse_id: '13_1'
+        message_id: 'PLD_DOSIM_DATA'
       PLD_BME280_DATA_IN:
         name: PLD C2 PLD_BME280_DATA (IN)
         sourse_id: '13_2'
@@ -227,6 +235,10 @@ CentralWidget:
         name: 11_0_I2C_LINK_STATS
         sourse_id: '11_0'
         message_id: 'I2C_LINK_STATS'
+      ANTENNA_STATE:
+        name: AS_STATE
+        sourse_id: '0_0'
+        message_id: 'AS_STATE'
       is_on: true
     Time_table:
       CUBE_1_BCU:
@@ -807,6 +819,7 @@ MainWindow:
       - 'radio.rssi_instant'
       - 'radio.rssi_packet'
       - 'radio.stats'
+      - "antenna.telemetry_packet"
       notimestamps: true
     type: ZMQ
   size:

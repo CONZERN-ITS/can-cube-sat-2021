@@ -95,6 +95,14 @@ CentralWidget:
         name: PLD C0 PLD_DOSIM_DATA
         sourse_id: '13_0'
         message_id: 'PLD_DOSIM_DATA'
+      PLD_DOSIM_DATA_MOMENTARY:
+        name: PLD PLD_DOSIM_DATA_MOMENTARY
+        sourse_id: '13_0'
+        message_id: 'PLD_DOSIM_DATA'
+      PLD_DOSIM_DATA_WINDOWED:
+        name: PLD PLD_DOSIM_DATA_WINDOWED
+        sourse_id: '13_1'
+        message_id: 'PLD_DOSIM_DATA'
       PLD_BME280_DATA_IN:
         name: PLD C2 PLD_BME280_DATA (IN)
         sourse_id: '13_2'
@@ -167,6 +175,26 @@ CentralWidget:
         name: GCS RADIO INSTANT RSSI
         sourse_id: '1_0'
         message_id: 'radio.rssi_instant'
+      GCS_RADIO_STATS:
+        name: GCS RADIO STATS
+        sourse_id: '1_0'
+        message_id: 'radio.stats'
+      PL_I2C_LINK_STATS:
+        name: 13_0_I2C_LINK_STATS
+        sourse_id: '13_0'
+        message_id: 'I2C_LINK_STATS'
+      SINS_I2C_LINK_STATS:
+        name: 12_0_I2C_LINK_STATS
+        sourse_id: '12_0'
+        message_id: 'I2C_LINK_STATS'
+      ARK_I2C_LINK_STATS:
+        name: 11_0_I2C_LINK_STATS
+        sourse_id: '11_0'
+        message_id: 'I2C_LINK_STATS'
+      ANTENNA_STATE:
+        name: AS_STATE
+        sourse_id: '0_0'
+        message_id: 'AS_STATE'
       is_on: true
     Time_table:
       CUBE_1_BCU:
@@ -302,27 +330,57 @@ CentralWidget:
         - 1
         - 1
         units: G
-      Height:
+      Altitude:
         Packets:
-          11_0_GPS_ALTITUDE:
+          13_0_PLD_EXT_BME280_DATA:
+            sourse_id: '13_1'
+            message_id: PLD_MS5611_DATA
+            field_id:
+            - altitude
+            field_name:
+            - alt ms5611 out
+            color:
+            - '#0096FF'
+          11_0_GPS_UBX_NAV_SOL:
+            sourse_id: '11_0'
+            message_id: GPS_UBX_NAV_SOL
             field_id:
             - alt
             field_name:
-            - height
+            - alt gps
             color:
-            - '#FF4646'
-            sourse_id: '11_0'
-            message_id: GPS_UBX_NAV_SOL
-        legend_is_on: false
-        is_on: false
-        max_data_length: 100
+            - r
         name: Altitude
+        legend_is_on: true
+        is_on: true
+        max_data_length: 100
         position:
-        - 2
+        - 3
         - 0
         - 1
         - 1
-        units: m
+        units: 'm'
+      Distance:
+        Packets:
+          0_0_TARGET_DISTANCE:
+            sourse_id: '0_0'
+            message_id: TARGET_DISTANCE
+            field_id:
+            - distance
+            field_name:
+            - distance
+            color:
+            - '#0096FF'
+        name: Target distance
+        legend_is_on: false
+        is_on: true
+        max_data_length: 100
+        position:
+        - 4
+        - 0
+        - 1
+        - 1
+        units: 'm'
     is_on: true
     position:
     - 0
@@ -463,12 +521,14 @@ MainWindow:
       connection: udpin:0.0.0.0:14540
       notimestamps: true
     ZMQ:
-      bus_bpcs: "tcp://192.168.1.223:7778"
+      bus_bpcs: "tcp://192.168.1.210:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
       - 'radio.rssi_instant'
       - 'radio.rssi_packet'
+      - 'radio.stats'
+      - "antenna.telemetry_packet"
       notimestamps: true
     type: ZMQ
   size:
