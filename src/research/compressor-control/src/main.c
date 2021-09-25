@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "compressor-control.h"
+#include "icao_table_calc.h"
 
 
 typedef struct hal_t
@@ -49,7 +50,7 @@ int main()
 			},
 			.now = 0,
 			.pump_on = false,
-			.valve_open = true,
+			.valve_open = false,
 	};
 
 	ccontrol_init((ccontrol_hal_t*)&hal);
@@ -78,11 +79,12 @@ int main()
 
 	ccontrol_alt_t alt = -100;
 	ccontrol_time_t time = 0;
-	ccontrol_pressure_t inner_pressure = 0;
+	float outer_pressure_start = icao_table_pressure_for_alt(alt);
+	ccontrol_pressure_t inner_pressure = outer_pressure_start;
 	uint64_t tick;
 
 	// Заголвок .csv
-	printf("minutes,altitude,inner_pressure,state,pump_on,valve_open\n");
+	printf("minutes,altitude,inner_pressure,outer_pressure,state,pump_on,valve_open\n");
 	for (tick = 0; time < sym_time_limit; tick++)
 	{
 		time += time_step;
@@ -99,16 +101,28 @@ int main()
 				alt = -100;
 		}
 
+		float outer_pressure = icao_table_pressure_for_alt(alt);
 		if (!hal.valve_open && hal.pump_on)
 		{
-			inner_pressure += 5*1000; // Внутреннее давление быстро растет!
+			inner_pressure += 0.1*1000; // Внутреннее давление быстро растет!
+
+			float pressure_cap = outer_pressure * 1.5;
+			if (inner_pressure > pressure_cap)
+				inner_pressure = pressure_cap;
 		}
 		else if (hal.valve_open)
 		{
 			// А так быстро падает
 			inner_pressure -= 10*1000;
-			if (inner_pressure < 0)
-				inner_pressure = 0;
+			if (inner_pressure < outer_pressure)
+				inner_pressure = outer_pressure;
+		}
+		else
+		{
+			// Вот так утекает но не так быстро
+			inner_pressure -= 0.005*1000;
+			if (inner_pressure < outer_pressure)
+				inner_pressure = outer_pressure;
 		}
 
 		hal.now = time;
@@ -126,10 +140,11 @@ int main()
 		{
 			float minutes = (float)time/(60*1000);
 			printf(
-					"%f,%f,%f,%d,%d,%d\n",
+					"%f,%f,%f,%f,%d,%d,%d\n",
 					minutes,
 					alt,
 					inner_pressure,
+					outer_pressure,
 					state,
 					hal.pump_on,
 					hal.valve_open);

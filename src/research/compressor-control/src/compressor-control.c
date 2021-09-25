@@ -10,13 +10,15 @@
 //! Высота с которой начинаем мерять (м)
 #define CCONTROL_START_ALTITUDE (1*1000)
 //! Шаг замеров по высоте (м)
-#define CCONTROL_ALTITUDE_STEP  (100)
+#define CCONTROL_ALTITUDE_STEP  (1000)
 //! Внутреннее давление, на котором перестаем качать (Па)
 #define CCONTROL_INNER_PRESSURE_CUTOFF (90*1000)
 //! Таймаут в течение которого перестаем качать (мс)
 #define CCONTROL_PUMP_TIMEOUT (60*1000)
 //! Время в течение которого мы проветриваем камеру (мс)
-#define CCONTROL_DRAIN_TIMEOUT (20*1000)
+#define CCONTROL_DRAIN_TIMEOUT (10*1000)
+//! Максимальная высота на которой мы еще пытаемся нагнетать воздух (м)
+#define CCONTROL_MAX_PUMP_ALTITUDE (12*1000)
 
 
 typedef struct ccontrol_t
@@ -189,8 +191,16 @@ int ccontrol_poll(void)
 		if (now - self->draing_start_timestamp > CCONTROL_DRAIN_TIMEOUT)
 		{
 			// Пора завязывать
-			// Начинаем качать
-			_go_pump(self);
+			if (self->altitude <= CCONTROL_MAX_PUMP_ALTITUDE)
+			{
+				// Начинаем качать, если еще смысл качать по высоте
+				_go_pump(self);
+			}
+			else
+			{
+				// возвращаемся в idle состояние, если качать уже бессмыслеено
+				_go_idle(self);
+			}
 			break;
 		}
 
