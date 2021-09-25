@@ -245,6 +245,8 @@ class MAVITSControlInterface(AbstractControlInterface):
 class ZMQITSControlInterface(MAVITSControlInterface):
     def __init__(self, *args, **kwargs):
         super(ZMQITSControlInterface, self).__init__(*args, **kwargs)
+        self.default_mav = its_mav.MAVLink(file=None)
+        self.default_mav.robust_parsing = True
         self.mav_dict = {}
 
     def parse_mav_buffer(self, key, buf):
@@ -271,4 +273,4 @@ class ZMQITSControlInterface(MAVITSControlInterface):
     def _wrap_in_antenna_telemetry_packet(self, mav_msg):
         return ["antenna.telemetry_packet".encode("utf-8"),
                 bytes(),
-                mav_msg.pack(self.mav)]
+                mav_msg.pack(self.default_mav)]
