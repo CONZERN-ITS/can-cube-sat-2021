@@ -1,0 +1,14 @@
+[Unit]
+Description=ITS radio link server
+After=network.target its-broker.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+WorkingDirectory=/opt/its-broker/
+ExecStart=/opt/its-broker/server-radio
+EnvironmentFile=/etc/environment
+
+[Install]
+WantedBy=multi-user.target

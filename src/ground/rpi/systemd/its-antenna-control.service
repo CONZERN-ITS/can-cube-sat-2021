@@ -1,0 +1,14 @@
+[Unit]
+Description=its antenna control service
+After=network.target its-broker.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+WorkingDirectory=/opt/its-antenna
+ExecStart=/usr/bin/python3 -u /opt/its-antenna/main.py
+EnvironmentFile=/etc/environment
+
+[Install]
+WantedBy=multi-user.target

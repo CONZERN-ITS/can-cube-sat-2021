@@ -1,0 +1,13 @@
+[Unit]
+Description=ITS group segment ZMQ broker
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+WorkingDirectory=/opt/its-broker/
+ExecStart=/usr/bin/python3 -u /opt/its-broker/broker.py
+
+[Install]
+WantedBy=multi-user.target
