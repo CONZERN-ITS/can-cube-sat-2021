@@ -12,10 +12,13 @@ static tina_value_t ina_value[TINA_COUNT];
 static int _is_valid[TINA_COUNT];
 
 
-static ina219_t hina[2];
+static ina219_t hina[TINA_COUNT];
 
 static void (*ina_callback_arr[TINA_CALLBACK_COUNT])(void);
 static int ina_callback_count;
+
+static void _recover_i2c_bus(void);
+
 
 void tina219_add_ina_callback(void (*f)(void)) {
     assert(ina_callback_count < TINA_CALLBACK_COUNT);
@@ -62,22 +65,61 @@ void task_ina_update(void *arg) {
              _is_valid[i] = 0;
 
              // Грузим шину, если получам невалидные данные
-             INA_I2C_FORCE_RESET();
-             INA_I2C_RELEASE_RESET();
-
-             HAL_I2C_MspDeInit(INA_BUS_HANDLE);
-             HAL_Delay(10);
-             __HAL_I2C_RESET_HANDLE_STATE(INA_BUS_HANDLE);
-             HAL_I2C_MspInit(INA_BUS_HANDLE);
+             _recover_i2c_bus();
 
              //ужасный копипаст
              ina219_init_default(&hina[0], INA_BUS_HANDLE, INA219_I2CADDR_A1_GND_A0_GND << 1, INA_TIMEOUT);
              ina219_init_default(&hina[1], INA_BUS_HANDLE, INA219_I2CADDR_A1_GND_A0_VSP << 1, INA_TIMEOUT);
-
          }
     }
 
     for (int i = 0; i < ina_callback_count; i++) {
         (*ina_callback_arr[i])();
     }
+}
+
+
+static void _recover_i2c_bus(void)
+{
+    INA_I2C_FORCE_RESET();
+    INA_I2C_RELEASE_RESET();
+
+    HAL_I2C_MspDeInit(INA_BUS_HANDLE);
+    HAL_Delay(10);
+
+    // Прокачиваем SCL, на случай если ина прохлопала стоп или старт на шине
+    // и удерживает в SDA нуле
+    GPIO_InitTypeDef port_init;
+    port_init.Mode = GPIO_MODE_AF_OD;
+    port_init.Pin = INA_SCL_GPIO_PIN;
+    port_init.Pull = GPIO_NOPULL;
+    port_init.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(INA_SCL_GPIO_PORT, &port_init);
+
+    port_init.Mode = GPIO_MODE_INPUT;
+    HAL_GPIO_Init(INA_SDA_GPIO_PORT, &port_init);
+
+    for (size_t i = 0; i < 9; i++)
+    {
+        GPIO_PinState sda = HAL_GPIO_ReadPin(INA_SDA_GPIO_PORT, INA_SDA_GPIO_PIN);
+        if (sda == GPIO_PIN_SET)
+        {
+            break; // SDA в единице, значит шина здорова, мы тут закончили
+        }
+
+        // Прокачиваем SCL
+        HAL_GPIO_WritePin(INA_SCL_GPIO_PORT, INA_SCL_GPIO_PIN, GPIO_PIN_RESET);
+        // Изящная короткая задержка
+        for (volatile size_t j = 0; j < 100000; j++) {}
+
+        HAL_GPIO_WritePin(INA_SCL_GPIO_PORT, INA_SCL_GPIO_PIN, GPIO_PIN_SET);
+    }
+
+    // Выключаем пины
+    HAL_GPIO_DeInit(INA_SDA_GPIO_PORT, INA_SDA_GPIO_PIN);
+    HAL_GPIO_DeInit(INA_SCL_GPIO_PORT, INA_SCL_GPIO_PIN);
+
+    // Запускаем шину обратно
+    __HAL_I2C_RESET_HANDLE_STATE(INA_BUS_HANDLE);
+    HAL_I2C_Init(INA_BUS_HANDLE);
 }

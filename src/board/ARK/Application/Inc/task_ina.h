@@ -22,6 +22,15 @@
 extern I2C_HandleTypeDef hi2c2;
 #define INA_BUS_HANDLE (&hi2c2)
 
+/**I2C2 GPIO Configuration
+PB10     ------> I2C2_SCL
+PB11     ------> I2C2_SDA
+*/
+#define INA_SCL_GPIO_PORT GPIOB
+#define INA_SCL_GPIO_PIN GPIO_PIN_10
+#define INA_SDA_GPIO_PORT GPIOB
+#define INA_SDA_GPIO_PIN GPIO_PIN_11
+
 #define INA_I2C_FORCE_RESET 	__HAL_RCC_I2C2_FORCE_RESET
 #define INA_I2C_RELEASE_RESET 	__HAL_RCC_I2C2_RELEASE_RESET
 
