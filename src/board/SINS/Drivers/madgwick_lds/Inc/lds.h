@@ -9,10 +9,12 @@
 #define LDS_H_
 
 #include <math.h>
+#include <sins_config.h>
 
 #define LDS_COUNT ITS_SINS_LDS_COUNT
 #define LDS_DIM 3
 
+void lds_find_bound(float x[LDS_DIM], const float b[LDS_COUNT], float bound);
 
 static const float __lds_number = 1.23793 * 3.16228;
 
@@ -60,7 +62,7 @@ static float lds_get_error(const float x[LDS_DIM], const float b[LDS_COUNT]) {
         sumb += b[i] * b[i];
     }
 
-    return sqrt(sumsq / sumb) * __lds_number;
+    return sqrt(sumsq / sumb);
 }
 __attribute__((unused))
 static void dekart_to_euler(const float x[3], float sph[3]) {

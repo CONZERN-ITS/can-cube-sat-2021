@@ -31,7 +31,7 @@ Matrixf matrix_create(int height, int width)
 
 Matrixf matrix_create_static(int height, int width, float *arr, size_t size)
 {
-    assert(height * width < (int)size);
+    assert(height * width <= (int)size);
     Matrixf result;
     result.height = height;
     result.width = width;
