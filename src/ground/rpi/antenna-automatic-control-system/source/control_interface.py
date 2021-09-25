@@ -79,7 +79,7 @@ class MAVITSControlInterface(AbstractControlInterface):
         if msgs is not None:
             for msg in msgs:
                 if msg.get_type() == "AS_AUTOMATIC_CONTROL":
-                    print('Change automatic control mode to %b' % bool(msg.mode))
+                    print('Change automatic control mode to %s' % bool(msg.mode))
                     self.auto_control_mode = bool(msg.mode)
                 elif msg.get_type() == "AS_HARD_MANUAL_CONTROL":
                     print('Setup HARD manual control')
@@ -88,7 +88,7 @@ class MAVITSControlInterface(AbstractControlInterface):
                     print('Setup SOFT manual control')
                     self.update_target_position(msg.azimuth, msg.elevation)
                 elif msg.get_type() == "AS_MOTORS_ENABLE_MODE":
-                    print('Change motors mode to %b' % bool(msg.mode))
+                    print('Change motors mode to %s' % bool(msg.mode))
                     self.drive_object.set_vertical_motor_enabled(bool(msg.mode))
                     self.drive_object.set_horizontal_motor_enabled(bool(msg.mode))
                 elif msg.get_type() == "AS_AIMING_PERIOD":
@@ -106,7 +106,7 @@ class MAVITSControlInterface(AbstractControlInterface):
                         print('Change motors timeout mode to %f' % float(msg.timeout))
                         self.drive_object.setup_drive_timeout(float(msg.timeout))
                 elif msg.get_type() == "AS_MOTORS_AUTO_DISABLE":
-                    print('Change motors auto disable mode to %b' % bool(msg.mode))
+                    print('Change motors auto disable mode to %s' % bool(msg.mode))
                     self.drive_object.set_drive_auto_disable_mode(msg.mode)
                 elif msg.get_type() == "AS_SEND_COMMAND":
                     enum = mavutil.mavlink.enums['AS_COMMANDS']
