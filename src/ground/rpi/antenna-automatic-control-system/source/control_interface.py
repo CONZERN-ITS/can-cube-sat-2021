@@ -79,33 +79,45 @@ class MAVITSControlInterface(AbstractControlInterface):
         if msgs is not None:
             for msg in msgs:
                 if msg.get_type() == "AS_AUTOMATIC_CONTROL":
+                    print('Change automatic control mode to %b' % bool(msg.mode))
                     self.auto_control_mode = bool(msg.mode)
                 elif msg.get_type() == "AS_HARD_MANUAL_CONTROL":
+                    print('Setup HARD manual control')
                     self.update_target_position_hard(msg.azimuth, msg.elevation)
                 elif msg.get_type() == "AS_SOFT_MANUAL_CONTROL":
+                    print('Setup SOFT manual control')
                     self.update_target_position(msg.azimuth, msg.elevation)
                 elif msg.get_type() == "AS_MOTORS_ENABLE_MODE":
+                    print('Change motors mode to %b' % bool(msg.mode))
                     self.drive_object.set_vertical_motor_enabled(bool(msg.mode))
                     self.drive_object.set_horizontal_motor_enabled(bool(msg.mode))
                 elif msg.get_type() == "AS_AIMING_PERIOD":
                     if msg.period <= 0:
+                        print('Change aiming period mode to default')
                         self.aiming_period = DEFAULT_ANTENNA_AIMING_PERIOD
                     else:
-                        self.aiming_period = msg.period
+                        print('Change aiming period mode to %f' % float(msg.period))
+                        self.aiming_period = float(msg.period)
                 elif msg.get_type() == "AS_SET_MOTORS_TIMEOUT":
                     if msg.timeout <= 0:
+                        print('Change motors timeout mode to default')
                         self.drive_object.setup_drive_timeout(MOTORS_TIMEOUT)
                     else:
-                        self.drive_object.setup_drive_timeout(msg.timeout)
+                        print('Change motors timeout mode to %f' % float(msg.timeout))
+                        self.drive_object.setup_drive_timeout(float(msg.timeout))
                 elif msg.get_type() == "AS_MOTORS_AUTO_DISABLE":
+                    print('Change motors auto disable mode to %b' % bool(msg.mode))
                     self.drive_object.set_drive_auto_disable_mode(msg.mode)
                 elif msg.get_type() == "AS_SEND_COMMAND":
                     enum = mavutil.mavlink.enums['AS_COMMANDS']
                     if enum[msg.command_id].name == 'AS_SETUP_ELEVATION_ZERO':
+                        print('Setup elevation zero')
                         self.setup_elevation_zero()
                     elif enum[msg.command_id].name == 'AS_TARGET_TO_NORTH':
+                        print('Rotate target to north')
                         self.target_to_north()
                     elif enum[msg.command_id].name == 'SETUP_COORD_SYSTEM':
+                        print('Setup coord system')
                         try:
                             self.guidance_math.setup_coord_system()
                         except Exception as e:
@@ -113,6 +125,7 @@ class MAVITSControlInterface(AbstractControlInterface):
                     elif enum[msg.command_id].name == "STATE_REQUEST":
                         response.append(self._generate_as_state_message())
                 elif msg.get_type() == "AS_SETUP_GPS_FILTER":
+                    print('Change gps filter to %s' % mavutil.mavlink.enums['AS_GPS_FILTER'][msg.filter_id].name)
                     self.setup_gps_filter(mavutil.mavlink.enums['AS_GPS_FILTER'][msg.filter_id].name)
                 elif msg.get_type() == "GPS_UBX_NAV_SOL":
                     if (msg.gpsFix > 0) and (msg.gpsFix < 4):
@@ -232,15 +245,23 @@ class MAVITSControlInterface(AbstractControlInterface):
 class ZMQITSControlInterface(MAVITSControlInterface):
     def __init__(self, *args, **kwargs):
         super(ZMQITSControlInterface, self).__init__(*args, **kwargs)
-        self.mav = its_mav.MAVLink(file=None)
-        self.mav.robust_parsing = True
+        self.mav_dict = {}
+
+    def parse_mav_buffer(self, key, buf):
+        mav = self.mav_dict.get(key, None)
+        if mav is None:
+            mav = its_mav.MAVLink(file=None)
+            mav.robust_parsing = True
+            self.mav_dict.update([(key, mav)])
+
+        return mav.parse_buffer(buf)
 
     def messages_reaction(self, msgs):
         response = []
         for msg in msgs:
             topic = msg[0].decode('utf-8')
-            if (topic == 'antenna.command_packet') or (topic == "radio.downlink_frame"):
-                for mav_msg in super(ZMQITSControlInterface, self).messages_reaction(self.mav.parse_buffer(msg[2])):
+            if (topic == 'antenna.command_packet') or (topic == "radio.downlink_frame") or (topic == "sdr.downlink_frame"):
+                for mav_msg in super(ZMQITSControlInterface, self).messages_reaction(self.parse_mav_buffer(topic, msg[2])):
                     response.append(self._wrap_in_antenna_telemetry_packet(mav_msg))
         return response
 
