@@ -16,23 +16,28 @@ from config import *
 if __name__ == '__main__':
     # Initialization block
     # I2C data line initialization
+    print('Setup I2C')
     i2c = i2cdev.I2C(PORT_I2C)
     i2c.set_timeout(I2C_TIMEOUT)
 
     # Mag and Accel sensors initialization
+    print('Setup sensors')
     lis3mdl = Lis3mdl(i2c, LIS3MDL_ADRESS)
     lis3mdl.setup()
     lsm6ds3 = Lsm6ds3(i2c, LSM6DS3_ADRESS)
     lsm6ds3.setup()
 
     # GPS initialization
+    print('Setup gps')
     gps = GPS_data()
     gps.setup()
 
     # Mag model initialization
+    print('Setup mag model')
     wwm = WMM2020()
 
     # Drive motors initialization
+    print('Setup motors')
     vertical_motor = DM422.DM422_control_client(pul_pin=VSM_PUL_PIN,
                                                 dir_pin=VSM_DIR_PIN,
                                                 enable_pin=VSM_ENABLE_PIN,
@@ -52,6 +57,7 @@ if __name__ == '__main__':
     horizontal_motor.setup()
 
     # Drive control interface initialization
+    print('Setup drive control')
     drive = drive_control.BowElectromechanicalDrive(vertical_motor=vertical_motor,
                                                     horizontal_motor=horizontal_motor)
     drive.setup_vertical_limits(positive_limits=VSM_POS_LIMIT_PINS_MAP,
@@ -60,6 +66,7 @@ if __name__ == '__main__':
                                   negative_limits=HSM_NEG_LIMIT_PINS_MAP)
 
     # Auto guidance math initialization
+    print('Setup math model')
     guidance_math = auto_guidance_math.AutoGuidanceMath(accel_sensor=lsm6ds3,
                                                         mag_sensor=lis3mdl,
                                                         gps_sensor=gps,
@@ -75,6 +82,7 @@ if __name__ == '__main__':
                                                         accel_calibration_vector=ACCEL_CALIBRATION_VECTOR)
 
     # Data source initialization
+    print('Setup data source')
     if DATA_CONTROL_TYPE == 'MAVLink':
         data_object = data_control.MAVDataSource(connection_str_in=CONNECTION_STR_IN,
                                                  connection_str_out=CONNECTION_STR_OUT,
@@ -87,6 +95,7 @@ if __name__ == '__main__':
     data_object.start()
 
     # Control interface (protocol) initialization
+    print('Setup control protocol')
     if CONTROL_INTERFACE_TYPE == 'MAVITS':
         ctrl_interface = control_interface.MAVITSControlInterface(drive_object=drive,
                                                                   guidance_math=guidance_math,
@@ -99,6 +108,7 @@ if __name__ == '__main__':
                                                                   min_rotation_angle=MIN_ROTATION_ANGLE)
 
     # Preparation block
+    print('Preparation...')
     try:
         guidance_math.setup_coord_system()
         date = datetime.date.today()
@@ -115,7 +125,7 @@ if __name__ == '__main__':
         pass
 
     start_time = time.time()
-
+    print('Init block ended')
     while True:
         try:
             msgs = data_object.read_data()
