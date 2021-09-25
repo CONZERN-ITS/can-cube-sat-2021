@@ -245,7 +245,8 @@ class ZMQITSInterface(MAVITSInterface):
         self.command_sent.emit(str(msg))
 
     def change_pa_power(self, power):
+        msg = ('{ "pa_power": %d }' % int(power))
         multipart = ["radio.pa_power_request".encode("utf-8"),
-                     ]
+                     msg.encode("utf-8")]
         self.send_msg.emit(multipart)
         self.command_sent.emit(str(msg))
