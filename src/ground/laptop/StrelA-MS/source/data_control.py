@@ -46,10 +46,12 @@ class Message():
 
 
 class MAVDataSource():
-    def __init__(self, connection_str, log_path="./", notimestamps=True):
+    def __init__(self, connection_str="tcp://127.0.0.1:7778", log_path="./", notimestamps=True):
         self.notimestamps = notimestamps
         self.connection_str = connection_str
         self.log_path = log_path
+        self.ground_coords = NumPy.array((0, 0, 0)).reshape((3, 1))
+        self.target_coords = NumPy.array((0, 0, 0)).reshape((3, 1))
 
     def start(self):
         self.connection = mavutil.mavlink_connection(self.connection_str)
@@ -94,12 +96,17 @@ class MAVDataSource():
 
             if msg.get_type() == "GPS_UBX_NAV_SOL":
                 gps = wgs84_conv(msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100)
+                self.target_coords = NumPy.array(msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100).reshape((3, 1))
                 data.update([['lat', gps[0]],
                              ['lon', gps[1]],
                              ['alt', gps[2]]])
                 data['ecefX'] /= 100
                 data['ecefY'] /= 100
                 data['ecefZ'] /= 100
+                msg_list.append(Message(message_id='TARGET_DISTANCE',
+                                        source_id='0_0',
+                                        msg_time=msg_time,
+                                        msg_data={'distance':NumPy.linalg.norm((self.target_coords - self.ground_coords))}))
             elif msg.get_type() == 'PLD_DOSIM_DATA':
                 gain =  1000 * 60 * 60
                 delta = msg.delta_time
@@ -109,6 +116,12 @@ class MAVDataSource():
                 else:
                     data.update([['dose_max', 0],
                                  ['dose_min', 0]])
+            elif msg.get_type() == 'AS_STATE':
+                self.ground_coords = NumPy.array(msg.ecef).reshape((3, 1))
+                msg_list.append(Message(message_id='TARGET_DISTANCE',
+                                        source_id='0_0',
+                                        msg_time=msg_time,
+                                        msg_data={'distance':(NumPy.linalg.norm((self.target_coords - self.ground_coords)))}))
 
             header = msg.get_header()
             msg_list.append(Message(message_id=msg.get_type(),
@@ -120,6 +133,8 @@ class MAVDataSource():
     def stop(self):
         self.connection.close()
         self.log.close()
+        self.ground_coords = NumPy.array((0, 0, 0)).reshape((3, 1))
+        self.target_coords = NumPy.array((0, 0, 0)).reshape((3, 1))
 
 
 class MAVLogDataSource():
@@ -128,6 +143,7 @@ class MAVLogDataSource():
         self.log_path = log_path
         self.real_time = real_time
         self.time_delay = time_delay
+        self.mav_data_sourse = MAVDataSource()
 
     def start(self):
         self.connection = mavutil.mavlogfile(self.log_path, notimestamps=self.notimestamps)
@@ -139,7 +155,7 @@ class MAVLogDataSource():
         if (msg is None):
             raise RuntimeError("No Message")
 
-        data = MAVDataSource.get_data(MAVDataSource, [msg])
+        data = self.mav_data_sourse.get_data([msg])
         if data is None:
             raise TypeError("Message type not supported")
 
@@ -182,6 +198,7 @@ class ZMQDataSource():
         self.log_path = log_path
         self.pkt_num = None
         self.pkt_count = 0
+        self.mav_data_sourse = MAVDataSource()
 
     def start(self):
         self.zmq_ctx = zmq.Context()
@@ -245,7 +262,7 @@ class ZMQDataSource():
 
                 if msg is None:
                     raise RuntimeError("No Message")
-                data.extend(MAVDataSource.get_data(MAVDataSource, msg))
+                data.extend(self.mav_data_sourse.get_data(msg))
 
             return data
         else:
