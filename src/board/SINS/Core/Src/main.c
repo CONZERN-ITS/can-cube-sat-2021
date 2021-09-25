@@ -385,7 +385,9 @@ int UpdateDataAll(void)
 	/////////////	UPDATE QUATERNION  //////////////////
 	/////////////////////////////////////////////////////
 
-	magn[0] = -magn[0];
+	float t = magn[0];
+	magn[0] = -magn[1];
+	magn[1] = -t;
 	float dt = ((float)((stateSINS_isc.tv.tv_sec * 1000 + stateSINS_isc.tv.tv_usec / 1000)  - (stateSINS_isc_prev.tv.tv_sec * 1000 + stateSINS_isc_prev.tv.tv_usec / 1000))) / 1000;
 //	trace_printf("dt = %f", dt);
 	stateSINS_isc_prev.tv.tv_sec = stateSINS_isc.tv.tv_sec;
