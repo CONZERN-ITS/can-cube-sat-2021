@@ -262,7 +262,7 @@ class PositionWidget(QtWidgets.QWidget):
                                                                          "srv tx frames:",
                                                                          "current pa power:",
                                                                          "requested pa power:"])
-        self.gps_filter_lbl = self.setup_data_field(data_layout_2_col, ['GPS filter:'])
+        self.gps_filter_lbl = self.setup_data_field(data_layout_1_col, ['GPS filter:'])
 
         self.setup_frame(data_layout_1_col, 3)#.addStretch()
         self.setup_frame(data_layout_2_col, 3)#.addStretch()
