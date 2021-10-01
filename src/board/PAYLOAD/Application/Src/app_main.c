@@ -26,11 +26,12 @@
 
 #include "commissar.h"
 
-//#define ITS_PLD_COMPRESSOR_TESTS
+#define ITS_PLD_COMPRESSOR_TESTS
 
 //! БМЕ принципиально не показывает давление ниже 30ы 0000
 //! Поэтому с этого момента мы его показания для управления компрессором не используем
-#define BME_PRESSURE_THRESHOLD (31*1000)
+#define BME_PRESSURE_THRESHOLD_LOW (31*1000) // в даташите 30*1000
+#define BME_PRESSURE_THRESHOLD_HI (108*1000) // в даташите 110*1000
 
 //! Длина одного такта в мс
 #define TICK_LEN_MS (200)
@@ -227,7 +228,7 @@ int app_main()
 			commissar_accept_report(COMMISSAR_SUB_BME280_INT, rc);
 			if (0 == rc)
 			{
-				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD)
+				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD_LOW && bme_msg.pressure < BME_PRESSURE_THRESHOLD_HI)
 					its_ccontrol_update_inner_pressure(bme_msg.pressure);
 
 				mav_main_process_bme_message(&bme_msg, PLD_LOC_INTERNAL);
@@ -237,7 +238,7 @@ int app_main()
 			commissar_accept_report(COMMISSAR_SUB_BME280_EXT, rc);
 			if (0 == rc)
 			{
-				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD)
+				if (bme_msg.pressure > BME_PRESSURE_THRESHOLD_LOW && bme_msg.pressure < BME_PRESSURE_THRESHOLD_HI)
 					its_ccontrol_update_altitude(bme_msg.altitude, 0);
 
 				mav_main_process_bme_message(&bme_msg, PLD_LOC_EXTERNAL);
