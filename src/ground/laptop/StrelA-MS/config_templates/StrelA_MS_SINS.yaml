@@ -235,9 +235,9 @@ CentralWidget:
     Graph:
       Sun_pose:
         Packets:
-          11_0_LDS_DIR:
+          11_0_SINS_ISC:
             sourse_id: '11_0'
-            message_id: LDS_DIR
+            message_id: SINS_ISC
             field_id:
             - light_dir_measured[0]
             - light_dir_measured[1]
@@ -505,7 +505,7 @@ MainWindow:
       connection: udpin:0.0.0.0:14540
       notimestamps: true
     ZMQ:
-      bus_bpcs: "tcp://192.168.1.210:7778"
+      bus_bpcs: "tcp://192.168.1.223:7778"
       topics:
       - "its.telemetry_packet"
       - "radio.downlink_frame"
