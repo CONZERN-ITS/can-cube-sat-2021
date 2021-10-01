@@ -26,7 +26,7 @@
 
 #include "commissar.h"
 
-#define ITS_PLD_COMPRESSOR_TESTS
+//#define ITS_PLD_COMPRESSOR_TESTS
 
 //! БМЕ принципиально не показывает давление ниже 30ы 0000
 //! Поэтому с этого момента мы его показания для управления компрессором не используем
@@ -153,11 +153,11 @@ int app_main()
 	{
 #ifdef ITS_PLD_COMPRESSOR_TESTS
 		// грязный хак для теста компрессора
-		const uint32_t compressor_period = 30*1000;
-		const uint32_t compressor_on_time = 20*1000;
-		const uint32_t valve_close_time = 25*1000;
+		const uint32_t compressor_period = 40*1000;
+		const uint32_t compressor_on_duration = 20*1000;
+		const uint32_t valve_close_duration = compressor_on_duration + 15*1000;
 
-		static uint32_t compressor_power_on = 0 + compressor_period;
+		static uint32_t compressor_power_on = 0 + 10*1000; // 10 секунд перед первым пуском
 		static uint32_t compressor_power_off = 0;
 		static uint32_t valve_power_off = 0;
 		static bool compressor_on = false;
@@ -171,17 +171,17 @@ int app_main()
 		}
 		if (!compressor_on && HAL_GetTick() >= compressor_power_on)
 		{
-			compressor_power_off = compressor_power_on + compressor_on_time;
+			compressor_power_off = compressor_power_on + compressor_on_duration;
 			its_ccontrol_pump_override(true);
 			compressor_on = true;
 
-			valve_power_off = compressor_power_on + valve_close_time;
-			its_ccontrol_valve_override(true);
+			valve_power_off = compressor_power_on + valve_close_duration;
+			its_ccontrol_valve_override(false);
 			valve_closed = true;
 		}
 		if (valve_closed && HAL_GetTick() >= valve_power_off)
 		{
-			its_ccontrol_valve_override(false);
+			its_ccontrol_valve_override(true);
 			valve_closed = false;
 		}
 		// Конец грязного хака

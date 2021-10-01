@@ -168,7 +168,7 @@ void its_ccontrol_pump_override(bool enable)
 }
 
 
-void its_ccontrol_valve_override(bool enable)
+void its_ccontrol_valve_override(bool open)
 {
-	ccontrol_valve_control((ccontrol_hal_t *)&control, enable);
+	ccontrol_valve_control((ccontrol_hal_t *)&control, open);
 }
