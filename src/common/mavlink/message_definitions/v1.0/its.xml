@@ -482,8 +482,18 @@
       <field type="uint32_t" name="time_us" units="us">Millionth of a second</field>
       <field type="uint32_t" name="time_steady" units="ms">Steady time scale</field>
 
-      <field type="uint8_t" name="pump_on">is pump enabled</field>
-      <field type="uint8_t" name="valve_open">is valve opened</field>
+      <field type="uint8_t" name="state">
+        Compressor state bitmask, Bit 0 - pump state (0 = off), Bit 1 - valve state (0 == closed)
+      </field>
+
+      <field type="uint8_t" name="pump_on">Pump on events count</field>
+      <field type="uint32_t" name="pump_on_time_steady" units="ms">Last pump on event timestamp</field>
+      <field type="uint8_t" name="pump_off">Pump off events count</field>
+      <field type="uint32_t" name="pump_off_time_steady" units="ms">Last pump off event timestamp</field>
+      <field type="uint8_t" name="valve_open">Valve open events count</field>
+      <field type="uint32_t" name="valve_open_time_steady" units="ms">Last valve open event timestamp</field>
+      <field type="uint8_t" name="valve_close">Valve close events count</field>
+      <field type="uint32_t" name="valve_close_time_steady" units="ms">Last valve close event timestamp</field>
     </message>
 
 

@@ -68,8 +68,8 @@
 #define PACKET_PERIOD_ITS_LINK_STATS (15)
 #define PACKET_OFFSET_ITS_LINK_STATS (8)
 //! Периодичность выдачи информации о состоянии управления компрессором
-#define PACKET_PERIOD_CCONTROL (15)
-#define PACKET_OFFSET_CCONTROL (9)
+#define PACKET_PERIOD_CCONTROL (5)
+#define PACKET_OFFSET_CCONTROL (2)
 //! Периодичность выдачи рапортов коммиссара
 #define PACKET_PERIOD_COMMISSAR_REPORT (25)
 #define PACKET_OFFSET_COMMISSAR_REPORT (10)

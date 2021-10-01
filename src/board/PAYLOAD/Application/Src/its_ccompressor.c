@@ -20,6 +20,15 @@ typedef struct its_ccontrol_hal_t
 	ccontrol_hal_t base;
 	bool valve_open;
 	bool pump_running;
+
+	uint8_t pump_on_cnt;
+	uint32_t pump_on_ts;
+	uint8_t pump_off_cnt;
+	uint32_t pump_off_ts;
+	uint8_t valve_open_cnt;
+	uint32_t valve_open_ts;
+	uint8_t valve_close_cnt;
+	uint32_t valve_close_ts;
 } its_ccontrol_hal_t;
 
 
@@ -35,6 +44,16 @@ static int ccontrol_pump_control(ccontrol_hal_t *hal_, bool enable)
 
 	HAL_GPIO_WritePin(COMPR_ON_GPIO_Port, COMPR_ON_Pin, enable);
 	hal->pump_running = enable;
+	if (enable)
+	{
+		hal->pump_on_cnt++;
+		hal->pump_on_ts = HAL_GetTick();
+	}
+	else
+	{
+		hal->pump_off_cnt++;
+		hal->pump_off_ts = HAL_GetTick();
+	}
 
 	return 0;
 }
@@ -47,6 +66,17 @@ static int ccontrol_valve_control(ccontrol_hal_t *hal_, bool open)
 	HAL_GPIO_WritePin(VALVE_ON_GPIO_Port, VALVE_ON_Pin, open);
 	hal->valve_open = open;
 
+	if (open)
+	{
+		hal->valve_open_cnt++;
+		hal->valve_open_ts = HAL_GetTick();
+	}
+	else
+	{
+		hal->valve_close_cnt++;
+		hal->valve_close_ts = HAL_GetTick();
+	}
+
 	return 0;
 }
 
@@ -56,7 +86,11 @@ static its_ccontrol_hal_t control = {
 		.get_time = ccontrol_get_time,
 		.pump_control = ccontrol_pump_control,
 		.valve_control = ccontrol_valve_control
-	}
+	},
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0
 };
 
 static int last_time_get_ms5611_data = 0;
@@ -111,8 +145,20 @@ void its_ccontrol_get_state(mavlink_pld_compressor_data_t * msg)
 	msg->time_us = tmv.tv_usec;
 	msg->time_steady = HAL_GetTick();
 
-	msg->pump_on = control.pump_running;
-	msg->valve_open = control.valve_open;
+	msg->state = 0;
+	if (control.pump_running)
+		msg->state |= (1 << 0);
+	if (control.valve_open)
+		msg->state |= (1 << 1);
+
+	msg->pump_on = control.pump_on_cnt;
+	msg->pump_on_time_steady = control.pump_on_ts;
+	msg->pump_off = control.pump_off_cnt;
+	msg->pump_off_time_steady = control.pump_off_ts;
+	msg->valve_open = control.valve_open_cnt;
+	msg->valve_open_time_steady = control.valve_open_ts;
+	msg->valve_close = control.valve_close_cnt;
+	msg->valve_close_time_steady = control.valve_close_ts;
 }
 
 
