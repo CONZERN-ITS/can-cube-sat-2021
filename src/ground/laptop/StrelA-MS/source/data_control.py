@@ -96,7 +96,7 @@ class MAVDataSource():
 
             if msg.get_type() == "GPS_UBX_NAV_SOL":
                 gps = wgs84_conv(msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100)
-                self.target_coords = NumPy.array(msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100).reshape((3, 1))
+                self.target_coords = NumPy.array((msg.ecefX / 100, msg.ecefY / 100, msg.ecefZ / 100)).reshape((3, 1))
                 data.update([['lat', gps[0]],
                              ['lon', gps[1]],
                              ['alt', gps[2]]])
