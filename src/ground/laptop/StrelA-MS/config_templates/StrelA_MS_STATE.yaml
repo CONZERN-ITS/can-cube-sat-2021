@@ -187,14 +187,6 @@ CentralWidget:
         name: PLD C0 PLD_STATS
         sourse_id: '13_0'
         message_id: PLD_STATS
-      SINS_DIODES:
-        name: 'SINS C0 LIGHT_DIODE'
-        sourse_id: '11_0'
-        message_id: 'LIGHT_DIODE'
-      SINS_LDS_DIR:
-        name: 'SINS C0 LDS_DIR'
-        sourse_id: '11_0'
-        message_id: 'LDS_DIR'
       SINS_ERRORS:
         name: SINS C0 SINS_ERRORS
         sourse_id: '11_0'
