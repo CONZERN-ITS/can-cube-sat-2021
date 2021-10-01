@@ -10,11 +10,18 @@
 
 #include <math.h>
 #include <sins_config.h>
+#include "matrix.h"
 
 #define LDS_COUNT ITS_SINS_LDS_COUNT
 #define LDS_DIM 3
 
-void lds_find_bound(float x[LDS_DIM], const float b[LDS_COUNT], float bound);
+int lds_find_bound(float x[LDS_DIM], const float b[LDS_COUNT], float bound);
+
+int lds_get_ginversed(const float b[LDS_COUNT], float bound, Matrixf *out);
+
+void lds_solution(const float b[LDS_COUNT], const Matrixf *ginv, float x[3]);
+
+float lds_calc_error(const float b[LDS_COUNT], float bound, const Matrixf *ginv, const float x[3]) ;
 
 static const float __lds_number = 1.23793 * 3.16228;
 

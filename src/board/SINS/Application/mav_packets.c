@@ -34,7 +34,7 @@ int mavlink_sins_isc(stateSINS_isc_t * state_isc)
 {
 
 	//printf("mavlink_sins_isc?\n");
-	mavlink_sins_isc_t msg_sins_isc;
+	mavlink_sins_isc_t msg_sins_isc = {0};
 	msg_sins_isc.time_s = state_isc->tv.tv_sec;
 	msg_sins_isc.time_us = state_isc->tv.tv_usec;
 	msg_sins_isc.time_steady = HAL_GetTick();
@@ -47,10 +47,21 @@ int mavlink_sins_isc(stateSINS_isc_t * state_isc)
 	{
 		msg_sins_isc.accel[i] = state_isc->accel[i];
 		msg_sins_isc.compass[i] = state_isc->magn[i];
-		msg_sins_isc.quaternion[i] = state_isc->quaternion[i];
+        msg_sins_isc.light_dir_measured[i] = state_isc->dir_sph[i];
+        msg_sins_isc.light_dir_real[i] = state_isc->dir_real_sph[i];
+
+
+        msg_sins_isc.quaternion[i] = state_isc->quaternion[i];
 	}
 	msg_sins_isc.quaternion[3] = state_isc->quaternion[3];
 
+	for (int i = 0; i < sizeof(msg_sins_isc.light_diodes) / sizeof(msg_sins_isc.light_diodes[0]); i++) {
+	    msg_sins_isc.light_diodes[i] = state_isc->sensor[i];
+	}
+	msg_sins_isc.last_valid_gps_packet_time = state_isc->last_valid_gps_packet_time;
+	msg_sins_isc.light_dir_error = state_isc->dir_error;
+	msg_sins_isc.flags = ((1 << 0) & state_isc->do_we_use_mag) |
+	                     ((1 << 1) & state_isc->do_we_use_lds);
 
 	mavlink_message_t msg;
 	mavlink_msg_sins_isc_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_isc);
@@ -92,11 +103,11 @@ int mavlink_ahrs_stats(stateSINS_lds_t * state)
 
     for (int i = 0; i < 3; i++) {
         msas.light_dir_measured[i] = state->dir_sph[i];
-        msas.light_dir_real[i] = state->dir_real[i];
+        msas.light_dir_real[i] = state->dir_real_sph[i];
     }
     msas.light_dir_error = state->dir_error;
     msas.last_valid_packet_time = state->last_valid_gps_packet_time;
-    msas.is_lds_used_for_ahrs = state->do_we_use_lds;
+    msas.is_lds_used_for_ahrs = state->should_we_use_lds;
 
     mavlink_message_t msg;
     mavlink_msg_sins_ahrs_stats_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msas);

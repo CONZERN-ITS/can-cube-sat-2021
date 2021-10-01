@@ -100,7 +100,7 @@ stateSINS_rsc_t stateSINS_rsc;
 state_zero_t state_zero;
 stateSINS_isc_t stateSINS_isc;
 stateSINS_isc_t stateSINS_isc_prev;
-stateSINS_lds_t stateSINS_lds;
+//stateSINS_lds_t stateSINS_lds;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -267,11 +267,11 @@ void on_gps_packet_ahrs(void *arg, const ubx_any_packet_t * packet) {
 
     ahrs_updateVecReal(AHRS_LIGHT, vec_arrToVec(dir_xyz));
 
-    stateSINS_lds.dir_real[0] = dir_sph[0];
-    stateSINS_lds.dir_real[1] = dir_sph[1];
-    stateSINS_lds.dir_real[2] = dir_sph[2];
-    stateSINS_lds.last_valid_gps_packet_time = HAL_GetTick();
-    stateSINS_lds.do_we_use_lds = 1;
+    stateSINS_isc.dir_real_sph[0] = dir_sph[0];
+    stateSINS_isc.dir_real_sph[1] = dir_sph[1];
+    stateSINS_isc.dir_real_sph[2] = dir_sph[2];
+    stateSINS_isc.last_valid_gps_packet_time = HAL_GetTick();
+    stateSINS_isc.should_we_use_lds = 1;
 }
 // Функция для слежения за здоровьем GPS и передачи его пакетов в мавлинк
 static void on_gps_packet_main(void * arg, const ubx_any_packet_t * packet)
@@ -320,8 +320,8 @@ int UpdateDataAll(void)
 	int error = 0;
 
 	//30 минут
-    if (HAL_GetTick() - stateSINS_lds.last_valid_gps_packet_time > 1000 * 1800) {
-        stateSINS_lds.do_we_use_lds = 0;
+    if (HAL_GetTick() - stateSINS_isc.last_valid_gps_packet_time > 1000 * 1800) {
+        stateSINS_isc.should_we_use_lds = 0;
     }
 	//	Arrays
 	float accel[3] = {0, 0, 0};
@@ -335,35 +335,47 @@ int UpdateDataAll(void)
 //	trace_printf("lsm error %d\n", error_system.lsm6ds3_init_error);
 
 	float light[3];
-	float lds_err = 0;
 	if (ITS_SINS_AHRS_USE_LDS) {
 	    float arr[ITS_SINS_LDS_COUNT] = {0};
 	    read_ldiods(arr);
         for (int i = 0; i < ITS_SINS_LDS_COUNT; i++) {
-            stateSINS_lds.sensor[i] = arr[i];
+            stateSINS_isc.sensor[i] = arr[i];
         }
 
-	    lds_find(light, arr);
+        float lds_ginv_buf[LDS_DIM * LDS_COUNT];
+        Matrixf lds_ginv = matrix_create_static(LDS_DIM, LDS_COUNT, lds_ginv_buf, LDS_DIM * LDS_COUNT);
+        int res = lds_get_ginversed(arr, 0.1, &lds_ginv);
+        lds_solution(arr, &lds_ginv, light);
+        stateSINS_isc.dir_error = lds_calc_error(arr, 0.1, &lds_ginv, light);
+        if (isnan(light[0]) || isnan(light[1]) || isnan(light[2]) || res) {
+            light[0] = 1;
+            light[1] = 0;
+            light[2] = 0;
+            stateSINS_isc.dir_error = -1;
+        }
+
+
+        //lds_find_bound(light, arr, 0.1);
+
+	    //lds_find(light, arr);
 
 	    {
             float light_sph[3];
             dekart_to_euler(light, light_sph);
 
             for (int i = 0; i < 3; i++) {
-                stateSINS_lds.dir_sph[i] = light_sph[i];
-                stateSINS_lds.dir_xyz[i] = light[i];
+                stateSINS_isc.dir_sph[i] = light_sph[i];
+                stateSINS_isc.dir_xyz[i] = light[i];
             }
-            static int tick = 0;
+            static uint32_t tick = 0;
             if (tick % 50 == 0) {
-                tick = 0;
     //            printf("lds: %.3f %.3f %.3f\n", light[0], light[1], light[2]);
             }
             tick++;
         }
 
 
-        stateSINS_lds.dir_error = lds_err = lds_get_error(light, arr);
-        time_svc_world_get_time(&stateSINS_lds.tv);
+        time_svc_world_get_time(&stateSINS_isc.tv);
 	}
 
 	time_svc_world_get_time(&stateSINS_isc.tv);
@@ -396,15 +408,18 @@ int UpdateDataAll(void)
     float beta = 6.0;
     quaternion_t ori = {1, 0, 0, 0};
 
-    if ((error_system.lsm6ds3_error == 0)) {
-        int use_lds = ITS_SINS_AHRS_USE_LDS && stateSINS_lds.do_we_use_lds;
-        int use_mag = (error_system.lis3mdl_error == 0) && ITS_SINS_AHRS_USE_MAG && !(use_lds && ITS_SINS_AHRS_LDS_MAG_EXCLUSIVE);
-        ahrs_vectorActivate(AHRS_MAG, use_mag);
-        ahrs_vectorActivate(AHRS_LIGHT, use_lds);
+    if (error_system.lsm6ds3_error == 0) {
+        stateSINS_isc.do_we_use_lds = ITS_SINS_AHRS_USE_LDS && stateSINS_isc.should_we_use_lds;
+        stateSINS_isc.do_we_use_mag = (error_system.lis3mdl_error == 0) && ITS_SINS_AHRS_USE_MAG && !(stateSINS_isc.do_we_use_lds && ITS_SINS_AHRS_LDS_MAG_EXCLUSIVE);
+
+
+        ahrs_vectorActivate(AHRS_MAG, stateSINS_isc.do_we_use_mag);
+        ahrs_vectorActivate(AHRS_LIGHT, stateSINS_isc.do_we_use_lds);
         ahrs_vectorActivate(AHRS_ACCEL, 1);
         ahrs_setKoefB(beta);
 
         ahrs_updateVecReal(AHRS_MAG, ahrs_get_good_vec_from_mag(vec_arrToVec(magn)));
+        ahrs_updateVecReal(AHRS_LIGHT, vec_init(1, -1, 0));
         //Real of light is set in on_gps_packet_ahrs
         //Real of accel is set on start
 
@@ -412,15 +427,6 @@ int UpdateDataAll(void)
         ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
         ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
 
-        ahrs_updateGyroData(vec_arrToVec(gyro));
-        ahrs_calculateOrientation(dt);
-    } else if (error_system.lsm6ds3_error == 0) {
-        ahrs_vectorActivate(AHRS_MAG, 0);
-        ahrs_vectorActivate(AHRS_LIGHT, ITS_SINS_AHRS_USE_LDS && stateSINS_lds.do_we_use_lds);
-        ahrs_setKoefB(beta);
-        ahrs_updateVecReal(AHRS_LIGHT, vec_init(0, 1, 0));
-        ahrs_updateVecMeasured(AHRS_LIGHT, vec_arrToVec(light));
-        ahrs_updateVecMeasured(AHRS_ACCEL, vec_arrToVec(accel));
         ahrs_updateGyroData(vec_arrToVec(gyro));
         ahrs_calculateOrientation(dt);
     }
@@ -935,8 +941,7 @@ int main(void)
   					continue;
   				// Отвравляем данные во внешний мир
   				mavlink_sins_isc(&stateSINS_isc); //<<---------------TODO: Переписать
-  				mavlink_lds_dir(&stateSINS_lds);
-  				mavlink_ahrs_stats(&stateSINS_lds);
+  				//mavlink_ahrs_stats(&stateSINS_lds);
 
   			}
   			time = HAL_GetTick();
@@ -947,7 +952,7 @@ int main(void)
   			// Отправляем всякое почтой России (или нет)
   			mavlink_timestamp();
   			own_temp_packet();
-  			mavlink_light_diode(&stateSINS_lds);
+  			//mavlink_light_diode(&stateSINS_lds);
 
   			error_mems_read();
   			mavlink_errors_packet();

@@ -84,6 +84,19 @@ typedef struct {
     float accel[3];
     float magn[3];
     float quaternion[4];
+
+    float sensor[ITS_SINS_LDS_COUNT];
+    float dir_xyz[3];
+    float dir_sph[3];
+    float dir_error;
+
+    float dir_real_sph[3];
+    float dir_real_xyz[3];
+
+    int should_we_use_lds;
+    int do_we_use_lds;
+    int do_we_use_mag;
+    uint32_t last_valid_gps_packet_time;
 }stateSINS_isc_t;
 
 typedef struct {
@@ -93,8 +106,12 @@ typedef struct {
     float dir_sph[3];
     float dir_error;
 
-    float dir_real[3];
+    float dir_real_sph[3];
+    float dir_real_xyz[3];
+
+    int should_we_use_lds;
     int do_we_use_lds;
+    int do_we_use_mag;
     uint32_t last_valid_gps_packet_time;
 }stateSINS_lds_t;
 
