@@ -328,7 +328,16 @@
 
       <field type="float[3]" name="accel">accelerations</field>
       <field type="float[3]" name="compass">magnetometer vector</field>
+      <field type="float[10]" name="light_diodes">value of light diodes</field>
+      
+      <field type="float[3]" name="light_dir_real">Direction of light calculated by SolTrack using GPS data in reference to Earth (Spherical)</field>
+      <field type="float[3]" name="light_dir_measured">Direction of light calculated by internal algorithm using light dioides data in the local reference system (Spherical)</field>
+      <field type="float" name="light_dir_error">Error calculated by internal algorithm in %</field>
+      
       <field type="float[4]" name="quaternion">quaternion for translating RSC into ISC (scalar part first)</field>
+      
+      <field type="uint8_t" name="flags"> Flags of AHRS state</field>
+      <field type="uint32_t" name="last_valid_gps_packet_time" units="ms">Steady time of last valid GPS packet</field>
     </message>
 
     <message id="50103" name="SINS_errors">
