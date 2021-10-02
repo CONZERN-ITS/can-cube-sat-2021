@@ -214,7 +214,7 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 					server->stats.count_recieved_mavlink_msgs++;
 
 					its_rt_sender_ctx_t ctx = {0};
-					its_rt_route(&ctx, &msg, SERVER_SMALL_TIMEOUT_MS);
+					its_rt_route(&ctx, &msg, 0);
 				}
 			}
 		} else {
