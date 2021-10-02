@@ -692,7 +692,7 @@ MainWindow:
       - 'radio.rssi_instant'
       - 'radio.rssi_packet'
       - 'radio.stats'
-      - "antenna.telemetry_packet"
+      # - "antenna.telemetry_packet"
       notimestamps: true
     type: ZMQ
   size:
