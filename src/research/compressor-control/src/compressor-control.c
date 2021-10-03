@@ -14,7 +14,7 @@
 //! Внутреннее давление, на котором перестаем качать (Па)
 #define CCONTROL_INNER_PRESSURE_CUTOFF_UPPER (90*1000)
 //! Внутреннее давление, на котором начинаем подкачивать (Па)
-#define CCONTROL_INNER_PRESSURE_CUTOFF_LOWER (80*1000)
+#define CCONTROL_INNER_PRESSURE_CUTOFF_LOWER (85*1000)
 //! Таймаут в течение которого перестаем качать (мс)
 #define CCONTROL_PUMP_TIMEOUT (60*1000)
 //! Время в течение которого мы проветриваем камеру (мс)
