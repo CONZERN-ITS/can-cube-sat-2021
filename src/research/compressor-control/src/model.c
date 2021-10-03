@@ -39,6 +39,7 @@
 #define MODEL_TIME_LIMIT (2*60*60*1000) // два часа
 
 
+
 int model_ctor(model_t * model)
 {
 	memset(model, 0x00, sizeof(*model));
@@ -86,17 +87,16 @@ int model_step(model_t * model)
 		return 1;
 
 	if (model->_going_up)
-		model->altitude += MODEL_SPEED_UP * (MODEL_TEAK_MS/1000.f);
-	else
-		model->altitude -= MODEL_SPEED_DOWN * (MODEL_TEAK_MS/1000.f);
-
-	if (model->_going_up)
 	{
+		model->altitude += MODEL_SPEED_UP * (MODEL_TEAK_MS/1000.f);
+
 		if (model->altitude >= MODEL_MAX_ALT)
 			model->_going_up = false;
 	}
 	else
 	{
+		model->altitude -= MODEL_SPEED_DOWN * (MODEL_TEAK_MS/1000.f);
+
 		if (model->altitude < MODEL_MIN_ALT)
 			model->altitude = MODEL_MIN_ALT; // Упали и лежим
 	}
@@ -122,6 +122,8 @@ int model_step(model_t * model)
 	model->altitude_error = random_generator_get(model->_altitude_noise_generator);
 	model->inner_pressure_error = random_generator_get(model->_inner_pressure_noise_generator);
 	model->outer_pressure_error = random_generator_get(model->_outer_pressure_noise_generator);
+
+
 
 	return 0;
 }

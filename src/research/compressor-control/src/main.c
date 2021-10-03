@@ -120,7 +120,7 @@ int main()
 		else
 		{
 			// Вот так утекает но не так быстро
-			inner_pressure -= 0.005*1000;
+			inner_pressure -= 0.1*1000;
 			if (inner_pressure < outer_pressure)
 				inner_pressure = outer_pressure;
 		}
@@ -147,7 +147,8 @@ int main()
 					outer_pressure,
 					state,
 					hal.pump_on,
-					hal.valve_open);
+					hal.valve_open
+			);
 		}
 	}
 
