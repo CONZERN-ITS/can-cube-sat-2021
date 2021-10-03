@@ -245,8 +245,20 @@ int app_main()
 			}
 		}
 
+		// Это делаем на каждом такте для оперативного управления компрессором
+		mavlink_pld_ms5611_data_t ms5611_int_data = {0};
+		int ms5611_int_rc = 1;
+		{
+			ms5611_int_rc = its_ms5611_read_and_calculate(ITS_MS_INTERNAL, &ms5611_int_data);
+			commissar_accept_report(COMMISSAR_SUB_MS5611_INT, ms5611_int_rc);
+			if (ms5611_int_rc == 0)
+				its_ccontrol_update_inner_pressure(ms5611_int_data.pressure);
+		}
 		if (tock % PACKET_PERIOD_MS5611 == PACKET_OFFSET_MS5611)
 		{
+			if (ms5611_int_rc == 0)
+				mav_main_process_ms5611_message(&ms5611_int_data, PLD_LOC_INTERNAL);
+
 			mavlink_pld_ms5611_data_t data = {0};
 			int rc = its_ms5611_read_and_calculate(ITS_MS_EXTERNAL, &data);
 			commissar_accept_report(COMMISSAR_SUB_MS5611_EXT, rc);
@@ -254,14 +266,6 @@ int app_main()
 			{
 				its_ccontrol_update_altitude(data.altitude, 1);
 				mav_main_process_ms5611_message(&data, PLD_LOC_EXTERNAL);
-			}
-
-			rc = its_ms5611_read_and_calculate(ITS_MS_INTERNAL, &data);
-			commissar_accept_report(COMMISSAR_SUB_MS5611_INT, rc);
-			if (rc == 0)
-			{
-				its_ccontrol_update_inner_pressure(data.pressure);
-				mav_main_process_ms5611_message(&data, PLD_LOC_INTERNAL);
 			}
 		}
 

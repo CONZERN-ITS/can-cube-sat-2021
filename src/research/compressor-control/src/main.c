@@ -62,7 +62,7 @@ int main()
 	// Каждые сколько тактов будем писать строчку в отчеn
 	const int report_period = 5;
 	// Каждые сколько тактов будем оповещать упрваление компрессором
-	const int notify_period = 5;
+	const int notify_period = 2;
 
 	// Заголвок .csv
 	printf("minutes,altitude,inner_pressure,outer_pressure,state,pump_on,valve_open\n");

@@ -47,13 +47,14 @@ updateViews()
 p1.vb.sigResized.connect(updateViews)
 win.addLegend()
 
+t = t*60
 p1.setYRange(-40_000, 150_000)
 p1.plot(x=t, y=inner_pressure, pen='g', name='pressure_in')
 p1.plot(x=t, y=outer_pressure, pen='r', name='pressure_out')
 p2.addItem(pg.PlotCurveItem(x=t, y=altitude, pen='b', name="altitude"))
-p2.addItem(pg.PlotCurveItem(x=t, y=state*1000-3000, pen='w', name="state"))
-p2.addItem(pg.PlotCurveItem(x=t, y=pump_on*2000-6000, pen='r', name="state"))
-p2.addItem(pg.PlotCurveItem(x=t, y=valve_open*1000-6000, pen='g', name="state"))
+p2.addItem(pg.PlotCurveItem(x=t, y=state*1000-3000, pen='w', name="state", stepMode='left'))
+p2.addItem(pg.PlotCurveItem(x=t, y=pump_on*2000-6000, pen='r', name="state", stepMode='left'))
+p2.addItem(pg.PlotCurveItem(x=t, y=valve_open*1000-6000, pen='g', name="state", stepMode='left'))
 
 
 if __name__ == '__main__':
