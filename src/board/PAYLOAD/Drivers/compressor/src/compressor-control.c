@@ -12,13 +12,15 @@
 //! Шаг замеров по высоте (м)
 #define CCONTROL_ALTITUDE_STEP  (1000)
 //! Внутреннее давление, на котором перестаем качать (Па)
-#define CCONTROL_INNER_PRESSURE_CUTOFF (90*1000)
+#define CCONTROL_INNER_PRESSURE_CUTOFF_UPPER (100*1000)
+//! Внутреннее давление, на котором начинаем подкачивать (Па)
+#define CCONTROL_INNER_PRESSURE_CUTOFF_LOWER (85*1000)
 //! Таймаут в течение которого перестаем качать (мс)
-#define CCONTROL_PUMP_TIMEOUT (15*1000)
+#define CCONTROL_PUMP_TIMEOUT (60*1000)
 //! Время в течение которого мы проветриваем камеру (мс)
 #define CCONTROL_DRAIN_TIMEOUT (10*1000)
 //! Максимальная высота на которой мы еще пытаемся нагнетать воздух (м)
-#define CCONTROL_MAX_PUMP_ALTITUDE (12*1000)
+#define CCONTROL_MAX_PUMP_ALTITUDE (20*1000)
 
 
 typedef struct ccontrol_t
@@ -161,19 +163,7 @@ int ccontrol_poll(void)
 	} break;
 
 	case CCONTROL_STATE_PUMPING: {
-		// Окей, мы качаем. Может уже набрали нужное давление?
-		if (self->inner_pressure_updated)
-		{
-			self->inner_pressure_updated = false;
-			if (self->inner_pressure >= CCONTROL_INNER_PRESSURE_CUTOFF)
-			{
-				// Накачали!
-				_go_idle(self);
-				break;
-			}
-		}
-
-		// Нужного давления все еще нет, может пора заканчивать по таймауту?
+		// Смотрим что у нас с таймаутом на работу
 		ccontrol_time_t now = self->hal->get_time(self->hal);
 		if (now - self->pump_on_timestamp > CCONTROL_PUMP_TIMEOUT)
 		{
@@ -182,7 +172,26 @@ int ccontrol_poll(void)
 			break;
 		}
 
-		// нет, пока продолжим накачивать
+		// Окей, мы качаем. Может уже набрали нужное давление?
+		if (self->inner_pressure_updated)
+		{
+			self->inner_pressure_updated = false;
+			if (self->inner_pressure >= CCONTROL_INNER_PRESSURE_CUTOFF_UPPER)
+			{
+				// Накачали!
+				// Выклюим пока что помпу
+				self->hal->pump_control(self->hal, false);
+				// Останавливаться на этом не будем, так как давление в гермообъеме неплохо падает
+				// И возможно нам еще придется его подкачивать
+			}
+			else if (self->inner_pressure <= CCONTROL_INNER_PRESSURE_CUTOFF_LOWER)
+			{
+				// Сдулось. Докачаем
+				self->hal->pump_control(self->hal, true);
+				// Так же, состояние покидаем только по таймауту
+				// Потому что потом помпу нужно будет выклчить
+			}
+		}
 	} break;
 
 	case CCONTROL_STATE_DRAINING: {

@@ -12,7 +12,7 @@
 //! Шаг замеров по высоте (м)
 #define CCONTROL_ALTITUDE_STEP  (1000)
 //! Внутреннее давление, на котором перестаем качать (Па)
-#define CCONTROL_INNER_PRESSURE_CUTOFF_UPPER (90*1000)
+#define CCONTROL_INNER_PRESSURE_CUTOFF_UPPER (100*1000)
 //! Внутреннее давление, на котором начинаем подкачивать (Па)
 #define CCONTROL_INNER_PRESSURE_CUTOFF_LOWER (85*1000)
 //! Таймаут в течение которого перестаем качать (мс)
@@ -20,7 +20,7 @@
 //! Время в течение которого мы проветриваем камеру (мс)
 #define CCONTROL_DRAIN_TIMEOUT (10*1000)
 //! Максимальная высота на которой мы еще пытаемся нагнетать воздух (м)
-#define CCONTROL_MAX_PUMP_ALTITUDE (12*1000)
+#define CCONTROL_MAX_PUMP_ALTITUDE (20*1000)
 
 
 typedef struct ccontrol_t

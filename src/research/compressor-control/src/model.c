@@ -103,6 +103,8 @@ int model_step(model_t * model)
 	if (model->inner_pressure < model->outer_pressure)
 		model->inner_pressure = model->outer_pressure;
 
+	if (model->inner_pressure > model->outer_pressure * 2)
+		model->inner_pressure = model->outer_pressure * 2;
 
 	model->altitude_error = random_generator_get(model->_altitude_noise_generator);
 	model->inner_pressure_error = random_generator_get(model->_inner_pressure_noise_generator);
