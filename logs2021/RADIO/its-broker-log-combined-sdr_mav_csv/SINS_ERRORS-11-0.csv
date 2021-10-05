@@ -1,0 +1,6 @@
+time_s,time_us,time_steady,gps_init_error,gps_config_error,lsm6ds3_error,lis3mdl_error,analog_sensor_init_error,gps_uart_init_error,mems_i2c_error,timers_error,rtc_error,mems_i2c_error_counter,lsm6ds3_error_counter,lis3mdl_error_counter,gps_reconfig_counter,osc_source,reset_counter,reset_cause,seq,srcSystem,srcComponent,time_gregorian,log_timestamp,log_timestamp_gregorian
+315965210,810000,410621,0,0,0,0,0,0,0,0,-88,0,0,0,0,0,1,2,183,11,0,1980-01-06T03:06:50,1633357452.286728,2021-10-04T17:24:12
+315965252,145000,451916,0,0,0,0,0,0,0,0,-88,0,0,0,0,0,1,2,213,11,0,1980-01-06T03:07:32,1633357494.007933,2021-10-04T17:24:54
+315965776,401000,975649,0,0,0,0,0,0,0,0,-88,0,0,0,0,0,1,2,202,11,0,1980-01-06T03:16:16,1633358018.310853,2021-10-04T17:33:38
+315965859,856000,1059022,0,0,0,0,0,0,0,0,-88,0,0,0,0,0,1,2,19,11,0,1980-01-06T03:17:39,1633358100.714725,2021-10-04T17:35:00
+315966270,969000,1469729,0,0,0,0,0,0,0,0,-88,0,0,0,1,0,1,2,189,11,0,1980-01-06T03:24:30,1633358514.121644,2021-10-04T17:41:54
