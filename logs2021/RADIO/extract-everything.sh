@@ -63,4 +63,4 @@ python3 make_csv.py \
 
 
 # Метаданные из всех топиков на шине
-python3 make_mdt_json.py -i its-broker-log-combined.zmq-log
+python3 make_mdt.py --csv --json -i its-broker-log-combined.zmq-log
