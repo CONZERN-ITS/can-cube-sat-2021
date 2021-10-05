@@ -110,22 +110,24 @@ def main(argv):
             csv_file_path = os.path.join(output_dir, topic + ".csv")
             with open(csv_file_path, mode="w", encoding="utf-8") as stream:
                 writer = None
-                fieldnames = set([
-                    "log_timestamp",
-                    "log_timestamp_gregorian",
-                ])
+                fieldnames = dict({
+                    "log_timestamp": None,
+                    "log_timestamp_gregorian": None,
+                })
 
                 for record in data:
                     record_payload = record["data"]
                     if is_flat_dict(record_payload):
-                        fieldnames.update(record_payload.keys())
+                        ordered_fieldnames = dict({x: None for x in record_payload.keys()})
                         if get_record_timestamp(record_payload) is not None:
-                            fieldnames.add("time_gregorian")
+                            ordered_fieldnames["time_gregorian"] = None
+                        ordered_fieldnames.update(fieldnames)
+                        fieldnames = ordered_fieldnames
 
                     else:
-                        fieldnames.add("unparsed")
+                        fieldnames["unparsed"] = None
 
-                writer = csv.DictWriter(stream, fieldnames=list(fieldnames))
+                writer = csv.DictWriter(stream, fieldnames=list(fieldnames.keys()))
                 writer.writeheader()
 
                 for record in data:
@@ -142,7 +144,7 @@ def main(argv):
                         row.update(record_payload)
                         record_timestamp = get_record_timestamp(record_payload)
                         if record_timestamp is not None:
-                            row["time_gregorian"] = record_timestamp
+                            row["time_gregorian"] = timestamp_gregorian(record_timestamp)
 
                     writer.writerow(row)
 
