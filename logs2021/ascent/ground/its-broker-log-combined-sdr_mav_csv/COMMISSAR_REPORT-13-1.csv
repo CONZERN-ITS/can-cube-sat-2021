@@ -1,0 +1,4 @@
+time_s,time_us,time_steady,last_report_time,last_good_report_time,reports_counter,bad_reports_counter,last_mistake,ignorance_depth,punishments_counter,last_punishment_time,seq,srcSystem,srcComponent,time_gregorian,log_timestamp,log_timestamp_gregorian
+315965332,748500,533175,533152,533152,533,0,0,0,0,0,172,13,1,1980-01-06T03:08:52,1633357574.798264,2021-10-04T17:26:14
+315965633,143800,833175,833152,833152,833,0,0,0,0,0,148,13,1,1980-01-06T03:13:53,1633357874.8746278,2021-10-04T17:31:14
+315965683,143800,883175,883152,883152,883,0,0,0,0,0,230,13,1,1980-01-06T03:14:43,1633357924.692512,2021-10-04T17:32:04

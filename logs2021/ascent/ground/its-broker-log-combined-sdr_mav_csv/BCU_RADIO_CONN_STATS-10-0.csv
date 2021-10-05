@@ -1,0 +1,6 @@
+time_s,time_us,time_steady,update_time_operator,update_time_radio,last_packet_time,last_packet_rssi,last_packet_snr,last_packet_signal_rssi,last_executed_cmd_seq,radio_error_bits,radio_state,count_packet_recieved,count_crc_errors,count_hdr_errors,count_mavlink_msgs_recieved,count_operator_cmds_recieved,count_operator_cmds_executed,count_operator_errors,seq,srcSystem,srcComponent,time_gregorian,log_timestamp,log_timestamp_gregorian
+315965447,137380,647003,647003,647003,0,-21,-12,-21,0,0,5,0,0,0,0,0,0,0,149,10,0,1980-01-06T03:10:47,1633357688.146101,2021-10-04T17:28:08
+315965626,264070,826003,826003,825994,0,-21,-12,-21,0,0,4,0,0,0,0,0,0,0,174,10,0,1980-01-06T03:13:46,1633357868.020073,2021-10-04T17:31:08
+315965847,289754,1047003,1047003,1046983,0,-21,-12,-21,0,0,5,0,0,0,0,0,0,0,69,10,0,1980-01-06T03:17:27,1633358088.235512,2021-10-04T17:34:48
+315965918,535089,1118003,1118003,1117984,1085435,-71,11,-72,1,0,5,1,0,0,1,1,1,0,26,10,0,1980-01-06T03:18:38,1633358159.056397,2021-10-04T17:35:59
+315965918,535089,1118003,1118003,1117984,1085435,-71,11,-72,1,0,5,1,0,0,1,1,1,0,26,10,0,1980-01-06T03:18:38,1633358163.929617,2021-10-04T17:36:03

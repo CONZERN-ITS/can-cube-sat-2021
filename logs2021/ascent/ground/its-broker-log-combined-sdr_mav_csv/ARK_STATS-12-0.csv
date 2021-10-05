@@ -1,0 +1,4 @@
+time_s,time_us,time_steady,resets_count,reset_cause,active_oscillator,time_base,time_syncs_attempted,time_syncs_performed,last_time_sync_time_steady,last_time_sync_delta_s,last_time_sync_delta_us,seq,srcSystem,srcComponent,time_gregorian,log_timestamp,log_timestamp_gregorian
+315965244,105000,444876,1,2,1,1,396,57,442898,0,383,189,12,0,1980-01-06T03:07:24,1633357487.2166119,2021-10-04T17:24:47
+315965299,197000,500065,1,2,1,1,446,64,497069,0,379,185,12,0,1980-01-06T03:08:19,1633357542.5277798,2021-10-04T17:25:42
+315966250,395000,1451739,1,2,1,1,1305,169,1446909,0,293,162,12,0,1980-01-06T03:24:10,1633358491.20644,2021-10-04T17:41:31
