@@ -199,9 +199,12 @@ class LogfileWriter(contextlib.AbstractContextManager):
 		self.stream = None
 		self.owns_stream = False
 
-	def write(self, zmq_multipart_message: typing.List[bytes]):
+	def write(self, zmq_multipart_message: typing.List[bytes], timestamp=None):
 
-		msg_bytes = self._packer(time.time(), zmq_multipart_message)
+		if timestamp is None:
+			timestamp = time.time()
+
+		msg_bytes = self._packer(timestamp, zmq_multipart_message)
 		self.stream.write(msg_bytes)
 
 	def write_all(self, msg_list: typing.List[typing.List[bytes]]):

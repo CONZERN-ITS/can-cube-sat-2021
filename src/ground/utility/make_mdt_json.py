@@ -51,7 +51,7 @@ def main(argv):
 		if input_path == "-":
 			output_dir = os.getcwd()
 		else:
-			output_dir = os.path.splitext(input_path)[0] + "_mdt_csv"
+			output_dir = os.path.splitext(input_path)[0] + "_mdt_json"
 
 	os.makedirs(output_dir, exist_ok=True)
 
