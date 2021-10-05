@@ -30,7 +30,7 @@
 #define ITS_PIN_RADIO_RX_EN	26
 
 #define ITS_PIN_LED			5
-#define ITS_PIN_OWB			12
+#define ITS_PIN_OWB			13
 
 //-------------------------------------------
 #define ITS_PIN_SR_BSK1_VCC  9
