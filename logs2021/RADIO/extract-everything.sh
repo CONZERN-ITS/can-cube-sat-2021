@@ -4,12 +4,12 @@
 # И утилиты из src/ground/utility
 
 # Клеим логи брокера в одно
-./its_logfile_concat.py \
-	-i its-broker-log-20211004T141353.zmq-log \
-		its-broker-log-20211004T154432.zmq-log \
-		its-broker-log-20211004T155515.zmq-log \
-		its-broker-log-20211004T155629.zmq-log \
-	-o its-broker-log-combined.zmq-log
+# ./its_logfile_concat.py \
+# 	-i its-broker-log-20211004T141353.zmq-log \
+# 		its-broker-log-20211004T154432.zmq-log \
+# 		its-broker-log-20211004T155515.zmq-log \
+# 		its-broker-log-20211004T155629.zmq-log \
+# 	-o its-broker-log-combined.zmq-log
 
 # даунлинк с таймштампами
 python3 make_mavlog.py \
@@ -45,11 +45,11 @@ python3 make_csv.py \
 python3 make_mavlog.py \
 	-i its-broker-log-combined.zmq-log \
 	-o its-broker-log-combined-antenna-tlm.mav \
-	--topic "antenna.its-broker-log-combined-antenna-tlm" \
+	--topic "antenna.telemetry_packet" \
 	--use-mavlink
 
 python3 make_csv.py \
-	-i its-broker-log-combined-sdr.mav 
+	-i its-broker-log-combined-antenna-tlm.mav
 
 # комманды антенны
 python3 make_mavlog.py \
