@@ -63,12 +63,13 @@ int main()
 	const int report_period = 5;
 	// Каждые сколько тактов будем оповещать упрваление компрессором
 	const int notify_period = 2;
+	// какое время считать за ноль
+	const float seconds_offset = 212;
 
 	// Заголвок .csv
-	printf("minutes,altitude,inner_pressure,outer_pressure,state,pump_on,valve_open\n");
+	printf("minutes,seconds,altitude,inner_pressure,outer_pressure,state,pump_on,valve_open\n");
 	while(model_step(&model) == 0)
 	{
-		float minutes = model.time_ms / 1000.f / 60.f;
 		float inner_pressure = model.inner_pressure;
 		float outer_pressure = model.outer_pressure;
 		float alt = model.altitude;
@@ -86,11 +87,14 @@ int main()
 		model_notify_pump(&model, hal.pump_on);
 		model_notify_valve(&model, hal.valve_open);
 
+		float minutes = (model.time_ms / 1000.f + seconds_offset) / 60.f;
+		float seconds = (model.time_ms / 1000.f + seconds_offset);
 		if (model.teak % report_period == 0 || hal.pump_on)
 		{
 			printf(
-					"%f,%f,%f,%f,%d,%d,%d\n",
+					"%f,%f,%f,%f,%f,%d,%d,%d\n",
 					minutes,
+					seconds,
 					alt,
 					inner_pressure,
 					outer_pressure,

@@ -49,8 +49,8 @@
 #define MODEL_LEAK_COEFF_B ((1.46*1000)/(1000/MODEL_TEAK_MS)) // тесты показали 1.46 кПа/с
 
 // Длительность симуляции
-#define MODEL_TIME_LIMIT (2*60*60*1000) // два часа
-//#define MODEL_TIME_LIMIT D	(2*60*60*1000) // два часа
+//#define MODEL_TIME_LIMIT (2*60*60*1000) // два часа
+#define MODEL_TIME_LIMIT (4214*1000) // два часа
 
 
 
