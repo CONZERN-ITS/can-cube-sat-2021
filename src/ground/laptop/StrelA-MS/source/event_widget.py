@@ -5,7 +5,7 @@ from source import settings_control
 from source import RES_ROOT
 import os
 
-DEFAULT_ALARM = QtMultimedia.QMediaContent(QtCore.QUrl.fromLocalFile(os.path.join(RES_ROOT, 'images/alarm.mp3')))
+DEFAULT_ALARM = QtMultimedia.QMediaContent(QtCore.QUrl.fromLocalFile(os.path.join(RES_ROOT, 'audio/alarm.mp3')))
 
 class EventWidget(QtWidgets.QWidget):
 
