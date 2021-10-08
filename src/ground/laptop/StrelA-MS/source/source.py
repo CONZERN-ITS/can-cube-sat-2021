@@ -236,10 +236,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if sourse == 'Log':
             log = self.settings.value('Log/type')
             if log == "MAV":
-                data = MAVLogDataSource(log_path=self.settings.value('Log/MAV/path'),
-                                        real_time=int(self.settings.value('Log/MAV/real_time')),
-                                        time_delay=float(self.settings.value('Log/MAV/time_delay')),
-                                        notimestamps=bool(self.settings.value('Log/MAV/notimestamps')))
+                data = MAVLogDataSource(**self.settings.value('Log/MAV'))
         elif sourse == 'MAVLink':
             data = MAVDataSource(connection_str=self.settings.value('MAVLink/connection'),
                                  log_path=LOG_FOLDER_PATH,
