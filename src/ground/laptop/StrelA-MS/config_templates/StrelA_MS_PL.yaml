@@ -647,7 +647,7 @@ CentralWidget:
         time_limit: 2
         event_type: 'Error'
         priority: 3
-        audio: 'D:\My_Programs\smartgit-portable-18_2_9\git\can-cube-sat-2021\src\ground\laptop\StrelA-MS\source\images\alarm2.mp3'
+        audio: 'D:\My_Programs\smartgit-portable-18_2_9\git\can-cube-sat-2021\src\ground\laptop\StrelA-MS\source\audio\alarm2.mp3'
       SINS_UNDERTEMP_L:
         name: cube 1 SINS overcooling
         sourse_id: '11_0'
@@ -676,10 +676,12 @@ MainWindow:
   DataSourse:
     Log:
       MAV:
-        path: ./log/StrelA-MS_log_15-05-2021_18-36-47.mav
+        log_path: ./log/T.mav
         real_time: false
         time_delay: 0.0005
         notimestamps: true
+        packet_num_shift: 46300
+        packet_count: 0
       type: MAV
     MAVLink:
       connection: udpin:0.0.0.0:14540
@@ -692,7 +694,7 @@ MainWindow:
       - 'radio.rssi_instant'
       - 'radio.rssi_packet'
       - 'radio.stats'
-      # - "antenna.telemetry_packet"
+      - "antenna.telemetry_packet"
       notimestamps: true
     type: ZMQ
   size:

@@ -66,7 +66,7 @@ class MAVDataSource():
         self.log.write(msg.get_msgbuf())
 
         if msg.get_type() == "BAD_DATA":
-          raise TypeError("BAD_DATA message received")
+            raise TypeError("BAD_DATA message received")
 
         data = self.get_data([msg])
         if data is None:
@@ -138,17 +138,20 @@ class MAVDataSource():
 
 
 class MAVLogDataSource():
-    def __init__(self, log_path, real_time=0, time_delay=0.01, notimestamps=True):
+    def __init__(self, log_path, real_time=0, time_delay=0.01, notimestamps=True, packet_num_shift=0, packet_count=0):
         self.notimestamps = notimestamps
         self.log_path = log_path
         self.real_time = real_time
         self.time_delay = time_delay
         self.mav_data_sourse = MAVDataSource()
+        self.packet_num_shift = packet_num_shift
+        self.packet_count = packet_count
 
     def start(self):
         self.connection = mavutil.mavlogfile(self.log_path, notimestamps=self.notimestamps)
         self.time_shift = None
         self.time_start = None
+        self.count = 0
 
     def read_data(self):
         msg = self.connection.recv_match()
@@ -159,13 +162,21 @@ class MAVLogDataSource():
         if data is None:
             raise TypeError("Message type not supported")
 
+        self.count += 1
+        if self.count < self.packet_num_shift:
+            return []
+
+        if self.packet_count > 0:
+            if self.count > (self.packet_num_shift + self.packet_count):
+                return []
+
         if self.real_time:
           if self.time_shift is None:
             self.time_shift = datetime.fromtimestamp(msg._timestamp)
             if self.time_start is None:
                 self.time_start = time.time()
             while (time.time() - self.time_start) < (datetime.fromtimestamp(msg._timestamp) - self.time_shift):
-                time.sleep(0.001)
+                pass
         else:
             time.sleep(self.time_delay)
         return data
@@ -213,8 +224,18 @@ class ZMQDataSource():
 
         self.log = open(self.log_path + generate_log_file_name() + '.mav', 'wb')
 
-        self.mav = its_mav.MAVLink(file=None)
-        self.mav.robust_parsing = True
+        self.default_mav = its_mav.MAVLink(file=None)
+        self.default_mav.robust_parsing = True
+        self.mav_dict = {}
+
+    def parse_mav_buffer(self, key, buf):
+        mav = self.mav_dict.get(key, None)
+        if mav is None:
+            mav = its_mav.MAVLink(file=None)
+            mav.robust_parsing = True
+            self.mav_dict.update([(key, mav)])
+
+        return mav.parse_buffer(buf)
 
     def read_data(self):
         events = dict(self.poller.poll(10))
@@ -257,7 +278,7 @@ class ZMQDataSource():
                     self.log.write(struct.pack("<Q", int(time.time() * 1.0e6) & -3))
                 self.log.write(msg_buf)
 
-                msg = self.mav.parse_buffer(msg_buf)
+                msg = self.parse_mav_buffer(zmq_msg[0].decode('utf-8'), msg_buf)
                 _log.debug("got message: %s", list([str(x) for x in msg]))
 
                 if msg is None:

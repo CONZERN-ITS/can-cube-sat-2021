@@ -12,7 +12,7 @@ def collect_csvs(path: str):
 
         for f in files:
             if f.endswith(".csv"):
-                retval.append(os.path.join(root, f))
+                retval.append('/'.join([root, f]))
 
     return retval
 
@@ -39,8 +39,8 @@ def import_table(db_path, file_path, table_name):
     os.system(callstring)
 
 
-board_csv_files = [("brd_" + get_table_name(x), x,) for x in collect_csvs("SD")]
-ground_csv_files =[("gnd_" + get_table_name(x), x,) for x in collect_csvs("RADIO")]
+board_csv_files = [("brd_" + get_table_name(x), x,) for x in collect_csvs("SD/parsed_merged_fixed/")]
+ground_csv_files =[("gnd_" + get_table_name(x), x,) for x in collect_csvs("RADIO/")]
 
 db_file = "its-telemetry.sqlite"
 try:    
